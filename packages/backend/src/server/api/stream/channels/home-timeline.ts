@@ -10,6 +10,7 @@ import { isInstanceMuted } from '@/misc/is-instance-muted.js';
 import type { Packed } from '@/misc/json-schema.js';
 import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
 import { bindThis } from '@/decorators.js';
+import { FilterPresets, NoteFilterService } from '@/core/NoteFilterService.js';
 import Channel from '../channel.js';
 
 class HomeTimelineChannel extends Channel {
@@ -21,6 +22,7 @@ class HomeTimelineChannel extends Channel {
 
 	constructor(
 		private noteEntityService: NoteEntityService,
+		private noteFilterService: NoteFilterService,
 
 		id: string,
 		connection: Channel['connection'],
@@ -39,45 +41,14 @@ class HomeTimelineChannel extends Channel {
 
 	@bindThis
 	private async onNote(note: Packed<'Note'>) {
-		const isMe = this.user!.id === note.userId;
+		const options = {
+			withRenotes: this.withRenotes,
+			withFiles: this.withFiles,
+		};
 
-		if (this.withFiles && (note.fileIds == null || note.fileIds.length === 0)) return;
-
-		if (note.channelId) {
-			if (!this.followingChannels.has(note.channelId)) return;
-		} else {
-			// その投稿のユーザーをフォローしていなかったら弾く
-			if (!isMe && !Object.hasOwn(this.following, note.userId)) return;
+		if (!this.noteFilterService.filterForStreaming(this.user, this.connection, FilterPresets.home, note, options)) {
+			return;
 		}
-
-		// Ignore notes from instances the user has muted
-		if (isInstanceMuted(note, new Set<string>(this.userProfile!.mutedInstances))) return;
-
-		if (note.visibility === 'followers') {
-			if (!isMe && !Object.hasOwn(this.following, note.userId)) return;
-		} else if (note.visibility === 'specified') {
-			if (!isMe && !note.visibleUserIds!.includes(this.user!.id)) return;
-		}
-
-		if (note.reply) {
-			const reply = note.reply;
-			if (this.following[note.userId]?.withReplies) {
-				// 自分のフォローしていないユーザーの visibility: followers な投稿への返信は弾く
-				if (reply.visibility === 'followers' && !Object.hasOwn(this.following, reply.userId)) return;
-			} else {
-				// 「チャンネル接続主への返信」でもなければ、「チャンネル接続主が行った返信」でもなければ、「投稿者の投稿者自身への返信」でもない場合
-				if (reply.userId !== this.user!.id && !isMe && reply.userId !== note.userId) return;
-			}
-		}
-
-		if (note.renote && note.text == null && (note.fileIds == null || note.fileIds.length === 0) && !this.withRenotes) return;
-
-		// 流れてきたNoteがミュートしているユーザーが関わるものだったら無視する
-		if (isUserRelated(note, this.userIdsWhoMeMuting)) return;
-		// 流れてきたNoteがブロックされているユーザーが関わるものだったら無視する
-		if (isUserRelated(note, this.userIdsWhoBlockingMe)) return;
-
-		if (note.renote && !note.text && isUserRelated(note, this.userIdsWhoMeMutingRenotes)) return;
 
 		if (this.user && note.renoteId && !note.text) {
 			if (note.renote && Object.keys(note.renote.reactions).length > 0) {
@@ -105,6 +76,7 @@ export class HomeTimelineChannelService {
 
 	constructor(
 		private noteEntityService: NoteEntityService,
+		private noteFilterService: NoteFilterService,
 	) {
 	}
 
@@ -112,6 +84,7 @@ export class HomeTimelineChannelService {
 	public create(id: string, connection: Channel['connection']): HomeTimelineChannel {
 		return new HomeTimelineChannel(
 			this.noteEntityService,
+			this.noteFilterService,
 			id,
 			connection,
 		);

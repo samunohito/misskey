@@ -18,6 +18,7 @@ import { FanoutTimelineService } from '@/core/FanoutTimelineService.js';
 import { UserFollowingService } from '@/core/UserFollowingService.js';
 import { MiLocalUser } from '@/models/User.js';
 import { MetaService } from '@/core/MetaService.js';
+import { FilterPresets, NoteFilterService } from '@/core/NoteFilterService.js';
 
 export const meta = {
 	tags: ['notes'],
@@ -62,6 +63,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private channelFollowingsRepository: ChannelFollowingsRepository,
 
 		private noteEntityService: NoteEntityService,
+		private noteFilterService: NoteFilterService,
 		private activeUsersChart: ActiveUsersChart,
 		private idService: IdService,
 		private cacheService: CacheService,
@@ -89,18 +91,6 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				}, me);
 			}
 
-			const [
-				followings,
-				userIdsWhoMeMuting,
-				userIdsWhoMeMutingRenotes,
-				userIdsWhoBlockingMe,
-			] = await Promise.all([
-				this.cacheService.userFollowingsCache.fetch(me.id),
-				this.cacheService.userMutingsCache.fetch(me.id),
-				this.cacheService.renoteMutingsCache.fetch(me.id),
-				this.cacheService.userBlockedCache.fetch(me.id),
-			]);
-
 			let noteIds = await this.fanoutTimelineService.get(ps.withFiles ? `homeTimelineWithFiles:${me.id}` : `homeTimeline:${me.id}`, untilId, sinceId);
 			noteIds = noteIds.slice(0, ps.limit);
 
@@ -118,24 +108,12 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 				redisTimeline = await query.getMany();
 
-				redisTimeline = redisTimeline.filter(note => {
-					if (note.userId === me.id) {
-						return true;
-					}
-					if (isUserRelated(note, userIdsWhoBlockingMe)) return false;
-					if (isUserRelated(note, userIdsWhoMeMuting)) return false;
-					if (note.renoteId) {
-						if (note.text == null && note.fileIds.length === 0 && !note.hasPoll) {
-							if (isUserRelated(note, userIdsWhoMeMutingRenotes)) return false;
-							if (ps.withRenotes === false) return false;
-						}
-					}
-					if (note.reply && note.reply.visibility === 'followers') {
-						if (!Object.hasOwn(followings, note.reply.userId)) return false;
-					}
-
-					return true;
-				});
+				redisTimeline = await this.noteFilterService.filterForRedis(
+					me,
+					FilterPresets.home,
+					redisTimeline,
+					ps,
+				);
 
 				redisTimeline.sort((a, b) => a.id > b.id ? -1 : 1);
 			}

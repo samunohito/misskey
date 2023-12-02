@@ -1,68 +1,113 @@
 // noinspection RedundantIfStatementJS
 
 import { Injectable } from '@nestjs/common';
-import { Connection } from 'misskey-js/built/streaming.js';
 import { CacheService } from '@/core/CacheService.js';
 import { MiNote } from '@/models/Note.js';
 import { Packed } from '@/misc/json-schema.js';
 import { isUserRelated } from '@/misc/is-user-related.js';
-import { MiLocalUser } from '@/models/User.js';
+import { MiLocalUser, MiUser } from '@/models/User.js';
 import { MiFollowing } from '@/models/Following.js';
+import { ChannelFollowingService } from '@/core/ChannelFollowingService.js';
+import Connection from '@/server/api/stream/Connection.js';
 
 @Injectable()
 export class NoteFilterService {
 	constructor(
 		private cacheService: CacheService,
+		private channelFollowingService: ChannelFollowingService,
 	) {
 	}
-}
 
-export const FilterPresets: { [tl: string]: IFilterPresetItem [] } = {
-	home: [
-		{ onlyStreaming: true, filter: onlyAttachmentFiles },
-		{ onlyStreaming: true, filter: followingChannelNotes },
-		{ onlyStreaming: true, filter: followingUserNotes },
-		{ onlyStreaming: true, filter: visibilityFollowingUserNotes },
-		{ onlyStreaming: true, filter: visibilitySpecifiedNotes },
-		{ onlyStreaming: false, filter: includeReplies },
-		{ onlyStreaming: false, filter: includeRenotes },
-		{ onlyStreaming: false, filter: blockMutes },
-		{ onlyStreaming: false, filter: replyFollowerScope },
-	],
-};
+	async filterForRedis(me: MiUser | MiLocalUser | null | undefined, filters: IFilterPresetItem[], notes: MiNote[], options: ITimelineOptions): Promise<MiNote[]> {
+		const redisFilter = filters.filter(it => !it.onlyStreaming);
+		const filterSource = await this.createFilterSourceByCache(me, redisFilter);
 
-export async function filterSourceFactory(me: MiLocalUser | null, source: CacheService | Connection, filterPresets: IFilterPresetItem[]): IFilterSource {
-	if (isCacheService(source)) {
-		const hasBlockMutes = filterPresets.filter(it => it.filter === blockMutes).length >= 1;
+		return notes.filter(note => {
+			const params: IFilterParams = {
+				me,
+				note,
+				filterSource,
+				options,
+			};
+
+			for (const filter of redisFilter) {
+				if (!filter.filter.filter(params)) {
+					return false;
+				}
+			}
+
+			return true;
+		});
+	}
+
+	filterForStreaming<T extends MiNote | Packed<'Note'>>(
+		me: MiUser | MiLocalUser | null | undefined,
+		connection: Connection,
+		filters: IFilterPresetItem[],
+		note: T,
+		options: ITimelineOptions,
+	): boolean {
+		const filterSource = this.createFilterSourceByConnection(connection);
+		const params: IFilterParams = {
+			me,
+			note,
+			filterSource,
+			options,
+		};
+
+		for (const filter of filters) {
+			if (!filter.filter.filter(params)) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	private async createFilterSourceByCache(
+		me: MiUser | MiLocalUser | null | undefined,
+		filterPresets: IFilterPresetItem[],
+	): Promise<IFilterSource> {
+		const necessaryCaches = new Set(
+			filterPresets.flatMap(it => it.filter.necessaryCaches),
+		);
 
 		const [
 			userIdsWhoMeMuting,
 			userIdsWhoMeMutingRenotes,
 			userIdsWhoBlockingMe,
 			instancesMuting,
-		] = (me && hasBlockMutes) ? await Promise.all([
-			source.userMutingsCache.fetch(me.id),
-			source.renoteMutingsCache.fetch(me.id),
-			source.userBlockedCache.fetch(me.id),
-			Promise.resolve(new Set<string>), // TODO
-		]) : [new Set<string>(), new Set<string>(), new Set<string>(), new Set<string>()];
+			following,
+			followingChannels,
+		] = await Promise.all([
+			me && necessaryCaches.has('userIdsWhoMeMuting') ? this.cacheService.userMutingsCache.fetch(me.id) : new Set<string>(),
+			me && necessaryCaches.has('userIdsWhoMeMutingRenotes') ? this.cacheService.renoteMutingsCache.fetch(me.id) : new Set<string>(),
+			me && necessaryCaches.has('userIdsWhoBlockingMe') ? this.cacheService.userBlockedCache.fetch(me.id) : new Set<string>(),
+			me && necessaryCaches.has('instancesMuting') ? this.cacheService.userProfileCache.fetch(me.id).then(it => new Set<string>(it.mutedInstances)) : new Set<string>(),
+			me && necessaryCaches.has('following') ? this.cacheService.userFollowingsCache.fetch(me.id) : {} as Record<string, Pick<MiFollowing, 'withReplies'> | undefined>,
+			me && necessaryCaches.has('followingChannels') ? this.channelFollowingService.userFollowingChannelsCache.fetch(me.id) : new Set<string>(),
+		]);
 
 		return {
 			userIdsWhoBlockingMe: userIdsWhoBlockingMe,
 			userIdsWhoMeMuting: userIdsWhoMeMuting,
 			userIdsWhoMeMutingRenotes: userIdsWhoMeMutingRenotes,
 			instancesMuting: instancesMuting,
-			following: null,
-			followingChannels: null,
+			following: following,
+			followingChannels: followingChannels,
 		};
-	} else {
-
 	}
-}
 
-function isCacheService(source: CacheService | Connection): source is CacheService {
-	const { userByIdCache } = source as Record<keyof CacheService, unknown>;
-	return userByIdCache !== undefined;
+	private createFilterSourceByConnection(connection: Connection): IFilterSource {
+		return {
+			userIdsWhoBlockingMe: connection.userIdsWhoBlockingMe,
+			userIdsWhoMeMuting: connection.userIdsWhoMeMuting,
+			userIdsWhoMeMutingRenotes: connection.userIdsWhoMeMutingRenotes,
+			instancesMuting: new Set(connection.userProfile?.mutedInstances ?? []),
+			following: connection.following,
+			followingChannels: connection.followingChannels,
+		};
+	}
 }
 
 interface INoteFilter {
@@ -116,136 +161,160 @@ class OnlyAttachmentFilesFilter implements INoteFilter {
 	}
 }
 
-function includeRenotes(params: IFilterParams): boolean {
-	const { note, options } = params;
+class IncludeRenotesFilter implements INoteFilter {
+	readonly necessaryCaches: (keyof IFilterSource)[];
 
-	if (!options.withRenotes && !isQuote(note)) {
-		// 引用リノートでないものは許可しない
-		return false;
-	}
+	filter(params: IFilterParams): boolean {
+		const { note, options } = params;
 
-	return true;
-}
-
-function includeReplies(params: IFilterParams): boolean {
-	const { me, note, options } = params;
-
-	if (!options.withReplies) {
-		const reply = note.reply;
-		if (reply && reply.userId !== note.userId && (me === null || reply.userId !== me.id)) {
-			// リプライ先が自分の作成したノートではない場合は許可しない
+		if (!options.withRenotes && !isQuote(note)) {
+			// 引用リノートでないものは許可しない
 			return false;
 		}
-	}
 
-	return true;
+		return true;
+	}
 }
 
-function followingChannelNotes(params: IFilterParams): boolean {
-	const { note, filterSource } = params;
+class IncludeRepliesFilter implements INoteFilter {
+	readonly necessaryCaches: (keyof IFilterSource)[];
 
-	if (!note.channelId) {
-		// そもそもチャンネル投稿ではない
+	filter(params: IFilterParams): boolean {
+		const { me, note, options } = params;
+
+		if (!options.withReplies) {
+			const reply = note.reply;
+			if (reply && reply.userId !== note.userId && (!me || reply.userId !== me.id)) {
+				// リプライ先が自分の作成したノートではない場合は許可しない
+				return false;
+			}
+		}
+
 		return true;
 	}
-
-	if (filterSource.followingChannels.has(note.channelId)) {
-		// チャンネル投稿の場合はフィルタしない
-		return true;
-	}
-
-	return false;
 }
 
-function followingUserNotes(params: IFilterParams): boolean {
-	const { note, me, filterSource } = params;
-	const isMe = me?.id === note.userId;
+class FollowingChannelNotesFilter implements INoteFilter {
+	readonly necessaryCaches: (keyof IFilterSource)[] = ['followingChannels'];
 
-	if (isMe) {
-		// 自分自身の場合はフィルタしない
-		return true;
-	}
+	filter(params: IFilterParams): boolean {
+		const { note, filterSource } = params;
 
-	if (Object.hasOwn(filterSource.following, note.userId)) {
-		// フォローしている場合はフィルタしない
-		return true;
-	}
-
-	return false;
-}
-
-function visibilityFollowingUserNotes(params: IFilterParams): boolean {
-	const { note } = params;
-
-	if (note.visibility !== 'followers') {
-		// そもそもフォロワー限定投稿ではない
-		return true;
-	}
-
-	return followingUserNotes(params);
-}
-
-function visibilitySpecifiedNotes(params: IFilterParams): boolean {
-	const { note, me } = params;
-
-	if (note.visibility !== 'specified') {
-		// そもそもDMではない
-		return true;
-	}
-
-	const isMe = me?.id === note.userId;
-	if (isMe) {
-		// 自身のノートの場合はフィルタしない
-		return true;
-	}
-
-	if (me && note.visibleUserIds && note.visibleUserIds.includes(me.id)) {
-		// 返信先一覧に含まれている場合はフィルタしない
-		return true;
-	}
-
-	return false;
-}
-
-function replyFollowerScope(params: IFilterParams): boolean {
-	const { me, note, filterSource } = params;
-	const reply = note.reply;
-
-	if (!reply) {
-		// リプライがない
-		return true;
-	}
-
-	if (reply.visibility !== 'followers') {
-		// そもそもフォロワー限定ではない
-		return true;
-	}
-
-	if (filterSource.following[note.userId]?.withReplies) {
-		// 他人へのリプライを表示する場合
-		if (Object.hasOwn(filterSource.following, reply.userId)) {
-			// フォロワー一覧に含まれている場合はフィルタしない
+		if (!note.channelId) {
+			// そもそもチャンネル投稿ではない
 			return true;
 		}
-	} else {
-		if (me && note.userId === me.id && reply.userId === me.id && note.userId === reply.userId) {
-			// 自分が行ったリプライであればフィルタしない
+
+		if (filterSource.followingChannels.has(note.channelId)) {
+			// チャンネル投稿の場合はフィルタしない
 			return true;
 		}
-	}
 
-	return false;
+		return false;
+	}
 }
 
-export type NoteFilter = (params: IFilterParams) => boolean;
+class FollowingUserNotesFilter implements INoteFilter {
+	readonly necessaryCaches: (keyof IFilterSource)[] = ['following'];
+
+	filter(params: IFilterParams): boolean {
+		const { note, me, filterSource } = params;
+		const isMe = me?.id === note.userId;
+
+		if (isMe) {
+			// 自分自身の場合はフィルタしない
+			return true;
+		}
+
+		if (Object.hasOwn(filterSource.following, note.userId)) {
+			// フォローしている場合はフィルタしない
+			return true;
+		}
+
+		return false;
+	}
+}
+
+class VisibilityFollowingUserNotesFilter extends FollowingUserNotesFilter {
+	filter(params: IFilterParams): boolean {
+		const { note } = params;
+
+		if (note.visibility !== 'followers') {
+			// そもそもフォロワー限定投稿ではない
+			return true;
+		}
+
+		return super.filter(params);
+	}
+}
+
+class VisibilitySpecifiedNotesFilter implements INoteFilter {
+	readonly necessaryCaches: (keyof IFilterSource)[];
+
+	filter(params: IFilterParams): boolean {
+		const { note, me } = params;
+
+		if (note.visibility !== 'specified') {
+			// そもそもDMではない
+			return true;
+		}
+
+		const isMe = me?.id === note.userId;
+		if (isMe) {
+			// 自身のノートの場合はフィルタしない
+			return true;
+		}
+
+		if (me && note.visibleUserIds && note.visibleUserIds.includes(me.id)) {
+			// 返信先一覧に含まれている場合はフィルタしない
+			return true;
+		}
+
+		return false;
+	}
+}
+
+class ReplyFollowerScopeFilter implements INoteFilter {
+	readonly necessaryCaches: (keyof IFilterSource)[] = ['following'];
+
+	filter(params: IFilterParams): boolean {
+		const { me, note, filterSource } = params;
+		const reply = note.reply;
+
+		if (!reply) {
+			// リプライがない
+			return true;
+		}
+
+		if (reply.visibility !== 'followers') {
+			// そもそもフォロワー限定ではない
+			return true;
+		}
+
+		if (filterSource.following[note.userId]?.withReplies) {
+			// 他人へのリプライを表示する場合
+			if (Object.hasOwn(filterSource.following, reply.userId)) {
+				// フォロワー一覧に含まれている場合はフィルタしない
+				return true;
+			}
+		} else {
+			if (me && note.userId === me.id && reply.userId === me.id && note.userId === reply.userId) {
+				// 自分が行ったリプライであればフィルタしない
+				return true;
+			}
+		}
+
+		return false;
+	}
+}
 
 export interface IFilterPresetItem {
 	onlyStreaming: boolean,
-	filter: NoteFilter,
+	filter: INoteFilter,
 }
 
 interface IFilterParams {
-	me: MiLocalUser | null;
+	me: MiUser | MiLocalUser | null | undefined;
 	note: MiNote | Packed<'Note'>;
 	filterSource: IFilterSource;
 	options: ITimelineOptions;
@@ -297,3 +366,27 @@ function isMiNote(note: MiNote | Packed<'Note'>): note is MiNote {
 	const { hasPoll } = note as Record<string, unknown>;
 	return hasPoll !== undefined;
 }
+
+const onlyAttachmentFilesFilter = new OnlyAttachmentFilesFilter();
+const followingChannelNotesFilter = new FollowingChannelNotesFilter();
+const followingUserNotesFilter = new FollowingUserNotesFilter();
+const visibilityFollowingUserNotesFilter = new VisibilityFollowingUserNotesFilter();
+const visibilitySpecifiedNotesFilter = new VisibilitySpecifiedNotesFilter();
+const includeRepliesFilter = new IncludeRepliesFilter();
+const includeRenotesFilter = new IncludeRenotesFilter();
+const blockMutesFilter = new BlockMuteFilter();
+const replyFollowerScopeFilter = new ReplyFollowerScopeFilter();
+
+export const FilterPresets: { [tl: string]: IFilterPresetItem [] } = {
+	home: [
+		{ onlyStreaming: true, filter: onlyAttachmentFilesFilter },
+		{ onlyStreaming: true, filter: followingChannelNotesFilter },
+		{ onlyStreaming: true, filter: followingUserNotesFilter },
+		{ onlyStreaming: true, filter: visibilityFollowingUserNotesFilter },
+		{ onlyStreaming: true, filter: visibilitySpecifiedNotesFilter },
+		{ onlyStreaming: false, filter: includeRepliesFilter },
+		{ onlyStreaming: false, filter: includeRenotesFilter },
+		{ onlyStreaming: false, filter: blockMutesFilter },
+		{ onlyStreaming: false, filter: replyFollowerScopeFilter },
+	],
+};
