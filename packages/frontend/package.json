@@ -4,6 +4,7 @@
 	"type": "module",
 	"scripts": {
 		"watch": "vite",
+		"dev": "vite --config vite.config.local-dev.ts",
 		"build": "vite build",
 		"storybook-dev": "nodemon --verbose --watch src --ext \"mdx,ts,vue\" --ignore \"*.stories.ts\" --exec \"pnpm build-storybook-pre && pnpm exec storybook dev -p 6006 --ci\"",
 		"build-storybook-pre": "(tsc -p .storybook || echo done.) && node .storybook/generate.js && node .storybook/preload-locale.js && node .storybook/preload-theme.js",
@@ -25,7 +26,6 @@
 		"@syuilo/aiscript": "0.16.0",
 		"@tabler/icons-webfont": "2.37.0",
 		"@vitejs/plugin-vue": "4.5.1",
-		"@vue-macros/reactivity-transform": "0.4.0",
 		"@vue/compiler-sfc": "3.3.9",
 		"astring": "1.8.6",
 		"autosize": "6.0.1",
