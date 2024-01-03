@@ -80,7 +80,7 @@ describe('アンテナ', () => {
 	let userMutedByAlice: User;
 
 	beforeAll(async () => {
-		app = await startServer();
+		// app = await startServer();
 	}, 1000 * 60 * 2);
 
 	beforeAll(async () => {
@@ -137,7 +137,7 @@ describe('アンテナ', () => {
 	}, 1000 * 60 * 10);
 
 	afterAll(async () => {
-		await app.close();
+		// await app.close();
 	});
 
 	beforeEach(async () => {

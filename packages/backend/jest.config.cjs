@@ -3,6 +3,9 @@
 * https://jestjs.io/docs/en/configuration.html
 */
 
+const { pathsToModuleNameMapper } = require('ts-jest')
+const { compilerOptions } = require('./tsconfig')
+
 module.exports = {
 	// All imported modules in your tests should be mocked automatically
 	// automock: false,
@@ -54,10 +57,10 @@ module.exports = {
 	// forceCoverageMatch: [],
 
 	// A path to a module which exports an async function that is triggered once before all test suites
-	// globalSetup: undefined,
+	globalSetup: "<rootDir>/test/jest.global-setup.ts",
 
 	// A path to a module which exports an async function that is triggered once after all test suites
-	// globalTeardown: undefined,
+	globalTeardown: "<rootDir>/test/jest.global-teardown.ts",
 
 	// A set of global variables that need to be available in all test environments
 	globals: {
@@ -67,9 +70,10 @@ module.exports = {
 	// maxWorkers: "50%",
 
 	// An array of directory names to be searched recursively up from the requiring module's location
-	// moduleDirectories: [
-	//   "node_modules"
-	// ],
+	moduleDirectories: [
+	  "node_modules",
+		"<rootDir>/src"
+	],
 
 	// An array of file extensions your modules use
 	// moduleFileExtensions: [
@@ -82,17 +86,7 @@ module.exports = {
 	// ],
 
 	// A map from regular expressions to module names or to arrays of module names that allow to stub out resources with a single module
-	moduleNameMapper: {
-		// Do not resolve .wasm.js to .wasm by the rule below
-		'^(.+)\\.wasm\\.js$': '$1.wasm.js',
-		// SWC converts @/foo/bar.js to `../../src/foo/bar.js`, and then this rule
-		// converts it again to `../../src/foo/bar` which then can be resolved to
-		// `.ts` files.
-		// See https://github.com/swc-project/jest/issues/64#issuecomment-1029753225
-		// TODO: Use `--allowImportingTsExtensions` on TypeScript 5.0 so that we can
-		// directly import `.ts` files without this hack.
-		'^((?:\\.{1,2}|[A-Z:])*/.*)\\.js$': '$1',
-	},
+	moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths, { prefix: '<rootDir>/' } ),
 
 	// An array of regexp pattern strings, matched against all module paths before considered 'visible' to the module loader
 	// modulePathIgnorePatterns: [],
@@ -105,6 +99,7 @@ module.exports = {
 
 	// A preset that is used as a base for Jest's configuration
 	//preset: "ts-jest/presets/js-with-ts-esm",
+	preset: "ts-jest",
 
 	// Run tests from one or more projects
 	// projects: undefined,
@@ -129,7 +124,13 @@ module.exports = {
 
 	// A list of paths to directories that Jest should use to search for files in
 	roots: [
-		"<rootDir>"
+		"<rootDir>/src",
+		"<rootDir>/test"
+	],
+
+	modulePaths: [
+		"<rootDir>",
+		compilerOptions.baseUrl
 	],
 
 	// Allows you to use a custom runner instead of Jest's default test runner
@@ -139,7 +140,7 @@ module.exports = {
 	// setupFiles: [],
 
 	// A list of paths to modules that run some code to configure or set up the testing framework before each test
-	// setupFilesAfterEnv: [],
+	// setupFilesAfterEnv: ["./test/jest.setup.ts"],
 
 	// The number of seconds after which a test is considered as slow and reported as such in the results.
 	// slowTestThreshold: 5,
@@ -185,7 +186,8 @@ module.exports = {
 
 	// A map from regular expressions to paths to transformers
 	transform: {
-		"^.+\\.(t|j)sx?$": ["@swc/jest"],
+		"^.+\\.jsx?$": ["@swc/jest"],
+		"^.+\\.tsx?$": ["ts-jest", { tsconfig: "./tsconfig.test.json" }],
 	},
 
 	// An array of regexp pattern strings that are matched against all source file paths, matched files will skip transformation
@@ -219,3 +221,5 @@ module.exports = {
 
 	maxConcurrency: 32,
 };
+
+console.log(JSON.stringify(module.exports))
