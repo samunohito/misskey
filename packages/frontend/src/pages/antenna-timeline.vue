@@ -25,9 +25,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <script lang="ts" setup>
 import { computed, watch, ref, shallowRef } from 'vue';
+import * as Misskey from 'misskey-js';
 import MkTimeline from '@/components/MkTimeline.vue';
 import { scroll } from '@/scripts/scroll.js';
 import * as os from '@/os.js';
+import { misskeyApi } from '@/scripts/misskey-api.js';
 import { useRouter } from '@/router.js';
 import { definePageMetadata } from '@/scripts/page-metadata.js';
 import { i18n } from '@/i18n.js';
@@ -38,7 +40,7 @@ const props = defineProps<{
 	antennaId: string;
 }>();
 
-const antenna = ref(null);
+const antenna = ref<Misskey.entities.Antenna | null>(null);
 const queue = ref(0);
 const rootEl = shallowRef<HTMLElement>();
 const tlEl = shallowRef<InstanceType<typeof MkTimeline>>();
@@ -72,7 +74,7 @@ function focus() {
 }
 
 watch(() => props.antennaId, async () => {
-	antenna.value = await os.api('antennas/show', {
+	antenna.value = await misskeyApi('antennas/show', {
 		antennaId: props.antennaId,
 	});
 }, { immediate: true });

@@ -86,6 +86,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<button v-tooltip="i18n.ts.hashtags" class="_button" :class="[$style.footerButton, { [$style.footerButtonActive]: withHashtags }]" @click="withHashtags = !withHashtags"><i class="ti ti-hash"></i></button>
 			<button v-if="postFormActions.length > 0" v-tooltip="i18n.ts.plugin" class="_button" :class="$style.footerButton" @click="showActions"><i class="ti ti-plug"></i></button>
 			<button v-tooltip="i18n.ts.emoji" :class="['_button', $style.footerButton]" @click="insertEmoji"><i class="ti ti-mood-happy"></i></button>
+			<button v-if="showAddMfmFunction" v-tooltip="i18n.ts.addMfmFunction" :class="['_button', $style.footerButton]" @click="insertMfmFunction"><i class="ti ti-palette"></i></button>
 		</div>
 		<div :class="$style.footerRight">
 			<button v-tooltip="i18n.ts.previewNoteText" class="_button" :class="[$style.footerButton, { [$style.previewButtonActive]: showPreview }]" @click="showPreview = !showPreview"><i class="ti ti-eye"></i></button>
@@ -114,6 +115,7 @@ import { extractMentions } from '@/scripts/extract-mentions.js';
 import { formatTimeString } from '@/scripts/format-time-string.js';
 import { Autocomplete } from '@/scripts/autocomplete.js';
 import * as os from '@/os.js';
+import { misskeyApi } from '@/scripts/misskey-api.js';
 import { selectFiles } from '@/scripts/select-file.js';
 import { defaultStore, notePostInterruptors, postFormActions } from '@/store.js';
 import MkInfo from '@/components/MkInfo.vue';
@@ -126,6 +128,7 @@ import MkRippleEffect from '@/components/MkRippleEffect.vue';
 import { miLocalStorage } from '@/local-storage.js';
 import { claimAchievement } from '@/scripts/achievements.js';
 import { emojiPicker } from '@/scripts/emoji-picker.js';
+import { mfmFunctionPicker } from '@/scripts/mfm-function-picker.js';
 
 const modal = inject('modal');
 
@@ -182,17 +185,19 @@ const poll = ref<{
 const useCw = ref<boolean>(!!props.initialCw);
 const showPreview = ref(defaultStore.state.showPreview);
 watch(showPreview, () => defaultStore.set('showPreview', showPreview.value));
+const showAddMfmFunction = ref(defaultStore.state.enableQuickAddMfmFunction);
+watch(showAddMfmFunction, () => defaultStore.set('enableQuickAddMfmFunction', showAddMfmFunction.value));
 const cw = ref<string | null>(props.initialCw ?? null);
 const localOnly = ref<boolean>(props.initialLocalOnly ?? defaultStore.state.rememberNoteVisibility ? defaultStore.state.localOnly : defaultStore.state.defaultNoteLocalOnly);
 const visibility = ref(props.initialVisibility ?? (defaultStore.state.rememberNoteVisibility ? defaultStore.state.visibility : defaultStore.state.defaultNoteVisibility) as typeof Misskey.noteVisibilities[number]);
-const visibleUsers = ref([]);
+const visibleUsers = ref<Misskey.entities.UserDetailed[]>([]);
 if (props.initialVisibleUsers) {
 	props.initialVisibleUsers.forEach(pushVisibleUser);
 }
 const reactionAcceptance = ref(defaultStore.state.reactionAcceptance);
 const autocomplete = ref(null);
 const draghover = ref(false);
-const quoteId = ref(null);
+const quoteId = ref<string | null>(null);
 const hasNotSpecifiedMentions = ref(false);
 const recentHashtags = ref(JSON.parse(miLocalStorage.getItem('hashtags') ?? '[]'));
 const imeText = ref('');
@@ -324,7 +329,7 @@ if (props.reply && ['home', 'followers', 'specified'].includes(props.reply.visib
 
 	if (visibility.value === 'specified') {
 		if (props.reply.visibleUserIds) {
-			os.api('users/show', {
+			misskeyApi('users/show', {
 				userIds: props.reply.visibleUserIds.filter(uid => uid !== $i.id && uid !== props.reply.userId),
 			}).then(users => {
 				users.forEach(pushVisibleUser);
@@ -332,7 +337,7 @@ if (props.reply && ['home', 'followers', 'specified'].includes(props.reply.visib
 		}
 
 		if (props.reply.userId !== $i.id) {
-			os.api('users/show', { userId: props.reply.userId }).then(user => {
+			misskeyApi('users/show', { userId: props.reply.userId }).then(user => {
 				pushVisibleUser(user);
 			});
 		}
@@ -379,7 +384,7 @@ function addMissingMention() {
 
 	for (const x of extractMentions(ast)) {
 		if (!visibleUsers.value.some(u => (u.username === x.username) && (u.host === x.host))) {
-			os.api('users/show', { username: x.username, host: x.host }).then(user => {
+			misskeyApi('users/show', { username: x.username, host: x.host }).then(user => {
 				visibleUsers.value.push(user);
 			});
 		}
@@ -748,7 +753,17 @@ async function post(ev?: MouseEvent) {
 
 	if (withHashtags.value && hashtags.value && hashtags.value.trim() !== '') {
 		const hashtags_ = hashtags.value.trim().split(' ').map(x => x.startsWith('#') ? x : '#' + x).join(' ');
-		postData.text = postData.text ? `${postData.text} ${hashtags_}` : hashtags_;
+		if (!postData.text) {
+			postData.text = hashtags_;
+		} else {
+			const postTextLines = postData.text.split('\n');
+			if (postTextLines[postTextLines.length - 1].trim() === '') {
+				postTextLines[postTextLines.length - 1] += hashtags_;
+			} else {
+				postTextLines[postTextLines.length - 1] += ' ' + hashtags_;
+			}
+			postData.text = postTextLines.join('\n');
+		}
 	}
 
 	// plugin
@@ -770,7 +785,7 @@ async function post(ev?: MouseEvent) {
 	}
 
 	posting.value = true;
-	os.api('notes/create', postData, token).then(() => {
+	misskeyApi('notes/create', postData, token).then(() => {
 		if (props.freezeAfterPosted) {
 			posted.value = true;
 		} else {
@@ -860,6 +875,14 @@ async function insertEmoji(ev: MouseEvent) {
 			textAreaReadOnly.value = false;
 			nextTick(() => focus());
 		},
+	);
+}
+
+async function insertMfmFunction(ev: MouseEvent) {
+	mfmFunctionPicker(
+		ev.currentTarget ?? ev.target,
+		textareaEl.value,
+		text,
 	);
 }
 

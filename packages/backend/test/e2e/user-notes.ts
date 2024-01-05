@@ -13,10 +13,11 @@ type Note = misskey.entities.Note
 describe('users/notes', () => {
 	let app: INestApplicationContext;
 
-	let alice: misskey.entities.MeSignup;
-	let jpgnote: Note;
-	let pngnote: Note;
-	let jpgPngnote: Note;
+	let alice: misskey.entities.SignupResponse;
+	let jpgNote: Note;
+	let pngNote: Note;
+	let jpgPngNote: Note;
+
 
 	beforeAll(async () => {
 		app = await startServer();

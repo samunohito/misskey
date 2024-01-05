@@ -37,7 +37,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<i v-else-if="notification.type === 'quote'" class="ti ti-quote"></i>
 			<i v-else-if="notification.type === 'pollEnded'" class="ti ti-chart-arrows"></i>
 			<i v-else-if="notification.type === 'achievementEarned'" class="ti ti-medal"></i>
-			<img v-else-if="notification.type === 'roleAssigned'" :src="notification.role.iconUrl" alt=""/>
+			<img v-else-if="notification.type === 'roleAssigned'" style="height: 1.3em; vertical-align: -22%;" :src="notification.role.iconUrl" alt=""/>
 			<!-- notification.reaction が null になることはまずないが、ここでoptional chaining使うと一部ブラウザで刺さるので念の為 -->
 			<MkReactionIcon
 				v-else-if="notification.type === 'reaction'"
@@ -145,7 +145,7 @@ import { getNoteSummary } from '@/scripts/get-note-summary.js';
 import { notePage } from '@/filters/note.js';
 import { userPage } from '@/filters/user.js';
 import { i18n } from '@/i18n.js';
-import * as os from '@/os.js';
+import { misskeyApi } from '@/scripts/misskey-api.js';
 import { $i } from '@/account.js';
 import { infoImageUrl } from '@/instance.js';
 
@@ -162,12 +162,12 @@ const followRequestDone = ref(false);
 
 const acceptFollowRequest = () => {
 	followRequestDone.value = true;
-	os.api('following/requests/accept', { userId: props.notification.user.id });
+	misskeyApi('following/requests/accept', { userId: props.notification.user.id });
 };
 
 const rejectFollowRequest = () => {
 	followRequestDone.value = true;
-	os.api('following/requests/reject', { userId: props.notification.user.id });
+	misskeyApi('following/requests/reject', { userId: props.notification.user.id });
 };
 </script>
 

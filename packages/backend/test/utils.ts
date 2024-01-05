@@ -6,6 +6,7 @@
 import * as assert from 'node:assert';
 import { readFile } from 'node:fs/promises';
 import { isAbsolute, basename } from 'node:path';
+import { randomUUID } from 'node:crypto';
 import { inspect } from 'node:util';
 import WebSocket, { ClientOptions } from 'ws';
 import fetch, { File, RequestInit } from 'node-fetch';
@@ -25,6 +26,8 @@ interface UserToken {
 
 const config = loadConfig();
 export const port = config.port;
+export const origin = config.url;
+export const host = new URL(config.url).host;
 
 export const cookie = (me: UserToken): string => {
 	return `token=${me.token};`;
@@ -126,7 +129,16 @@ export const post = async (user: UserToken, params?: misskey.Endpoints['notes/cr
 	return res.body ? res.body.createdNote : null;
 };
 
-// 非公開ノートを API 越しに見たときのノート NoteEntityService.ts
+export const createAppToken = async (user: UserToken, permissions: (typeof misskey.permissions)[number][]) => {
+	const res = await api('miauth/gen-token', {
+		session: randomUUID(),
+		permission: permissions,
+	}, user);
+
+	return (res.body as misskey.entities.MiauthGenTokenResponse).token;
+};
+
+// 非公開ノートをAPI越しに見たときのノート NoteEntityService.ts
 export const hiddenNote = (note: Note): any => {
 	const temp = {
 		...note,

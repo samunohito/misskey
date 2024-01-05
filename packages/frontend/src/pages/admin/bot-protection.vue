@@ -65,18 +65,20 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <script lang="ts" setup>
 import { defineAsyncComponent, ref } from 'vue';
+import type { CaptchaProvider } from '@/components/MkCaptcha.vue';
 import MkRadios from '@/components/MkRadios.vue';
 import MkInput from '@/components/MkInput.vue';
 import MkButton from '@/components/MkButton.vue';
 import FormSuspense from '@/components/form/suspense.vue';
 import FormSlot from '@/components/form/slot.vue';
 import * as os from '@/os.js';
+import { misskeyApi } from '@/scripts/misskey-api.js';
 import { fetchInstance } from '@/instance.js';
 import { i18n } from '@/i18n.js';
 
 const MkCaptcha = defineAsyncComponent(() => import('@/components/MkCaptcha.vue'));
 
-const provider = ref(null);
+const provider = ref<CaptchaProvider | null>(null);
 const hcaptchaSiteKey = ref<string | null>(null);
 const hcaptchaSecretKey = ref<string | null>(null);
 const recaptchaSiteKey = ref<string | null>(null);
@@ -85,7 +87,7 @@ const turnstileSiteKey = ref<string | null>(null);
 const turnstileSecretKey = ref<string | null>(null);
 
 async function init() {
-	const meta = await os.api('admin/meta');
+	const meta = await misskeyApi('admin/meta');
 	hcaptchaSiteKey.value = meta.hcaptchaSiteKey;
 	hcaptchaSecretKey.value = meta.hcaptchaSecretKey;
 	recaptchaSiteKey.value = meta.recaptchaSiteKey;

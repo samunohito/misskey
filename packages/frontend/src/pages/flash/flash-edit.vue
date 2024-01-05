@@ -35,8 +35,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <script lang="ts" setup>
 import { computed, ref } from 'vue';
+import * as Misskey from 'misskey-js';
 import MkButton from '@/components/MkButton.vue';
 import * as os from '@/os.js';
+import { misskeyApi } from '@/scripts/misskey-api.js';
 import { i18n } from '@/i18n.js';
 import { definePageMetadata } from '@/scripts/page-metadata.js';
 import MkTextarea from '@/components/MkTextarea.vue';
@@ -364,11 +366,11 @@ const props = defineProps<{
 	id?: string;
 }>();
 
-const flash = ref(null);
-const visibility = ref('public');
+const flash = ref<Misskey.entities.Flash | null>(null);
+const visibility = ref<Misskey.entities.FlashUpdateRequest['visibility']>('public');
 
 if (props.id) {
-	flash.value = await os.api('flash/show', {
+	flash.value = await misskeyApi('flash/show', {
 		flashId: props.id,
 	});
 }
