@@ -3,12 +3,12 @@ import pluginReplace from '@rollup/plugin-replace';
 import pluginVue from '@vitejs/plugin-vue';
 import { type UserConfig, defineConfig } from 'vite';
 
+import ViteYaml from '@modyfi/vite-plugin-yaml';
 import locales from '../../locales/index.js';
 import meta from '../../package.json';
 import pluginUnwindCssModuleClassName from './lib/rollup-plugin-unwind-css-module-class-name.js';
 import pluginJson5 from './vite.json5.js';
-
-const extensions = ['.ts', '.tsx', '.js', '.jsx', '.mjs', '.json', '.json5', '.svg', '.sass', '.scss', '.css', '.vue'];
+const extensions = ['.ts', '.tsx', '.js', '.jsx', '.mjs', '.json', '.json5', '.svg', '.sass', '.scss', '.css', '.vue', '.yml'];
 
 const hash = (str: string, seed = 0): number => {
 	let h1 = 0xdeadbeef ^ seed,
@@ -51,6 +51,7 @@ export function getConfig(): UserConfig {
 		plugins: [
 			pluginVue(),
 			pluginUnwindCssModuleClassName(),
+			ViteYaml(),
 			pluginJson5(),
 			...process.env.NODE_ENV === 'production'
 				? [

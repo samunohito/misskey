@@ -87,7 +87,9 @@ export async function common(createVue: () => App<Element>) {
 	//#region Detect language & fetch translations
 	const localeVersion = miLocalStorage.getItem('localeVersion');
 	const localeOutdated = (localeVersion == null || localeVersion !== version || locale == null);
-	if (localeOutdated) {
+	if (_DEV_) {
+
+	} else if (localeOutdated) {
 		const res = await window.fetch(`/assets/locales/${lang}.${version}.json`);
 		if (res.status === 200) {
 			const newLocale = await res.text();
