@@ -29,7 +29,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</div>
 		</div>
 		<div class="contents">
+			visitoraaaa
 			<main v-if="!root" style="container-type: inline-size;">
+				aaaas
 				<RouterView/>
 			</main>
 			<main v-else>

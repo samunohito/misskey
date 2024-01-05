@@ -9,10 +9,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 	<MkSpacer v-if="tab === 'overview'" :contentMax="600" :marginMin="20">
 		<div class="_gaps_m">
 			<div :class="$style.banner" :style="{ backgroundImage: `url(${ instance.bannerUrl })` }">
+				c
 				<div style="overflow: clip;">
 					<img :src="instance.iconUrl ?? instance.faviconUrl ?? '/favicon.ico'" alt="" :class="$style.bannerIcon"/>
 					<div :class="$style.bannerName">
-						<b>{{ instance.name ?? host }}</b>
+						<b>{{ instance.name ?? host }}aaaa</b>
 					</div>
 				</div>
 			</div>
