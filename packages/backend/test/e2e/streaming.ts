@@ -41,9 +41,9 @@ describe('Streaming', () => {
 		let chinatsu: misskey.entities.MeSignup;
 		let takumi: misskey.entities.MeSignup;
 
-		let kyokonote: Note;
-		let kanakonote: Note;
-		let takuminote: Note;
+		let kyokoNote: Note;
+		let kanakoNote: Note;
+		let takumiNote: Note;
 		let list: any;
 
 		beforeAll(async () => {
