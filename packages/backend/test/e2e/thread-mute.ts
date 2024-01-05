@@ -9,7 +9,7 @@ import * as assert from 'assert';
 import { signup, api, post, connectStream, startServer } from '../utils.js';
 import type { INestApplicationContext } from '@nestjs/common';
 import type * as misskey from 'misskey-js';
-
+type Note = misskey.entities.Note
 describe('Note thread mute', () => {
 	let app: INestApplicationContext;
 
@@ -41,9 +41,9 @@ describe('Note thread mute', () => {
 
 		assert.strictEqual(res.status, 200);
 		assert.strictEqual(Array.isArray(res.body), true);
-		assert.strictEqual(res.body.some((note: any) => note.id === bobNote.id), false);
-		assert.strictEqual(res.body.some((note: any) => note.id === carolReply.id), false);
-		assert.strictEqual(res.body.some((note: any) => note.id === carolReplyWithoutMention.id), false);
+		assert.strictEqual(res.body.some((note: Note) => note.id === bobNote.id), false);
+		assert.strictEqual(res.body.some((note: Note) => note.id === carolReply.id), false);
+		assert.strictEqual(res.body.some((note: Note) => note.id === carolReplyWithoutMention.id), false);
 	});
 
 	test('ミュートしているスレッドからメンションされても、hasUnreadMentions が true にならない', async () => {
@@ -104,6 +104,6 @@ describe('Note thread mute', () => {
 		assert.strictEqual(res.body.some((notification: any) => notification.note.id === carolReply.id), false);
 		assert.strictEqual(res.body.some((notification: any) => notification.note.id === carolReplyWithoutMention.id), false);
 
-		// NOTE: bobの投稿はスレッドミュート前に行われたため通知に含まれていてもよい
+		// NOTE: bob の投稿はスレッドミュート前に行われたため通知に含まれていてもよい
 	});
 });

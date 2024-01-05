@@ -4,7 +4,12 @@
  */
 
 import { MiUser } from '@/models/User.js';
+import * as misskey from "misskey-js"
 
-export function isReply(note: any, viewerId?: MiUser['id'] | undefined | null): boolean {
-	return note.replyId && note.replyUserId !== note.userId && note.replyUserId !== viewerId;
+type Note = misskey.entities.Note
+
+export function isReply(note: Note, viewerId?: MiUser['id'] | undefined | null): boolean {
+	// REVIEW
+	// return note.replyId && note.replyUserId !== note.userId && note.replyUserId !== viewerId;
+	return !!note.replyId && note.reply?.userId !== note.userId && note.reply?.userId !== viewerId;
 }

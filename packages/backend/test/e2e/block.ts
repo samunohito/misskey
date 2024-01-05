@@ -10,6 +10,7 @@ import { signup, api, post, startServer } from '../utils.js';
 import type { INestApplicationContext } from '@nestjs/common';
 import type * as misskey from 'misskey-js';
 
+type Note = misskey.entities.Note
 describe('Block', () => {
 	let app: INestApplicationContext;
 
@@ -29,7 +30,7 @@ describe('Block', () => {
 		await app.close();
 	});
 
-	test('Block作成', async () => {
+	test('Block 作成', async () => {
 		const res = await api('/blocking/create', {
 			userId: bob.id,
 		}, alice);
@@ -62,7 +63,7 @@ describe('Block', () => {
 		assert.strictEqual(res.body.error.id, 'b390d7e1-8a5e-46ed-b625-06271cafd3d3');
 	});
 
-	test('ブロックされているユーザーのノートをRenoteできない', async () => {
+	test('ブロックされているユーザーのノートを Renote できない', async () => {
 		const note = await post(alice, { text: 'hello' });
 
 		const res = await api('/notes/create', { renoteId: note.id, text: 'yo' }, bob);
@@ -75,7 +76,7 @@ describe('Block', () => {
 
 	// TODO: ユーザーリストから除外されるテスト
 
-	test('タイムライン(LTL)にブロックされているユーザーの投稿が含まれない', async () => {
+	test('タイムライン (LTL) にブロックされているユーザーの投稿が含まれない', async () => {
 		const aliceNote = await post(alice, { text: 'hi' });
 		const bobNote = await post(bob, { text: 'hi' });
 		const carolNote = await post(carol, { text: 'hi' });
@@ -84,8 +85,8 @@ describe('Block', () => {
 
 		assert.strictEqual(res.status, 200);
 		assert.strictEqual(Array.isArray(res.body), true);
-		assert.strictEqual(res.body.some((note: any) => note.id === aliceNote.id), false);
-		assert.strictEqual(res.body.some((note: any) => note.id === bobNote.id), true);
-		assert.strictEqual(res.body.some((note: any) => note.id === carolNote.id), true);
+		assert.strictEqual(res.body.some((note: Note) => note.id === aliceNote.id), false);
+		assert.strictEqual(res.body.some((note: Note) => note.id === bobNote.id), true);
+		assert.strictEqual(res.body.some((note: Note) => note.id === carolNote.id), true);
 	});
 });

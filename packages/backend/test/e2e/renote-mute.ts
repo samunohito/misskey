@@ -9,7 +9,7 @@ import * as assert from 'assert';
 import { signup, api, post, react, startServer, waitFire, sleep } from '../utils.js';
 import type { INestApplicationContext } from '@nestjs/common';
 import type * as misskey from 'misskey-js';
-
+type Note = misskey.entities.Note
 describe('Renote Mute', () => {
 	let app: INestApplicationContext;
 
@@ -42,16 +42,16 @@ describe('Renote Mute', () => {
 		const carolRenote = await post(carol, { renoteId: bobNote.id });
 		const carolNote = await post(carol, { text: 'hi' });
 
-		// redisに追加されるのを待つ
+		// redis に追加されるのを待つ
 		await sleep(100);
 
 		const res = await api('/notes/local-timeline', {}, alice);
 
 		assert.strictEqual(res.status, 200);
 		assert.strictEqual(Array.isArray(res.body), true);
-		assert.strictEqual(res.body.some((note: any) => note.id === bobNote.id), true);
-		assert.strictEqual(res.body.some((note: any) => note.id === carolRenote.id), false);
-		assert.strictEqual(res.body.some((note: any) => note.id === carolNote.id), true);
+		assert.strictEqual(res.body.some((note: Note) => note.id === bobNote.id), true);
+		assert.strictEqual(res.body.some((note: Note) => note.id === carolRenote.id), false);
+		assert.strictEqual(res.body.some((note: Note) => note.id === carolNote.id), true);
 	});
 
 	test('タイムラインにリノートミュートしているユーザーの引用が含まれる', async () => {
@@ -59,16 +59,16 @@ describe('Renote Mute', () => {
 		const carolRenote = await post(carol, { renoteId: bobNote.id, text: 'kore' });
 		const carolNote = await post(carol, { text: 'hi' });
 
-		// redisに追加されるのを待つ
+		// redis に追加されるのを待つ
 		await sleep(100);
 
 		const res = await api('/notes/local-timeline', {}, alice);
 
 		assert.strictEqual(res.status, 200);
 		assert.strictEqual(Array.isArray(res.body), true);
-		assert.strictEqual(res.body.some((note: any) => note.id === bobNote.id), true);
-		assert.strictEqual(res.body.some((note: any) => note.id === carolRenote.id), true);
-		assert.strictEqual(res.body.some((note: any) => note.id === carolNote.id), true);
+		assert.strictEqual(res.body.some((note: Note) => note.id === bobNote.id), true);
+		assert.strictEqual(res.body.some((note: Note) => note.id === carolRenote.id), true);
+		assert.strictEqual(res.body.some((note: Note) => note.id === carolNote.id), true);
 	});
 
 	test('ストリームにリノートミュートしているユーザーのリノートが流れない', async () => {

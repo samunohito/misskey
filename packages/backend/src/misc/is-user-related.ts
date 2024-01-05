@@ -2,8 +2,9 @@
  * SPDX-FileCopyrightText: syuilo and other misskey contributors
  * SPDX-License-Identifier: AGPL-3.0-only
  */
-
-export function isUserRelated(note: any, userIds: Set<string>, ignoreAuthor = false): boolean {
+import * as misskey from "misskey-js"
+type Note = misskey.entities.Note
+export function isUserRelated(note: Note, userIds: Set<string>, ignoreAuthor = false): boolean {
 	if (userIds.has(note.userId) && !ignoreAuthor) {
 		return true;
 	}

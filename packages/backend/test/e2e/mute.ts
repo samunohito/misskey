@@ -9,7 +9,7 @@ import * as assert from 'assert';
 import { signup, api, post, react, startServer, waitFire } from '../utils.js';
 import type { INestApplicationContext } from '@nestjs/common';
 import type * as misskey from 'misskey-js';
-
+type Note = misskey.entities.Note
 describe('Mute', () => {
 	let app: INestApplicationContext;
 
@@ -45,8 +45,8 @@ describe('Mute', () => {
 
 		assert.strictEqual(res.status, 200);
 		assert.strictEqual(Array.isArray(res.body), true);
-		assert.strictEqual(res.body.some((note: any) => note.id === bobNote.id), true);
-		assert.strictEqual(res.body.some((note: any) => note.id === carolNote.id), false);
+		assert.strictEqual(res.body.some((note: Note) => note.id === bobNote.id), true);
+		assert.strictEqual(res.body.some((note: Note) => note.id === carolNote.id), false);
 	});
 
 	test('ミュートしているユーザーからメンションされても、hasUnreadMentions が true にならない', async () => {
@@ -90,12 +90,12 @@ describe('Mute', () => {
 
 			assert.strictEqual(res.status, 200);
 			assert.strictEqual(Array.isArray(res.body), true);
-			assert.strictEqual(res.body.some((note: any) => note.id === aliceNote.id), true);
-			assert.strictEqual(res.body.some((note: any) => note.id === bobNote.id), true);
-			assert.strictEqual(res.body.some((note: any) => note.id === carolNote.id), false);
+			assert.strictEqual(res.body.some((note: Note) => note.id === aliceNote.id), true);
+			assert.strictEqual(res.body.some((note: Note) => note.id === bobNote.id), true);
+			assert.strictEqual(res.body.some((note: Note) => note.id === carolNote.id), false);
 		});
 
-		test('タイムラインにミュートしているユーザーの投稿のRenoteが含まれない', async () => {
+		test('タイムラインにミュートしているユーザーの投稿の Renote が含まれない', async () => {
 			const aliceNote = await post(alice, { text: 'hi' });
 			const carolNote = await post(carol, { text: 'hi' });
 			const bobNote = await post(bob, {
@@ -106,14 +106,14 @@ describe('Mute', () => {
 
 			assert.strictEqual(res.status, 200);
 			assert.strictEqual(Array.isArray(res.body), true);
-			assert.strictEqual(res.body.some((note: any) => note.id === aliceNote.id), true);
-			assert.strictEqual(res.body.some((note: any) => note.id === bobNote.id), false);
-			assert.strictEqual(res.body.some((note: any) => note.id === carolNote.id), false);
+			assert.strictEqual(res.body.some((note: Note) => note.id === aliceNote.id), true);
+			assert.strictEqual(res.body.some((note: Note) => note.id === bobNote.id), false);
+			assert.strictEqual(res.body.some((note: Note) => note.id === carolNote.id), false);
 		});
 	});
 
 	describe('Notification', () => {
-		test('通知にミュートしているユーザーの通知が含まれない(リアクション)', async () => {
+		test('通知にミュートしているユーザーの通知が含まれない (リアクション)', async () => {
 			const aliceNote = await post(alice, { text: 'hi' });
 			await react(bob, aliceNote, 'like');
 			await react(carol, aliceNote, 'like');

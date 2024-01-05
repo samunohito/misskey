@@ -10,7 +10,7 @@ import { MiFollowing } from '@/models/Following.js';
 import { signup, api, post, startServer, initTestDb, waitFire } from '../utils.js';
 import type { INestApplicationContext } from '@nestjs/common';
 import type * as misskey from 'misskey-js';
-
+type Note = misskey.entities.Note
 describe('Streaming', () => {
 	let app: INestApplicationContext;
 	let Followings: any;
@@ -41,9 +41,9 @@ describe('Streaming', () => {
 		let chinatsu: misskey.entities.MeSignup;
 		let takumi: misskey.entities.MeSignup;
 
-		let kyokoNote: any;
-		let kanakoNote: any;
-		let takumiNote: any;
+		let kyokonote: Note;
+		let kanakonote: Note;
+		let takuminote: Note;
 		let list: any;
 
 		beforeAll(async () => {
@@ -483,7 +483,7 @@ describe('Streaming', () => {
 			});
 
 			// #10443
-			test('ミュートしているユーザへのリプライがリストTLに流れない', async () => {
+			test('ミュートしているユーザへのリプライがリスト TL に流れない', async () => {
 				// chitose が kanako をミュートしている状態で、リスインしている kyoko が kanako にリプライした時の動きを見たい
 				const fired = await waitFire(
 					chitose, 'userList',
@@ -496,7 +496,7 @@ describe('Streaming', () => {
 			});
 
 			// #10443
-			test('ミュートしているユーザの投稿をリノートしたときリストTLに流れない', async () => {
+			test('ミュートしているユーザの投稿をリノートしたときリスト TL に流れない', async () => {
 				// chitose が kanako をミュートしている状態で、リスインしている kyoko が kanako のノートをリノートした時の動きを見たい
 				const fired = await waitFire(
 					chitose, 'userList',
@@ -509,7 +509,7 @@ describe('Streaming', () => {
 			});
 
 			// #10443
-			test('ミュートしているサーバのノートがリストTLに流れない', async () => {
+			test('ミュートしているサーバのノートがリスト TL に流れない', async () => {
 				await api('/i/update', {
 					mutedInstances: ['example.com'],
 				}, chitose);
@@ -526,7 +526,7 @@ describe('Streaming', () => {
 			});
 
 			// #10443
-			test('ミュートしているサーバのノートに対するリプライがリストTLに流れない', async () => {
+			test('ミュートしているサーバのノートに対するリプライがリスト TL に流れない', async () => {
 				await api('/i/update', {
 					mutedInstances: ['example.com'],
 				}, chitose);
@@ -543,7 +543,7 @@ describe('Streaming', () => {
 			});
 
 			// #10443
-			test('ミュートしているサーバのノートに対するリノートがリストTLに流れない', async () => {
+			test('ミュートしているサーバのノートに対するリノートがリスト TL に流れない', async () => {
 				await api('/i/update', {
 					mutedInstances: ['example.com'],
 				}, chitose);

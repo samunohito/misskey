@@ -9,14 +9,14 @@ import * as assert from 'assert';
 import { signup, api, post, uploadUrl, startServer } from '../utils.js';
 import type { INestApplicationContext } from '@nestjs/common';
 import type * as misskey from 'misskey-js';
-
+type Note = misskey.entities.Note
 describe('users/notes', () => {
 	let app: INestApplicationContext;
 
 	let alice: misskey.entities.MeSignup;
-	let jpgNote: any;
-	let pngNote: any;
-	let jpgPngNote: any;
+	let jpgnote: Note;
+	let pngnote: Note;
+	let jpgPngnote: Note;
 
 	beforeAll(async () => {
 		app = await startServer();
@@ -47,8 +47,8 @@ describe('users/notes', () => {
 		assert.strictEqual(res.status, 200);
 		assert.strictEqual(Array.isArray(res.body), true);
 		assert.strictEqual(res.body.length, 3);
-		assert.strictEqual(res.body.some((note: any) => note.id === jpgNote.id), true);
-		assert.strictEqual(res.body.some((note: any) => note.id === pngNote.id), true);
-		assert.strictEqual(res.body.some((note: any) => note.id === jpgPngNote.id), true);
+		assert.strictEqual(res.body.some((note: Note) => note.id === jpgNote.id), true);
+		assert.strictEqual(res.body.some((note: Note) => note.id === pngNote.id), true);
+		assert.strictEqual(res.body.some((note: Note) => note.id === jpgPngNote.id), true);
 	});
 });

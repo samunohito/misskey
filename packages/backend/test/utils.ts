@@ -15,7 +15,7 @@ import { DEFAULT_POLICIES } from '@/core/RoleService.js';
 import { entities } from '../src/postgres.js';
 import { loadConfig } from '../src/config.js';
 import type * as misskey from 'misskey-js';
-
+type Note = misskey.entities.Note
 export { server as startServer } from '@/boot/common.js';
 
 interface UserToken {
@@ -126,8 +126,8 @@ export const post = async (user: UserToken, params?: misskey.Endpoints['notes/cr
 	return res.body ? res.body.createdNote : null;
 };
 
-// 非公開ノートをAPI越しに見たときのノート NoteEntityService.ts
-export const hiddenNote = (note: any): any => {
+// 非公開ノートを API 越しに見たときのノート NoteEntityService.ts
+export const hiddenNote = (note: Note): any => {
 	const temp = {
 		...note,
 		fileIds: [],
@@ -141,7 +141,7 @@ export const hiddenNote = (note: any): any => {
 	return temp;
 };
 
-export const react = async (user: UserToken, note: any, reaction: string): Promise<any> => {
+export const react = async (user: UserToken, note: Note, reaction: string): Promise<any> => {
 	await api('notes/reactions/create', {
 		noteId: note.id,
 		reaction: reaction,
@@ -427,11 +427,11 @@ export const simpleGet = async (path: string, accept = '*/*', cookie: any = unde
 };
 
 /**
- * あるAPIエンドポイントのPaginationが複数の条件で一貫した挙動であることをテストします。
+ * ある API エンドポイントの Pagination が複数の条件で一貫した挙動であることをテストします。
  * (sinceId, untilId, sinceDate, untilDate, offset, limit)
- * @param expected 期待値となるEntityの並び（例：Note[]）昇順降順が一致している必要がある
- * @param fetchEntities Entity[]を返却するテスト対象のAPIを呼び出す関数
- * @param offsetBy 何をキーとしてPaginationするか。
+ * @param expected 期待値となる Entity の並び（例：Note[]）昇順降順が一致している必要がある
+ * @param fetchEntities Entity[] を返却するテスト対象の API を呼び出す関数
+ * @param offsetBy 何をキーとして Pagination するか。
  * @param ordering 昇順・降順
  */
 export async function testPaginationConsistency<Entity extends { id: string, createdAt?: string }>(
@@ -475,7 +475,7 @@ export async function testPaginationConsistency<Entity extends { id: string, cre
 
 		// 2. sinceId/Date指定+limitで取得してつなぎ合わせた結果が期待通りになっていること
 		if (ordering === 'asc') {
-			// 昇順にしたときの先頭(一番古いもの)をもってくる（expected[1]を基準に降順にして0番目）
+			// 昇順にしたときの先頭 (一番古いもの) をもってくる（expected[1] を基準に降順にして 0 番目）
 			let last = await fetchEntities({ limit: 1, untilId: expected[1].id });
 			const actual: Entity[] = [];
 			while (last.length !== 0) {
@@ -488,7 +488,7 @@ export async function testPaginationConsistency<Entity extends { id: string, cre
 		}
 		*/
 
-		// 3. untilId指定+limitで取得してつなぎ合わせた結果が期待通りになっていること
+		// 3. untilId 指定+limit で取得してつなぎ合わせた結果が期待通りになっていること
 		if (ordering === 'desc') {
 			let last = await fetchEntities({ limit });
 			const actual: Entity[] = [];
@@ -501,7 +501,7 @@ export async function testPaginationConsistency<Entity extends { id: string, cre
 				expected.map(({ id, createdAt }) => id + ':' + createdAt));
 		}
 
-		// 4. offset指定+limitで取得してつなぎ合わせた結果が期待通りになっていること
+		// 4. offset 指定+limit で取得してつなぎ合わせた結果が期待通りになっていること
 		if (offsetBy === 'offset') {
 			let last = await fetchEntities({ limit, offset: 0 });
 			let offset = limit ?? 10;
