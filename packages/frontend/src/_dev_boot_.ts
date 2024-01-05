@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-// devモードで起動される際（index.htmlを使うとき）はrouterが暴発してしまってうまく読み込めない。
-// よって、devモードとして起動されるときはビルド時に組み込む形としておく。
-// (pnpm start時はpugファイルの中で静的リソースとして読み込むようになっており、この問題は起こっていない)
+// dev モードで起動される際（index.html を使うとき）は router が暴発してしまってうまく読み込めない。
+// よって、dev モードとして起動されるときはビルド時に組み込む形としておく。
+// (pnpm start 時は pug ファイルの中で静的リソースとして読み込むようになっており、この問題は起こっていない)
 import '@tabler/icons-webfont/tabler-icons.scss';
 
 await main();
@@ -23,7 +23,7 @@ async function main() {
 
 	//#region Detect language & fetch translations
 
-	// dev-modeの場合は常に取り直す
+	// dev-mode の場合は常に取り直す
 	const supportedLangs = _LANGS_.map(it => it[0]);
 	let lang: string | null | undefined = localStorage.getItem('lang');
 	if (lang == null || !supportedLangs.includes(lang)) {
@@ -37,8 +37,9 @@ async function main() {
 		}
 	}
 
-	// TODO:今のままだと言語ファイル変更後はpnpm devをリスタートする必要があるので、chokidarを使ったり等で対応できるようにする
+	// TODO:今のままだと言語ファイル変更後は pnpm dev をリスタートする必要があるので、chokidar を使ったり等で対応できるようにする
 	const locale = _LANGS_FULL_.find(it => it[0] === lang);
+	if (!locale) throw Error('_LANGS_ not found');
 	localStorage.setItem('lang', lang);
 	localStorage.setItem('locale', JSON.stringify(locale[1]));
 	localStorage.setItem('localeVersion', _VERSION_);
@@ -48,13 +49,14 @@ async function main() {
 	const theme = localStorage.getItem('theme');
 	if (theme) {
 		for (const [k, v] of Object.entries(JSON.parse(theme))) {
+			if ( !v ) throw new Error('theme not found!');
 			document.documentElement.style.setProperty(`--${k}`, v.toString());
 
-			// HTMLの theme-color 適用
+			// HTML の theme-color 適用
 			if (k === 'htmlThemeColor') {
-				for (const tag of document.head.children) {
+				for (const tag of document.head.children as unknown as HTMLElement[]) {
 					if (tag.tagName === 'META' && tag.getAttribute('name') === 'theme-color') {
-						tag.setAttribute('content', v);
+						tag.setAttribute('content', v.toString());
 						break;
 					}
 				}

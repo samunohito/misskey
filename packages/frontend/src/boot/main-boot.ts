@@ -4,6 +4,7 @@
  */
 
 import { createApp, markRaw, defineAsyncComponent } from 'vue';
+import { MeDetailed } from 'misskey-js/built/entities.js';
 import { common } from './common.js';
 import { ui } from '@/config.js';
 import { i18n } from '@/i18n.js';
@@ -30,11 +31,11 @@ export async function mainBoot() {
 		defineAsyncComponent(() => import('@/ui/universal.vue')),
 	));
 
-	reactionPicker.init();
-	emojiPicker.init();
+	await reactionPicker.init();
+	await emojiPicker.init();
 
 	if (isClientUpdated && $i) {
-		popup(defineAsyncComponent(() => import('@/components/MkUpdated.vue')), {}, {}, 'closed');
+		await popup(defineAsyncComponent(() => import('@/components/MkUpdated.vue')), {}, {}, 'closed');
 	}
 
 	const stream = useStream();
@@ -62,7 +63,7 @@ export async function mainBoot() {
 		import('@/plugin.js').then(async ({ install }) => {
 			// Workaround for https://bugs.webkit.org/show_bug.cgi?id=242740
 			await new Promise(r => setTimeout(r, 0));
-			install(plugin);
+			await install(plugin);
 		});
 	}
 
@@ -87,19 +88,20 @@ export async function mainBoot() {
 		// only add post shortcuts if logged in
 		hotkeys['p|n'] = post;
 
-		defaultStore.loaded.then(() => {
+		defaultStore.loaded.then(async () => {
 			if (defaultStore.state.accountSetupWizard !== -1) {
-				popup(defineAsyncComponent(() => import('@/components/MkUserSetupDialog.vue')), {}, {}, 'closed');
+				await popup(defineAsyncComponent(() => import('@/components/MkUserSetupDialog.vue')), {}, {}, 'closed');
 			}
 		});
 
 		for (const announcement of ($i.unreadAnnouncements ?? []).filter(x => x.display === 'dialog')) {
-			popup(defineAsyncComponent(() => import('@/components/MkAnnouncementDialog.vue')), {
+			await popup(defineAsyncComponent(() => import('@/components/MkAnnouncementDialog.vue')), {
 				announcement,
 			}, {}, 'closed');
 		}
 
-		stream.on('announcementCreated', (ev) => {
+		// FIXME
+		(stream as any).on('announcementCreated', (ev) => {
 			const announcement = ev.announcement;
 			if (announcement.display === 'dialog') {
 				popup(defineAsyncComponent(() => import('@/components/MkAnnouncementDialog.vue')), {
@@ -109,7 +111,7 @@ export async function mainBoot() {
 		});
 
 		if ($i.isDeleted) {
-			alert({
+			await alert({
 				type: 'warning',
 				text: i18n.ts.accountDeletionInProgress,
 			});
@@ -123,81 +125,81 @@ export async function mainBoot() {
 			const bm = parseInt($i.birthday.split('-')[1]);
 			const bd = parseInt($i.birthday.split('-')[2]);
 			if (m === bm && d === bd) {
-				claimAchievement('loggedInOnBirthday');
+				await claimAchievement('loggedInOnBirthday');
 			}
 		}
 
 		if (m === 1 && d === 1) {
-			claimAchievement('loggedInOnNewYearsDay');
+			await claimAchievement('loggedInOnNewYearsDay');
 		}
 
-		if ($i.loggedInDays >= 3) claimAchievement('login3');
-		if ($i.loggedInDays >= 7) claimAchievement('login7');
-		if ($i.loggedInDays >= 15) claimAchievement('login15');
-		if ($i.loggedInDays >= 30) claimAchievement('login30');
-		if ($i.loggedInDays >= 60) claimAchievement('login60');
-		if ($i.loggedInDays >= 100) claimAchievement('login100');
-		if ($i.loggedInDays >= 200) claimAchievement('login200');
-		if ($i.loggedInDays >= 300) claimAchievement('login300');
-		if ($i.loggedInDays >= 400) claimAchievement('login400');
-		if ($i.loggedInDays >= 500) claimAchievement('login500');
-		if ($i.loggedInDays >= 600) claimAchievement('login600');
-		if ($i.loggedInDays >= 700) claimAchievement('login700');
-		if ($i.loggedInDays >= 800) claimAchievement('login800');
-		if ($i.loggedInDays >= 900) claimAchievement('login900');
-		if ($i.loggedInDays >= 1000) claimAchievement('login1000');
+		if ($i.loggedInDays >= 3) await claimAchievement('login3');
+		if ($i.loggedInDays >= 7) await claimAchievement('login7');
+		if ($i.loggedInDays >= 15) await claimAchievement('login15');
+		if ($i.loggedInDays >= 30) await claimAchievement('login30');
+		if ($i.loggedInDays >= 60) await claimAchievement('login60');
+		if ($i.loggedInDays >= 100) await claimAchievement('login100');
+		if ($i.loggedInDays >= 200) await claimAchievement('login200');
+		if ($i.loggedInDays >= 300) await claimAchievement('login300');
+		if ($i.loggedInDays >= 400) await claimAchievement('login400');
+		if ($i.loggedInDays >= 500) await claimAchievement('login500');
+		if ($i.loggedInDays >= 600) await claimAchievement('login600');
+		if ($i.loggedInDays >= 700) await claimAchievement('login700');
+		if ($i.loggedInDays >= 800) await claimAchievement('login800');
+		if ($i.loggedInDays >= 900) await claimAchievement('login900');
+		if ($i.loggedInDays >= 1000) await claimAchievement('login1000');
 
-		if ($i.notesCount > 0) claimAchievement('notes1');
-		if ($i.notesCount >= 10) claimAchievement('notes10');
-		if ($i.notesCount >= 100) claimAchievement('notes100');
-		if ($i.notesCount >= 500) claimAchievement('notes500');
-		if ($i.notesCount >= 1000) claimAchievement('notes1000');
-		if ($i.notesCount >= 5000) claimAchievement('notes5000');
-		if ($i.notesCount >= 10000) claimAchievement('notes10000');
-		if ($i.notesCount >= 20000) claimAchievement('notes20000');
-		if ($i.notesCount >= 30000) claimAchievement('notes30000');
-		if ($i.notesCount >= 40000) claimAchievement('notes40000');
-		if ($i.notesCount >= 50000) claimAchievement('notes50000');
-		if ($i.notesCount >= 60000) claimAchievement('notes60000');
-		if ($i.notesCount >= 70000) claimAchievement('notes70000');
-		if ($i.notesCount >= 80000) claimAchievement('notes80000');
-		if ($i.notesCount >= 90000) claimAchievement('notes90000');
-		if ($i.notesCount >= 100000) claimAchievement('notes100000');
+		if ($i.notesCount > 0) await claimAchievement('notes1');
+		if ($i.notesCount >= 10) await claimAchievement('notes10');
+		if ($i.notesCount >= 100) await claimAchievement('notes100');
+		if ($i.notesCount >= 500) await claimAchievement('notes500');
+		if ($i.notesCount >= 1000) await claimAchievement('notes1000');
+		if ($i.notesCount >= 5000) await claimAchievement('notes5000');
+		if ($i.notesCount >= 10000) await claimAchievement('notes10000');
+		if ($i.notesCount >= 20000) await claimAchievement('notes20000');
+		if ($i.notesCount >= 30000) await claimAchievement('notes30000');
+		if ($i.notesCount >= 40000) await claimAchievement('notes40000');
+		if ($i.notesCount >= 50000) await claimAchievement('notes50000');
+		if ($i.notesCount >= 60000) await claimAchievement('notes60000');
+		if ($i.notesCount >= 70000) await claimAchievement('notes70000');
+		if ($i.notesCount >= 80000) await claimAchievement('notes80000');
+		if ($i.notesCount >= 90000) await claimAchievement('notes90000');
+		if ($i.notesCount >= 100000) await claimAchievement('notes100000');
 
-		if ($i.followersCount > 0) claimAchievement('followers1');
-		if ($i.followersCount >= 10) claimAchievement('followers10');
-		if ($i.followersCount >= 50) claimAchievement('followers50');
-		if ($i.followersCount >= 100) claimAchievement('followers100');
-		if ($i.followersCount >= 300) claimAchievement('followers300');
-		if ($i.followersCount >= 500) claimAchievement('followers500');
-		if ($i.followersCount >= 1000) claimAchievement('followers1000');
+		if ($i.followersCount > 0) await claimAchievement('followers1');
+		if ($i.followersCount >= 10) await claimAchievement('followers10');
+		if ($i.followersCount >= 50) await claimAchievement('followers50');
+		if ($i.followersCount >= 100) await claimAchievement('followers100');
+		if ($i.followersCount >= 300) await claimAchievement('followers300');
+		if ($i.followersCount >= 500) await claimAchievement('followers500');
+		if ($i.followersCount >= 1000) await claimAchievement('followers1000');
 
 		if (Date.now() - new Date($i.createdAt).getTime() > 1000 * 60 * 60 * 24 * 365) {
-			claimAchievement('passedSinceAccountCreated1');
+			await claimAchievement('passedSinceAccountCreated1');
 		}
 		if (Date.now() - new Date($i.createdAt).getTime() > 1000 * 60 * 60 * 24 * 365 * 2) {
-			claimAchievement('passedSinceAccountCreated2');
+			await claimAchievement('passedSinceAccountCreated2');
 		}
 		if (Date.now() - new Date($i.createdAt).getTime() > 1000 * 60 * 60 * 24 * 365 * 3) {
-			claimAchievement('passedSinceAccountCreated3');
+			await claimAchievement('passedSinceAccountCreated3');
 		}
 
 		if (claimedAchievements.length >= 30) {
-			claimAchievement('collectAchievements30');
+			await claimAchievement('collectAchievements30');
 		}
 
-		window.setInterval(() => {
+		window.setInterval(async() => {
 			if (Math.floor(Math.random() * 20000) === 0) {
-				claimAchievement('justPlainLucky');
+				await claimAchievement('justPlainLucky');
 			}
 		}, 1000 * 10);
 
-		window.setTimeout(() => {
-			claimAchievement('client30min');
+		window.setTimeout(async() => {
+			await claimAchievement('client30min');
 		}, 1000 * 60 * 30);
 
-		window.setTimeout(() => {
-			claimAchievement('client60min');
+		window.setTimeout(async() => {
+			await claimAchievement('client60min');
 		}, 1000 * 60 * 60);
 
 		const lastUsed = miLocalStorage.getItem('lastUsed');
@@ -216,21 +218,21 @@ export async function mainBoot() {
 		const neverShowDonationInfo = miLocalStorage.getItem('neverShowDonationInfo');
 		if (neverShowDonationInfo !== 'true' && (new Date($i.createdAt).getTime() < (Date.now() - (1000 * 60 * 60 * 24 * 3))) && !location.pathname.startsWith('/miauth')) {
 			if (latestDonationInfoShownAt == null || (new Date(latestDonationInfoShownAt).getTime() < (Date.now() - (1000 * 60 * 60 * 24 * 30)))) {
-				popup(defineAsyncComponent(() => import('@/components/MkDonation.vue')), {}, {}, 'closed');
+				await popup(defineAsyncComponent(() => import('@/components/MkDonation.vue')), {}, {}, 'closed');
 			}
 		}
 
 		if ('Notification' in window) {
 			// 許可を得ていなかったらリクエスト
 			if (Notification.permission === 'default') {
-				Notification.requestPermission();
+				await Notification.requestPermission();
 			}
 		}
 
 		const main = markRaw(stream.useChannel('main', null, 'System'));
 
 		// 自分の情報が更新されたとき
-		main.on('meUpdated', i => {
+		main.on('meUpdated', (i : MeDetailed) => {
 			updateAccount(i);
 		});
 
@@ -279,7 +281,7 @@ export async function mainBoot() {
 		});
 
 		// トークンが再生成されたとき
-		// このままではMisskeyが利用できないので強制的にサインアウトさせる
+		// このままでは Misskey が利用できないので強制的にサインアウトさせる
 		main.on('myTokenRegenerated', () => {
 			signout();
 		});
@@ -288,5 +290,5 @@ export async function mainBoot() {
 	// shortcut
 	document.addEventListener('keydown', makeHotkey(hotkeys));
 
-	initializeSw();
+	await initializeSw();
 }
