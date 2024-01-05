@@ -8,10 +8,10 @@ import { compareVersions } from 'compare-versions';
 import widgets from '@/widgets/index.js';
 import directives from '@/directives/index.js';
 import components from '@/components/index.js';
-import { version, lang, updateLocale, locale } from '@/config.js';
+import { version, lang } from '@/config.js';
 import { applyTheme } from '@/scripts/theme.js';
 import { isDeviceDarkmode } from '@/scripts/is-device-darkmode.js';
-import { updateI18n } from '@/i18n.js';
+import { getLocale, i18n, updateI18n } from '@/i18n.js';
 import { $i, refreshAccount, login } from '@/account.js';
 import { defaultStore, ColdDeviceStorage } from '@/store.js';
 import { fetchInstance, instance } from '@/instance.js';
@@ -85,21 +85,8 @@ export async function common(createVue: () => App<Element>) {
 	//#endregion
 
 	//#region Detect language & fetch translations
-	const localeVersion = miLocalStorage.getItem('localeVersion');
-	const localeOutdated = (localeVersion == null || localeVersion !== version || locale == null);
-	if (_DEV_) {
-
-	} else if (localeOutdated) {
-		const res = await window.fetch(`/assets/locales/${lang}.${version}.json`);
-		if (res.status === 200) {
-			const newLocale = await res.text();
-			const parsedNewLocale = JSON.parse(newLocale);
-			miLocalStorage.setItem('locale', newLocale);
-			miLocalStorage.setItem('localeVersion', version);
-			updateLocale(parsedNewLocale);
-			updateI18n(parsedNewLocale);
-		}
-	}
+	// nanika iroiro
+	await getLocale();
 	//#endregion
 
 	// タッチデバイスでCSSの:hoverを機能させる
