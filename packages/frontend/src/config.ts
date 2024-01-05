@@ -32,7 +32,7 @@ export const instanceName = siteName === 'Misskey' ? host : siteName;
 export const ui = miLocalStorage.getItem('ui');
 export const debug = miLocalStorage.getItem('debug') === 'true';
 
-export const langs = (await import(`../../../locales/${lang}.yml`)).default;
+export const langs = _LANGS_;
 
 export function updateLocale(newLocale): void {
 	locale = newLocale;
