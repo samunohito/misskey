@@ -13,7 +13,7 @@ import * as swos from '@/scripts/operations.js';
 globalThis.addEventListener('install', () => {
 	// ev.waitUntil(globalThis.skipWaiting());
 });
-
+console.log('');
 globalThis.addEventListener('activate', ev => {
 	ev.waitUntil(
 		caches.keys()
