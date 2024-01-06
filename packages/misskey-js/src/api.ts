@@ -17,8 +17,6 @@ export type APIError = {
 	info: Record<string, any>;
 };
 
-console.log('');
-
 export function isAPIError(reason: any): reason is APIError {
 	return reason[MK_API_ERROR] === true;
 }
