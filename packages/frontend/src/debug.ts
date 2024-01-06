@@ -12,7 +12,7 @@ export function isDebuggerEnabled(id: number): boolean {
 		return false;
 	}
 }
-console.log('');
+
 export function switchDebuggerEnabled(id: number, enabled: boolean): void {
 	if (enabled) {
 		localStorage.setItem(`DEBUG_${id}`, '');
