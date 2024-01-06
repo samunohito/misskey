@@ -5,3 +5,4 @@ module.exports = {
 		'plugin:@misskey-dev/recommended',
 	],
 };
+
