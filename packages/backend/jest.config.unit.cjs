@@ -10,7 +10,6 @@ module.exports = {
 	...base,
 	testMatch: [
 		"<rootDir>/test/unit/**/*.ts",
-		"<rootDir>/test/prelude/**/*.ts",
 		"<rootDir>/src/**/*.test.ts",
 	],
 };
