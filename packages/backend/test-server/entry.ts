@@ -9,12 +9,22 @@ import { loadConfig } from '@/config.js';
 const config = loadConfig();
 const originEnv = JSON.stringify(process.env);
 
+process.env.NODE_ENV = 'test';
+
+// Display detail of uncaught exception
+process.on('uncaughtException', err => {
+	console.error(err);
+});
+
+// Dying away...
+process.on('exit', code => {
+	console.info(`The process is going to exit with code ${code}`);
+});
+
 /**
  * テスト用のサーバインスタンスを起動する
  */
 async function launch() {
-	process.env.NODE_ENV = 'test';
-
 	await killTestServer();
 
 	console.log('starting application...');
@@ -32,6 +42,7 @@ async function launch() {
 	await startControllerEndpoints();
 
 	// ジョブキューは必要な時にテストコード側で起動する
+	// ジョブキューが動くとテスト結果の確認に支障が出ることがあるので意図的に動かさないでいる
 
 	console.log('application initialized.');
 }
