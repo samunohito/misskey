@@ -54,7 +54,7 @@ module.exports = {
 	// forceCoverageMatch: [],
 
 	// A path to a module which exports an async function that is triggered once before all test suites
-	globalSetup: "<rootDir>/built-test/entry.js",
+	// globalSetup: undefined,
 
 	// A path to a module which exports an async function that is triggered once after all test suites
 	// globalTeardown: undefined,
@@ -139,7 +139,7 @@ module.exports = {
 	// setupFiles: [],
 
 	// A list of paths to modules that run some code to configure or set up the testing framework before each test
-	setupFilesAfterEnv: ["<rootDir>/test/jest.setup.ts"],
+	// setupFilesAfterEnv: [],
 
 	// The number of seconds after which a test is considered as slow and reported as such in the results.
 	// slowTestThreshold: 5,
@@ -157,11 +157,7 @@ module.exports = {
 	// testLocationInResults: false,
 
 	// The glob patterns Jest uses to detect test files
-	testMatch: [
-		"<rootDir>/test/unit/**/*.ts",
-		"<rootDir>/src/**/*.test.ts",
-		"<rootDir>/test/e2e/**/*.ts",
-	],
+	testMatch: [],
 
 	// An array of regexp pattern strings that are matched against all test paths, matched tests are skipped
 	// testPathIgnorePatterns: [
@@ -215,7 +211,7 @@ module.exports = {
 	// https://github.com/facebook/jest/issues/11956
 	maxWorkers: 1, // Make it use worker (that can be killed and restarted)
 	logHeapUsage: true, // To debug when out-of-memory happens on CI
-	workerIdleMemoryLimit: '8GiB', // Limit the worker to 1GB (GitHub Workflows dies at 2GB)
+	workerIdleMemoryLimit: '1GiB', // Limit the worker to 1GB (GitHub Workflows dies at 2GB)
 
 	maxConcurrency: 32,
 };
