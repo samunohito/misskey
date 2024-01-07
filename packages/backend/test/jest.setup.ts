@@ -1,5 +1,8 @@
-import { initTestDb } from './utils.js';
+import { initTestDb, sendEnvResetRequest } from './utils.js';
 
 beforeAll(async () => {
-	await initTestDb(false);
+	await Promise.all([
+		initTestDb(false),
+		sendEnvResetRequest(),
+	]);
 });

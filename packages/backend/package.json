@@ -24,7 +24,7 @@
 		"jest": "cross-env NODE_ENV=test node --experimental-vm-modules --experimental-import-meta-resolve node_modules/jest/bin/jest.js --forceExit",
 		"jest-and-coverage": "cross-env NODE_ENV=test node --experimental-vm-modules --experimental-import-meta-resolve node_modules/jest/bin/jest.js --coverage --forceExit",
 		"jest-clear": "cross-env NODE_ENV=test node --experimental-vm-modules --experimental-import-meta-resolve node_modules/jest/bin/jest.js --clearCache",
-		"test": "pnpm jest",
+		"test": "pnpm build && pnpm test:build && pnpm jest",
 		"test:build": "swc test-server -d built-test -D --config-file test-server/.swcrc",
 		"test-and-coverage": "pnpm jest-and-coverage",
 		"generate-api-json": "node ./generate_api_json.js"

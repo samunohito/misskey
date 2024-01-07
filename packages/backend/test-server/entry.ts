@@ -1,10 +1,17 @@
 import { Test } from '@nestjs/testing';
 import { portToPid } from 'pid-port';
 import fkill from 'fkill';
+import Fastify from 'fastify';
 import { MainModule } from '@/MainModule.js';
 import { ServerService } from '@/server/ServerService.js';
 import { loadConfig } from '@/config.js';
 
+const config = loadConfig();
+const originEnv = JSON.stringify(process.env);
+
+/**
+ * テスト用のサーバインスタンスを起動する
+ */
 async function launch() {
 	process.env.NODE_ENV = 'test';
 
@@ -22,14 +29,18 @@ async function launch() {
 	const serverService = app.get(ServerService);
 	await serverService.launch();
 
+	await startControllerEndpoints();
+
 	// ジョブキューは必要な時にテストコード側で起動する
 
 	console.log('application initialized.');
 }
 
+/**
+ * 既に重複したポートで待ち受けしているサーバがある場合はkillする
+ */
 async function killTestServer() {
-	// 既に重複したポートがある場合はkill
-	const config = loadConfig();
+	//
 	try {
 		const pid = await portToPid(config.port);
 		if (pid) {
@@ -38,6 +49,33 @@ async function killTestServer() {
 	} catch {
 		// NOP;
 	}
+}
+
+/**
+ * 別プロセスに切り離してしまったが故に出来なくなった環境変数の書き換え等を実現するためのエンドポイントを作る
+ * @param port
+ */
+async function startControllerEndpoints(port = config.port + 1000) {
+	const fastify = Fastify();
+
+	fastify.post<{ Body: { key?: string, value?: string } }>('/env', async (req, res) => {
+		const key = req.body['key'];
+		if (!key) {
+			res.code(400).send({ success: false });
+			return;
+		}
+
+		process.env[key] = req.body['value'];
+
+		res.code(200).send({ success: true });
+	});
+
+	fastify.post<{ Body: { key?: string, value?: string } }>('/env-reset', async (req, res) => {
+		process.env = JSON.parse(originEnv);
+		res.code(200).send({ success: true });
+	});
+
+	await fastify.listen({ port: port, host: 'localhost' });
 }
 
 export default launch;
