@@ -3,7 +3,7 @@
 * https://jestjs.io/docs/en/configuration.html
 */
 
-const base = require('./jest.config.base.cjs')
+const base = require('./jest.config.cjs')
 
 module.exports = {
 	...base,
