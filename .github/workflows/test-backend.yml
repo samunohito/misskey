@@ -53,12 +53,12 @@ jobs:
     - name: Test
       run: pnpm --filter backend test-and-coverage
     - name: Rename
-      run: mv ./packages/backend/coverage/coverage-unit.json ./packages/backend/coverage/coverage-unit.json
+      run: mv ./packages/backend/coverage/coverage-final.json ./packages/backend/coverage/coverage-unit.json
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
         name: coverage-unit
-        path: ./packages/backend/coverage/coverage-final.json
+        path: ./packages/backend/coverage/coverage-unit.json
 
   e2e:
     runs-on: ubuntu-latest
