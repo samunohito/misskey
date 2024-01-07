@@ -54,7 +54,7 @@ module.exports = {
 	// forceCoverageMatch: [],
 
 	// A path to a module which exports an async function that is triggered once before all test suites
-	globalSetup: "<rootDir>/jest.global-setup.js",
+	globalSetup: "<rootDir>/built-test/entry.js",
 
 	// A path to a module which exports an async function that is triggered once after all test suites
 	// globalTeardown: undefined,
@@ -215,7 +215,7 @@ module.exports = {
 	// https://github.com/facebook/jest/issues/11956
 	maxWorkers: 1, // Make it use worker (that can be killed and restarted)
 	logHeapUsage: true, // To debug when out-of-memory happens on CI
-	workerIdleMemoryLimit: '1GiB', // Limit the worker to 1GB (GitHub Workflows dies at 2GB)
+	workerIdleMemoryLimit: '8GiB', // Limit the worker to 1GB (GitHub Workflows dies at 2GB)
 
 	maxConcurrency: 32,
 };

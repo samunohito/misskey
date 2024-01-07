@@ -25,6 +25,7 @@
 		"jest-and-coverage": "cross-env NODE_ENV=test node --experimental-vm-modules --experimental-import-meta-resolve node_modules/jest/bin/jest.js --coverage --forceExit",
 		"jest-clear": "cross-env NODE_ENV=test node --experimental-vm-modules --experimental-import-meta-resolve node_modules/jest/bin/jest.js --clearCache",
 		"test": "pnpm jest",
+		"test:build": "swc test-server -d built-test -D --config-file test-server/.swcrc",
 		"test-and-coverage": "pnpm jest-and-coverage",
 		"generate-api-json": "node ./generate_api_json.js"
 	},
@@ -227,9 +228,11 @@
 		"eslint": "8.56.0",
 		"eslint-plugin-import": "2.29.1",
 		"execa": "8.0.1",
+		"fkill": "^9.0.0",
 		"jest": "29.7.0",
 		"jest-mock": "29.7.0",
 		"nodemon": "3.0.2",
+		"pid-port": "^1.0.0",
 		"simple-oauth2": "5.0.0"
 	}
 }

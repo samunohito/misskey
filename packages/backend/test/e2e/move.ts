@@ -3,16 +3,20 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import { INestApplicationContext } from '@nestjs/common';
+
 process.env.NODE_ENV = 'test';
 
 import * as assert from 'assert';
 import { loadConfig } from '@/config.js';
 import { MiUser, UsersRepository } from '@/models/_.js';
 import { secureRndstr } from '@/misc/secure-rndstr.js';
+import { jobQueue } from '@/boot/common.js';
 import { api, initTestDb, signup, sleep, successfulApiCall, uploadFile } from '../utils.js';
 import type * as misskey from 'misskey-js';
 
 describe('Account Move', () => {
+	let jq: INestApplicationContext;
 	let url: URL;
 
 	let root: any;
@@ -26,6 +30,8 @@ describe('Account Move', () => {
 	let Users: UsersRepository;
 
 	beforeAll(async () => {
+		jq = await jobQueue();
+
 		const config = loadConfig();
 		url = new URL(config.url);
 		const connection = await initTestDb(false);
@@ -38,6 +44,10 @@ describe('Account Move', () => {
 		frank = await signup({ username: 'frank' });
 		Users = connection.getRepository(MiUser);
 	}, 1000 * 60 * 2);
+
+	afterAll(async () => {
+		await jq.close();
+	});
 
 	describe('Create Alias', () => {
 		afterEach(async () => {
