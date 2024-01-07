@@ -103,7 +103,10 @@ jobs:
       - name: Build
         run: pnpm build
       - name: Test
+        id: running-test
         run: pnpm --filter backend test-and-coverage:e2e
+      - name: fail
+        run: cat /tmp/error.txt
       - name: Rename
         run: mv ./packages/backend/coverage/coverage-final.json ./packages/backend/coverage/coverage-e2e.json
       - name: Upload artifacts

@@ -221,6 +221,8 @@ export class ServerService implements OnApplicationShutdown {
 		this.streamingApiServerService.attach(fastify.server);
 
 		fastify.server.on('error', err => {
+			fs.writeFileSync('/tmp/error.txt', JSON.stringify(err));
+
 			switch ((err as any).code) {
 				case 'EACCES':
 					this.logger.error(`You do not have permission to listen on port ${this.config.port}.`);
