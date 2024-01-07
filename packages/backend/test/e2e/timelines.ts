@@ -10,8 +10,7 @@ process.env.NODE_ENV = 'test';
 process.env.FORCE_FOLLOW_REMOTE_USER_FOR_TESTING = 'true';
 
 import * as assert from 'assert';
-import { api, post, randomString, signup, sleep, startServer, uploadUrl } from '../utils.js';
-import type { INestApplicationContext } from '@nestjs/common';
+import { api, post, randomString, signup, sleep, uploadUrl } from '../utils.js';
 
 function genHost() {
 	return randomString() + '.example.com';
@@ -20,16 +19,6 @@ function genHost() {
 function waitForPushToTl() {
 	return sleep(500);
 }
-
-let app: INestApplicationContext;
-
-beforeAll(async () => {
-	app = await startServer();
-}, 1000 * 60 * 2);
-
-afterAll(async () => {
-	await app.close();
-});
 
 describe('Timelines', () => {
 	describe('Home TL', () => {

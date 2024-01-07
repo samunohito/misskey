@@ -11,13 +11,18 @@
 process.env.NODE_ENV = 'test';
 
 import * as assert from 'assert';
-import { AuthorizationCode, ResourceOwnerPassword, type AuthorizationTokenConfig, ClientCredentials, ModuleOptions } from 'simple-oauth2';
+import {
+	AuthorizationCode,
+	type AuthorizationTokenConfig,
+	ClientCredentials,
+	ModuleOptions,
+	ResourceOwnerPassword,
+} from 'simple-oauth2';
 import pkceChallenge from 'pkce-challenge';
 import { JSDOM } from 'jsdom';
-import Fastify, { type FastifyReply, type FastifyInstance } from 'fastify';
-import { api, port, signup, startServer } from '../utils.js';
+import Fastify, { type FastifyInstance, type FastifyReply } from 'fastify';
+import { api, port, signup } from '../utils.js';
 import type * as misskey from 'misskey-js';
-import type { INestApplicationContext } from '@nestjs/common';
 
 const host = `http://127.0.0.1:${port}`;
 
@@ -147,7 +152,6 @@ async function assertDirectError(response: Response, status: number, error: stri
 }
 
 describe('OAuth', () => {
-	let app: INestApplicationContext;
 	let fastify: FastifyInstance;
 
 	let alice: misskey.entities.SignupResponse;
@@ -156,7 +160,6 @@ describe('OAuth', () => {
 	let sender: (reply: FastifyReply) => void;
 
 	beforeAll(async () => {
-		app = await startServer();
 		alice = await signup({ username: 'alice' });
 		bob = await signup({ username: 'bob' });
 
@@ -180,7 +183,6 @@ describe('OAuth', () => {
 
 	afterAll(async () => {
 		await fastify.close();
-		await app.close();
 	});
 
 	test('Full flow', async () => {
