@@ -104,6 +104,7 @@ jobs:
         run: pnpm build
       - name: Test
         id: running-test
+        continue-on-error: true
         run: pnpm --filter backend test-and-coverage:e2e
       - name: fail
         if: ${{ steps.running-test.outcome == 'failure' }}
