@@ -13,10 +13,10 @@ export function convertSchemaToOpenApiSchema(schema: Schema) {
 
 	if (schema.type === 'object' && schema.properties) {
 		const required = Object.entries(schema.properties).filter(([k, v]) => !v.optional).map(([k]) => k);
-		if (required.length > 0) {
-			// 空配列は許可されない
-			res.required = required;
-		}
+		//		if (required.length > 0) {
+		// 空配列は許可されない
+		res.required = required;
+		//		}
 
 		for (const k of Object.keys(schema.properties)) {
 			res.properties[k] = convertSchemaToOpenApiSchema(schema.properties[k]);
