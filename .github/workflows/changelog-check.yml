@@ -37,7 +37,7 @@ jobs:
 
       - name: Setup Checker
         run: npm i
-        working-directory: head/scripts/changelog-checker
+        working-directory: scripts/changelog-checker
       - name: Run Checker
         run: npm run run
-        working-directory: head/scripts/changelog-checker
+        working-directory: scripts/changelog-checker
