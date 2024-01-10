@@ -17,7 +17,7 @@
 ### General
 - Feat: [mCaptcha](https://github.com/mCaptcha/mCaptcha)のサポートを追加
 - Fix: リストライムラインの「リノートを表示」が正しく機能しない問題を修正
-- append test
+- append test1
 
 ### Client
 - Feat: 新しいゲームを追加
@@ -37,6 +37,7 @@
 
 ### General
 - v2023.12.1でDockerを利用してサーバーを起動できない問題を修正
+- append test2
 
 ### Client
 - Enhance: 検索画面においてEnterキー押下で検索できるように
