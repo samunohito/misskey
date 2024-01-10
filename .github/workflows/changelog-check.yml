@@ -11,36 +11,31 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout base
-        uses: actions/checkout@v4.1.1
-        with:
-          ref: ${{ github.base_ref }}
-          fetch-depth: 0
-      - name: Extract CHANGELOG-base.md
-        run: cp CHANGELOG.md CHANGELOG-base.md
-
       - name: Checkout head
         uses: actions/checkout@v4.1.1
-        with:
-          ref: refs/pull/${{ github.event.number }}/merge
-          fetch-depth: 0
-      - name: Extract CHANGELOG-head.md
-        run: cp CHANGELOG.md CHANGELOG-head.md
-
-      - name: diff
-        run: CHANGELOG-base.md CHANGELOG-head.md
-      - name: Move to Checker directory
-        run: mv CHANGELOG-*.md scripts/changelog-checker
-
       - name: Setup Node.js
         uses: actions/setup-node@v4.0.1
         with:
           node-version-file: '.node-version'
-          cache: 'npm'
+
+      - name: Checkout base
+        uses: actions/checkout@v4.1.1
+        with:
+          ref: ${{ github.base_ref }}
+          path: _base
+          fetch-depth: 0
+
+      - name: Copy to Checker directory for CHANGELOG-base.md
+        run: cp _base/CHANGELOG.md scripts/changelog-checker/CHANGELOG-base.md
+      - name: Copy to Checker directory for CHANGELOG-head.md
+        run: cp CHANGELOG.md scripts/changelog-checker/CHANGELOG-head.md
+      - name: diff
+        run: CHANGELOG-base.md CHANGELOG-head.md
+        working-directory: scripts/changelog-checker
 
       - name: Setup Checker
         run: npm i
-        working-directory: scripts/changelog-checker
+        working-directory: head/scripts/changelog-checker
       - name: Run Checker
         run: npm run run
-        working-directory: scripts/changelog-checker
+        working-directory: head/scripts/changelog-checker
