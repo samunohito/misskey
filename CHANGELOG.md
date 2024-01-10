@@ -17,6 +17,7 @@
 ### General
 - Feat: [mCaptcha](https://github.com/mCaptcha/mCaptcha)のサポートを追加
 - Fix: リストライムラインの「リノートを表示」が正しく機能しない問題を修正
+- append test
 
 ### Client
 - Feat: 新しいゲームを追加
