@@ -36,8 +36,8 @@ jobs:
         working-directory: scripts/changelog-checker
 
       - name: Setup Checker
-        run: yarn install
+        run: pnpm install
         working-directory: scripts/changelog-checker
       - name: Run Checker
-        run: yarn run
+        run: pnpm run
         working-directory: scripts/changelog-checker
