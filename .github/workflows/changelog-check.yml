@@ -27,6 +27,8 @@ jobs:
       - name: Extract CHANGELOG-head.md
         run: cp CHANGELOG.md CHANGELOG-head.md
 
+      - name: diff
+        run: CHANGELOG-base.md CHANGELOG-head.md
       - name: Move to Checker directory
         run: mv CHANGELOG-*.md scripts/changelog-checker
 
