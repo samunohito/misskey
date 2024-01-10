@@ -36,8 +36,8 @@ jobs:
         working-directory: scripts/changelog-checker
 
       - name: Setup Checker
-        run: pnpm install
+        run: npm install
         working-directory: scripts/changelog-checker
       - name: Run Checker
-        run: pnpm run
+        run: npm run run
         working-directory: scripts/changelog-checker
