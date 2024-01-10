@@ -15,11 +15,15 @@ jobs:
         uses: actions/checkout@v4.1.1
         with:
           ref: ${{ github.base_ref }}
+          fetch-depth: 0
       - name: Extract CHANGELOG-base.md
         run: cp CHANGELOG.md CHANGELOG-base.md
 
       - name: Checkout head
-        run: git checkout refs/pull/${{ github.event.number }}/merge
+        uses: actions/checkout@v4.1.1
+        with:
+          ref: refs/pull/${{ github.event.number }}/merge
+          fetch-depth: 0
       - name: Extract CHANGELOG-head.md
         run: cp CHANGELOG.md CHANGELOG-head.md
 
