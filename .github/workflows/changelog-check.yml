@@ -19,7 +19,7 @@ jobs:
           node-version-file: '.node-version'
 
       - name: Checkout base
-        run: git clone --depth 1 github.action_repository _base
+        run: mkdir _base && cp -r .git _base/.git && cd _base && git checkout ${{ github.base_ref }}
 
       - name: Copy to Checker directory for CHANGELOG-base.md
         run: cp _base/CHANGELOG.md scripts/changelog-checker/CHANGELOG-base.md
