@@ -34,6 +34,7 @@ jobs:
         uses: actions/setup-node@v4.0.1
         with:
           node-version-file: '.node-version'
+          cache: 'npm'
 
       - name: Setup Checker
         run: npm i
