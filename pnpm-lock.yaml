@@ -359,6 +359,9 @@ importers:
       redis-lock:
         specifier: 0.1.4
         version: 0.1.4
+      redlock:
+        specifier: 5.0.0-beta.2
+        version: 5.0.0-beta.2
       reflect-metadata:
         specifier: 0.2.1
         version: 0.2.1
@@ -6678,7 +6681,7 @@ packages:
       ts-dedent: 2.2.0
       type-fest: 2.19.0
       vue: 3.4.21(typescript@5.3.3)
-      vue-component-type-helpers: 2.0.7
+      vue-component-type-helpers: 2.0.11
     transitivePeerDependencies:
       - encoding
       - supports-color
@@ -17006,6 +17009,13 @@ packages:
       redis-errors: 1.2.0
     dev: false
 
+  /redlock@5.0.0-beta.2:
+    resolution: {integrity: sha512-2RDWXg5jgRptDrB1w9O/JgSZC0j7y4SlaXnor93H/UJm/QyDiFgBKNtrh0TI6oCXqYSaSoXxFh6Sd3VtYfhRXw==}
+    engines: {node: '>=12'}
+    dependencies:
+      node-abort-controller: 3.1.1
+    dev: false
+
   /reflect-metadata@0.2.1:
     resolution: {integrity: sha512-i5lLI6iw9AU3Uu4szRNPPEkomnkjRTaVt9hy/bn5g/oSzekBSMeLZblcjP74AW0vBabqERLLIrz+gR8QYR54Tw==}
 
@@ -19348,8 +19358,8 @@ packages:
     resolution: {integrity: sha512-6bnLkn8O0JJyiFSIF0EfCogzeqNXpnjJ0vW/SZzNHfe6sPx30lTtTXlE5TFs2qhJlAtDFybStVNpL73cPe3OMQ==}
     dev: true
 
-  /vue-component-type-helpers@2.0.7:
-    resolution: {integrity: sha512-7e12Evdll7JcTIocojgnCgwocX4WzIYStGClBQ+QuWPinZo/vQolv2EMq4a3lg16TKfwWafLimG77bxb56UauA==}
+  /vue-component-type-helpers@2.0.11:
+    resolution: {integrity: sha512-8aluKz5oVC8PvVQAYgyIefOlqzKVmAOTCx2imbrFBVLbF7mnJvyMsE2A7rqX/4f4uT6ee9o8u3GcoRpUWc0xsw==}
     dev: true
 
   /vue-demi@0.14.7(vue@3.4.21):

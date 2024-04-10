@@ -159,6 +159,7 @@
 		"ratelimiter": "3.4.1",
 		"re2": "1.20.9",
 		"redis-lock": "0.1.4",
+		"redlock": "5.0.0-beta.2",
 		"reflect-metadata": "0.2.1",
 		"rename": "1.0.4",
 		"rss-parser": "3.13.0",

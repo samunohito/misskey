@@ -6,6 +6,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { summaly } from '@misskey-dev/summaly';
 import { SummalyResult } from '@misskey-dev/summaly/built/summary.js';
+import Redlock, { RedlockAbortSignal } from 'redlock';
+import * as Redis from 'ioredis';
 import { DI } from '@/di-symbols.js';
 import type { Config } from '@/config.js';
 import { MetaService } from '@/core/MetaService.js';
@@ -16,21 +18,38 @@ import { LoggerService } from '@/core/LoggerService.js';
 import { bindThis } from '@/decorators.js';
 import { ApiError } from '@/server/api/error.js';
 import { MiMeta } from '@/models/Meta.js';
-import type { FastifyRequest, FastifyReply } from 'fastify';
+import type { FastifyReply, FastifyRequest } from 'fastify';
+
+const URL_PREVIEW_REDIS_RETRY_COUNT = 20;
+const URL_PREVIEW_REDIS_RETRY_DELAY = 200; // 200 milliseconds
+const URL_PREVIEW_REDIS_RETRY_JITTER = 200; // 200 milliseconds
+const URL_PREVIEW_REDIS_AUTOMATIC_EXTENSION_THRESHOLD = 500; // 500 milliseconds
+const URL_PREVIEW_REDIS_LOCK_DURATION = 10000; // 10 seconds
+const URL_PREVIEW_REDIS_CACHE_EXPIRATION_SECONDS = 60 * 60; // 1 hour
 
 @Injectable()
 export class UrlPreviewService {
 	private logger: Logger;
+	private redlock: Redlock;
 
 	constructor(
 		@Inject(DI.config)
 		private config: Config,
-
+		@Inject(DI.redis)
+		private redisClient: Redis.Redis,
 		private metaService: MetaService,
 		private httpRequestService: HttpRequestService,
 		private loggerService: LoggerService,
 	) {
 		this.logger = this.loggerService.getLogger('url-preview');
+
+		// このあたりのパラメータは調整の余地があるかもしれない
+		this.redlock = new Redlock([this.redisClient], {
+			retryCount: URL_PREVIEW_REDIS_RETRY_COUNT,
+			retryDelay: URL_PREVIEW_REDIS_RETRY_DELAY,
+			retryJitter: URL_PREVIEW_REDIS_RETRY_JITTER,
+			automaticExtensionThreshold: URL_PREVIEW_REDIS_AUTOMATIC_EXTENSION_THRESHOLD,
+		});
 	}
 
 	@bindThis
@@ -63,7 +82,6 @@ export class UrlPreviewService {
 		}
 
 		const meta = await this.metaService.fetch();
-
 		if (!meta.urlPreviewEnabled) {
 			reply.code(403);
 			return {
@@ -75,16 +93,8 @@ export class UrlPreviewService {
 			};
 		}
 
-		this.logger.info(meta.urlPreviewSummaryProxyUrl
-			? `(Proxy) Getting preview of ${url}@${lang} ...`
-			: `Getting preview of ${url}@${lang} ...`);
-
 		try {
-			const summary = meta.urlPreviewSummaryProxyUrl
-				? await this.fetchSummaryFromProxy(url, meta, lang)
-				: await this.fetchSummary(url, meta, lang);
-
-			this.logger.succ(`Got preview of ${url}: ${summary.title}`);
+			const summary: SummalyResult = await this.summarySynchronize(lang ?? 'ja-JP', url, meta);
 
 			if (!(summary.url.startsWith('http://') || summary.url.startsWith('https://'))) {
 				throw new Error('unsupported schema included');
@@ -114,6 +124,47 @@ export class UrlPreviewService {
 				}),
 			};
 		}
+	}
+
+	private async summarySynchronize(lang: string | undefined, url: string, meta: MiMeta): Promise<SummalyResult> {
+		const resourceKey = `url-preview:${url}`;
+		return this.redlock.using(
+			[`${resourceKey}:lock`],
+			URL_PREVIEW_REDIS_LOCK_DURATION,
+			async (signal: RedlockAbortSignal) => {
+				if (signal.aborted) {
+					throw signal.error;
+				}
+
+				const cache = await this.redisClient.get(resourceKey);
+				if (cache) {
+					try {
+						const cacheResult = JSON.parse(cache) as SummalyResult;
+						this.logger.succ(`retrieved from cache [title: ${cacheResult.title}, url: ${url}]`);
+
+						return cacheResult;
+					} catch (error) {
+						// パースに失敗した場合はキャッシュを削除して初回取得と同じロジックで処理する
+						this.logger.warn(`Failed to parse cache [error: ${error}, url: ${url}]`);
+						await this.redisClient.del([resourceKey]);
+					}
+				}
+
+				this.logger.info(meta.urlPreviewSummaryProxyUrl
+					? `(Proxy) Getting preview of ${url}@${lang} ...`
+					: `Getting preview of ${url}@${lang} ...`);
+
+				const summary = meta.urlPreviewSummaryProxyUrl
+					? await this.fetchSummaryFromProxy(url, meta, lang)
+					: await this.fetchSummary(url, meta, lang);
+
+				this.logger.succ(`Got preview of ${url}: ${summary.title}`);
+
+				await this.redisClient.setex(resourceKey, URL_PREVIEW_REDIS_CACHE_EXPIRATION_SECONDS, JSON.stringify(summary));
+
+				return summary;
+			},
+		);
 	}
 
 	private fetchSummary(url: string, meta: MiMeta, lang?: string): Promise<SummalyResult> {
