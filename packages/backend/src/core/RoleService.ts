@@ -10,8 +10,13 @@ import { ModuleRef } from '@nestjs/core';
 import type {
 	MiRole,
 	MiRoleAssignment,
+	NoteReactionsRepository,
+	NotesRepository,
+	PollVotesRepository,
 	RoleAssignmentsRepository,
 	RolesRepository,
+	UserProfilesRepository,
+	UserSecurityKeysRepository,
 	UsersRepository,
 } from '@/models/_.js';
 import { MemoryKVCache, MemorySingleCache } from '@/misc/cache.js';
@@ -29,6 +34,9 @@ import { ModerationLogService } from '@/core/ModerationLogService.js';
 import type { Packed } from '@/misc/json-schema.js';
 import { FanoutTimelineService } from '@/core/FanoutTimelineService.js';
 import { NotificationService } from '@/core/NotificationService.js';
+import { DriveFileEntityService } from '@/core/entities/DriveFileEntityService.js';
+import { LoggerService } from '@/core/LoggerService.js';
+import Logger from '@/logger.js';
 import type { OnApplicationShutdown, OnModuleInit } from '@nestjs/common';
 
 export type RolePolicies = {
@@ -89,18 +97,18 @@ export const DEFAULT_POLICIES: RolePolicies = {
 
 @Injectable()
 export class RoleService implements OnApplicationShutdown, OnModuleInit {
+	private logger: Logger;
 	private rolesCache: MemorySingleCache<MiRole[]>;
 	private roleAssignmentByUserIdCache: MemoryKVCache<MiRoleAssignment[]>;
 	private notificationService: NotificationService;
 
-	public static AlreadyAssignedError = class extends Error {};
-	public static NotAssignedError = class extends Error {};
+	public static AlreadyAssignedError = class extends Error {
+	};
+	public static NotAssignedError = class extends Error {
+	};
 
 	constructor(
 		private moduleRef: ModuleRef,
-
-		@Inject(DI.redis)
-		private redisClient: Redis.Redis,
 
 		@Inject(DI.redisForTimelines)
 		private redisForTimelines: Redis.Redis,
@@ -117,16 +125,32 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 		@Inject(DI.roleAssignmentsRepository)
 		private roleAssignmentsRepository: RoleAssignmentsRepository,
 
+		@Inject(DI.userProfilesRepository)
+		private userProfilesRepository: UserProfilesRepository,
+
+		@Inject(DI.userSecurityKeysRepository)
+		private userSecurityKeysRepository: UserSecurityKeysRepository,
+
+		@Inject(DI.notesRepository)
+		private notesRepository: NotesRepository,
+
+		@Inject(DI.noteReactionsRepository)
+		private noteReactionRepository: NoteReactionsRepository,
+
+		@Inject(DI.pollVotesRepository)
+		private pollVotesRepository: PollVotesRepository,
+
+		private loggerService: LoggerService,
 		private metaService: MetaService,
 		private cacheService: CacheService,
 		private userEntityService: UserEntityService,
+		private driveFileEntityService: DriveFileEntityService,
 		private globalEventService: GlobalEventService,
 		private idService: IdService,
 		private moderationLogService: ModerationLogService,
 		private fanoutTimelineService: FanoutTimelineService,
 	) {
-		//this.onMessage = this.onMessage.bind(this);
-
+		this.logger = this.loggerService.getLogger('role');
 		this.rolesCache = new MemorySingleCache<MiRole[]>(1000 * 60 * 60 * 1);
 		this.roleAssignmentByUserIdCache = new MemoryKVCache<MiRoleAssignment[]>(1000 * 60 * 60 * 1);
 
@@ -202,64 +226,319 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 	}
 
 	@bindThis
-	private evalCond(user: MiUser, roles: MiRole[], value: RoleCondFormulaValue): boolean {
+	private async evalCond(user: MiUser, manualAssignedRoles: MiRole[], value: RoleCondFormulaValue): Promise<boolean> {
+		const fetchUserProfile = async () => {
+			return await this.cacheService.userProfileCache.get(user.id)
+				?? await this.userProfilesRepository.findOneBy({ userId: user.id });
+		};
+
+		const fetchReactionsCount = () => {
+			return this.noteReactionRepository.createQueryBuilder('reaction')
+				.where('reaction.userId = :userId', { userId: user.id })
+				.getCount();
+		};
+
+		const fetchReactionsReceivedCount = () => {
+			return this.noteReactionRepository.createQueryBuilder('reaction')
+				.innerJoin('reaction.note', 'note')
+				.where('note.userId = :userId', { userId: user.id })
+				.getCount();
+		};
+
+		const fetchRenotesCount = () => {
+			return this.notesRepository.createQueryBuilder('note')
+				.where('note.userId = :userId', { userId: user.id })
+				.andWhere('note.renoteId IS NOT NULL')
+				.getCount();
+		};
+
+		const fetchRenotesReceivedCount = () => {
+			return this.notesRepository.createQueryBuilder('note')
+				.where('note.renoteUserId = :userId', { userId: user.id })
+				.getCount();
+		};
+
+		const fetchRepliesCount = () => {
+			return this.notesRepository.createQueryBuilder('note')
+				.where('note.userId = :userId', { userId: user.id })
+				.andWhere('note.replyId IS NOT NULL')
+				.getCount();
+		};
+
+		const fetchRepliesReceivedCount = () => {
+			return this.notesRepository.createQueryBuilder('note')
+				.where('note.replyUserId = :userId', { userId: user.id })
+				.getCount();
+		};
+
+		const fetchVotesCount = () => {
+			return this.pollVotesRepository.createQueryBuilder('vote')
+				.where('vote.userId = :userId', { userId: user.id })
+				.getCount();
+		};
+
+		const fetchVotesReceivedCount = () => {
+			return this.pollVotesRepository.createQueryBuilder('vote')
+				.innerJoin('vote.poll', 'poll')
+				.where('poll.userId = :userId', { userId: user.id })
+				.getCount();
+		};
+
 		try {
 			switch (value.type) {
+				// ～かつ～
 				case 'and': {
-					return value.values.every(v => this.evalCond(user, roles, v));
+					for (const v of value.values) {
+						if (!await this.evalCond(user, manualAssignedRoles, v)) {
+							return false;
+						}
+					}
+
+					return true;
 				}
+				// ～または～
 				case 'or': {
-					return value.values.some(v => this.evalCond(user, roles, v));
+					for (const v of value.values) {
+						if (await this.evalCond(user, manualAssignedRoles, v)) {
+							return true;
+						}
+					}
+
+					return false;
 				}
+				// ～ではない
 				case 'not': {
-					return !this.evalCond(user, roles, value.value);
+					return !(await this.evalCond(user, manualAssignedRoles, value.value));
 				}
+				// マニュアルロールがアサインされている
 				case 'roleAssignedTo': {
-					return roles.some(r => r.id === value.roleId);
+					return manualAssignedRoles.some(r => r.id === value.roleId);
 				}
+				// ローカルユーザのみ
 				case 'isLocal': {
 					return this.userEntityService.isLocalUser(user);
 				}
+				// リモートユーザのみ
 				case 'isRemote': {
 					return this.userEntityService.isRemoteUser(user);
 				}
+				// ドライブの使用容量が指定値以下
+				case 'driveUsageLessThanOrEq': {
+					return (await this.driveFileEntityService.calcDriveUsageOf(user.id)) <= value.usageSize;
+				}
+				// ドライブの使用容量が指定値以上
+				case 'driveUsageMoreThanOrEq': {
+					return (await this.driveFileEntityService.calcDriveUsageOf(user.id)) >= value.usageSize;
+				}
+				// botユーザである
+				case 'isBot': {
+					return user.isBot;
+				}
+				// サスペンド済みユーザである
+				case 'isSuspended': {
+					return user.isSuspended;
+				}
+				// 猫である
+				case 'isCat': {
+					return user.isCat;
+				}
+				// セキュリティキー設定済み
+				case 'hasSecurityKey': {
+					const profile = await fetchUserProfile();
+					if (!profile) {
+						return false;
+					}
+
+					// UserEntityServiceのsecurityKeys取得時と同じ処理を行う
+					return profile.twoFactorEnabled
+						? this.userSecurityKeysRepository.countBy({ userId: user.id }).then(result => result >= 1)
+						: false;
+				}
+				// 二段階認証設定済み
+				case 'hasTwoFactorAuth': {
+					const profile = await fetchUserProfile();
+					return profile ? profile.twoFactorEnabled : false;
+				}
+				// メールアドレス確認済み
+				case 'hasEmailVerified': {
+					const profile = await fetchUserProfile();
+					return profile ? profile.emailVerified : false;
+				}
+				// パスワードレスログイン設定済み
+				case 'hasPasswordLessLogin': {
+					const profile = await fetchUserProfile();
+					return profile ? profile.usePasswordLessLogin : false;
+				}
+				// 実行時点の日付が誕生日である
+				case 'birthday': {
+					const profile = await fetchUserProfile();
+					if (!profile || !profile.birthday) {
+						return false;
+					}
+
+					const now = new Date();
+					const birthday = new Date(profile.birthday);
+					return now.getMonth() === birthday.getMonth() && now.getDate() === birthday.getDate();
+				}
+				// ユーザそのものが指定日時より前に作成された
 				case 'createdLessThan': {
 					return this.idService.parse(user.id).date.getTime() > (Date.now() - (value.sec * 1000));
 				}
+				// ユーザそのものが指定日時より後に作成された
 				case 'createdMoreThan': {
 					return this.idService.parse(user.id).date.getTime() < (Date.now() - (value.sec * 1000));
 				}
+				// ユーザ情報が指定日時より前に更新された
+				case 'userInfoUpdatedLessThan': {
+					if (!user.updatedAt) {
+						return false;
+					}
+
+					return user.updatedAt.getTime() > (Date.now() - (value.sec * 1000));
+				}
+				// ユーザ情報が指定日時より後に更新された
+				case 'userInfoUpdatedMoreThan': {
+					if (!user.updatedAt) {
+						return false;
+					}
+
+					return user.updatedAt.getTime() < (Date.now() - (value.sec * 1000));
+				}
+				// ログイン日数が指定値以下
+				case 'loginDaysLessThanOrEq': {
+					const profile = await fetchUserProfile();
+					if (!profile) {
+						return false;
+					}
+
+					return profile.loggedInDates.length >= value.day;
+				}
+				// ログイン日数が指定値以上
+				case 'loginDaysMoreThanOrEq': {
+					const profile = await fetchUserProfile();
+					if (!profile) {
+						return false;
+					}
+
+					return profile.loggedInDates.length <= value.day;
+				}
+				// フォロワー数が指定値以下
 				case 'followersLessThanOrEq': {
-					return user.followersCount <= value.value;
+					return user.followersCount <= value.count;
 				}
+				// フォロワー数が指定値以上
 				case 'followersMoreThanOrEq': {
-					return user.followersCount >= value.value;
+					return user.followersCount >= value.count;
 				}
+				// フォロー数が指定値以下
 				case 'followingLessThanOrEq': {
-					return user.followingCount <= value.value;
+					return user.followingCount <= value.count;
 				}
+				// フォロー数が指定値以上
 				case 'followingMoreThanOrEq': {
-					return user.followingCount >= value.value;
+					return user.followingCount >= value.count;
 				}
+				// リアクション数が指定値以下
+				case 'reactionsLessThanOrEq': {
+					const count = await fetchReactionsCount();
+					return count <= value.count;
+				}
+				// リアクション数が指定値以上
+				case 'reactionsMoreThanOrEq': {
+					const count = await fetchReactionsCount();
+					return count >= value.count;
+				}
+				// リアクション受信数が指定値以下
+				case 'reactionsReceivedLessThanOrEq': {
+					const count = await fetchReactionsReceivedCount();
+					return count <= value.count;
+				}
+				// リアクション受信数が指定値以上
+				case 'reactionsReceivedMoreThanOrEq': {
+					const count = await fetchReactionsReceivedCount();
+					return count >= value.count;
+				}
+				// リノート数が指定値以下
+				case 'renotesLessThanOrEq': {
+					const count = await fetchRenotesCount();
+					return count <= value.count;
+				}
+				// リノート数が指定値以上
+				case 'renotesMoreThanOrEq': {
+					const count = await fetchRenotesCount();
+					return count >= value.count;
+				}
+				// リノートされた数が指定値以下
+				case 'renotesReceivedLessThanOrEq': {
+					const count = await fetchRenotesReceivedCount();
+					return count <= value.count;
+				}
+				// リノートされた数が指定値以上
+				case 'renotesReceivedMoreThanOrEq': {
+					const count = await fetchRenotesReceivedCount();
+					return count >= value.count;
+				}
+				// 返信数が指定値以下
+				case 'repliesLessThanOrEq': {
+					const count = await fetchRepliesCount();
+					return count <= value.count;
+				}
+				// 返信数が指定値以上
+				case 'repliesMoreThanOrEq': {
+					const count = await fetchRepliesCount();
+					return count >= value.count;
+				}
+				// 返信受信数が指定値以下
+				case 'repliesReceivedLessThanOrEq': {
+					const count = await fetchRepliesReceivedCount();
+					return count <= value.count;
+				}
+				// 返信受信数が指定値以上
+				case 'repliesReceivedMoreThanOrEq': {
+					const count = await fetchRepliesReceivedCount();
+					return count >= value.count;
+				}
+				// ノート数が指定値以下
 				case 'notesLessThanOrEq': {
-					return user.notesCount <= value.value;
+					return user.notesCount <= value.count;
 				}
+				// ノート数が指定値以上
 				case 'notesMoreThanOrEq': {
-					return user.notesCount >= value.value;
+					return user.notesCount >= value.count;
 				}
-				default:
+				// 投票数が指定値以下
+				case 'votesLessThanOrEq': {
+					const count = await fetchVotesCount();
+					return count <= value.count;
+				}
+				// 投票数が指定値以上
+				case 'votesMoreThanOrEq': {
+					const count = await fetchVotesCount();
+					return count >= value.count;
+				}
+				// 投票受信数が指定値以下
+				case 'votesReceivedLessThanOrEq': {
+					const count = await fetchVotesReceivedCount();
+					return count <= value.count;
+				}
+				// 投票受信数が指定値以上
+				case 'votesReceivedMoreThanOrEq': {
+					const count = await fetchVotesReceivedCount();
+					return count >= value.count;
+				}
+				default: {
 					return false;
+				}
 			}
 		} catch (err) {
-			// TODO: log error
+			this.logger.error(err as Error);
 			return false;
 		}
 	}
 
 	@bindThis
 	public async getRoles() {
-		const roles = await this.rolesCache.fetch(() => this.rolesRepository.findBy({}));
-		return roles;
+		return this.rolesCache.fetch(() => this.rolesRepository.findBy({}));
 	}
 
 	@bindThis
@@ -275,10 +554,28 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 	public async getUserRoles(userId: MiUser['id']) {
 		const roles = await this.rolesCache.fetch(() => this.rolesRepository.findBy({}));
 		const assigns = await this.getUserAssigns(userId);
-		const assignedRoles = roles.filter(r => assigns.map(x => x.roleId).includes(r.id));
-		const user = roles.some(r => r.target === 'conditional') ? await this.cacheService.findUserById(userId) : null;
-		const matchedCondRoles = roles.filter(r => r.target === 'conditional' && this.evalCond(user!, assignedRoles, r.condFormula));
-		return [...assignedRoles, ...matchedCondRoles];
+		const manualAssignedRoles = roles.filter(r => assigns.map(x => x.roleId).includes(r.id));
+
+		const conditionalRoles = roles.filter(r => r.target === 'conditional');
+		if (conditionalRoles.length > 0) {
+			const user = await this.cacheService.findUserById(userId);
+			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+			if (!user) {
+				// 型の上では必ず存在することになっているが、別契機で物理削除されているケースも考えられるため
+				return manualAssignedRoles;
+			}
+
+			const matchedConditionalRoles = Array.of<MiRole>();
+			for (const r of conditionalRoles) {
+				if (await this.evalCond(user, manualAssignedRoles, r.condFormula)) {
+					matchedConditionalRoles.push(r);
+				}
+			}
+
+			return [...manualAssignedRoles, ...matchedConditionalRoles];
+		} else {
+			return manualAssignedRoles;
+		}
 	}
 
 	/**
@@ -295,8 +592,20 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 		const assignedBadgeRoles = assignedRoles.filter(r => r.asBadge);
 		const badgeCondRoles = roles.filter(r => r.asBadge && (r.target === 'conditional'));
 		if (badgeCondRoles.length > 0) {
-			const user = roles.some(r => r.target === 'conditional') ? await this.cacheService.findUserById(userId) : null;
-			const matchedBadgeCondRoles = badgeCondRoles.filter(r => this.evalCond(user!, assignedRoles, r.condFormula));
+			const user = await this.cacheService.findUserById(userId);
+			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+			if (!user) {
+				// 型の上では必ず存在することになっているが、別契機で物理削除されているケースも考えられるため
+				return assignedBadgeRoles;
+			}
+
+			const matchedBadgeCondRoles = Array.of<MiRole>();
+			for (const r of badgeCondRoles) {
+				if (await this.evalCond(user, assignedBadgeRoles, r.condFormula)) {
+					matchedBadgeCondRoles.push(r);
+				}
+			}
+
 			return [...assignedBadgeRoles, ...matchedBadgeCondRoles];
 		} else {
 			return assignedBadgeRoles;
@@ -368,7 +677,7 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 	}
 
 	@bindThis
-	public async isExplorable(role: { id: MiRole['id']} | null): Promise<boolean> {
+	public async isExplorable(role: { id: MiRole['id'] } | null): Promise<boolean> {
 		if (role == null) return false;
 		const check = await this.rolesRepository.findOneBy({ id: role.id });
 		if (check == null) return false;
