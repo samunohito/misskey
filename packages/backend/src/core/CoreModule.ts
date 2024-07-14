@@ -13,6 +13,7 @@ import {
 import { AbuseReportNotificationService } from '@/core/AbuseReportNotificationService.js';
 import { SystemWebhookService } from '@/core/SystemWebhookService.js';
 import { UserSearchService } from '@/core/UserSearchService.js';
+import { DriveFolderService } from '@/core/DriveFolderService.js';
 import { AccountMoveService } from './AccountMoveService.js';
 import { AccountUpdateService } from './AccountUpdateService.js';
 import { AiService } from './AiService.js';
@@ -168,6 +169,7 @@ const $CustomEmojiService: Provider = { provide: 'CustomEmojiService', useExisti
 const $DeleteAccountService: Provider = { provide: 'DeleteAccountService', useExisting: DeleteAccountService };
 const $DownloadService: Provider = { provide: 'DownloadService', useExisting: DownloadService };
 const $DriveService: Provider = { provide: 'DriveService', useExisting: DriveService };
+const $DriveFolderService: Provider = { provide: 'DriveFolderService', useExisting: DriveFolderService };
 const $EmailService: Provider = { provide: 'EmailService', useExisting: EmailService };
 const $FederatedInstanceService: Provider = { provide: 'FederatedInstanceService', useExisting: FederatedInstanceService };
 const $FetchInstanceMetadataService: Provider = { provide: 'FetchInstanceMetadataService', useExisting: FetchInstanceMetadataService };
@@ -315,6 +317,7 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		DeleteAccountService,
 		DownloadService,
 		DriveService,
+		DriveFolderService,
 		EmailService,
 		FederatedInstanceService,
 		FetchInstanceMetadataService,
@@ -458,6 +461,7 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		$DeleteAccountService,
 		$DownloadService,
 		$DriveService,
+		$DriveFolderService,
 		$EmailService,
 		$FederatedInstanceService,
 		$FetchInstanceMetadataService,
@@ -602,6 +606,7 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		DeleteAccountService,
 		DownloadService,
 		DriveService,
+		DriveFolderService,
 		EmailService,
 		FederatedInstanceService,
 		FetchInstanceMetadataService,
@@ -744,6 +749,7 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		$DeleteAccountService,
 		$DownloadService,
 		$DriveService,
+		$DriveFolderService,
 		$EmailService,
 		$FederatedInstanceService,
 		$FetchInstanceMetadataService,
