@@ -13797,7 +13797,7 @@ export type operations = {
           folderId?: string | null;
           type?: string | null;
           /** @enum {string|null} */
-          sort?: '+createdAt' | '-createdAt' | '+name' | '-name' | '+size' | '-size' | null;
+          sort?: '+createdAt' | '-createdAt' | '+name' | '-name' | '+userId' | '-userId' | '+userHost' | '-userHost' | '+folderId' | '-folderId' | '+size' | '-size';
         };
       };
     };
