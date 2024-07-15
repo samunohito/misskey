@@ -4,7 +4,7 @@
  */
 
 import { Inject, Injectable } from '@nestjs/common';
-import { Brackets } from 'typeorm';
+import { Brackets, IsNull } from 'typeorm';
 import { DI } from '@/di-symbols.js';
 import { type DriveFilesRepository, type DriveFoldersRepository, MiDriveFolder, MiUser } from '@/models/_.js';
 import { bindThis } from '@/decorators.js';
@@ -37,15 +37,15 @@ export class DriveFolderService {
 
 	@bindThis
 	public get(params: { id: MiDriveFolder['id'], userId: MiUser['id'] | null }): Promise<MiDriveFolder | null> {
-		return this.driveFoldersRepository.findOneBy({ id: params.id, userId: params.userId });
+		return this.driveFoldersRepository.findOneBy({ id: params.id, userId: params.userId ? params.userId : IsNull() });
 	}
 
 	/**
 	 * ドライブフォルダを検索する.
-	 * いずれの検索条件も指定されなかった場合は, 登録されている全てのファイルを取得するので注意.
-	 *
 	 * 1つの検索項目に複数の値が指定された場合は、それらの値をORで結合する.
 	 * 複数の検索項目に条件が指定された場合は、それらの条件をANDで結合する.
+	 *
+	 * 検索APIから呼ぶことを想定しているため、別Serviceからの呼び出しなどで使う場合はページング処理の負荷を加味する事(必要なら該当処理を省いたものを作成する等).
 	 *
 	 * @param params
 	 * @param {string | undefined} params.sinceId 検索開始ID
@@ -53,11 +53,12 @@ export class DriveFolderService {
 	 * @param {(MiUser['id'] | null)[] | undefined} params.userIds 検索対象のユーザID
 	 * @param {MiDriveFolder['id'][] | undefined} params.parentIds 該当のフォルダを親として持つフォルダを検索する
 	 * @param opts
-	 * @param {number | undefined} opts.limit 取得する最大件数. 省略時は無制限
+	 * @param {number | undefined} opts.limit 取得する最大件数. 省略時は10
+	 * @param {number | undefined} opts.page ページ番号. 省略時は1
 	 * @param {boolean | undefined} opts.idOnly IDのみ取得するかどうか. 省略時はfalse
 	 */
 	@bindThis
-	public search(
+	public async search(
 		params: {
 			sinceId?: MiDriveFolder['id'],
 			untilId?: MiDriveFolder['id'],
@@ -67,9 +68,10 @@ export class DriveFolderService {
 		},
 		opts?: {
 			limit?: number,
+			page?: number,
 			idOnly?: boolean,
 		},
-	): Promise<MiDriveFolder[]> {
+	) {
 		const query = this.queryService.makePaginationQuery(
 			this.driveFoldersRepository.createQueryBuilder('folder'), params.sinceId, params.untilId,
 		);
@@ -101,11 +103,20 @@ export class DriveFolderService {
 			query.select('folder.id');
 		}
 
-		if (opts?.limit) {
-			query.limit(opts.limit);
+		const limit = opts?.limit ?? 10;
+		if (opts?.page) {
+			query.skip(limit * (opts.page - 1));
 		}
 
-		return query.getMany();
+		query.take(limit);
+
+		const [items, count] = await query.getManyAndCount();
+		return {
+			items,
+			count,
+			allCount: count,
+			allPages: Math.ceil(count / (opts?.limit ?? count)),
+		};
 	}
 
 	@bindThis

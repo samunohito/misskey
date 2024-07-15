@@ -58,7 +58,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					limit: ps.limit,
 				},
 			);
-			return await Promise.all(folders.map(folder => this.driveFolderEntityService.pack(folder)));
+			return await Promise.all(folders.items.map(folder => this.driveFolderEntityService.pack(folder)));
 		});
 	}
 }

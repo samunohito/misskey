@@ -158,10 +158,10 @@ export class DriveService {
 
 	/**
 	 * ドライブファイルとして登録されているファイルを検索する.
-	 * いずれの検索条件も指定されなかった場合は, 登録されている全てのファイルを取得するので注意.
-	 *
 	 * 1つの検索項目に複数の値が指定された場合は、それらの値をORで結合する.
 	 * 複数の検索項目に条件が指定された場合は、それらの条件をANDで結合する.
+	 *
+	 * 検索APIから呼ぶことを想定しているため、別Serviceからの呼び出しなどで使う場合はページング処理の負荷を加味する事(必要なら該当処理を省いたものを作成する等).
 	 *
 	 * @param params
 	 * @param {string | undefined} params.sinceId 検索開始ID
@@ -171,12 +171,13 @@ export class DriveService {
 	 * @param {(MiDriveFile['userHost'] | null)[] | undefined} params.userHosts 検索対象のユーザホスト
 	 * @param {MiDriveFile['type'][] | undefined} params.fileTypes 検索対象のファイルタイプ
 	 * @param opts
-	 * @param {number | undefined} opts.limit 取得する最大件数. 省略時は無制限
+	 * @param {number | undefined} opts.limit 取得する最大件数. 省略時は10
+	 * @param {number | undefined} opts.page ページ番号. 省略時は1
 	 * @param {DriveFileSearchSortKey[] | undefined} opts.sortKey ソートキー. 省略時はID降順
 	 * @param {boolean | undefined} opts.idOnly IDのみ取得するかどうか. 省略時はfalse
 	 */
 	@bindThis
-	public search(
+	public async search(
 		params: {
 			sinceId?: MiDriveFile['id'],
 			untilId?: MiDriveFile['id'],
@@ -188,10 +189,11 @@ export class DriveService {
 		},
 		opts?: {
 			limit?: number,
+			page?: number,
 			sortKeys?: DriveFileSearchSortKey[],
 			idOnly?: boolean,
 		},
-	): Promise<MiDriveFile[]> {
+	) {
 		const query: SelectQueryBuilder<MiDriveFile> = this.queryService.makePaginationQuery(
 			this.driveFilesRepository.createQueryBuilder('file'), params.sinceId, params.untilId,
 		);
@@ -290,20 +292,29 @@ export class DriveService {
 			query.addOrderBy('file.id', 'DESC');
 		}
 
-		if (opts?.limit) {
-			query.limit(opts.limit);
-		}
-
 		if (opts?.idOnly) {
 			query.select('file.id');
 		}
 
-		return query.getMany();
+		const limit = opts?.limit ?? 10;
+		if (opts?.page) {
+			query.skip(limit * (opts.page - 1));
+		}
+
+		query.take(limit);
+
+		const [items, count] = await query.getManyAndCount();
+		return {
+			items,
+			count,
+			allCount: count,
+			allPages: Math.ceil(count / (opts?.limit ?? count)),
+		};
 	}
 
 	@bindThis
 	public get(params: { id: MiDriveFile['id'], userId: MiUser['id'] | null }): Promise<MiDriveFile | null> {
-		return this.driveFilesRepository.findOneBy({ id: params.id, userId: params.userId });
+		return this.driveFilesRepository.findOneBy({ id: params.id, userId: params.userId ? params.userId : IsNull() });
 	}
 
 	/***

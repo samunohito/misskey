@@ -50,7 +50,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private driveFileEntityService: DriveFileEntityService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			const files = await this.driveService.search(
+			const result = await this.driveService.search(
 				{
 					sinceId: ps.sinceId,
 					untilId: ps.untilId,
@@ -63,7 +63,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					sortKeys: ps.sort ? [ps.sort] : undefined,
 				},
 			);
-			return await this.driveFileEntityService.packMany(files, { detail: false, self: true });
+			return await this.driveFileEntityService.packMany(result.items, { detail: false, self: true });
 		});
 	}
 }
