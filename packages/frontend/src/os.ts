@@ -23,6 +23,7 @@ import MkPopupMenu from '@/components/MkPopupMenu.vue';
 import MkContextMenu from '@/components/MkContextMenu.vue';
 import { MenuItem } from '@/types/menu.js';
 import copyToClipboard from '@/scripts/copy-to-clipboard.js';
+import { pleaseLogin } from '@/scripts/please-login.js';
 import { showMovedDialog } from '@/scripts/show-moved-dialog.js';
 import { getHTMLElementOrNull } from '@/scripts/get-dom-node-or-null.js';
 import { focusParent } from '@/scripts/focus.js';
@@ -589,6 +590,27 @@ export async function selectDriveFolder(multiple: boolean): Promise<Misskey.enti
 	});
 }
 
+export async function selectRole(params: {
+	initialRoleIds?: string[],
+	title?: string,
+	infoMessage?: string,
+	publicOnly?: boolean,
+}): Promise<
+	{ canceled: true; result: undefined; } |
+	{ canceled: false; result: Misskey.entities.Role[] }
+> {
+	return new Promise((resolve) => {
+		popup(defineAsyncComponent(() => import('@/components/MkRoleSelectDialog.vue')), params, {
+			done: roles => {
+				resolve({ canceled: false, result: roles });
+			},
+			close: () => {
+				resolve({ canceled: true, result: undefined });
+			},
+		}, 'dispose');
+	});
+}
+
 export async function pickEmoji(src: HTMLElement, opts: ComponentProps<typeof MkEmojiPickerDialog>): Promise<string> {
 	return new Promise(resolve => {
 		const { dispose } = popup(MkEmojiPickerDialog, {
@@ -670,6 +692,15 @@ export function contextMenu(items: MenuItem[], ev: MouseEvent): Promise<void> {
 }
 
 export function post(props: Record<string, any> = {}): Promise<void> {
+	pleaseLogin(undefined, (props.initialText || props.initialNote ? {
+		type: 'share',
+		params: {
+			text: props.initialText ?? props.initialNote.text,
+			visibility: props.initialVisibility ?? props.initialNote?.visibility,
+			localOnly: (props.initialLocalOnly || props.initialNote?.localOnly) ? '1' : '0',
+		},
+	} : undefined));
+
 	showMovedDialog();
 	return new Promise(resolve => {
 		// NOTE: MkPostFormDialogをdynamic importするとiOSでテキストエリアに自動フォーカスできない
