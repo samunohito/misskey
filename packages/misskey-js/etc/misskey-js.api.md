@@ -149,6 +149,48 @@ type AdminDriveShowFileRequest = operations['admin___drive___show-file']['reques
 type AdminDriveShowFileResponse = operations['admin___drive___show-file']['responses']['200']['content']['application/json'];
 
 // @public (undocumented)
+type AdminDriveSystemFilesCreateRequest = operations['admin___drive___system___files___create']['requestBody']['content']['multipart/form-data'];
+
+// @public (undocumented)
+type AdminDriveSystemFilesCreateResponse = operations['admin___drive___system___files___create']['responses']['200']['content']['application/json'];
+
+// @public (undocumented)
+type AdminDriveSystemFilesDeleteRequest = operations['admin___drive___system___files___delete']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type AdminDriveSystemFilesSearchRequest = operations['admin___drive___system___files___search']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type AdminDriveSystemFilesSearchResponse = operations['admin___drive___system___files___search']['responses']['200']['content']['application/json'];
+
+// @public (undocumented)
+type AdminDriveSystemFilesUpdateRequest = operations['admin___drive___system___files___update']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type AdminDriveSystemFilesUpdateResponse = operations['admin___drive___system___files___update']['responses']['200']['content']['application/json'];
+
+// @public (undocumented)
+type AdminDriveSystemFoldersCreateRequest = operations['admin___drive___system___folders___create']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type AdminDriveSystemFoldersCreateResponse = operations['admin___drive___system___folders___create']['responses']['200']['content']['application/json'];
+
+// @public (undocumented)
+type AdminDriveSystemFoldersDeleteRequest = operations['admin___drive___system___folders___delete']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type AdminDriveSystemFoldersSearchRequest = operations['admin___drive___system___folders___search']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type AdminDriveSystemFoldersSearchResponse = operations['admin___drive___system___folders___search']['responses']['200']['content']['application/json'];
+
+// @public (undocumented)
+type AdminDriveSystemFoldersUpdateRequest = operations['admin___drive___system___folders___update']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type AdminDriveSystemFoldersUpdateResponse = operations['admin___drive___system___folders___update']['responses']['200']['content']['application/json'];
+
+// @public (undocumented)
 type AdminEmojiAddAliasesBulkRequest = operations['admin___emoji___add-aliases-bulk']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
@@ -1244,6 +1286,20 @@ declare namespace entities {
         AdminDriveFilesResponse,
         AdminDriveShowFileRequest,
         AdminDriveShowFileResponse,
+        AdminDriveSystemFilesCreateRequest,
+        AdminDriveSystemFilesCreateResponse,
+        AdminDriveSystemFilesDeleteRequest,
+        AdminDriveSystemFilesSearchRequest,
+        AdminDriveSystemFilesSearchResponse,
+        AdminDriveSystemFilesUpdateRequest,
+        AdminDriveSystemFilesUpdateResponse,
+        AdminDriveSystemFoldersCreateRequest,
+        AdminDriveSystemFoldersCreateResponse,
+        AdminDriveSystemFoldersDeleteRequest,
+        AdminDriveSystemFoldersSearchRequest,
+        AdminDriveSystemFoldersSearchResponse,
+        AdminDriveSystemFoldersUpdateRequest,
+        AdminDriveSystemFoldersUpdateResponse,
         AdminEmojiAddAliasesBulkRequest,
         AdminEmojiAddRequest,
         AdminEmojiAddResponse,

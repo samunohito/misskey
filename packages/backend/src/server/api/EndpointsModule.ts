@@ -35,6 +35,14 @@ import * as ep___admin_drive_cleanRemoteFiles from './endpoints/admin/drive/clea
 import * as ep___admin_drive_cleanup from './endpoints/admin/drive/cleanup.js';
 import * as ep___admin_drive_files from './endpoints/admin/drive/files.js';
 import * as ep___admin_drive_showFile from './endpoints/admin/drive/show-file.js';
+import * as ep___admin_drive_system_files_create from './endpoints/admin/drive/system/files/create.js';
+import * as ep___admin_drive_system_files_delete from './endpoints/admin/drive/system/files/delete.js';
+import * as ep___admin_drive_system_files_search from './endpoints/admin/drive/system/files/search.js';
+import * as ep___admin_drive_system_files_update from './endpoints/admin/drive/system/files/update.js';
+import * as ep___admin_drive_system_folders_create from './endpoints/admin/drive/system/folders/create.js';
+import * as ep___admin_drive_system_folders_delete from './endpoints/admin/drive/system/folders/delete.js';
+import * as ep___admin_drive_system_folders_search from './endpoints/admin/drive/system/folders/search.js';
+import * as ep___admin_drive_system_folders_update from './endpoints/admin/drive/system/folders/update.js';
 import * as ep___admin_emoji_addAliasesBulk from './endpoints/admin/emoji/add-aliases-bulk.js';
 import * as ep___admin_emoji_add from './endpoints/admin/emoji/add.js';
 import * as ep___admin_emoji_copy from './endpoints/admin/emoji/copy.js';
@@ -419,6 +427,14 @@ const $admin_drive_cleanRemoteFiles: Provider = { provide: 'ep:admin/drive/clean
 const $admin_drive_cleanup: Provider = { provide: 'ep:admin/drive/cleanup', useClass: ep___admin_drive_cleanup.default };
 const $admin_drive_files: Provider = { provide: 'ep:admin/drive/files', useClass: ep___admin_drive_files.default };
 const $admin_drive_showFile: Provider = { provide: 'ep:admin/drive/show-file', useClass: ep___admin_drive_showFile.default };
+const $admin_drive_system_files_create: Provider = { provide: 'ep:admin/drive/system/files/create', useClass: ep___admin_drive_system_files_create.default };
+const $admin_drive_system_files_delete: Provider = { provide: 'ep:admin/drive/system/files/delete', useClass: ep___admin_drive_system_files_delete.default };
+const $admin_drive_system_files_search: Provider = { provide: 'ep:admin/drive/system/files/search', useClass: ep___admin_drive_system_files_search.default };
+const $admin_drive_system_files_update: Provider = { provide: 'ep:admin/drive/system/files/update', useClass: ep___admin_drive_system_files_update.default };
+const $admin_drive_system_folders_create: Provider = { provide: 'ep:admin/drive/system/folders/create', useClass: ep___admin_drive_system_folders_create.default };
+const $admin_drive_system_folders_delete: Provider = { provide: 'ep:admin/drive/system/folders/delete', useClass: ep___admin_drive_system_folders_delete.default };
+const $admin_drive_system_folders_search: Provider = { provide: 'ep:admin/drive/system/folders/search', useClass: ep___admin_drive_system_folders_search.default };
+const $admin_drive_system_folders_update: Provider = { provide: 'ep:admin/drive/system/folders/update', useClass: ep___admin_drive_system_folders_update.default };
 const $admin_emoji_addAliasesBulk: Provider = { provide: 'ep:admin/emoji/add-aliases-bulk', useClass: ep___admin_emoji_addAliasesBulk.default };
 const $admin_emoji_add: Provider = { provide: 'ep:admin/emoji/add', useClass: ep___admin_emoji_add.default };
 const $admin_emoji_copy: Provider = { provide: 'ep:admin/emoji/copy', useClass: ep___admin_emoji_copy.default };
@@ -807,6 +823,14 @@ const $reversi_verify: Provider = { provide: 'ep:reversi/verify', useClass: ep__
 		$admin_drive_cleanup,
 		$admin_drive_files,
 		$admin_drive_showFile,
+		$admin_drive_system_files_create,
+		$admin_drive_system_files_delete,
+		$admin_drive_system_files_search,
+		$admin_drive_system_files_update,
+		$admin_drive_system_folders_create,
+		$admin_drive_system_folders_delete,
+		$admin_drive_system_folders_search,
+		$admin_drive_system_folders_update,
 		$admin_emoji_addAliasesBulk,
 		$admin_emoji_add,
 		$admin_emoji_copy,
@@ -1189,6 +1213,14 @@ const $reversi_verify: Provider = { provide: 'ep:reversi/verify', useClass: ep__
 		$admin_drive_cleanup,
 		$admin_drive_files,
 		$admin_drive_showFile,
+		$admin_drive_system_files_create,
+		$admin_drive_system_files_delete,
+		$admin_drive_system_files_search,
+		$admin_drive_system_files_update,
+		$admin_drive_system_folders_create,
+		$admin_drive_system_folders_delete,
+		$admin_drive_system_folders_search,
+		$admin_drive_system_folders_update,
 		$admin_emoji_addAliasesBulk,
 		$admin_emoji_add,
 		$admin_emoji_copy,
