@@ -40,6 +40,7 @@ import * as ep___admin_drive_cleanRemoteFiles from './endpoints/admin/drive/clea
 import * as ep___admin_drive_cleanup from './endpoints/admin/drive/cleanup.js';
 import * as ep___admin_drive_files from './endpoints/admin/drive/files.js';
 import * as ep___admin_drive_showFile from './endpoints/admin/drive/show-file.js';
+import * as ep___admin_drive_system_explore from './endpoints/admin/drive/system/explore.js';
 import * as ep___admin_drive_system_files_create from './endpoints/admin/drive/system/files/create.js';
 import * as ep___admin_drive_system_files_delete from './endpoints/admin/drive/system/files/delete.js';
 import * as ep___admin_drive_system_files_search from './endpoints/admin/drive/system/files/search.js';
@@ -431,6 +432,7 @@ const eps = [
 	['admin/drive/cleanup', ep___admin_drive_cleanup],
 	['admin/drive/files', ep___admin_drive_files],
 	['admin/drive/show-file', ep___admin_drive_showFile],
+	['admin/drive/system/explore', ep___admin_drive_system_explore],
 	['admin/drive/system/files/create', ep___admin_drive_system_files_create],
 	['admin/drive/system/files/delete', ep___admin_drive_system_files_delete],
 	['admin/drive/system/files/search', ep___admin_drive_system_files_search],

@@ -78,6 +78,7 @@ import { MiFlashLike } from '@/models/FlashLike.js';
 import { MiUserMemo } from '@/models/UserMemo.js';
 import { MiBubbleGameRecord } from '@/models/BubbleGameRecord.js';
 import { MiReversiGame } from '@/models/ReversiGame.js';
+import { MiDriveExploreView } from '@/models/DriveExploreView.js';
 
 import { Config } from '@/config.js';
 import MisskeyLogger from '@/logger.js';
@@ -99,7 +100,7 @@ class MyCustomLogger implements Logger {
 
 	@bindThis
 	public logQuery(query: string, parameters?: any[]) {
-		sqlLogger.info(this.highlight(query).substring(0, 100));
+		sqlLogger.info(this.highlight(query));
 	}
 
 	@bindThis
@@ -198,6 +199,7 @@ export const entities = [
 	MiUserMemo,
 	MiBubbleGameRecord,
 	MiReversiGame,
+	MiDriveExploreView,
 	...charts,
 ];
 

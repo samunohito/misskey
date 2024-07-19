@@ -3,7 +3,6 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import type { Provider } from '@nestjs/common';
 import { Module } from '@nestjs/common';
 import { DI } from '@/di-symbols.js';
 import {
@@ -77,8 +76,10 @@ import {
 	MiUserProfile,
 	MiUserPublickey,
 	MiUserSecurityKey,
-	MiWebhook
+	MiWebhook,
+	MiDriveExploreView,
 } from './_.js';
+import type { Provider } from '@nestjs/common';
 import type { DataSource } from 'typeorm';
 
 const $usersRepository: Provider = {
@@ -495,6 +496,12 @@ const $reversiGamesRepository: Provider = {
 	inject: [DI.db],
 };
 
+const $driveExploreView: Provider = {
+	provide: DI.driveExploreViewRepository,
+	useFactory: (db: DataSource) => db.getRepository(MiDriveExploreView),
+	inject: [DI.db],
+};
+
 @Module({
 	imports: [],
 	providers: [
@@ -567,6 +574,7 @@ const $reversiGamesRepository: Provider = {
 		$userMemosRepository,
 		$bubbleGameRecordsRepository,
 		$reversiGamesRepository,
+		$driveExploreView,
 	],
 	exports: [
 		$usersRepository,
@@ -638,6 +646,7 @@ const $reversiGamesRepository: Provider = {
 		$userMemosRepository,
 		$bubbleGameRecordsRepository,
 		$reversiGamesRepository,
+		$driveExploreView,
 	],
 })
 export class RepositoryModule {

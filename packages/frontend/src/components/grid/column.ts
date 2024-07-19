@@ -11,11 +11,17 @@ import { GridRow } from '@/components/grid/row.js';
 import { MenuItem } from '@/types/menu.js';
 import { GridContext } from '@/components/grid/grid-event.js';
 
-export type ColumnType = 'text' | 'number' | 'date' | 'boolean' | 'image' | 'hidden';
+export type ColumnType = 'text' | 'number' | 'date' | 'boolean' | 'image' | 'hidden' | 'custom';
 
 export type CustomValueEditor = (row: GridRow, col: GridColumn, value: CellValue, cellElement: HTMLElement) => Promise<CellValue>;
 export type CellValueTransformer = (row: GridRow, col: GridColumn, value: CellValue) => CellValue;
 export type GridColumnContextMenuFactory = (col: GridColumn, context: GridContext) => MenuItem[];
+export type CustomCellTemplate = {
+	templateName: string;
+	events?: {
+		cellEditing?: (cell: GridCell) => void;
+	};
+};
 
 export type GridColumnSetting = {
 	bindTo: string;
@@ -26,13 +32,15 @@ export type GridColumnSetting = {
 	editable?: boolean;
 	validators?: GridCellValidator[];
 	customValueEditor?: CustomValueEditor;
+	customTemplate?: CustomCellTemplate,
 	valueTransformer?: CellValueTransformer;
 	contextMenuFactory?: GridColumnContextMenuFactory;
 	events?: {
 		copy?: (value: CellValue) => string;
 		paste?: (text: string) => CellValue;
 		delete?: (cell: GridCell, context: GridContext) => void;
-	}
+		dblclick?: (cell: GridCell) => void;
+	},
 };
 
 export type GridColumn = {

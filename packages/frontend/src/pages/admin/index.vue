@@ -147,6 +147,11 @@ const menuDef = computed(() => [{
 		to: '/admin/files',
 		active: currentPage.value?.route.name === 'files',
 	}, {
+		icon: 'ti ti-cloud',
+		text: i18n.ts.files,
+		to: '/admin/system-drive',
+		active: currentPage.value?.route.name === 'system-drive',
+	}, {
 		icon: 'ti ti-speakerphone',
 		text: i18n.ts.announcements,
 		to: '/admin/announcements',

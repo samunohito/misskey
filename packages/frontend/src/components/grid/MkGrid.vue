@@ -8,6 +8,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	ref="rootEl"
 	class="mk_grid_border"
 	:class="[$style.grid]"
+	@dblclick.prevent="onDblClick"
 	@mousedown.prevent="onMouseDown"
 	@keydown="onKeyDown"
 	@contextmenu.prevent.stop="onContextMenu"
@@ -82,14 +83,14 @@ const props = defineProps<{
 }>();
 
 // non-reactive
-
+// eslint-disable-next-line vue/no-setup-props-reactivity-loss
 const rowSetting: Required<GridRowSetting> = {
 	...defaultGridRowSetting,
 	...props.settings.row,
 };
 
 // non-reactive
-
+// eslint-disable-next-line vue/no-setup-props-reactivity-loss
 const columnSettings = props.settings.cols;
 
 // non-reactive
@@ -432,6 +433,19 @@ function onKeyDown(ev: KeyboardEvent) {
 
 			break;
 		}
+	}
+}
+
+function onDblClick(ev: MouseEvent) {
+	const cellAddress = getCellAddress(ev.target as HTMLElement);
+	if (ev.type === 'dblclick') {
+		if (availableCellAddress(cellAddress)) {
+			selectionCell(cellAddress);
+			if (selectedCell.value) {
+				selectedCell.value.column.setting.events?.dblclick?.(selectedCell.value);
+			}
+		}
+		return;
 	}
 }
 

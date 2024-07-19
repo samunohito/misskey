@@ -149,6 +149,12 @@ type AdminDriveShowFileRequest = operations['admin___drive___show-file']['reques
 type AdminDriveShowFileResponse = operations['admin___drive___show-file']['responses']['200']['content']['application/json'];
 
 // @public (undocumented)
+type AdminDriveSystemExploreRequest = operations['admin___drive___system___explore']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type AdminDriveSystemExploreResponse = operations['admin___drive___system___explore']['responses']['200']['content']['application/json'];
+
+// @public (undocumented)
 type AdminDriveSystemFilesCreateRequest = operations['admin___drive___system___files___create']['requestBody']['content']['multipart/form-data'];
 
 // @public (undocumented)
@@ -1026,6 +1032,9 @@ type ClipsUpdateResponse = operations['clips___update']['responses']['200']['con
 type DateString = string;
 
 // @public (undocumented)
+type DriveExploreItem = components['schemas']['DriveExploreItem'];
+
+// @public (undocumented)
 type DriveFile = components['schemas']['DriveFile'];
 
 // @public (undocumented)
@@ -1286,6 +1295,8 @@ declare namespace entities {
         AdminDriveFilesResponse,
         AdminDriveShowFileRequest,
         AdminDriveShowFileResponse,
+        AdminDriveSystemExploreRequest,
+        AdminDriveSystemExploreResponse,
         AdminDriveSystemFilesCreateRequest,
         AdminDriveSystemFilesCreateResponse,
         AdminDriveSystemFilesDeleteRequest,
@@ -1849,6 +1860,7 @@ declare namespace entities {
         Notification_2 as Notification,
         DriveFile,
         DriveFolder,
+        DriveExploreItem,
         Following,
         Muting,
         RenoteMuting,

@@ -6,11 +6,18 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Brackets, IsNull } from 'typeorm';
 import { DI } from '@/di-symbols.js';
-import { type DriveFilesRepository, type DriveFoldersRepository, MiDriveFolder, MiUser } from '@/models/_.js';
+import {
+	type DriveExploreViewRepository,
+	type DriveFilesRepository,
+	type DriveFoldersRepository,
+	MiDriveFolder,
+	MiUser,
+} from '@/models/_.js';
 import { bindThis } from '@/decorators.js';
 import { QueryService } from '@/core/QueryService.js';
 import { sqlLikeEscape } from '@/misc/sql-like-escape.js';
 import { IdService } from '@/core/IdService.js';
+import { ExploreKind } from '@/models/DriveExploreView.js';
 
 @Injectable()
 export class DriveFolderService {
@@ -30,6 +37,8 @@ export class DriveFolderService {
 		private driveFoldersRepository: DriveFoldersRepository,
 		@Inject(DI.driveFilesRepository)
 		private driveFilesRepository: DriveFilesRepository,
+		@Inject(DI.driveExploreViewRepository)
+		private driveExploreViewRepository: DriveExploreViewRepository,
 		private queryService: QueryService,
 		private idService: IdService,
 	) {
@@ -38,6 +47,110 @@ export class DriveFolderService {
 	@bindThis
 	public get(params: { id: MiDriveFolder['id'], userId: MiUser['id'] | null }): Promise<MiDriveFolder | null> {
 		return this.driveFoldersRepository.findOneBy({ id: params.id, userId: params.userId ? params.userId : IsNull() });
+	}
+
+	@bindThis
+	public async explore(
+		params: {
+			userId: MiUser['id'] | null,
+			currentFolderId: MiDriveFolder['id'] | null,
+			query: {
+				names?: string[],
+				fileTypes?: string[],
+				commentWords?: string[],
+				isSensitive?: boolean,
+				isLink?: boolean,
+				sizeMin?: number,
+				sizeMax?: number,
+				kinds?: ExploreKind[],
+			}
+		},
+		opts?: {
+			limit?: number,
+			page?: number,
+		},
+	) {
+		const query = params.query;
+		const builder = this.driveExploreViewRepository.createQueryBuilder('drive_explore');
+
+		if (params.userId) {
+			builder.andWhere('drive_explore.userId = :userId', { userId: params.userId });
+		} else {
+			builder.andWhere('drive_explore.userId IS NULL');
+		}
+
+		if (params.currentFolderId) {
+			if (!await this.exists({ id: params.currentFolderId, userId: params.userId })) {
+				throw new DriveFolderService.NoSuchFolderError;
+			}
+
+			builder.andWhere('drive_explore."parentId" = :currentFolderId', { currentFolderId: params.currentFolderId });
+		} else {
+			builder.andWhere('drive_explore."parentId" IS NULL');
+		}
+
+		if (query.names && query.names.length > 0) {
+			builder.andWhere('drive_explore.name LIKE ANY(ARRAY[:...names])', {
+				names: query.names.map(x => '%' + sqlLikeEscape(x) + '%'),
+			});
+		}
+
+		if (query.fileTypes && query.fileTypes.length > 0) {
+			builder.andWhere('drive_explore.fileType IN (:...fileTypes)', { fileTypes: query.fileTypes });
+		}
+
+		if (query.commentWords && query.commentWords.length > 0) {
+			builder.andWhere('drive_explore.comment LIKE ANY(ARRAY[:...commentWords])', {
+				commentWords: query.commentWords.map(x => '%' + sqlLikeEscape(x) + '%'),
+			});
+		}
+
+		if (query.isSensitive !== undefined) {
+			builder.andWhere(new Brackets(qb => {
+				qb.orWhere('drive_explore.isSensitive = :isSensitive', { isSensitive: query.isSensitive });
+				qb.orWhere('drive_explore.isSensitive IS NULL');
+			}));
+		}
+
+		if (query.isLink !== undefined) {
+			builder.andWhere(new Brackets(qb => {
+				qb.orWhere('drive_explore.isLink = :isLink', { isLink: query.isLink });
+				qb.orWhere('drive_explore.isLink IS NULL');
+			}));
+		}
+
+		if (query.sizeMin !== undefined) {
+			builder.andWhere(new Brackets(qb => {
+				qb.andWhere('drive_explore.kind = \'file\'');
+				qb.andWhere('drive_explore.size >= :sizeMin', { sizeMin: query.sizeMin });
+			}));
+		}
+
+		if (query.sizeMax !== undefined) {
+			builder.andWhere(new Brackets(qb => {
+				qb.andWhere('drive_explore.kind = \'file\'');
+				qb.andWhere('drive_explore.size <= :sizeMax', { sizeMax: query.sizeMax });
+			}));
+		}
+
+		if (query.kinds && query.kinds.length > 0 && !query.kinds.includes('all')) {
+			builder.andWhere('drive_explore.kind IN (:...exploreKinds)', { exploreKinds: query.kinds });
+		}
+
+		const limit = opts?.limit ?? 10;
+		if (opts?.page) {
+			builder.skip(limit * (opts.page - 1));
+		}
+
+		builder.take(limit);
+
+		const [items, count] = await builder.orderBy('drive_explore.kind', 'DESC').getManyAndCount();
+		return {
+			items: items,
+			count: (count > limit ? items.length : count),
+			allCount: count,
+			allPages: Math.ceil(count / limit),
+		};
 	}
 
 	/**

@@ -239,6 +239,10 @@ async function beginEditing(target: HTMLElement) {
 				emitValueChange(!cell.value.value);
 				break;
 			}
+			case 'custom': {
+				cell.value.column.setting.customTemplate?.events?.cellEditing?.(cell.value);
+				break;
+			}
 		}
 	}
 }

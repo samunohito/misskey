@@ -4,11 +4,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<div v-if="gridItems.length === 0" style="text-align: center">
-	{{ i18n.ts._customEmojisManager._local._list.emojisNothing }}
-</div>
-
-<MkStickyContainer v-else>
+<MkStickyContainer>
 	<template #default>
 		<div class="_gaps">
 			<div :class="$style.gridArea">
@@ -32,13 +28,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import * as Misskey from 'misskey-js';
-import * as os from '@/os.js';
-import { emptyStrToUndefined, GridSortOrder, RequestLogItem } from '@/pages/admin/custom-emojis-manager.impl.js';
+import { GridSortOrder, RequestLogItem } from '@/pages/admin/custom-emojis-manager.impl.js';
 import MkGrid from '@/components/grid/MkGrid.vue';
 import { i18n } from '@/i18n.js';
-import MkButton from '@/components/MkButton.vue';
 import { GridCellValidationEvent, GridCellValueChangeEvent, GridEvent } from '@/components/grid/grid-event.js';
 import { misskeyApi } from '@/scripts/misskey-api.js';
 import MkPagingButtons from '@/components/MkPagingButtons.vue';
@@ -48,12 +42,14 @@ type GridItem = {
 	checked: boolean;
 	id: string;
 	name: string;
-	type: string;
-	size: string;
-	isSensitive: boolean;
+	fileType: string | null;
+	size: string | null;
 	comment: string | null;
-	url: string;
+	url: string | null;
 	thumbnailUrl: string | null;
+	isSensitive: boolean | null;
+	isLink: boolean | null;
+	kind: 'file' | 'folder'
 }
 
 function setupGrid(): GridSetting {
@@ -73,16 +69,29 @@ function setupGrid(): GridSetting {
 			},
 		},
 		cols: [
-
+			{ bindTo: 'checked', icon: 'ti-trash', type: 'boolean', editable: true, width: 34 },
+			{
+				bindTo: 'name', title: 'name', type: 'text', editable: false, width: 140, events: {
+					dblclick(cell) {
+						if (gridItems.value[cell.row.index].kind === 'folder') {
+							currentFolderId.value = gridItems.value[cell.row.index].id;
+							currentPage.value = 0;
+						}
+					},
+				},
+			},
+			{ bindTo: 'type', type: 'text', editable: false, width: 90 },
+			{ bindTo: 'size', type: 'text', editable: false, width: 90 },
+			{ bindTo: 'isSensitive', type: 'boolean', editable: false, width: 90 },
+			{ bindTo: 'comment', type: 'text', editable: false, width: 180 },
 		],
-		cells: {
-
-		},
+		cells: {},
 	};
 }
 
 const allPages = ref<number>(0);
 const currentPage = ref<number>(0);
+const currentFolderId = ref<string | null>(null);
 
 const queryName = ref<string | null>(null);
 const queryCategory = ref<string | null>(null);
@@ -101,6 +110,13 @@ const requestLogs = ref<RequestLogItem[]>([]);
 const gridItems = ref<GridItem[]>([]);
 const originGridItems = ref<GridItem[]>([]);
 const updateButtonDisabled = ref<boolean>(false);
+
+watch(currentPage, () => {
+	refreshDriveItems();
+});
+watch(currentFolderId, () => {
+	refreshDriveItems();
+});
 
 async function onPageChanged(pageNumber: number) {
 	currentPage.value = pageNumber;
@@ -129,23 +145,27 @@ function onGridCellValueChange(event: GridCellValueChangeEvent) {
 }
 
 async function refreshDriveItems() {
-	const response = await misskeyApi('admin/drive/system/files/search', {
-		query: {
-			name: queryName.value ?? undefined,
-		},
+	const result = await misskeyApi('admin/drive/system/explore', {
+		currentFolderId: currentFolderId.value,
+		query: {},
+		limit: 100,
+		page: currentPage.value,
 	});
-	gridItems.value = response.items.map((it: any) => ({
+
+	gridItems.value = result.items.map((it: Misskey.entities.DriveExploreItem) => ({
 		checked: false,
 		id: it.id,
 		name: it.name,
-		type: it.type,
+		fileType: it.fileType,
 		size: it.size,
-		isSensitive: it.isSensitive,
 		comment: it.comment,
 		url: it.url,
 		thumbnailUrl: it.thumbnailUrl,
+		isSensitive: it.isSensitive,
+		isLink: it.isLink,
+		kind: it.kind,
 	}));
-	allPages.value = response.allPages;
+	allPages.value = result.allPages;
 }
 
 onMounted(async () => {

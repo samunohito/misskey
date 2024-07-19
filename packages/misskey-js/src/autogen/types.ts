@@ -278,6 +278,15 @@ export type paths = {
      */
     post: operations['admin___drive___show-file'];
   };
+  '/admin/drive/system/explore': {
+    /**
+     * admin/drive/system/explore
+     * @description No description provided.
+     *
+     * **Credential required**: *Yes* / **Permission**: *read:admin:drive*
+     */
+    post: operations['admin___drive___system___explore'];
+  };
   '/admin/drive/system/files/create': {
     /**
      * admin/drive/system/files/create
@@ -4439,6 +4448,27 @@ export type components = {
       filesCount?: number;
       parent?: components['schemas']['DriveFolder'] | null;
     };
+    DriveExploreItem: {
+      /** Format: id */
+      id: string;
+      /** Format: date-time */
+      createdAt: string;
+      /** @example 192.jpg */
+      name: string;
+      /** @example image/jpeg */
+      fileType: string | null;
+      /** @example 51469 */
+      size: string | null;
+      comment: string | null;
+      isSensitive: boolean | null;
+      isLink: boolean | null;
+      /** Format: url */
+      url: string | null;
+      /** Format: url */
+      thumbnailUrl: string | null;
+      /** @enum {string} */
+      kind: 'file' | 'folder';
+    };
     Following: {
       /**
        * Format: id
@@ -6938,6 +6968,81 @@ export type operations = {
             folderId: string | null;
             isSensitive: boolean;
             isLink: boolean;
+          };
+        };
+      };
+      /** @description Client error */
+      400: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Authentication error */
+      401: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Forbidden error */
+      403: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description I'm Ai */
+      418: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Internal server error */
+      500: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+    };
+  };
+  /**
+   * admin/drive/system/explore
+   * @description No description provided.
+   *
+   * **Credential required**: *Yes* / **Permission**: *read:admin:drive*
+   */
+  admin___drive___system___explore: {
+    requestBody: {
+      content: {
+        'application/json': {
+          /**
+           * Format: misskey:id
+           * @default null
+           */
+          currentFolderId: string | null;
+          query?: {
+            name?: string;
+            fileType?: string | null;
+            comment?: string;
+            isSensitive?: boolean;
+            isLink?: boolean;
+            sizeMin?: number;
+            sizeMax?: number;
+            kinds?: ('file' | 'folder' | 'all')[];
+          };
+          /** @default 10 */
+          limit?: number;
+          page?: number;
+        };
+      };
+    };
+    responses: {
+      /** @description OK (with results) */
+      200: {
+        content: {
+          'application/json': {
+            items: components['schemas']['DriveExploreItem'][];
+            count: number;
+            allCount: number;
+            allPages: number;
           };
         };
       };

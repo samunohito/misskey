@@ -42,6 +42,8 @@ import type {
 	AdminDriveFilesResponse,
 	AdminDriveShowFileRequest,
 	AdminDriveShowFileResponse,
+	AdminDriveSystemExploreRequest,
+	AdminDriveSystemExploreResponse,
 	AdminDriveSystemFilesCreateRequest,
 	AdminDriveSystemFilesCreateResponse,
 	AdminDriveSystemFilesDeleteRequest,
@@ -619,6 +621,7 @@ export type Endpoints = {
 	'admin/drive/cleanup': { req: EmptyRequest; res: EmptyResponse };
 	'admin/drive/files': { req: AdminDriveFilesRequest; res: AdminDriveFilesResponse };
 	'admin/drive/show-file': { req: AdminDriveShowFileRequest; res: AdminDriveShowFileResponse };
+	'admin/drive/system/explore': { req: AdminDriveSystemExploreRequest; res: AdminDriveSystemExploreResponse };
 	'admin/drive/system/files/create': { req: AdminDriveSystemFilesCreateRequest; res: AdminDriveSystemFilesCreateResponse };
 	'admin/drive/system/files/delete': { req: AdminDriveSystemFilesDeleteRequest; res: EmptyResponse };
 	'admin/drive/system/files/search': { req: AdminDriveSystemFilesSearchRequest; res: AdminDriveSystemFilesSearchResponse };
@@ -1010,6 +1013,7 @@ export const endpointReqTypes: Record<keyof Endpoints, 'application/json' | 'mul
 	'admin/drive/cleanup': 'application/json',
 	'admin/drive/files': 'application/json',
 	'admin/drive/show-file': 'application/json',
+	'admin/drive/system/explore': 'application/json',
 	'admin/drive/system/files/create': 'multipart/form-data',
 	'admin/drive/system/files/delete': 'application/json',
 	'admin/drive/system/files/search': 'application/json',

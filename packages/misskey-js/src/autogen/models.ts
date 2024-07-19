@@ -17,6 +17,7 @@ export type NoteFavorite = components['schemas']['NoteFavorite'];
 export type Notification = components['schemas']['Notification'];
 export type DriveFile = components['schemas']['DriveFile'];
 export type DriveFolder = components['schemas']['DriveFolder'];
+export type DriveExploreItem = components['schemas']['DriveExploreItem'];
 export type Following = components['schemas']['Following'];
 export type Muting = components['schemas']['Muting'];
 export type RenoteMuting = components['schemas']['RenoteMuting'];

@@ -63,6 +63,7 @@ import {
 } from '@/models/json-schema/meta.js';
 import { packedSystemWebhookSchema } from '@/models/json-schema/system-webhook.js';
 import { packedAbuseReportNotificationRecipientSchema } from '@/models/json-schema/abuse-report-notification-recipient.js';
+import { packedDriveExploreItemSchema } from '@/models/json-schema/drive-explore.js';
 
 export const refs = {
 	UserLite: packedUserLiteSchema,
@@ -83,6 +84,7 @@ export const refs = {
 	Notification: packedNotificationSchema,
 	DriveFile: packedDriveFileSchema,
 	DriveFolder: packedDriveFolderSchema,
+	DriveExploreItem: packedDriveExploreItemSchema,
 	Following: packedFollowingSchema,
 	Muting: packedMutingSchema,
 	RenoteMuting: packedRenoteMutingSchema,

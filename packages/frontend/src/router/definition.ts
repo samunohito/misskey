@@ -237,7 +237,7 @@ const routes: RouteDef[] = [{
 		origin: 'origin',
 	},
 }, {
-	// Legacy Compatibility	
+	// Legacy Compatibility
 	path: '/authorize-follow',
 	redirect: '/lookup',
 	loginRequired: true,
@@ -396,6 +396,10 @@ const routes: RouteDef[] = [{
 		path: '/files',
 		name: 'files',
 		component: page(() => import('@/pages/admin/files.vue')),
+	}, {
+		path: '/system-drive',
+		name: 'system-webhook',
+		component: page(() => import('@/pages/admin/system-drive/index.vue')),
 	}, {
 		path: '/federation',
 		name: 'federation',

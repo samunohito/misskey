@@ -35,6 +35,7 @@ import * as ep___admin_drive_cleanRemoteFiles from './endpoints/admin/drive/clea
 import * as ep___admin_drive_cleanup from './endpoints/admin/drive/cleanup.js';
 import * as ep___admin_drive_files from './endpoints/admin/drive/files.js';
 import * as ep___admin_drive_showFile from './endpoints/admin/drive/show-file.js';
+import * as ep___admin_drive_system_explore from './endpoints/admin/drive/system/explore.js';
 import * as ep___admin_drive_system_files_create from './endpoints/admin/drive/system/files/create.js';
 import * as ep___admin_drive_system_files_delete from './endpoints/admin/drive/system/files/delete.js';
 import * as ep___admin_drive_system_files_search from './endpoints/admin/drive/system/files/search.js';
@@ -427,6 +428,7 @@ const $admin_drive_cleanRemoteFiles: Provider = { provide: 'ep:admin/drive/clean
 const $admin_drive_cleanup: Provider = { provide: 'ep:admin/drive/cleanup', useClass: ep___admin_drive_cleanup.default };
 const $admin_drive_files: Provider = { provide: 'ep:admin/drive/files', useClass: ep___admin_drive_files.default };
 const $admin_drive_showFile: Provider = { provide: 'ep:admin/drive/show-file', useClass: ep___admin_drive_showFile.default };
+const $admin_drive_system_explore: Provider = { provide: 'ep:admin/drive/system/explore', useClass: ep___admin_drive_system_explore.default };
 const $admin_drive_system_files_create: Provider = { provide: 'ep:admin/drive/system/files/create', useClass: ep___admin_drive_system_files_create.default };
 const $admin_drive_system_files_delete: Provider = { provide: 'ep:admin/drive/system/files/delete', useClass: ep___admin_drive_system_files_delete.default };
 const $admin_drive_system_files_search: Provider = { provide: 'ep:admin/drive/system/files/search', useClass: ep___admin_drive_system_files_search.default };
@@ -823,6 +825,7 @@ const $reversi_verify: Provider = { provide: 'ep:reversi/verify', useClass: ep__
 		$admin_drive_cleanup,
 		$admin_drive_files,
 		$admin_drive_showFile,
+		$admin_drive_system_explore,
 		$admin_drive_system_files_create,
 		$admin_drive_system_files_delete,
 		$admin_drive_system_files_search,
@@ -1213,6 +1216,7 @@ const $reversi_verify: Provider = { provide: 'ep:reversi/verify', useClass: ep__
 		$admin_drive_cleanup,
 		$admin_drive_files,
 		$admin_drive_showFile,
+		$admin_drive_system_explore,
 		$admin_drive_system_files_create,
 		$admin_drive_system_files_delete,
 		$admin_drive_system_files_search,
