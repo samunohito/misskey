@@ -5,6 +5,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <template>
 <div
+	v-if="cell.row.using"
 	ref="rootEl"
 	class="mk_grid_td"
 	:class="$style.cell"
@@ -26,7 +27,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			[needsContentCentering ? $style.center : {}],
 		]"
 	>
-		<div v-if="!editing" ref="contentAreaEl">
+		<div v-if="!editing" ref="contentAreaEl" :class="$style.contentArea">
 			<div :class="$style.content">
 				<div v-if="cellType === 'text'">
 					{{ cell.value }}
@@ -49,9 +50,17 @@ SPDX-License-Identifier: AGPL-3.0-only
 						@load="emitContentSizeChanged"
 					/>
 				</div>
+				<div v-else-if="cellType === 'custom' && customTemplateComponent">
+					<component
+						:is="customTemplateComponent"
+						:cell="cell"
+						:extraParams="customTemplateExtraParams"
+						:mounted="onCustomTemplateMounted"
+					/>
+				</div>
 			</div>
 		</div>
-		<div v-else ref="inputAreaEl">
+		<div v-else ref="inputAreaEl" :class="$style.inputArea">
 			<input
 				v-if="cellType === 'text'"
 				type="text"
@@ -85,7 +94,18 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script setup lang="ts">
-import { computed, defineAsyncComponent, nextTick, onMounted, onUnmounted, ref, shallowRef, toRefs, watch } from 'vue';
+import {
+	computed,
+	defineAsyncComponent,
+	nextTick,
+	onMounted,
+	onUnmounted,
+	ref,
+	shallowRef,
+	toRefs,
+	unref,
+	watch,
+} from 'vue';
 import { GridEventEmitter, Size } from '@/components/grid/grid.js';
 import { useTooltip } from '@/scripts/use-tooltip.js';
 import * as os from '@/os.js';
@@ -111,7 +131,9 @@ const rootEl = shallowRef<InstanceType<typeof HTMLTableCellElement>>();
 const contentAreaEl = shallowRef<InstanceType<typeof HTMLDivElement>>();
 const inputAreaEl = shallowRef<InstanceType<typeof HTMLDivElement>>();
 
+/** 値が編集中かどうか */
 const editing = ref<boolean>(false);
+/** 編集中の値. {@link beginEditing}と{@link endEditing}内、および各inputタグやそのコールバックからの操作のみを想定する */
 const editingValue = ref<CellValue>(undefined);
 
 const cellWidth = computed(() => cell.value.column.width);
@@ -123,6 +145,13 @@ const needsContentCentering = computed(() => {
 		default:
 			return false;
 	}
+});
+
+const customTemplateComponent = computed(() => {
+	return cell.value.column.setting.customTemplate?.template();
+});
+const customTemplateExtraParams = computed(() => {
+	return cell.value.column.setting.customTemplate?.extraParams?.(cell.value);
 });
 
 watch(() => [cell.value.value], () => {
@@ -148,7 +177,8 @@ function onCellDoubleClick(ev: MouseEvent) {
 function onOutsideMouseDown(ev: MouseEvent) {
 	const isOutside = ev.target instanceof Node && !rootEl.value?.contains(ev.target);
 	if (isOutside || !equalCellAddress(cell.value.address, getCellAddress(ev.target as HTMLElement))) {
-		endEditing(true);
+		endEditing(true, editingValue.value);
+		editingValue.value = undefined;
 	}
 }
 
@@ -166,13 +196,15 @@ function onCellKeyDown(ev: KeyboardEvent) {
 	} else {
 		switch (ev.code) {
 			case 'Escape': {
-				endEditing(false);
+				endEditing(false, editingValue.value);
+				editingValue.value = undefined;
 				break;
 			}
 			case 'NumpadEnter':
 			case 'Enter': {
 				if (!ev.isComposing) {
-					endEditing(true);
+					endEditing(true, editingValue.value);
+					editingValue.value = undefined;
 				}
 			}
 		}
@@ -184,6 +216,10 @@ function onInputText(ev: Event) {
 }
 
 function onForceRefreshContentSize() {
+	emitContentSizeChanged();
+}
+
+function onCustomTemplateMounted() {
 	emitContentSizeChanged();
 }
 
@@ -240,14 +276,28 @@ async function beginEditing(target: HTMLElement) {
 				break;
 			}
 			case 'custom': {
-				cell.value.column.setting.customTemplate?.events?.cellEditing?.(cell.value);
+				const e = cell.value.column.setting.customTemplate?.events?.cellEditing;
+				if (e) {
+					e(cell.value, {
+						operation: {
+							beginEdit: () => {
+								editing.value = true;
+								registerOutsideMouseDown();
+								emit('operation:beginEdit', cell.value);
+							},
+							endEdit: (applyValue: boolean, newValue: CellValue) => {
+								endEditing(applyValue, newValue);
+							},
+						},
+					});
+				}
 				break;
 			}
 		}
 	}
 }
 
-function endEditing(applyValue: boolean) {
+function endEditing(applyValue: boolean, newValue: CellValue) {
 	if (!editing.value) {
 		return;
 	}
@@ -255,11 +305,10 @@ function endEditing(applyValue: boolean) {
 	emit('operation:endEdit', cell.value);
 	unregisterOutsideMouseDown();
 
-	if (applyValue && editingValue.value !== cell.value.value) {
-		emitValueChange(editingValue.value);
+	if (applyValue && newValue !== cell.value.value) {
+		emitValueChange(newValue);
 	}
 
-	editingValue.value = undefined;
 	editing.value = false;
 
 	rootEl.value?.focus();
@@ -283,11 +332,15 @@ useTooltip(rootEl, (showing) => {
 	}
 
 	const content = cell.value.violation.violations.filter(it => !it.valid).map(it => it.result.message).join('\n');
-	os.popup(defineAsyncComponent(() => import('@/components/grid/MkCellTooltip.vue')), {
+	const result = os.popup(defineAsyncComponent(() => import('@/components/grid/MkCellTooltip.vue')), {
 		showing,
 		content,
 		targetElement: rootEl.value!,
-	}, {}, 'closed');
+	}, {
+		closed: () => {
+			result.dispose();
+		},
+	});
 });
 
 onMounted(() => {
@@ -341,6 +394,11 @@ $cellHeight: 28px;
 	&.error {
 		border: solid 0.5px var(--error);
 	}
+}
+
+.contentArea, .inputArea {
+	display: flex;
+	align-items: center;
 }
 
 .content {

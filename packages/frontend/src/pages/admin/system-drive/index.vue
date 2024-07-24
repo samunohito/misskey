@@ -28,7 +28,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue';
+import { defineAsyncComponent, onMounted, ref, unref, watch } from 'vue';
 import * as Misskey from 'misskey-js';
 import { GridSortOrder, RequestLogItem } from '@/pages/admin/custom-emojis-manager.impl.js';
 import MkGrid from '@/components/grid/MkGrid.vue';
@@ -37,20 +37,8 @@ import { GridCellValidationEvent, GridCellValueChangeEvent, GridEvent } from '@/
 import { misskeyApi } from '@/scripts/misskey-api.js';
 import MkPagingButtons from '@/components/MkPagingButtons.vue';
 import { GridSetting } from '@/components/grid/grid.js';
-
-type GridItem = {
-	checked: boolean;
-	id: string;
-	name: string;
-	fileType: string | null;
-	size: string | null;
-	comment: string | null;
-	url: string | null;
-	thumbnailUrl: string | null;
-	isSensitive: boolean | null;
-	isLink: boolean | null;
-	kind: 'file' | 'folder'
-}
+import { GridCell } from '@/components/grid/cell.js';
+import { GridItem } from '@/pages/admin/system-drive/types.js';
 
 function setupGrid(): GridSetting {
 	return {
@@ -71,7 +59,19 @@ function setupGrid(): GridSetting {
 		cols: [
 			{ bindTo: 'checked', icon: 'ti-trash', type: 'boolean', editable: true, width: 34 },
 			{
-				bindTo: 'name', title: 'name', type: 'text', editable: false, width: 140, events: {
+				bindTo: 'name', title: 'name', type: 'custom', editable: false, width: 140,
+				customTemplate: {
+					template: () => {
+						return defineAsyncComponent(() => import('./cell-file-name.vue'));
+					},
+					extraParams: (cell: GridCell) => gridItems.value[cell.row.index],
+					events: {
+						cellEditing(cell, context) {
+							console.log('peeeeeeeeeeee', cell);
+						},
+					},
+				},
+				events: {
 					dblclick(cell) {
 						if (gridItems.value[cell.row.index].kind === 'folder') {
 							currentFolderId.value = gridItems.value[cell.row.index].id;
