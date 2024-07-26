@@ -7,6 +7,114 @@ SPDX-License-Identifier: AGPL-3.0-only
 <MkStickyContainer>
 	<template #default>
 		<div class="_gaps">
+			<MkFolder>
+				<template #icon><i class="ti ti-cloud"></i></template>
+				<template #label>{{ i18n.ts._drive._system.searchSettings }}</template>
+				<template #caption>
+					{{ i18n.ts._drive._system.searchSettingCaption }}
+				</template>
+
+				<div class="_gaps">
+					<div :class="[[spMode ? $style.searchAreaSp : $style.searchArea]]">
+						<MkInput
+							v-model="queryName"
+							type="search"
+							autocapitalize="off"
+							:class="[$style.col1, $style.row1]"
+							@enter="onSearchRequest"
+						>
+							<template #label>name</template>
+						</MkInput>
+						<MkInput
+							v-model="queryFileType"
+							type="search"
+							autocapitalize="off"
+							:class="[$style.col2, $style.row1]"
+							@enter="onSearchRequest"
+						>
+							<template #label>category</template>
+						</MkInput>
+						<MkInput
+							v-model="queryComment"
+							type="search"
+							autocapitalize="off"
+							:class="[$style.col3, $style.row1]"
+							@enter="onSearchRequest"
+						>
+							<template #label>aliases</template>
+						</MkInput>
+
+						<MkInput
+							v-model="querySizeMin"
+							type="number"
+							min="0"
+							autocapitalize="off"
+							:class="[$style.col1, $style.row2]"
+							@enter="onSearchRequest"
+						>
+							<template #label>type</template>
+						</MkInput>
+						<MkInput
+							v-model="querySizeMax"
+							type="search"
+							min="0"
+							autocapitalize="off"
+							:class="[$style.col2, $style.row2]"
+							@enter="onSearchRequest"
+						>
+							<template #label>license</template>
+						</MkInput>
+						<MkSelect
+							v-model="queryKind"
+							:class="[$style.col3, $style.row2]"
+						>
+							<template #label>sensitive</template>
+							<option :value="null">-</option>
+							<option :value="'file'">file</option>
+							<option :value="'folder'">folder</option>
+						</MkSelect>
+
+						<MkSelect
+							v-model="queryLink"
+							:class="[$style.col1, $style.row3]"
+						>
+							<template #label>link</template>
+							<option :value="null">-</option>
+							<option :value="true">true</option>
+							<option :value="false">false</option>
+						</MkSelect>
+						<MkSelect
+							v-model="querySensitive"
+							:class="[$style.col2, $style.row3]"
+						>
+							<template #label>sensitive</template>
+							<option :value="null">-</option>
+							<option :value="true">true</option>
+							<option :value="false">false</option>
+						</MkSelect>
+					</div>
+
+					<XSortOrderFolder :sortOrders="sortOrders" @update="onSortOrderUpdate"/>
+
+					<div :class="[[spMode ? $style.searchButtonsSp : $style.searchButtons]]">
+						<MkButton primary @click="onSearchRequest">
+							{{ i18n.ts.search }}
+						</MkButton>
+						<MkButton @click="onQueryResetButtonClicked">
+							{{ i18n.ts.reset }}
+						</MkButton>
+					</div>
+				</div>
+			</MkFolder>
+
+			<div style="height: 30px">
+				<MkBreadcrumb
+					:hierarchies="pathHierarchies"
+					:valueConverter="value => value.name"
+					@click="onBreadcrumbClicked"
+				/>
+			</div>
+
 			<div :class="$style.gridArea">
 				<MkGrid :data="gridItems" :settings="setupGrid()" @event="onGridEvent"/>
 			</div>
@@ -28,17 +136,23 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script setup lang="ts">
-import { defineAsyncComponent, onMounted, ref, unref, watch } from 'vue';
+import { defineAsyncComponent, onMounted, Ref, ref, watch } from 'vue';
 import * as Misskey from 'misskey-js';
 import { GridSortOrder, RequestLogItem } from '@/pages/admin/custom-emojis-manager.impl.js';
 import MkGrid from '@/components/grid/MkGrid.vue';
-import { i18n } from '@/i18n.js';
 import { GridCellValidationEvent, GridCellValueChangeEvent, GridEvent } from '@/components/grid/grid-event.js';
 import { misskeyApi } from '@/scripts/misskey-api.js';
 import MkPagingButtons from '@/components/MkPagingButtons.vue';
 import { GridSetting } from '@/components/grid/grid.js';
 import { GridCell } from '@/components/grid/cell.js';
 import { GridItem } from '@/pages/admin/system-drive/types.js';
+import MkBreadcrumb from '@/components/MkBreadcrumb.vue';
+import { i18n } from '@/i18n.js';
+import MkFolder from '@/components/MkFolder.vue';
+import XSortOrderFolder from '@/pages/admin/custom-emojis-manager.sort-order-folder.vue';
+import MkButton from '@/components/MkButton.vue';
+import MkInput from '@/components/MkInput.vue';
+import MkSelect from '@/components/MkSelect.vue';
 
 function setupGrid(): GridSetting {
 	return {
@@ -72,10 +186,9 @@ function setupGrid(): GridSetting {
 					},
 				},
 				events: {
-					dblclick(cell) {
+					async dblclick(cell) {
 						if (gridItems.value[cell.row.index].kind === 'folder') {
-							currentFolderId.value = gridItems.value[cell.row.index].id;
-							currentPage.value = 0;
+							await refreshDriveItems(gridItems.value[cell.row.index].id, 1);
 						}
 					},
 				},
@@ -90,37 +203,25 @@ function setupGrid(): GridSetting {
 }
 
 const allPages = ref<number>(0);
-const currentPage = ref<number>(0);
+const currentPage = ref<number>(1);
 const currentFolderId = ref<string | null>(null);
 
 const queryName = ref<string | null>(null);
-const queryCategory = ref<string | null>(null);
-const queryAliases = ref<string | null>(null);
-const queryType = ref<string | null>(null);
-const queryLicense = ref<string | null>(null);
-const queryUpdatedAtFrom = ref<string | null>(null);
-const queryUpdatedAtTo = ref<string | null>(null);
+const queryFileType = ref<string | null>(null);
+const queryComment = ref<string | null>(null);
+const querySizeMin = ref<string | null>(null);
+const querySizeMax = ref<string | null>(null);
 const querySensitive = ref<string | null>(null);
-const queryLocalOnly = ref<string | null>(null);
-const queryRoles = ref<{ id: string, name: string }[]>([]);
-const previousQuery = ref<string | undefined>(undefined);
+const queryLink = ref<string | null>(null);
+const queryKind = ref<string | null>(null);
 const sortOrders = ref<GridSortOrder[]>([]);
 const requestLogs = ref<RequestLogItem[]>([]);
+
+const pathHierarchies: Ref<Misskey.entities.DriveFolder[]> = ref([]);
 
 const gridItems = ref<GridItem[]>([]);
 const originGridItems = ref<GridItem[]>([]);
 const updateButtonDisabled = ref<boolean>(false);
-
-watch(currentPage, () => {
-	refreshDriveItems();
-});
-watch(currentFolderId, () => {
-	refreshDriveItems();
-});
-
-async function onPageChanged(pageNumber: number) {
-	currentPage.value = pageNumber;
-}
 
 function onGridEvent(event: GridEvent) {
 	switch (event.type) {
@@ -144,12 +245,24 @@ function onGridCellValueChange(event: GridCellValueChangeEvent) {
 	}
 }
 
-async function refreshDriveItems() {
+async function onPageChanged(pageNumber: number) {
+	await refreshDriveItems(currentFolderId.value, pageNumber);
+}
+
+async function onBreadcrumbClicked(event: MouseEvent, index: number, value: Misskey.entities.DriveFolder | null) {
+	await refreshDriveItems(value?.id ?? null, 1);
+}
+
+async function refreshDriveItems(folderId: string | null, page: number) {
+	pathHierarchies.value = await misskeyApi('admin/drive/system/folders/pwd', {
+		currentFolderId: folderId,
+	}).then(it => it.hierarchies);
+
 	const result = await misskeyApi('admin/drive/system/explore', {
-		currentFolderId: currentFolderId.value,
+		currentFolderId: folderId,
 		query: {},
 		limit: 100,
-		page: currentPage.value,
+		page: page,
 	});
 
 	gridItems.value = result.items.map((it: Misskey.entities.DriveExploreItem) => ({
@@ -166,10 +279,13 @@ async function refreshDriveItems() {
 		kind: it.kind,
 	}));
 	allPages.value = result.allPages;
+
+	currentFolderId.value = folderId;
+	currentPage.value = page;
 }
 
 onMounted(async () => {
-	await refreshDriveItems();
+	await refreshDriveItems(null, 1);
 });
 
 </script>

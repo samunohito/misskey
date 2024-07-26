@@ -2472,6 +2472,11 @@ _drivecleaner:
   orderBySizeDesc: "サイズが大きい順"
   orderByCreatedAtAsc: "追加日が古い順"
 
+_drive:
+  _system:
+    searchSettings: "検索設定"
+    searchSettingCaption: "ファイル・フォルダの検索条件を詳細に設定します。"
+
 _webhookSettings:
   createWebhook: "Webhookを作成"
   modifyWebhook: "Webhookを編集"

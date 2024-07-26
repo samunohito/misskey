@@ -94,18 +94,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script setup lang="ts">
-import {
-	computed,
-	defineAsyncComponent,
-	nextTick,
-	onMounted,
-	onUnmounted,
-	ref,
-	shallowRef,
-	toRefs,
-	unref,
-	watch,
-} from 'vue';
+import { computed, defineAsyncComponent, nextTick, onMounted, onUnmounted, ref, shallowRef, toRefs, watch } from 'vue';
 import { GridEventEmitter, Size } from '@/components/grid/grid.js';
 import { useTooltip } from '@/scripts/use-tooltip.js';
 import * as os from '@/os.js';
@@ -125,7 +114,7 @@ const props = defineProps<{
 	bus: GridEventEmitter,
 }>();
 
-const { cell, rowSetting, bus } = toRefs(props);
+const { cell, bus } = toRefs(props);
 
 const rootEl = shallowRef<InstanceType<typeof HTMLTableCellElement>>();
 const contentAreaEl = shallowRef<InstanceType<typeof HTMLDivElement>>();
@@ -147,9 +136,11 @@ const needsContentCentering = computed(() => {
 	}
 });
 
+/** カスタムテンプレートのコンポーネント. 実行結果をキャッシュする＆変更がある時のみ再レンダリングするためcomputedで包む */
 const customTemplateComponent = computed(() => {
 	return cell.value.column.setting.customTemplate?.template();
 });
+/** カスタムテンプレートの拡張パラメータ. 実行結果をキャッシュする＆変更がある時のみ再レンダリングするためcomputedで包む */
 const customTemplateExtraParams = computed(() => {
 	return cell.value.column.setting.customTemplate?.extraParams?.(cell.value);
 });

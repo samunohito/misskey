@@ -44,6 +44,7 @@ import * as ep___admin_drive_system_folders_create from './endpoints/admin/drive
 import * as ep___admin_drive_system_folders_delete from './endpoints/admin/drive/system/folders/delete.js';
 import * as ep___admin_drive_system_folders_search from './endpoints/admin/drive/system/folders/search.js';
 import * as ep___admin_drive_system_folders_update from './endpoints/admin/drive/system/folders/update.js';
+import * as ep___admin_drive_system_folders_pwd from './endpoints/admin/drive/system/folders/pwd.js';
 import * as ep___admin_emoji_addAliasesBulk from './endpoints/admin/emoji/add-aliases-bulk.js';
 import * as ep___admin_emoji_add from './endpoints/admin/emoji/add.js';
 import * as ep___admin_emoji_copy from './endpoints/admin/emoji/copy.js';
@@ -437,6 +438,7 @@ const $admin_drive_system_folders_create: Provider = { provide: 'ep:admin/drive/
 const $admin_drive_system_folders_delete: Provider = { provide: 'ep:admin/drive/system/folders/delete', useClass: ep___admin_drive_system_folders_delete.default };
 const $admin_drive_system_folders_search: Provider = { provide: 'ep:admin/drive/system/folders/search', useClass: ep___admin_drive_system_folders_search.default };
 const $admin_drive_system_folders_update: Provider = { provide: 'ep:admin/drive/system/folders/update', useClass: ep___admin_drive_system_folders_update.default };
+const $admin_drive_system_folders_pwd: Provider = { provide: 'ep:admin/drive/system/folders/pwd', useClass: ep___admin_drive_system_folders_pwd.default };
 const $admin_emoji_addAliasesBulk: Provider = { provide: 'ep:admin/emoji/add-aliases-bulk', useClass: ep___admin_emoji_addAliasesBulk.default };
 const $admin_emoji_add: Provider = { provide: 'ep:admin/emoji/add', useClass: ep___admin_emoji_add.default };
 const $admin_emoji_copy: Provider = { provide: 'ep:admin/emoji/copy', useClass: ep___admin_emoji_copy.default };
@@ -834,6 +836,7 @@ const $reversi_verify: Provider = { provide: 'ep:reversi/verify', useClass: ep__
 		$admin_drive_system_folders_delete,
 		$admin_drive_system_folders_search,
 		$admin_drive_system_folders_update,
+		$admin_drive_system_folders_pwd,
 		$admin_emoji_addAliasesBulk,
 		$admin_emoji_add,
 		$admin_emoji_copy,
@@ -1225,6 +1228,7 @@ const $reversi_verify: Provider = { provide: 'ep:reversi/verify', useClass: ep__
 		$admin_drive_system_folders_delete,
 		$admin_drive_system_folders_search,
 		$admin_drive_system_folders_update,
+		$admin_drive_system_folders_pwd,
 		$admin_emoji_addAliasesBulk,
 		$admin_emoji_add,
 		$admin_emoji_copy,

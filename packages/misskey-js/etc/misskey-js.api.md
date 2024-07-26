@@ -185,6 +185,12 @@ type AdminDriveSystemFoldersCreateResponse = operations['admin___drive___system_
 type AdminDriveSystemFoldersDeleteRequest = operations['admin___drive___system___folders___delete']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
+type AdminDriveSystemFoldersPwdRequest = operations['admin___drive___system___folders___pwd']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type AdminDriveSystemFoldersPwdResponse = operations['admin___drive___system___folders___pwd']['responses']['200']['content']['application/json'];
+
+// @public (undocumented)
 type AdminDriveSystemFoldersSearchRequest = operations['admin___drive___system___folders___search']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
@@ -1311,6 +1317,8 @@ declare namespace entities {
         AdminDriveSystemFoldersSearchResponse,
         AdminDriveSystemFoldersUpdateRequest,
         AdminDriveSystemFoldersUpdateResponse,
+        AdminDriveSystemFoldersPwdRequest,
+        AdminDriveSystemFoldersPwdResponse,
         AdminEmojiAddAliasesBulkRequest,
         AdminEmojiAddRequest,
         AdminEmojiAddResponse,

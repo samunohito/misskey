@@ -359,6 +359,15 @@ export type paths = {
      */
     post: operations['admin___drive___system___folders___update'];
   };
+  '/admin/drive/system/folders/pwd': {
+    /**
+     * admin/drive/system/folders/pwd
+     * @description No description provided.
+     *
+     * **Credential required**: *Yes* / **Permission**: *read:admin:drive*
+     */
+    post: operations['admin___drive___system___folders___pwd'];
+  };
   '/admin/emoji/add-aliases-bulk': {
     /**
      * admin/emoji/add-aliases-bulk
@@ -7030,7 +7039,10 @@ export type operations = {
           };
           /** @default 10 */
           limit?: number;
+          /** @default 1 */
           page?: number;
+          /** @default [] */
+          sortKeys?: ('+id' | '-id' | '+name' | '-name' | '+fileType' | '-fileType' | '+size' | '-size' | '+comment' | '-comment' | '+isSensitive' | '-isSensitive' | '+isLink' | '-isLink' | '+kind' | '-kind')[];
         };
       };
     };
@@ -7534,6 +7546,65 @@ export type operations = {
       200: {
         content: {
           'application/json': components['schemas']['DriveFolder'];
+        };
+      };
+      /** @description Client error */
+      400: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Authentication error */
+      401: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Forbidden error */
+      403: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description I'm Ai */
+      418: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Internal server error */
+      500: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+    };
+  };
+  /**
+   * admin/drive/system/folders/pwd
+   * @description No description provided.
+   *
+   * **Credential required**: *Yes* / **Permission**: *read:admin:drive*
+   */
+  admin___drive___system___folders___pwd: {
+    requestBody: {
+      content: {
+        'application/json': {
+          /**
+           * Format: misskey:id
+           * @default null
+           */
+          currentFolderId: string | null;
+        };
+      };
+    };
+    responses: {
+      /** @description OK (with results) */
+      200: {
+        content: {
+          'application/json': {
+            hierarchies: components['schemas']['DriveFolder'][];
+          };
         };
       };
       /** @description Client error */

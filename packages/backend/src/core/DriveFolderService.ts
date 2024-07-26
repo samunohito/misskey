@@ -19,6 +19,26 @@ import { sqlLikeEscape } from '@/misc/sql-like-escape.js';
 import { IdService } from '@/core/IdService.js';
 import { ExploreKind } from '@/models/DriveExploreView.js';
 
+export const exploreSortKeys = [
+	'+id',
+	'-id',
+	'+name',
+	'-name',
+	'+fileType',
+	'-fileType',
+	'+size',
+	'-size',
+	'+comment',
+	'-comment',
+	'+isSensitive',
+	'-isSensitive',
+	'+isLink',
+	'-isLink',
+	'+kind',
+	'-kind',
+];
+export type ExploreSortKey = typeof exploreSortKeys[number];
+
 @Injectable()
 export class DriveFolderService {
 	public static DriveFolderError = class extends Error {
@@ -49,6 +69,63 @@ export class DriveFolderService {
 		return this.driveFoldersRepository.findOneBy({ id: params.id, userId: params.userId ? params.userId : IsNull() });
 	}
 
+	/**
+	 * 引数で指定されたフォルダの親フォルダを再帰的に取得し、ルートフォルダまでの階層を取得する.
+	 * ルートフォルダは配列の先頭に格納される.
+	 *
+	 * @param params
+	 * @param {MiUser['id'] | null} params.userId ユーザID
+	 * @param {MiDriveFolder['id']} params.currentFolderId フォルダID
+	 */
+	@bindThis
+	public async pwd(params: { userId: MiUser['id'] | null, currentFolderId: MiDriveFolder['id'] | null }) {
+		if (!params.currentFolderId) {
+			// フォルダIDが無ければ最終的に空配列が返るので、あらかじめ早期リターンしておく
+			return [];
+		}
+
+		const folders = await this.driveFoldersRepository
+			.findBy({ userId: params.userId ? params.userId : IsNull() })
+			.then(folders => new Map(folders.map(folder => [folder.id, folder])));
+
+		const result: MiDriveFolder[] = [];
+		let current = folders.get(params.currentFolderId);
+		while (current) {
+			result.unshift(current);
+
+			const parentId = current.parentId;
+			current = parentId ? folders.get(parentId) : undefined;
+			if ((current?.id ?? null) !== parentId) {
+				throw new DriveFolderService.NoSuchParentFolderError;
+			}
+		}
+
+		return result;
+	}
+
+	/**
+	 * ドライブフォルダを探索する.
+	 * フォルダの中にあるファイル・フォルダをすべて列挙しつつ、検索条件に合致するものを取得する.
+	 * 1つの検索項目に複数の値が指定された場合は、それらの値をORで結合する.
+	 * 複数の検索項目に条件が指定された場合は、それらの条件をANDで結合する.
+	 *
+	 * @param params
+	 * @param {MiUser['id'] | null} params.userId 検索対象のユーザID
+	 * @param {MiDriveFolder['id'] | null} params.currentFolderId 内容を取得するフォルダのID
+	 * @param {object} params.query 検索条件
+	 * @param {string[] | undefined} params.query.names ファイル名
+	 * @param {string[] | undefined} params.query.fileTypes ファイル種別
+	 * @param {string[] | undefined} params.query.commentWords コメント
+	 * @param {boolean | undefined} params.query.isSensitive センシティブフラグつきファイルかどうか
+	 * @param {boolean | undefined} params.query.isLink リンクファイルかどうか
+	 * @param {number | undefined} params.query.sizeMin ファイルサイズの最小値
+	 * @param {number | undefined} params.query.sizeMax ファイルサイズの最大値
+	 * @param {ExploreKind[] | undefined} params.query.kinds ファイル種別
+	 * @param opts
+	 * @param {number | undefined} opts.limit 取得する最大件数. 省略時は10
+	 * @param {number | undefined} opts.page ページ番号. 省略時は1
+	 * @param {ExploreSortKey[] | undefined} opts.sortKeys ソートキー
+	 */
 	@bindThis
 	public async explore(
 		params: {
@@ -68,6 +145,7 @@ export class DriveFolderService {
 		opts?: {
 			limit?: number,
 			page?: number,
+			sortKeys?: ExploreSortKey[],
 		},
 	) {
 		const query = params.query;
@@ -137,6 +215,51 @@ export class DriveFolderService {
 			builder.andWhere('drive_explore.kind IN (:...exploreKinds)', { exploreKinds: query.kinds });
 		}
 
+		if (opts?.sortKeys && opts.sortKeys.length > 0) {
+			for (const sortKey of opts.sortKeys) {
+				const direction = sortKey.startsWith('-') ? 'DESC' : 'ASC';
+				const key = sortKey.replace(/^[+-]/, '');
+				switch (key) {
+					case 'id': {
+						builder.addOrderBy('drive_explore.id', direction);
+						break;
+					}
+					case 'name': {
+						builder.addOrderBy('drive_explore.name', direction);
+						break;
+					}
+					case 'fileType': {
+						builder.addOrderBy('drive_explore.fileType', direction);
+						break;
+					}
+					case 'size': {
+						builder.addOrderBy('drive_explore.size', direction);
+						break;
+					}
+					case 'comment': {
+						builder.addOrderBy('drive_explore.comment', direction);
+						break;
+					}
+					case 'isSensitive': {
+						builder.addOrderBy('drive_explore.isSensitive', direction);
+						break;
+					}
+					case 'isLink': {
+						builder.addOrderBy('drive_explore.isLink', direction);
+						break;
+					}
+					case 'kind': {
+						builder.addOrderBy('drive_explore.kind', direction);
+						break;
+					}
+				}
+			}
+		} else {
+			builder
+				.addOrderBy('drive_explore.kind', 'DESC')
+				.addOrderBy('drive_explore.id', 'ASC');
+		}
+
 		const limit = opts?.limit ?? 10;
 		if (opts?.page) {
 			builder.skip(limit * (opts.page - 1));
@@ -144,7 +267,7 @@ export class DriveFolderService {
 
 		builder.take(limit);
 
-		const [items, count] = await builder.orderBy('drive_explore.kind', 'DESC').getManyAndCount();
+		const [items, count] = await builder.getManyAndCount();
 		return {
 			items: items,
 			count: (count > limit ? items.length : count),

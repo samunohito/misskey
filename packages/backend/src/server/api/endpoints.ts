@@ -49,6 +49,7 @@ import * as ep___admin_drive_system_folders_create from './endpoints/admin/drive
 import * as ep___admin_drive_system_folders_delete from './endpoints/admin/drive/system/folders/delete.js';
 import * as ep___admin_drive_system_folders_search from './endpoints/admin/drive/system/folders/search.js';
 import * as ep___admin_drive_system_folders_update from './endpoints/admin/drive/system/folders/update.js';
+import * as ep___admin_drive_system_folders_pwd from './endpoints/admin/drive/system/folders/pwd.js';
 import * as ep___admin_emoji_addAliasesBulk from './endpoints/admin/emoji/add-aliases-bulk.js';
 import * as ep___admin_emoji_add from './endpoints/admin/emoji/add.js';
 import * as ep___admin_emoji_copy from './endpoints/admin/emoji/copy.js';
@@ -441,6 +442,7 @@ const eps = [
 	['admin/drive/system/folders/delete', ep___admin_drive_system_folders_delete],
 	['admin/drive/system/folders/search', ep___admin_drive_system_folders_search],
 	['admin/drive/system/folders/update', ep___admin_drive_system_folders_update],
+	['admin/drive/system/folders/pwd', ep___admin_drive_system_folders_pwd],
 	['admin/emoji/add-aliases-bulk', ep___admin_emoji_addAliasesBulk],
 	['admin/emoji/add', ep___admin_emoji_add],
 	['admin/emoji/copy', ep___admin_emoji_copy],

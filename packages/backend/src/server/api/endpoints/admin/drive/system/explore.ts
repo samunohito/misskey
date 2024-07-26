@@ -5,7 +5,7 @@
 
 import { Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
-import { DriveFolderService } from '@/core/DriveFolderService.js';
+import { DriveFolderService, exploreSortKeys } from '@/core/DriveFolderService.js';
 import { exploreKinds } from '@/models/DriveExploreView.js';
 import { ApiError } from '@/server/api/error.js';
 import { IdService } from '@/core/IdService.js';
@@ -55,8 +55,8 @@ export const paramDef = {
 				comment: { type: 'string' },
 				isSensitive: { type: 'boolean' },
 				isLink: { type: 'boolean' },
-				sizeMin: { type: 'integer' },
-				sizeMax: { type: 'integer' },
+				sizeMin: { type: 'integer', minimum: 0 },
+				sizeMax: { type: 'integer', minimum: 0 },
 				kinds: {
 					type: 'array',
 					items: {
@@ -68,7 +68,8 @@ export const paramDef = {
 			required: [],
 		},
 		limit: { type: 'integer', minimum: 1, maximum: 100, default: 10 },
-		page: { type: 'integer' },
+		page: { type: 'integer', minimum: 1, default: 1 },
+		sortKeys: { type: 'array', items: { type: 'string', enum: exploreSortKeys }, default: [] },
 	},
 	required: ['currentFolderId'],
 } as const;

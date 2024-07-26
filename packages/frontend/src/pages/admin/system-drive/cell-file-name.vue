@@ -8,7 +8,12 @@ SPDX-License-Identifier: AGPL-3.0-only
 	<div :class="$style.icon">
 		<span v-if="thumbType === 'file'" class="ti ti-file" style="line-height: normal"/>
 		<span v-else-if="thumbType === 'folder'" class="ti ti-folder" style="line-height: normal"/>
-		<img v-else-if="thumbType === 'image'" :src="item.thumbnailUrl" :class="$style.thumbnail" :alt="item.comment"/>
+		<img
+			v-else-if="thumbType === 'image'"
+			:src="item.thumbnailUrl ?? undefined"
+			:class="$style.thumbnail"
+			:alt="item.comment ?? ''"
+		/>
 	</div>
 	<div>{{ props.cell.value }}</div>
 </div>
@@ -16,12 +21,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <script setup lang="ts">
 
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted } from 'vue';
 import { GridCell } from '@/components/grid/cell.js';
 import { GridItem } from '@/pages/admin/system-drive/types.js';
 
-const imageMimeTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml', 'image/gif'] as const;
-
+const imageMimeTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml', 'image/gif'];
 const props = defineProps<{
 	cell: GridCell;
 	extraParams: GridItem;
@@ -32,7 +36,7 @@ const item = computed(() => props.extraParams);
 const thumbType = computed(() => {
 	const _item = item.value;
 	switch (true) {
-		case imageMimeTypes.includes(_item.fileType):
+		case _item.fileType && imageMimeTypes.includes(_item.fileType):
 			return 'image';
 		case _item.kind === 'folder':
 			return 'folder';

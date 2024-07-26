@@ -47,7 +47,7 @@ export type CustomCellTemplate = {
 	/**
 	 * セルに埋め込むコンポーネントにbindする外部パラメータを返す関数を設定する.
 	 */
-	extraParams?: () => Record<string, any>;
+	extraParams?: (cell: GridCell) => Record<string, any>;
 	events?: {
 		cellEditing?: (cell: GridCell, context: CustomCellTemplateContext) => void;
 	};

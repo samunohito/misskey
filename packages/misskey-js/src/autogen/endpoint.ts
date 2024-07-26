@@ -58,6 +58,8 @@ import type {
 	AdminDriveSystemFoldersSearchResponse,
 	AdminDriveSystemFoldersUpdateRequest,
 	AdminDriveSystemFoldersUpdateResponse,
+	AdminDriveSystemFoldersPwdRequest,
+	AdminDriveSystemFoldersPwdResponse,
 	AdminEmojiAddAliasesBulkRequest,
 	AdminEmojiAddRequest,
 	AdminEmojiAddResponse,
@@ -630,6 +632,7 @@ export type Endpoints = {
 	'admin/drive/system/folders/delete': { req: AdminDriveSystemFoldersDeleteRequest; res: EmptyResponse };
 	'admin/drive/system/folders/search': { req: AdminDriveSystemFoldersSearchRequest; res: AdminDriveSystemFoldersSearchResponse };
 	'admin/drive/system/folders/update': { req: AdminDriveSystemFoldersUpdateRequest; res: AdminDriveSystemFoldersUpdateResponse };
+	'admin/drive/system/folders/pwd': { req: AdminDriveSystemFoldersPwdRequest; res: AdminDriveSystemFoldersPwdResponse };
 	'admin/emoji/add-aliases-bulk': { req: AdminEmojiAddAliasesBulkRequest; res: EmptyResponse };
 	'admin/emoji/add': { req: AdminEmojiAddRequest; res: AdminEmojiAddResponse };
 	'admin/emoji/copy': { req: AdminEmojiCopyRequest; res: AdminEmojiCopyResponse };
@@ -1022,6 +1025,7 @@ export const endpointReqTypes: Record<keyof Endpoints, 'application/json' | 'mul
 	'admin/drive/system/folders/delete': 'application/json',
 	'admin/drive/system/folders/search': 'application/json',
 	'admin/drive/system/folders/update': 'application/json',
+	'admin/drive/system/folders/pwd': 'application/json',
 	'admin/emoji/add-aliases-bulk': 'application/json',
 	'admin/emoji/add': 'application/json',
 	'admin/emoji/copy': 'application/json',
