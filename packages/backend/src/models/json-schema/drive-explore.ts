@@ -27,8 +27,7 @@ export const packedDriveExploreItemSchema = {
 			example: 'image/jpeg',
 		},
 		size: {
-			// バイト単位なのでnumberの値以上が来た時のため文字列型
-			type: 'string',
+			type: 'number',
 			optional: false, nullable: true,
 			example: 51469,
 		},

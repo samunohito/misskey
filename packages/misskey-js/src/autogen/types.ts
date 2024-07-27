@@ -4467,7 +4467,7 @@ export type components = {
       /** @example image/jpeg */
       fileType: string | null;
       /** @example 51469 */
-      size: string | null;
+      size: number | null;
       comment: string | null;
       isSensitive: boolean | null;
       isLink: boolean | null;
