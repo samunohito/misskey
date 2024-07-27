@@ -578,7 +578,7 @@ async function refreshCustomEmojis() {
 			query: query,
 			limit: limit,
 			page: currentPage.value,
-			sortKeys: sortOrders.value.map(({ key, direction }) => `${direction}${key}`) as any,
+			sortKeys: sortOrders.value.map(({ key, direction }) => `${direction}${key}` as any),
 		}),
 		() => {
 		},
