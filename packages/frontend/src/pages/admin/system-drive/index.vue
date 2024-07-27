@@ -182,7 +182,6 @@ const itemSortKeys = [
 	'size',
 	'comment',
 	'isSensitive',
-	'isLink',
 	'kind',
 ];
 type ItemSortKey = typeof itemSortKeys[number];
@@ -223,12 +222,12 @@ function setupGrid(): GridSetting {
 		cols: [
 			{ bindTo: 'checked', icon: 'ti-trash', type: 'boolean', editable: true, width: 34 },
 			{
-				bindTo: 'name', title: 'name', type: 'custom', editable: false, width: 280,
+				bindTo: 'name', title: 'name', type: 'custom', editable: true, width: 280,
 				validators: [notBlank, nameMaxLength, nameForbiddenWords],
-				customTemplate: createCustomCellTemplate<typeof XNameCell>(
-					() => XNameCell,
-					(cell: GridCell) => gridItems.value[cell.row.index],
-				),
+				customTemplate: createCustomCellTemplate<typeof XNameCell>({
+					template: () => XNameCell,
+					extraParams: (cell: GridCell) => gridItems.value[cell.row.index],
+				}),
 				events: {
 					async dblclick(cell) {
 						const item = gridItems.value[cell.row.index];

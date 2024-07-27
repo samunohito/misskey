@@ -32,8 +32,6 @@ export const exploreSortKeys = [
 	'-comment',
 	'+isSensitive',
 	'-isSensitive',
-	'+isLink',
-	'-isLink',
 	'+kind',
 	'-kind',
 ];
@@ -233,10 +231,6 @@ export class DriveFolderService {
 					}
 					case 'isSensitive': {
 						builder.addOrderBy('drive_explore.isSensitive', direction);
-						break;
-					}
-					case 'isLink': {
-						builder.addOrderBy('drive_explore.isLink', direction);
 						break;
 					}
 					case 'kind': {

@@ -30,6 +30,8 @@ export type ExportParamsType<T extends Component> = T extends new () => { $props
 /**
  * カスタムセルテンプレートを設定するための型.カスタムセルテンプレートを使用する場合、`type`に`custom`を設定する.
  *
+ * ## カスタムテンプレートにパラメータを渡す
+ *
  * {@link template}に設定したコンポーネントには以下の値がそれぞれbindされる.
  * ```ts
  * const props = defineProps<{
@@ -43,6 +45,55 @@ export type ExportParamsType<T extends Component> = T extends new () => { $props
  * mountedはコンポーネントがマウントされたら呼び出す必要がある.
  * セルの横幅を計算するためには、コンポーネントがマウントされた後に要素の横幅を取得する必要があるが、
  * セル側からだと埋め込まれたコンポーネントのマウントがいつ終わったのか検知出来ないため、この関数オブジェクトを通じて手動で通知する.
+ *
+ * ## カスタムテンプレートからイベントを受け取る
+ *
+ * カスタムテンプレートからemitされたイベントは、{@link extraEvents}に設定した関数オブジェクトを通じて受け取り可能.
+ * emitのイベント名と{@link extraEvents}に設定した関数オブジェクトの名称は一致している必要がある.
+ *
+ * このように定義されたemit関数オブジェクトからの通知を受け取るには、以下のように記述する.
+ * ```ts
+ * // カスタムテンプレート側の記述
+ * const emit = defineEmits<{
+ * 	(ev: 'click', event: MouseEvent)
+ * }>();
+ *
+ * // この定義側の記述
+ * ```ts
+ * extraEvents: () => ({
+ * 	click: (event: MouseEvent) => console.log('click', event)
+ * })
+ * ```
+ *
+ * ## セルの編集モードへの対応
+ *
+ * 編集モードはテキストボックスをオーバーレイ表示するなど、セルの値を直接編集するためのUIが想定される.
+ * カスタムテンプレート側でそれを実現するためには、セルが編集モードになったことを検知して表示の切り替えをなどの制御が必要になる.
+ * 上記を実現するため、「編集モードになったこと」「編集モードを抜けたこと」をカスタムテンプレート側で知るための仕組みが用意されている.
+ *
+ * 具体的には以下の例のように、関数beginEditと関数endEditをそれぞれ実装し、defineExposeで公開すればよい.
+ * これにより、セルが編集モードになる直前と編集モードを抜ける直前にそれぞれ呼び出される.
+ *
+ * ```ts
+ * // 編集モードになる直前に呼び出される
+ * function beginEdit(): boolean {
+ * 	// falseを返すか、この関数が未実装だと編集モードにならない
+ * 	return true;
+ * }
+ *
+ * // 編集モード解除直前に呼び出される
+ * function endEdit(): CellValue {
+ * 	// この値がセルおよびグリッドにbindした値に書き込まれる
+ * 	return '編集後の値';
+ * }
+ *
+ * defineExpose({
+ * 	beginEdit,
+ * 	endEdit,
+ * });
+ * ```
+ *
+ * 関数名・シグネチャが異なると正しく動作しない可能性があるので、例の通りに実装する.
  *
  * @see createCustomCellTemplate
  */
@@ -58,7 +109,7 @@ export type CustomCellTemplate<T extends Component> = {
 	 * セル側から通知されるイベントを受け取るための関数オブジェクトを設定する
 	 */
 	events?: {
-		// not implement
+		// nop
 	};
 	/**
 	 * セルに埋め込むコンポーネントにv-bindでbindする外部パラメータを返す関数を設定する.
@@ -71,31 +122,14 @@ export type CustomCellTemplate<T extends Component> = {
 };
 
 export function createCustomCellTemplate<T extends Component>(
-	template: () => T,
-	extraParams?: (cell: GridCell) => ExportParamsType<T>,
-	extraEvents?: () => ComponentEmit<T>,
+	params: {
+		template: () => T,
+		events?: CustomCellTemplate<T>['events'],
+		extraParams?: (cell: GridCell) => ExportParamsType<T>,
+		extraEvents?: () => ComponentEmit<T>,
+	},
 ): CustomCellTemplate<T> {
-	return {
-		template,
-		extraParams,
-		extraEvents,
-	};
-}
-
-export type CustomCellTemplateContext = {
-	operation: {
-		/**
-		 * セルを編集状態にする.
-		 * セルの外がクリックされるなどすると自動的に編集状態は解除される.
-		 */
-		beginEdit: () => void;
-		/**
-		 * セルの編集状態を解除する.
-		 * @param applyValue 編集中の値を適用するかどうか
-		 * @param newValue applyValueがtrueの場合、適用する値
-		 */
-		endEdit: (applyValue: boolean, newValue: CellValue) => void;
-	}
+	return params;
 }
 
 export type GridColumnSetting = {

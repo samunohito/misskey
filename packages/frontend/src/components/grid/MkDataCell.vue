@@ -27,75 +27,79 @@ SPDX-License-Identifier: AGPL-3.0-only
 			[cellAlign === 'center' ? $style.center : (cellAlign === 'right' ? $style.right : $style.left)],
 		]"
 	>
-		<div v-if="!editing" ref="contentAreaEl" :class="$style.contentArea">
-			<div :class="$style.content">
-				<div v-if="cellType === 'text'">
-					{{ cell.value }}
-				</div>
-				<div v-if="cellType === 'number'">
-					{{ cell.value }}
-				</div>
-				<div v-if="cellType === 'date'">
-					{{ cell.value }}
-				</div>
-				<div v-else-if="cellType === 'boolean'">
-					<span v-if="cell.value === true" class="ti ti-check"/>
-					<span v-else class="ti"/>
-				</div>
-				<div v-else-if="cellType === 'image'">
-					<img
-						:src="cell.value as string"
-						:alt="cell.value as string"
-						:class="$style.viewImage"
-						@load="emitContentSizeChanged"
-					/>
-				</div>
-				<div v-else-if="cellType === 'custom' && customTemplateComponent">
-					<component
-						:is="customTemplateComponent"
-						:cell="cell"
-						:extraParams="customTemplateExtraParams"
-						:mounted="onCustomTemplateMounted"
-						v-on="customTemplateExtraEvents"
-					/>
+		<div v-if="cellType === 'custom' && customTemplateComponent" :class="$style.customTemplateArea">
+			<component
+				:is="customTemplateComponent"
+				ref="customTemplateEl"
+				:cell="cell"
+				:extraParams="customTemplateExtraParams"
+				:mounted="onCustomTemplateMounted"
+				v-on="customTemplateExtraEvents"
+			/>
+		</div>
+		<template v-else>
+			<div v-if="!editing" ref="contentAreaEl" :class="$style.contentArea">
+				<div :class="$style.content">
+					<div v-if="cellType === 'text'">
+						{{ cell.value }}
+					</div>
+					<div v-if="cellType === 'number'">
+						{{ cell.value }}
+					</div>
+					<div v-if="cellType === 'date'">
+						{{ cell.value }}
+					</div>
+					<div v-else-if="cellType === 'boolean'">
+						<span v-if="cell.value === true" class="ti ti-check"/>
+						<span v-else class="ti"/>
+					</div>
+					<div v-else-if="cellType === 'image'">
+						<img
+							:src="cell.value as string"
+							:alt="cell.value as string"
+							:class="$style.viewImage"
+							@load="emitContentSizeChanged"
+						/>
+					</div>
 				</div>
 			</div>
-		</div>
-		<div v-else ref="inputAreaEl" :class="$style.inputArea">
-			<input
-				v-if="cellType === 'text'"
-				type="text"
-				:class="$style.editingInput"
-				:value="editingValue"
-				@input="onInputText"
-				@mousedown.stop
-				@contextmenu.stop
-			/>
-			<input
-				v-if="cellType === 'number'"
-				type="number"
-				:class="$style.editingInput"
-				:value="editingValue"
-				@input="onInputText"
-				@mousedown.stop
-				@contextmenu.stop
-			/>
-			<input
-				v-if="cellType === 'date'"
-				type="date"
-				:class="$style.editingInput"
-				:value="editingValue"
-				@input="onInputText"
-				@mousedown.stop
-				@contextmenu.stop
-			/>
-		</div>
+			<div v-else ref="inputAreaEl" :class="$style.inputArea">
+				<input
+					v-if="cellType === 'text'"
+					type="text"
+					:class="$style.editingInput"
+					:value="editingValue"
+					@input="onInputText"
+					@mousedown.stop
+					@contextmenu.stop
+				/>
+				<input
+					v-if="cellType === 'number'"
+					type="number"
+					:class="$style.editingInput"
+					:value="editingValue"
+					@input="onInputText"
+					@mousedown.stop
+					@contextmenu.stop
+				/>
+				<input
+					v-if="cellType === 'date'"
+					type="date"
+					:class="$style.editingInput"
+					:value="editingValue"
+					@input="onInputText"
+					@mousedown.stop
+					@contextmenu.stop
+				/>
+			</div>
+		</template>
 	</div>
 </div>
 </template>
 
 <script setup lang="ts">
 import { computed, defineAsyncComponent, nextTick, onMounted, onUnmounted, ref, shallowRef, toRefs, watch } from 'vue';
+import { Component } from 'react';
 import { GridEventEmitter, Size } from '@/components/grid/grid.js';
 import { useTooltip } from '@/scripts/use-tooltip.js';
 import * as os from '@/os.js';
@@ -120,6 +124,7 @@ const { cell, bus } = toRefs(props);
 const rootEl = shallowRef<InstanceType<typeof HTMLTableCellElement>>();
 const contentAreaEl = shallowRef<InstanceType<typeof HTMLDivElement>>();
 const inputAreaEl = shallowRef<InstanceType<typeof HTMLDivElement>>();
+const customTemplateEl = shallowRef<InstanceType<typeof Component>>();
 
 /** 値が編集中かどうか */
 const editing = ref<boolean>(false);
@@ -158,7 +163,7 @@ watch(() => [cell.value.value], () => {
 
 watch(() => cell.value.selected, () => {
 	if (cell.value.selected) {
-		rootEl.value?.focus();
+		requestFocus();
 	}
 });
 
@@ -174,12 +179,15 @@ function onCellDoubleClick(ev: MouseEvent) {
 function onOutsideMouseDown(ev: MouseEvent) {
 	const isOutside = ev.target instanceof Node && !rootEl.value?.contains(ev.target);
 	if (isOutside || !equalCellAddress(cell.value.address, getCellAddress(ev.target as HTMLElement))) {
-		endEditing(true, editingValue.value);
-		editingValue.value = undefined;
+		endEditing(true, false);
 	}
 }
 
 function onCellKeyDown(ev: KeyboardEvent) {
+	if (_DEV_) {
+		console.log('onCellKeyDown', ev.code);
+	}
+
 	if (!editing.value) {
 		ev.preventDefault();
 		switch (ev.code) {
@@ -193,15 +201,13 @@ function onCellKeyDown(ev: KeyboardEvent) {
 	} else {
 		switch (ev.code) {
 			case 'Escape': {
-				endEditing(false, editingValue.value);
-				editingValue.value = undefined;
+				endEditing(false, true);
 				break;
 			}
 			case 'NumpadEnter':
 			case 'Enter': {
 				if (!ev.isComposing) {
-					endEditing(true, editingValue.value);
-					editingValue.value = undefined;
+					endEditing(true, true);
 				}
 			}
 		}
@@ -230,7 +236,7 @@ function unregisterOutsideMouseDown() {
 }
 
 async function beginEditing(target: HTMLElement) {
-	if (editing.value || !cell.value.column.setting.editable) {
+	if (editing.value || !cell.value.selected || !cell.value.column.setting.editable) {
 		return;
 	}
 
@@ -248,7 +254,7 @@ async function beginEditing(target: HTMLElement) {
 			emitValueChange(newValue);
 		}
 
-		rootEl.value?.focus();
+		requestFocus();
 	} else {
 		switch (cellType.value) {
 			case 'number':
@@ -273,42 +279,49 @@ async function beginEditing(target: HTMLElement) {
 				break;
 			}
 			case 'custom': {
-				const e = cell.value.column.setting.customTemplate?.events?.cellEditing;
-				if (e) {
-					e(cell.value, {
-						operation: {
-							beginEdit: () => {
-								editing.value = true;
-								registerOutsideMouseDown();
-								emit('operation:beginEdit', cell.value);
-							},
-							endEdit: (applyValue: boolean, newValue: CellValue) => {
-								endEditing(applyValue, newValue);
-							},
-						},
-					});
+				if (customTemplateEl.value?.beginEdit() === true) {
+					editing.value = true;
+					registerOutsideMouseDown();
+					emit('operation:beginEdit', cell.value);
 				}
+
 				break;
 			}
 		}
 	}
 }
 
-function endEditing(applyValue: boolean, newValue: CellValue) {
+function endEditing(applyValue: boolean, requireFocus: boolean) {
 	if (!editing.value) {
 		return;
+	}
+
+	let _newValue: CellValue;
+	if (cellType.value === 'custom') {
+		_newValue = customTemplateEl.value?.endEdit() as CellValue;
+	} else {
+		_newValue = editingValue.value;
+		editingValue.value = undefined;
 	}
 
 	emit('operation:endEdit', cell.value);
 	unregisterOutsideMouseDown();
 
-	if (applyValue && newValue !== cell.value.value) {
-		emitValueChange(newValue);
+	if (applyValue && _newValue !== cell.value.value) {
+		emitValueChange(_newValue);
 	}
 
 	editing.value = false;
 
-	rootEl.value?.focus();
+	if (requireFocus) {
+		requestFocus();
+	}
+}
+
+function requestFocus() {
+	nextTick(() => {
+		rootEl.value?.focus();
+	});
 }
 
 function emitValueChange(newValue: CellValue) {
@@ -401,7 +414,7 @@ $cellHeight: 28px;
 	}
 }
 
-.contentArea, .inputArea {
+.contentArea, .inputArea, .customTemplateArea {
 	display: flex;
 	align-items: center;
 }

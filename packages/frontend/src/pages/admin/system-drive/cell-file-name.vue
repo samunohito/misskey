@@ -24,7 +24,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 <script setup lang="ts">
 
 import { computed, onMounted } from 'vue';
-import { GridCell } from '@/components/grid/cell.js';
+import { CellValue, GridCell } from '@/components/grid/cell.js';
 import { GridItem } from '@/pages/admin/system-drive/types.js';
 
 const imageMimeTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml', 'image/gif'];
@@ -48,10 +48,24 @@ const thumbType = computed(() => {
 	}
 });
 
+function beginEdit(): boolean {
+	// falseを返すか、この関数が未実装だと編集モードにならない
+	return true;
+}
+
+function endEdit(): CellValue {
+	// この値がセルおよびグリッドにbindした値に書き込まれる
+	return '編集後の値';
+}
+
 onMounted(() => {
 	props.mounted();
 });
 
+defineExpose({
+	beginEdit,
+	endEdit,
+});
 </script>
 
 <style module lang="scss">
