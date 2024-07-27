@@ -81,17 +81,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 								</MkSelect>
 
 								<MkSelect
-									v-model="queryLink"
-									:class="[$style.col1, $style.row3]"
-								>
-									<template #label>link</template>
-									<option :value="null">-</option>
-									<option :value="true">true</option>
-									<option :value="false">false</option>
-								</MkSelect>
-								<MkSelect
 									v-model="querySensitive"
-									:class="[$style.col2, $style.row3]"
+									:class="[$style.col1, $style.row3]"
 								>
 									<template #label>sensitive</template>
 									<option :value="null">-</option>
@@ -141,6 +132,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 					<div :class="$style.buttons">
 						<MkButton danger style="margin-right: auto" @click="onDeleteButtonClicked">{{ i18n.ts.delete }}</MkButton>
+						<MkButton primary :disabled="updateButtonDisabled" @click="onUpdateButtonClicked">
+							{{
+								i18n.ts.update
+							}}
+						</MkButton>
 						<MkButton @click="onGridResetButtonClicked">{{ i18n.ts.reset }}</MkButton>
 					</div>
 				</div>
@@ -177,6 +173,7 @@ import MkPageHeader from '@/components/global/MkPageHeader.vue';
 import { emptyStrToUndefined } from '@/scripts/str.js';
 import { createCustomCellTemplate } from '@/components/grid/column.js';
 import { useStream } from '@/stream.js';
+import { validators } from '@/components/grid/cell-validators.js';
 
 const itemSortKeys = [
 	'id',
@@ -193,6 +190,9 @@ type ItemSortKey = typeof itemSortKeys[number];
 function setupGrid(): GridSetting {
 	const $style = useCssModule();
 
+	const notBlank = validators.notBlank();
+	const nameForbiddenWords = validators.forbiddenWords(['\\', '/', '..']);
+	const nameMaxLength = validators.maxLength(200);
 	return {
 		row: {
 			showNumber: true,
@@ -224,6 +224,7 @@ function setupGrid(): GridSetting {
 			{ bindTo: 'checked', icon: 'ti-trash', type: 'boolean', editable: true, width: 34 },
 			{
 				bindTo: 'name', title: 'name', type: 'custom', editable: false, width: 280,
+				validators: [notBlank, nameMaxLength, nameForbiddenWords],
 				customTemplate: createCustomCellTemplate<typeof XNameCell>(
 					() => XNameCell,
 					(cell: GridCell) => gridItems.value[cell.row.index],
@@ -256,9 +257,9 @@ function setupGrid(): GridSetting {
 					}
 				},
 			},
-			{ bindTo: 'isSensitive', type: 'boolean', editable: false, width: 90 },
-			{ bindTo: 'isLink', type: 'boolean', editable: false, width: 90 },
-			{ bindTo: 'comment', type: 'text', editable: false, width: 180 },
+			{ bindTo: 'isSensitive', type: 'boolean', editable: true, width: 90 },
+			{ bindTo: 'comment', type: 'text', editable: true, width: 180 },
+			{ bindTo: 'url', type: 'text', editable: false, width: 280 },
 		],
 		cells: {},
 	};
@@ -274,7 +275,6 @@ const queryComment = ref<string | null>(null);
 const querySizeMin = ref<string | null>(null);
 const querySizeMax = ref<string | null>(null);
 const querySensitive = ref<string | null>(null);
-const queryLink = ref<string | null>(null);
 const queryKind = ref<'file' | 'folder' | null>(null);
 const sortOrders = ref<SortOrder<ItemSortKey>[]>([]);
 
@@ -311,6 +311,72 @@ function onGridCellValueChange(event: GridCellValueChangeEvent) {
 	if (gridItems.value.length > row.index && column.setting.bindTo in gridItems.value[row.index]) {
 		gridItems.value[row.index][column.setting.bindTo] = newValue;
 	}
+}
+
+async function onUpdateButtonClicked() {
+	const _items = gridItems.value;
+	const _originItems = originGridItems.value;
+	if (_items.length !== _originItems.length) {
+		throw new Error('The number of items has been changed. Please refresh the page and try again.');
+	}
+
+	const updatedItems = _items.filter((it, idx) => !it.checked && JSON.stringify(it) !== JSON.stringify(_originItems[idx]));
+	if (updatedItems.length === 0) {
+		await os.alert({
+			type: 'info',
+			text: i18n.ts._drive.alertUpdateFilesNothingDescription,
+		});
+		return;
+	}
+
+	const confirm = await os.confirm({
+		type: 'info',
+		title: i18n.ts._drive.confirmUpdateFilesTitle,
+		text: i18n.tsx._drive.confirmUpdateFilesDescription({ count: updatedItems.length }),
+	});
+	if (confirm.canceled) {
+		return;
+	}
+	console.log(updatedItems);
+	const action = () => {
+		return updatedItems.map(item =>
+			(
+				item.kind === 'file'
+					? misskeyApi('drive/files/update', {
+						fileId: item.id,
+						name: item.name,
+						comment: item.comment ?? null,
+						isSensitive: item.isSensitive ?? false,
+					})
+					: misskeyApi('drive/folders/update', {
+						folderId: item.id,
+						name: item.name,
+					})
+			)
+				.then(() => ({ item, success: true, err: undefined }))
+				.catch(err => ({ item, success: false, err })),
+		);
+	};
+
+	const result = await os.promiseDialog(Promise.all(action()));
+	const failedItems = result.filter(it => !it.success);
+
+	if (failedItems.length > 0) {
+		await os.alert({
+			type: 'error',
+			title: i18n.ts._drive.alertFilesRegisterFailedTitle,
+			text: i18n.ts._drive.alertFilesRegisterFailedDescription,
+		});
+	}
+
+	// requestLogs.value = result.map(it => ({
+	// 	failed: !it.success,
+	// 	url: it.item.url,
+	// 	name: it.item.name,
+	// 	error: it.err ? JSON.stringify(it.err) : undefined,
+	// }));
+
+	await refreshDriveItems(currentFolderId.value, currentPage.value);
 }
 
 async function onDeleteButtonClicked() {
@@ -370,7 +436,6 @@ function onQueryResetButtonClicked() {
 	querySizeMin.value = null;
 	querySizeMax.value = null;
 	querySensitive.value = null;
-	queryLink.value = null;
 	queryKind.value = null;
 }
 
@@ -388,6 +453,7 @@ function onStreamDriveFileUpdated(file: Misskey.entities.DriveFile) {
 			thumbnailUrl: file.thumbnailUrl,
 			isSensitive: file.isSensitive,
 		};
+		originGridItems.value[index] = JSON.parse(JSON.stringify(gridItems.value[index]));
 	}
 }
 
@@ -404,6 +470,7 @@ function onStreamDriveFolderUpdated(updatedFolder: Misskey.entities.DriveFolder)
 			...item,
 			name: updatedFolder.name,
 		};
+		originGridItems.value[index] = JSON.parse(JSON.stringify(gridItems.value[index]));
 	}
 }
 
@@ -427,7 +494,6 @@ async function refreshDriveItems(folderId: string | null, page: number) {
 				sizeMin: querySizeMin.value ? parseInt(querySizeMin.value) : undefined,
 				sizeMax: querySizeMax.value ? parseInt(querySizeMax.value) : undefined,
 				sensitive: querySensitive.value === 'true' ? true : querySensitive.value === 'false' ? false : undefined,
-				link: queryLink.value === 'true' ? true : queryLink.value === 'false' ? false : undefined,
 				kinds: queryKind.value ? [queryKind.value] : undefined,
 			},
 			limit: 100,
@@ -449,7 +515,6 @@ async function refreshDriveItems(folderId: string | null, page: number) {
 		url: it.url,
 		thumbnailUrl: it.thumbnailUrl,
 		isSensitive: it.isSensitive,
-		isLink: it.isLink,
 		kind: it.kind,
 	}));
 	allPages.value = result.allPages;

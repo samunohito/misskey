@@ -54,7 +54,6 @@ export const paramDef = {
 				fileType: { type: 'string', nullable: true, pattern: /^([a-zA-Z\/\-*]+(\s)?)+$/.toString().slice(1, -1) },
 				comment: { type: 'string' },
 				isSensitive: { type: 'boolean' },
-				isLink: { type: 'boolean' },
 				sizeMin: { type: 'integer', minimum: 0 },
 				sizeMax: { type: 'integer', minimum: 0 },
 				kinds: {
@@ -91,7 +90,6 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 							fileTypes: ps.query?.fileType ? ps.query.fileType.split(/\s/) : undefined,
 							commentWords: ps.query?.comment ? ps.query.comment.split(/\s/) : undefined,
 							isSensitive: ps.query?.isSensitive,
-							isLink: ps.query?.isLink,
 							sizeMin: ps.query?.sizeMin,
 							sizeMax: ps.query?.sizeMax,
 							kinds: ps.query?.kinds ? ps.query.kinds : undefined,

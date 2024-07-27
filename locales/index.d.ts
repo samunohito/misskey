@@ -9359,6 +9359,26 @@ export interface Locale extends ILocale {
          * チェックがつけられた{count}個のファイルを削除します。実行しますか？
          */
         "confirmDeleteFilesDescription": ParameterizedString<"count">;
+        /**
+         * 更新対象のファイルはありません。
+         */
+        "alertUpdateFilesNothingDescription": string;
+        /**
+         * 確認
+         */
+        "confirmUpdateFilesTitle": string;
+        /**
+         * {count}個のファイルを更新します。実行しますか？
+         */
+        "confirmUpdateFilesDescription": ParameterizedString<"count">;
+        /**
+         * エラー
+         */
+        "alertFilesRegisterFailedTitle": string;
+        /**
+         * ファイルの更新・削除に失敗しました。詳細は登録ログをご確認ください。。
+         */
+        "alertFilesRegisterFailedDescription": string;
     };
     "_webhookSettings": {
         /**
@@ -10133,9 +10153,17 @@ export interface Locale extends ILocale {
              */
             "requiredValue": string;
             /**
-             * 正規表現によるバリデーションはtype:textのカラムのみサポートします。
+             * 空欄または空文字のみにすることはできません。
              */
-            "columnTypeNotSupport": string;
+            "notEmpty": string;
+            /**
+             * {max}文字を超えています。
+             */
+            "maxLengthExceeded": ParameterizedString<"max">;
+            /**
+             * {words}を含めることはできません。
+             */
+            "forbiddenWord": ParameterizedString<"words">;
             /**
              * この値は{pattern}のパターンに一致しません
              */

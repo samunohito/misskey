@@ -117,7 +117,6 @@ export class DriveFolderService {
 	 * @param {string[] | undefined} params.query.fileTypes ファイル種別
 	 * @param {string[] | undefined} params.query.commentWords コメント
 	 * @param {boolean | undefined} params.query.isSensitive センシティブフラグつきファイルかどうか
-	 * @param {boolean | undefined} params.query.isLink リンクファイルかどうか
 	 * @param {number | undefined} params.query.sizeMin ファイルサイズの最小値
 	 * @param {number | undefined} params.query.sizeMax ファイルサイズの最大値
 	 * @param {ExploreKind[] | undefined} params.query.kinds ファイル種別
@@ -136,7 +135,6 @@ export class DriveFolderService {
 				fileTypes?: string[],
 				commentWords?: string[],
 				isSensitive?: boolean,
-				isLink?: boolean,
 				sizeMin?: number,
 				sizeMax?: number,
 				kinds?: ExploreKind[],
@@ -187,13 +185,6 @@ export class DriveFolderService {
 			builder.andWhere(new Brackets(qb => {
 				qb.orWhere('drive_explore.isSensitive = :isSensitive', { isSensitive: query.isSensitive });
 				qb.orWhere('drive_explore.isSensitive IS NULL');
-			}));
-		}
-
-		if (query.isLink !== undefined) {
-			builder.andWhere(new Brackets(qb => {
-				qb.orWhere('drive_explore.isLink = :isLink', { isLink: query.isLink });
-				qb.orWhere('drive_explore.isLink IS NULL');
 			}));
 		}
 

@@ -7,7 +7,7 @@ export function emptyStrToUndefined(value: string | null) {
 	return value ? value : undefined;
 }
 
-export function emptyStrToNull(value: string) {
+export function emptyStrToNull(value: string | null) {
 	return value === '' ? null : value;
 }
 

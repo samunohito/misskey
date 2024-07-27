@@ -4470,7 +4470,6 @@ export type components = {
       size: number | null;
       comment: string | null;
       isSensitive: boolean | null;
-      isLink: boolean | null;
       /** Format: url */
       url: string | null;
       /** Format: url */
@@ -7032,7 +7031,6 @@ export type operations = {
             fileType?: string | null;
             comment?: string;
             isSensitive?: boolean;
-            isLink?: boolean;
             sizeMin?: number;
             sizeMax?: number;
             kinds?: ('file' | 'folder' | 'all')[];

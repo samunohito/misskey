@@ -78,19 +78,55 @@ class ValidatorPreset {
 		};
 	}
 
-	regex(pattern: RegExp): GridCellValidator {
+	notBlank(): GridCellValidator {
 		return {
-			name: 'regex',
-			validate: ({ value, column }): ValidatorResult => {
-				if (column.setting.type !== 'text') {
+			name: 'notBlank',
+			validate: ({ value }): ValidatorResult => {
+				return {
+					valid: (typeof value !== 'string') || (value.trim().length > 0),
+					message: i18n.ts._gridComponent._error.notEmpty,
+				};
+			},
+		};
+	}
+
+	forbiddenWords(words: string[]): GridCellValidator {
+		return {
+			name: 'forbiddenWords',
+			validate: ({ value }): ValidatorResult => {
+				if (typeof value !== 'string') {
 					return {
-						valid: false,
-						message: i18n.ts._gridComponent._error.columnTypeNotSupport,
+						valid: true,
 					};
 				}
 
+				const forbiddenWord = words.find(word => value.includes(word));
 				return {
-					valid: pattern.test(value?.toString() ?? ''),
+					valid: forbiddenWord === undefined,
+					message: i18n.tsx._gridComponent._error.forbiddenWord({ words: words.map(it => `'${it}'`).join(', ') }),
+				};
+			},
+		};
+	}
+
+	maxLength(max: number): GridCellValidator {
+		return {
+			name: 'maxLength',
+			validate: ({ value }): ValidatorResult => {
+				return {
+					valid: (typeof value !== 'string') || (value.length <= max),
+					message: i18n.tsx._gridComponent._error.maxLengthExceeded({ max }),
+				};
+			},
+		};
+	}
+
+	regex(pattern: RegExp): GridCellValidator {
+		return {
+			name: 'regex',
+			validate: ({ value }): ValidatorResult => {
+				return {
+					valid: (typeof value !== 'string') || pattern.test(value.toString() ?? ''),
 					message: i18n.tsx._gridComponent._error.patternNotMatch({ pattern: pattern.source }),
 				};
 			},

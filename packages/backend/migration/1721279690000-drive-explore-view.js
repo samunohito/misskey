@@ -20,10 +20,10 @@ export class DriveExploreView1721279690000 {
 								 file."url"          as "url",
 								 file."thumbnailUrl" as "thumbnailUrl",
 								 file."isSensitive"  as "isSensitive",
-								 file."isLink"       as "isLink",
 								 file."folderId"     as "parentId",
 								 'file'              as "kind"
 					FROM drive_file file
+					WHERE file."isLink" = FALSE
 					UNION ALL
 					SELECT folder."id"       as "id",
 								 folder."userId"   as "userId",
@@ -35,7 +35,6 @@ export class DriveExploreView1721279690000 {
 								 NULL              as "url",
 								 NULL              as "thumbnailUrl",
 								 NULL              as "isSensitive",
-								 NULL              as "isLink",
 								 folder."parentId" as "parentId",
 								 'folder'          as "kind"
 					FROM drive_folder folder) drive_explore_view;

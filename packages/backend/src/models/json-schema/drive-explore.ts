@@ -39,10 +39,6 @@ export const packedDriveExploreItemSchema = {
 			type: 'boolean',
 			optional: false, nullable: true,
 		},
-		isLink: {
-			type: 'boolean',
-			optional: false, nullable: true,
-		},
 		url: {
 			type: 'string',
 			optional: false, nullable: true,

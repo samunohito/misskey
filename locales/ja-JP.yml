@@ -2482,6 +2482,11 @@ _drive:
   alertDeleteFilesNothingDescription: "削除対象のファイルはありません。"
   confirmDeleteFilesTitle: "確認"
   confirmDeleteFilesDescription: "チェックがつけられた{count}個のファイルを削除します。実行しますか？"
+  alertUpdateFilesNothingDescription: "更新対象のファイルはありません。"
+  confirmUpdateFilesTitle: "確認"
+  confirmUpdateFilesDescription: "{count}個のファイルを更新します。実行しますか？"
+  alertFilesRegisterFailedTitle: "エラー"
+  alertFilesRegisterFailedDescription: "ファイルの更新・削除に失敗しました。詳細は登録ログをご確認ください。。"
 
 _webhookSettings:
   createWebhook: "Webhookを作成"
@@ -2705,7 +2710,9 @@ _mediaControls:
 _gridComponent:
   _error:
     requiredValue: "この値は必須項目です"
-    columnTypeNotSupport: "正規表現によるバリデーションはtype:textのカラムのみサポートします。"
+    notEmpty: "空欄または空文字のみにすることはできません。"
+    maxLengthExceeded: "{max}文字を超えています。"
+    forbiddenWord: "{words}を含めることはできません。"
     patternNotMatch: "この値は{pattern}のパターンに一致しません"
     notUnique: "この値は一意である必要があります"
 

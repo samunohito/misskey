@@ -13,6 +13,5 @@ export type GridItem = {
 	url: string | null;
 	thumbnailUrl: string | null;
 	isSensitive: boolean | null;
-	isLink: boolean | null;
 	kind: 'file' | 'folder'
 }
