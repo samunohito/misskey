@@ -417,6 +417,8 @@ $cellHeight: 28px;
 .contentArea, .inputArea, .customTemplateArea {
 	display: flex;
 	align-items: center;
+	width: 100%;
+	max-width: 100%;
 }
 
 .content {
