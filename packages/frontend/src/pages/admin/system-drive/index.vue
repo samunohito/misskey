@@ -325,8 +325,36 @@ function onQueryResetButtonClicked() {
 	queryKind.value = null;
 }
 
+function onStreamDriveFileUpdated(file: Misskey.entities.DriveFile) {
+	const index = gridItems.value.findIndex(it => it.id === file.id);
+	if (index !== -1) {
+		const item = gridItems.value[index];
+		gridItems.value[index] = {
+			...item,
+			name: file.name,
+			fileType: file.type,
+			size: file.size,
+			comment: file.comment,
+			url: file.url,
+			thumbnailUrl: file.thumbnailUrl,
+			isSensitive: file.isSensitive,
+		};
+	}
+}
+
 function onStreamDriveFileDeleted(fileId: string) {
 	gridItems.value = gridItems.value.filter(it => it.id !== fileId);
+}
+
+function onStreamDriveFolderUpdated(updatedFolder: Misskey.entities.DriveFolder) {
+	const index = gridItems.value.findIndex(it => it.id === updatedFolder.id);
+	if (index !== -1) {
+		const item = gridItems.value[index];
+		gridItems.value[index] = {
+			...item,
+			name: updatedFolder.name,
+		};
+	}
 }
 
 function onStreamDriveFolderDeleted(folderId: string) {
@@ -382,7 +410,9 @@ async function refreshDriveItems(folderId: string | null, page: number) {
 onMounted(async () => {
 	await refreshDriveItems(null, 1);
 
+	connection.on('fileUpdated', onStreamDriveFileUpdated);
 	connection.on('fileDeleted', onStreamDriveFileDeleted);
+	connection.on('folderUpdated', onStreamDriveFolderUpdated);
 	connection.on('folderDeleted', onStreamDriveFolderDeleted);
 });
 

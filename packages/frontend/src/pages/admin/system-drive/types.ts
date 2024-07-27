@@ -8,7 +8,7 @@ export type GridItem = {
 	id: string;
 	name: string;
 	fileType: string | null;
-	size: string | null;
+	size: number | null;
 	comment: string | null;
 	url: string | null;
 	thumbnailUrl: string | null;
