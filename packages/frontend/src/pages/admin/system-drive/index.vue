@@ -249,7 +249,8 @@ function setupGrid(): GridSetting {
 				bindTo: 'size', title: 'size(kb)', type: 'text', editable: false, width: 90, align: 'right',
 				valueTransformer(row, col, val) {
 					if (gridItems.value[row.index].kind === 'file') {
-						return `${Math.floor((val as number ?? 0) / 100) / 10} KB`;
+						const v = val ? val as number : 0;
+						return `${Math.floor(v / 100) / 10} KB`;
 					} else {
 						return '';
 					}
