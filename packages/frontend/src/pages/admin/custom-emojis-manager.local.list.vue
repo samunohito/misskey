@@ -117,7 +117,15 @@ SPDX-License-Identifier: AGPL-3.0-only
 						</MkInput>
 					</div>
 
-					<XSortOrderFolder :sortOrders="sortOrders" @update="onSortOrderUpdate"/>
+					<MkFolder :spacerMax="8" :spacerMin="8">
+						<template #icon><i class="ti ti-arrows-sort"></i></template>
+						<template #label>{{ i18n.ts._customEmojisManager._gridCommon.sortOrder }}</template>
+						<MkSortOrderEditor
+							:baseOrderKeyNames="gridSortOrderKeys"
+							:currentOrders="sortOrders"
+							@update="onSortOrderUpdate"
+						/>
+					</MkFolder>
 
 					<div :class="[[spMode ? $style.searchButtonsSp : $style.searchButtons]]">
 						<MkButton primary @click="onSearchRequest">
@@ -159,7 +167,9 @@ import * as os from '@/os.js';
 import {
 	emptyStrToEmptyArray,
 	emptyStrToNull,
-	emptyStrToUndefined, GridSortOrder,
+	emptyStrToUndefined,
+	GridSortOrderKey,
+	gridSortOrderKeys,
 	RequestLogItem,
 	roleIdsParser,
 } from '@/pages/admin/custom-emojis-manager.impl.js';
@@ -172,13 +182,14 @@ import { GridCellValidationEvent, GridCellValueChangeEvent, GridEvent } from '@/
 import { misskeyApi } from '@/scripts/misskey-api.js';
 import MkPagingButtons from '@/components/MkPagingButtons.vue';
 import XRegisterLogsFolder from '@/pages/admin/custom-emojis-manager.logs-folder.vue';
-import XSortOrderFolder from '@/pages/admin/custom-emojis-manager.sort-order-folder.vue';
 import MkFolder from '@/components/MkFolder.vue';
 import MkSelect from '@/components/MkSelect.vue';
 import { deviceKind } from '@/scripts/device-kind.js';
 import { GridSetting } from '@/components/grid/grid.js';
 import { selectFile } from '@/scripts/select-file.js';
 import { copyGridDataToClipboard, removeDataFromGrid } from '@/components/grid/grid-utils.js';
+import MkSortOrderEditor from '@/components/MkSortOrderEditor.vue';
+import { SortOrder } from '@/components/MkSortOrderEditor.define.js';
 
 type GridItem = {
 	checked: boolean;
@@ -366,7 +377,7 @@ const querySensitive = ref<string | null>(null);
 const queryLocalOnly = ref<string | null>(null);
 const queryRoles = ref<{ id: string, name: string }[]>([]);
 const previousQuery = ref<string | undefined>(undefined);
-const sortOrders = ref<GridSortOrder[]>([]);
+const sortOrders = ref<SortOrder<GridSortOrderKey>[]>([]);
 const requestLogs = ref<RequestLogItem[]>([]);
 
 const gridItems = ref<GridItem[]>([]);
@@ -495,7 +506,7 @@ async function onQueryRolesEditClicked() {
 	queryRoles.value = result.result;
 }
 
-function onSortOrderUpdate(_sortOrders: GridSortOrder[]) {
+function onSortOrderUpdate(_sortOrders: SortOrder<GridSortOrderKey>[]) {
 	sortOrders.value = _sortOrders;
 }
 
@@ -569,7 +580,7 @@ async function refreshCustomEmojis() {
 			query: query,
 			limit: limit,
 			page: currentPage.value,
-			sort: sortOrders.value.map(({ key, direction }) => ({ key: key as any, direction })),
+			sortKeys: sortOrders.value.map(({ key, direction }) => `${direction}${key}`),
 		}),
 		() => {
 		},
