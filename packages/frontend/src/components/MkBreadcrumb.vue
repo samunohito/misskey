@@ -8,13 +8,13 @@ SPDX-License-Identifier: AGPL-3.0-only
 	<div :class="$style.folder" :style="{ gap: gaps + 'px' }">
 		<div>{{ separator }}</div>
 		<div>
-			<MkA @click="onClick(-1, null, $event)">(root)</MkA>
+			<a href="#" @click="onClick(-1, null, $event)">(root)</a>
 		</div>
 	</div>
 	<div v-for="(hierarchy, index) in hierarchies" :key="index" :class="$style.folder" :style="{ gap: gaps + 'px' }">
 		<div>{{ separator }}</div>
 		<div>
-			<MkA @click="onClick(index, hierarchy, $event)">{{ valueConverter(hierarchy) }}</MkA>
+			<a href="#" @click.prevent="onClick(index, hierarchy, $event)">{{ valueConverter(hierarchy) }}</a>
 		</div>
 	</div>
 </div>

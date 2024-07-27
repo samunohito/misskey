@@ -152,7 +152,7 @@ export function claimZIndex(priority: keyof typeof zIndexes = 'low'): number {
 // InstanceType<typeof Component>['$emit'] だとインターセクション型が返ってきて
 // 使い物にならないので、代わりに ['$props'] から色々省くことで emit の型を生成する
 // FIXME: 何故か *.ts ファイルからだと型がうまく取れない？ことがあるのをなんとかしたい
-type ComponentEmit<T> = T extends new () => { $props: infer Props }
+export type ComponentEmit<T> = T extends new () => { $props: infer Props }
 	? [keyof Pick<T, Extract<keyof T, `on${string}`>>] extends [never]
 		? Record<string, unknown> // *.ts ファイルから型がうまく取れないとき用（これがないと {} になって型エラーがうるさい）
 		: EmitsExtractor<Props>
@@ -165,9 +165,9 @@ type ComponentEmit<T> = T extends new () => { $props: infer Props }
 		: never;
 
 // props に ref を許可するようにする
-type ComponentProps<T extends Component> = { [K in keyof CP<T>]: CP<T>[K] | Ref<CP<T>[K]> };
+export type ComponentProps<T extends Component> = { [K in keyof CP<T>]: CP<T>[K] | Ref<CP<T>[K]> };
 
-type EmitsExtractor<T> = {
+export type EmitsExtractor<T> = {
 	[K in keyof T as K extends `onVnode${string}` ? never : K extends `on${infer E}` ? Uncapitalize<E> : K extends string ? never : K]: T[K];
 };
 

@@ -56,6 +56,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 						:cell="cell"
 						:extraParams="customTemplateExtraParams"
 						:mounted="onCustomTemplateMounted"
+						v-on="customTemplateExtraEvents"
 					/>
 				</div>
 			</div>
@@ -144,6 +145,10 @@ const customTemplateComponent = computed(() => {
 /** カスタムテンプレートの拡張パラメータ. 実行結果をキャッシュする＆変更がある時のみ再レンダリングするためcomputedで包む */
 const customTemplateExtraParams = computed(() => {
 	return cell.value.column.setting.customTemplate?.extraParams?.(cell.value);
+});
+/** カスタムテンプレートの拡張イベント. 実行結果をキャッシュする＆変更がある時のみ再レンダリングするためcomputedで包む */
+const customTemplateExtraEvents = computed(() => {
+	return cell.value.column.setting.customTemplate?.extraEvents?.();
 });
 
 watch(() => [cell.value.value], () => {

@@ -156,8 +156,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script setup lang="ts">
-import { computed, defineAsyncComponent, onMounted, Ref, ref } from 'vue';
+import { computed, onMounted, Ref, ref } from 'vue';
 import * as Misskey from 'misskey-js';
+import XNameCell from './cell-file-name.vue';
 import * as os from '@/os.js';
 import MkGrid from '@/components/grid/MkGrid.vue';
 import { GridCellValidationEvent, GridCellValueChangeEvent, GridEvent } from '@/components/grid/grid-event.js';
@@ -178,7 +179,9 @@ import { deviceKind } from '@/scripts/device-kind.js';
 import { definePageMetadata } from '@/scripts/page-metadata.js';
 import MkStickyContainer from '@/components/global/MkStickyContainer.vue';
 import MkPageHeader from '@/components/global/MkPageHeader.vue';
-import { emptyStrToEmptyArray, emptyStrToUndefined } from '@/scripts/str.js';
+import { emptyStrToUndefined } from '@/scripts/str.js';
+import { createCustomCellTemplate } from '@/components/grid/column.js';
+import { useStream } from '@/stream.js';
 
 const itemSortKeys = [
 	'id',
@@ -212,21 +215,22 @@ function setupGrid(): GridSetting {
 			{ bindTo: 'checked', icon: 'ti-trash', type: 'boolean', editable: true, width: 34 },
 			{
 				bindTo: 'name', title: 'name', type: 'custom', editable: false, width: 280,
-				customTemplate: {
-					template: () => {
-						return defineAsyncComponent(() => import('./cell-file-name.vue'));
-					},
-					extraParams: (cell: GridCell) => gridItems.value[cell.row.index],
-					events: {
-						cellEditing(cell, context) {
-							console.log('peeeeeeeeeeee', cell);
-						},
-					},
-				},
+				customTemplate: createCustomCellTemplate<typeof XNameCell>(
+					() => XNameCell,
+					(cell: GridCell) => gridItems.value[cell.row.index],
+				),
 				events: {
 					async dblclick(cell) {
-						if (gridItems.value[cell.row.index].kind === 'folder') {
-							await refreshDriveItems(gridItems.value[cell.row.index].id, 1);
+						const item = gridItems.value[cell.row.index];
+						switch (item.kind) {
+							case 'file': {
+								os.pageWindow(`/admin/file/${item.id}`);
+								break;
+							}
+							case 'folder': {
+								await refreshDriveItems(item.id, 1);
+								break;
+							}
 						}
 					},
 				},
@@ -269,6 +273,8 @@ const spMode = computed(() => ['smartphone', 'tablet'].includes(deviceKind));
 
 const gridItems = ref<GridItem[]>([]);
 const updateButtonDisabled = ref<boolean>(false);
+
+const connection = useStream().useChannel('drive');
 
 function onGridEvent(event: GridEvent) {
 	switch (event.type) {
@@ -319,6 +325,14 @@ function onQueryResetButtonClicked() {
 	queryKind.value = null;
 }
 
+function onStreamDriveFileDeleted(fileId: string) {
+	gridItems.value = gridItems.value.filter(it => it.id !== fileId);
+}
+
+function onStreamDriveFolderDeleted(folderId: string) {
+	gridItems.value = gridItems.value.filter(it => it.id !== folderId);
+}
+
 async function refreshDriveItems(folderId: string | null, page: number) {
 	pathHierarchies.value = await misskeyApi('admin/drive/system/folders/pwd', {
 		currentFolderId: folderId,
@@ -340,8 +354,10 @@ async function refreshDriveItems(folderId: string | null, page: number) {
 			limit: 100,
 			page: page,
 		}),
-		() => {},
-		() => {},
+		() => {
+		},
+		() => {
+		},
 	);
 
 	gridItems.value = result.items.map((it: Misskey.entities.DriveExploreItem) => ({
@@ -365,6 +381,9 @@ async function refreshDriveItems(folderId: string | null, page: number) {
 
 onMounted(async () => {
 	await refreshDriveItems(null, 1);
+
+	connection.on('fileDeleted', onStreamDriveFileDeleted);
+	connection.on('folderDeleted', onStreamDriveFolderDeleted);
 });
 
 definePageMetadata(() => ({

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Component, ComputedRef, Ref } from 'vue';
+import { Component } from 'vue';
 import { GridCellValidator } from '@/components/grid/cell-validators.js';
 import { Size, SizeStyle, TextAlignStyle } from '@/components/grid/grid.js';
 import { calcCellWidth } from '@/components/grid/grid-utils.js';
@@ -11,12 +11,21 @@ import { CellValue, GridCell } from '@/components/grid/cell.js';
 import { GridRow } from '@/components/grid/row.js';
 import { MenuItem } from '@/types/menu.js';
 import { GridContext } from '@/components/grid/grid-event.js';
+import { ComponentEmit } from '@/os.js';
 
 export type ColumnType = 'text' | 'number' | 'date' | 'boolean' | 'image' | 'hidden' | 'custom';
 
 export type CustomValueEditor = (row: GridRow, col: GridColumn, value: CellValue, cellElement: HTMLElement) => Promise<CellValue>;
 export type CellValueTransformer = (row: GridRow, col: GridColumn, value: CellValue) => CellValue;
 export type GridColumnContextMenuFactory = (col: GridColumn, context: GridContext) => MenuItem[];
+
+export type ExportParamsType<T extends Component> = T extends new () => { $props: infer Props }
+	? Props extends object
+		? 'extraParams' extends keyof Props
+			? Props['extraParams']
+			: never
+		: never
+	: never;
 
 /**
  * カスタムセルテンプレートを設定するための型.カスタムセルテンプレートを使用する場合、`type`に`custom`を設定する.
@@ -34,24 +43,44 @@ export type GridColumnContextMenuFactory = (col: GridColumn, context: GridContex
  * mountedはコンポーネントがマウントされたら呼び出す必要がある.
  * セルの横幅を計算するためには、コンポーネントがマウントされた後に要素の横幅を取得する必要があるが、
  * セル側からだと埋め込まれたコンポーネントのマウントがいつ終わったのか検知出来ないため、この関数オブジェクトを通じて手動で通知する.
+ *
+ * @see createCustomCellTemplate
  */
-export type CustomCellTemplate = {
+export type CustomCellTemplate<T extends Component> = {
 	/**
-	 * セルに埋め込むコンポーネントの名称またはコンポーネントそのものを返す関数を設定する.
-	 * 名称を設定する場合、対象のコンポーネントがグローバルコンポーネントとして登録されている必要がある.
+	 * セルに埋め込むコンポーネントを返す関数を設定する.
 	 *
 	 * なお、ここで設定したコンポーネントには`cell`というprop名で{@link GridCell}型のオブジェクトがbindされる.
 	 * そのほかのパラメータが必要な場合、{@link extraParams}経由で設定可能.
 	 */
-	template: () => string | Component;
+	template: () => T;
 	/**
-	 * セルに埋め込むコンポーネントにbindする外部パラメータを返す関数を設定する.
+	 * セル側から通知されるイベントを受け取るための関数オブジェクトを設定する
 	 */
-	extraParams?: (cell: GridCell) => Record<string, any>;
 	events?: {
-		cellEditing?: (cell: GridCell, context: CustomCellTemplateContext) => void;
+		// not implement
 	};
+	/**
+	 * セルに埋め込むコンポーネントにv-bindでbindする外部パラメータを返す関数を設定する.
+	 */
+	extraParams?: (cell: GridCell) => ExportParamsType<T>;
+	/**
+	 * セルに埋め込むコンポーネントにv-onでbindするイベントを設定する.
+	 */
+	extraEvents?: () => ComponentEmit<T>;
 };
+
+export function createCustomCellTemplate<T extends Component>(
+	template: () => T,
+	extraParams?: (cell: GridCell) => ExportParamsType<T>,
+	extraEvents?: () => ComponentEmit<T>,
+): CustomCellTemplate<T> {
+	return {
+		template,
+		extraParams,
+		extraEvents,
+	};
+}
 
 export type CustomCellTemplateContext = {
 	operation: {
@@ -79,7 +108,7 @@ export type GridColumnSetting = {
 	editable?: boolean;
 	validators?: GridCellValidator[];
 	customValueEditor?: CustomValueEditor;
-	customTemplate?: CustomCellTemplate,
+	customTemplate?: CustomCellTemplate<any>,
 	valueTransformer?: CellValueTransformer;
 	contextMenuFactory?: GridColumnContextMenuFactory;
 	events?: {

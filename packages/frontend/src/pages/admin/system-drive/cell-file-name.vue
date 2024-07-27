@@ -15,7 +15,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 			:alt="item.comment ?? ''"
 		/>
 	</div>
-	<div>{{ props.cell.value }}</div>
+	<div>
+		<span>{{ props.cell.value }}</span>
+	</div>
 </div>
 </template>
 
@@ -26,6 +28,7 @@ import { GridCell } from '@/components/grid/cell.js';
 import { GridItem } from '@/pages/admin/system-drive/types.js';
 
 const imageMimeTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml', 'image/gif'];
+
 const props = defineProps<{
 	cell: GridCell;
 	extraParams: GridItem;
