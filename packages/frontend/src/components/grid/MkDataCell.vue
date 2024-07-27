@@ -24,7 +24,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			[cell.selected ? $style.selected : {}],
 			// 行が選択されているときは範囲選択色の適用を行側に任せる
 			[(cell.ranged && !cell.row.ranged) ? $style.ranged : {}],
-			[needsContentCentering ? $style.center : {}],
+			[cellAlign === 'center' ? $style.center : (cellAlign === 'right' ? $style.right : $style.left)],
 		]"
 	>
 		<div v-if="!editing" ref="contentAreaEl" :class="$style.contentArea">
@@ -127,12 +127,13 @@ const editingValue = ref<CellValue>(undefined);
 
 const cellWidth = computed(() => cell.value.column.width);
 const cellType = computed(() => cell.value.column.setting.type);
-const needsContentCentering = computed(() => {
+const cellAlign = computed(() => {
 	switch (cellType.value) {
 		case 'boolean':
-			return true;
-		default:
-			return false;
+			return 'center';
+		default: {
+			return cell.value.column.setting.align ?? 'left';
+		}
 	}
 });
 
@@ -376,6 +377,14 @@ $cellHeight: 28px;
 
 	&.ranged {
 		background-color: var(--accentedBg);
+	}
+
+	&.left {
+		justify-content: start;
+	}
+
+	&.right {
+		justify-content: end;
 	}
 
 	&.center {

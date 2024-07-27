@@ -101,12 +101,7 @@ import { i18n } from '@/i18n.js';
 import MkButton from '@/components/MkButton.vue';
 import MkInput from '@/components/MkInput.vue';
 import MkGrid from '@/components/grid/MkGrid.vue';
-import {
-	emptyStrToUndefined,
-	GridSortOrderKey,
-	gridSortOrderKeys,
-	RequestLogItem,
-} from '@/pages/admin/custom-emojis-manager.impl.js';
+import { GridSortOrderKey, gridSortOrderKeys, RequestLogItem } from '@/pages/admin/custom-emojis-manager.impl.js';
 import { GridCellValueChangeEvent, GridEvent } from '@/components/grid/grid-event.js';
 import MkFolder from '@/components/MkFolder.vue';
 import XRegisterLogsFolder from '@/pages/admin/custom-emojis-manager.logs-folder.vue';
@@ -116,6 +111,7 @@ import { deviceKind } from '@/scripts/device-kind.js';
 import MkPagingButtons from '@/components/MkPagingButtons.vue';
 import MkSortOrderEditor from '@/components/MkSortOrderEditor.vue';
 import { SortOrder } from '@/components/MkSortOrderEditor.define.js';
+import { emptyStrToUndefined } from '@/scripts/str.js';
 
 type GridItem = {
 	checked: boolean;
@@ -286,7 +282,7 @@ async function refreshCustomEmojis() {
 			limit: 100,
 			query: query,
 			page: currentPage.value,
-			sortKeys: sortOrders.value.map(({ key, direction }) => `${direction}${key}`),
+			sortKeys: sortOrders.value.map(({ key, direction }) => `${direction}${key}`) as any,
 		}),
 		() => {
 		},

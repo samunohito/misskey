@@ -51,7 +51,7 @@ export const paramDef = {
 			type: 'object',
 			properties: {
 				name: { type: 'string' },
-				fileType: { type: 'string', nullable: true, pattern: /^[a-zA-Z\/\-*]+$/.toString().slice(1, -1) },
+				fileType: { type: 'string', nullable: true, pattern: /^([a-zA-Z\/\-*]+(\s)?)+$/.toString().slice(1, -1) },
 				comment: { type: 'string' },
 				isSensitive: { type: 'boolean' },
 				isLink: { type: 'boolean' },

@@ -9332,6 +9332,22 @@ export interface Locale extends ILocale {
          */
         "orderByCreatedAtAsc": string;
     };
+    "_drive": {
+        "_system": {
+            /**
+             * システムドライブ
+             */
+            "title": string;
+            /**
+             * 検索設定
+             */
+            "searchSettings": string;
+            /**
+             * ファイル・フォルダの検索条件を詳細に設定します。
+             */
+            "searchSettingCaption": string;
+        };
+    };
     "_webhookSettings": {
         /**
          * Webhookを作成

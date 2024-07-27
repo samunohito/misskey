@@ -4,141 +4,161 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<MkStickyContainer>
-	<template #default>
-		<div class="_gaps">
-			<MkFolder>
-				<template #icon><i class="ti ti-cloud"></i></template>
-				<template #label>{{ i18n.ts._drive._system.searchSettings }}</template>
-				<template #caption>
-					{{ i18n.ts._drive._system.searchSettingCaption }}
-				</template>
+<div>
+	<!-- コンテナが入れ子になるのでz-indexが被らないよう大きめの数値を設定する-->
+	<MkStickyContainer :headerZIndex="2000">
+		<template #header>
+			<MkPageHeader/>
+		</template>
+		<MkStickyContainer>
+			<template #default>
+				<div :class="$style.root" class="_gaps">
+					<MkFolder>
+						<template #icon><i class="ti ti-cloud"></i></template>
+						<template #label>{{ i18n.ts._drive._system.searchSettings }}</template>
+						<template #caption>
+							{{ i18n.ts._drive._system.searchSettingCaption }}
+						</template>
 
-				<div class="_gaps">
-					<div :class="[[spMode ? $style.searchAreaSp : $style.searchArea]]">
-						<MkInput
-							v-model="queryName"
-							type="search"
-							autocapitalize="off"
-							:class="[$style.col1, $style.row1]"
-							@enter="onSearchRequest"
-						>
-							<template #label>name</template>
-						</MkInput>
-						<MkInput
-							v-model="queryFileType"
-							type="search"
-							autocapitalize="off"
-							:class="[$style.col2, $style.row1]"
-							@enter="onSearchRequest"
-						>
-							<template #label>category</template>
-						</MkInput>
-						<MkInput
-							v-model="queryComment"
-							type="search"
-							autocapitalize="off"
-							:class="[$style.col3, $style.row1]"
-							@enter="onSearchRequest"
-						>
-							<template #label>aliases</template>
-						</MkInput>
+						<div class="_gaps">
+							<div :class="[[spMode ? $style.searchAreaSp : $style.searchArea]]">
+								<MkInput
+									v-model="queryName"
+									type="search"
+									autocapitalize="off"
+									:class="[$style.col1, $style.row1]"
+									@enter="onSearchRequest"
+								>
+									<template #label>name</template>
+								</MkInput>
+								<MkInput
+									v-model="queryFileType"
+									type="search"
+									autocapitalize="off"
+									:class="[$style.col2, $style.row1]"
+									@enter="onSearchRequest"
+								>
+									<template #label>fileType</template>
+								</MkInput>
+								<MkInput
+									v-model="queryComment"
+									type="search"
+									autocapitalize="off"
+									:class="[$style.col3, $style.row1]"
+									@enter="onSearchRequest"
+								>
+									<template #label>comment</template>
+								</MkInput>
 
-						<MkInput
-							v-model="querySizeMin"
-							type="number"
-							min="0"
-							autocapitalize="off"
-							:class="[$style.col1, $style.row2]"
-							@enter="onSearchRequest"
-						>
-							<template #label>type</template>
-						</MkInput>
-						<MkInput
-							v-model="querySizeMax"
-							type="search"
-							min="0"
-							autocapitalize="off"
-							:class="[$style.col2, $style.row2]"
-							@enter="onSearchRequest"
-						>
-							<template #label>license</template>
-						</MkInput>
-						<MkSelect
-							v-model="queryKind"
-							:class="[$style.col3, $style.row2]"
-						>
-							<template #label>sensitive</template>
-							<option :value="null">-</option>
-							<option :value="'file'">file</option>
-							<option :value="'folder'">folder</option>
-						</MkSelect>
+								<MkInput
+									v-model="querySizeMin"
+									type="number"
+									autocapitalize="off"
+									:min="0"
+									:class="[$style.col1, $style.row2]"
+									@enter="onSearchRequest"
+								>
+									<template #label>size-min</template>
+								</MkInput>
+								<MkInput
+									v-model="querySizeMax"
+									type="search"
+									autocapitalize="off"
+									:min="0"
+									:class="[$style.col2, $style.row2]"
+									@enter="onSearchRequest"
+								>
+									<template #label>size-max</template>
+								</MkInput>
+								<MkSelect
+									v-model="queryKind"
+									:class="[$style.col3, $style.row2]"
+								>
+									<template #label>kind</template>
+									<option :value="null">-</option>
+									<option :value="'file'">file</option>
+									<option :value="'folder'">folder</option>
+								</MkSelect>
 
-						<MkSelect
-							v-model="queryLink"
-							:class="[$style.col1, $style.row3]"
-						>
-							<template #label>link</template>
-							<option :value="null">-</option>
-							<option :value="true">true</option>
-							<option :value="false">false</option>
-						</MkSelect>
-						<MkSelect
-							v-model="querySensitive"
-							:class="[$style.col2, $style.row3]"
-						>
-							<template #label>sensitive</template>
-							<option :value="null">-</option>
-							<option :value="true">true</option>
-							<option :value="false">false</option>
-						</MkSelect>
+								<MkSelect
+									v-model="queryLink"
+									:class="[$style.col1, $style.row3]"
+								>
+									<template #label>link</template>
+									<option :value="null">-</option>
+									<option :value="true">true</option>
+									<option :value="false">false</option>
+								</MkSelect>
+								<MkSelect
+									v-model="querySensitive"
+									:class="[$style.col2, $style.row3]"
+								>
+									<template #label>sensitive</template>
+									<option :value="null">-</option>
+									<option :value="true">true</option>
+									<option :value="false">false</option>
+								</MkSelect>
+							</div>
+
+							<MkFolder :spacerMax="8" :spacerMin="8">
+								<template #icon><i class="ti ti-arrows-sort"></i></template>
+								<template #label>{{ i18n.ts._customEmojisManager._gridCommon.sortOrder }}</template>
+								<MkSortOrderEditor
+									:baseOrderKeyNames="itemSortKeys"
+									:currentOrders="sortOrders"
+									@update="onSortOrderUpdate"
+								/>
+							</MkFolder>
+
+							<div :class="[[spMode ? $style.searchButtonsSp : $style.searchButtons]]">
+								<MkButton primary @click="onSearchRequest">
+									{{ i18n.ts.search }}
+								</MkButton>
+								<MkButton @click="onQueryResetButtonClicked">
+									{{ i18n.ts.reset }}
+								</MkButton>
+							</div>
+						</div>
+					</MkFolder>
+
+					<div :class="$style.gridArea" class="_gaps_s">
+						<div :class="$style.breadcrumbArea" class="_gaps_s _panel">
+							<div>
+								<span class="ti ti-folder"/>
+							</div>
+
+							<MkBreadcrumb
+								:hierarchies="pathHierarchies"
+								:valueConverter="value => value.name"
+								@click="onBreadcrumbClicked"
+							/>
+						</div>
+
+						<MkGrid :data="gridItems" :settings="setupGrid()" @event="onGridEvent"/>
 					</div>
 
-					<XSortOrderFolder :sortOrders="sortOrders" @update="onSortOrderUpdate"/>
+					<MkPagingButtons :current="currentPage" :max="allPages" :buttonCount="5" @pageChanged="onPageChanged"/>
 
-					<div :class="[[spMode ? $style.searchButtonsSp : $style.searchButtons]]">
-						<MkButton primary @click="onSearchRequest">
-							{{ i18n.ts.search }}
-						</MkButton>
-						<MkButton @click="onQueryResetButtonClicked">
-							{{ i18n.ts.reset }}
-						</MkButton>
+					<div :class="$style.buttons">
+						<!--				<MkButton danger style="margin-right: auto" @click="onDeleteButtonClicked">{{ i18n.ts.delete }}</MkButton>-->
+						<!--				<MkButton primary :disabled="updateButtonDisabled" @click="onUpdateButtonClicked">-->
+						<!--					{{-->
+						<!--						i18n.ts.update-->
+						<!--					}}-->
+						<!--				</MkButton>-->
+						<!--				<MkButton @click="onGridResetButtonClicked">{{ i18n.ts.reset }}</MkButton>-->
 					</div>
 				</div>
-			</MkFolder>
-
-			<div style="height: 30px">
-				<MkBreadcrumb
-					:hierarchies="pathHierarchies"
-					:valueConverter="value => value.name"
-					@click="onBreadcrumbClicked"
-				/>
-			</div>
-
-			<div :class="$style.gridArea">
-				<MkGrid :data="gridItems" :settings="setupGrid()" @event="onGridEvent"/>
-			</div>
-
-			<MkPagingButtons :current="currentPage" :max="allPages" :buttonCount="5" @pageChanged="onPageChanged"/>
-
-			<div :class="$style.buttons">
-				<!--				<MkButton danger style="margin-right: auto" @click="onDeleteButtonClicked">{{ i18n.ts.delete }}</MkButton>-->
-				<!--				<MkButton primary :disabled="updateButtonDisabled" @click="onUpdateButtonClicked">-->
-				<!--					{{-->
-				<!--						i18n.ts.update-->
-				<!--					}}-->
-				<!--				</MkButton>-->
-				<!--				<MkButton @click="onGridResetButtonClicked">{{ i18n.ts.reset }}</MkButton>-->
-			</div>
-		</div>
-	</template>
-</MkStickyContainer>
+			</template>
+		</MkStickyContainer>
+	</MkStickyContainer>
+</div>
 </template>
 
 <script setup lang="ts">
-import { defineAsyncComponent, onMounted, Ref, ref, watch } from 'vue';
+import { computed, defineAsyncComponent, onMounted, Ref, ref } from 'vue';
 import * as Misskey from 'misskey-js';
-import { GridSortOrder, RequestLogItem } from '@/pages/admin/custom-emojis-manager.impl.js';
+import * as os from '@/os.js';
 import MkGrid from '@/components/grid/MkGrid.vue';
 import { GridCellValidationEvent, GridCellValueChangeEvent, GridEvent } from '@/components/grid/grid-event.js';
 import { misskeyApi } from '@/scripts/misskey-api.js';
@@ -149,10 +169,28 @@ import { GridItem } from '@/pages/admin/system-drive/types.js';
 import MkBreadcrumb from '@/components/MkBreadcrumb.vue';
 import { i18n } from '@/i18n.js';
 import MkFolder from '@/components/MkFolder.vue';
-import XSortOrderFolder from '@/pages/admin/custom-emojis-manager.sort-order-folder.vue';
 import MkButton from '@/components/MkButton.vue';
 import MkInput from '@/components/MkInput.vue';
 import MkSelect from '@/components/MkSelect.vue';
+import MkSortOrderEditor from '@/components/MkSortOrderEditor.vue';
+import { SortOrder } from '@/components/MkSortOrderEditor.define.js';
+import { deviceKind } from '@/scripts/device-kind.js';
+import { definePageMetadata } from '@/scripts/page-metadata.js';
+import MkStickyContainer from '@/components/global/MkStickyContainer.vue';
+import MkPageHeader from '@/components/global/MkPageHeader.vue';
+import { emptyStrToEmptyArray, emptyStrToUndefined } from '@/scripts/str.js';
+
+const itemSortKeys = [
+	'id',
+	'name',
+	'fileType',
+	'size',
+	'comment',
+	'isSensitive',
+	'isLink',
+	'kind',
+];
+type ItemSortKey = typeof itemSortKeys[number];
 
 function setupGrid(): GridSetting {
 	return {
@@ -173,7 +211,7 @@ function setupGrid(): GridSetting {
 		cols: [
 			{ bindTo: 'checked', icon: 'ti-trash', type: 'boolean', editable: true, width: 34 },
 			{
-				bindTo: 'name', title: 'name', type: 'custom', editable: false, width: 140,
+				bindTo: 'name', title: 'name', type: 'custom', editable: false, width: 280,
 				customTemplate: {
 					template: () => {
 						return defineAsyncComponent(() => import('./cell-file-name.vue'));
@@ -193,9 +231,19 @@ function setupGrid(): GridSetting {
 					},
 				},
 			},
-			{ bindTo: 'type', type: 'text', editable: false, width: 90 },
-			{ bindTo: 'size', type: 'text', editable: false, width: 90 },
+			{ bindTo: 'fileType', type: 'text', editable: false, width: 90 },
+			{
+				bindTo: 'size', title: 'size(kb)', type: 'text', editable: false, width: 90, align: 'right',
+				valueTransformer(row, col, val) {
+					if (gridItems.value[row.index].kind === 'file') {
+						return `${Math.floor((val as number ?? 0) / 100) / 10} KB`;
+					} else {
+						return '';
+					}
+				},
+			},
 			{ bindTo: 'isSensitive', type: 'boolean', editable: false, width: 90 },
+			{ bindTo: 'isLink', type: 'boolean', editable: false, width: 90 },
 			{ bindTo: 'comment', type: 'text', editable: false, width: 180 },
 		],
 		cells: {},
@@ -213,14 +261,13 @@ const querySizeMin = ref<string | null>(null);
 const querySizeMax = ref<string | null>(null);
 const querySensitive = ref<string | null>(null);
 const queryLink = ref<string | null>(null);
-const queryKind = ref<string | null>(null);
-const sortOrders = ref<GridSortOrder[]>([]);
-const requestLogs = ref<RequestLogItem[]>([]);
+const queryKind = ref<'file' | 'folder' | null>(null);
+const sortOrders = ref<SortOrder<ItemSortKey>[]>([]);
 
 const pathHierarchies: Ref<Misskey.entities.DriveFolder[]> = ref([]);
+const spMode = computed(() => ['smartphone', 'tablet'].includes(deviceKind));
 
 const gridItems = ref<GridItem[]>([]);
-const originGridItems = ref<GridItem[]>([]);
 const updateButtonDisabled = ref<boolean>(false);
 
 function onGridEvent(event: GridEvent) {
@@ -232,6 +279,10 @@ function onGridEvent(event: GridEvent) {
 			onGridCellValueChange(event);
 			break;
 	}
+}
+
+function onSortOrderUpdate(_sortOrders: SortOrder<ItemSortKey>[]) {
+	sortOrders.value = _sortOrders;
 }
 
 function onGridCellValidation(event: GridCellValidationEvent) {
@@ -253,17 +304,45 @@ async function onBreadcrumbClicked(event: MouseEvent, index: number, value: Miss
 	await refreshDriveItems(value?.id ?? null, 1);
 }
 
+async function onSearchRequest() {
+	await refreshDriveItems(currentFolderId.value, 1);
+}
+
+function onQueryResetButtonClicked() {
+	queryName.value = null;
+	queryFileType.value = null;
+	queryComment.value = null;
+	querySizeMin.value = null;
+	querySizeMax.value = null;
+	querySensitive.value = null;
+	queryLink.value = null;
+	queryKind.value = null;
+}
+
 async function refreshDriveItems(folderId: string | null, page: number) {
 	pathHierarchies.value = await misskeyApi('admin/drive/system/folders/pwd', {
 		currentFolderId: folderId,
 	}).then(it => it.hierarchies);
 
-	const result = await misskeyApi('admin/drive/system/explore', {
-		currentFolderId: folderId,
-		query: {},
-		limit: 100,
-		page: page,
-	});
+	const result = await os.promiseDialog(
+		misskeyApi('admin/drive/system/explore', {
+			currentFolderId: folderId,
+			query: {
+				name: emptyStrToUndefined(queryName.value),
+				fileType: emptyStrToUndefined(queryFileType.value),
+				comment: emptyStrToUndefined(queryComment.value),
+				sizeMin: querySizeMin.value ? parseInt(querySizeMin.value) : undefined,
+				sizeMax: querySizeMax.value ? parseInt(querySizeMax.value) : undefined,
+				sensitive: querySensitive.value === 'true' ? true : querySensitive.value === 'false' ? false : undefined,
+				link: queryLink.value === 'true' ? true : queryLink.value === 'false' ? false : undefined,
+				kinds: queryKind.value ? [queryKind.value] : undefined,
+			},
+			limit: 100,
+			page: page,
+		}),
+		() => {},
+		() => {},
+	);
 
 	gridItems.value = result.items.map((it: Misskey.entities.DriveExploreItem) => ({
 		checked: false,
@@ -288,9 +367,17 @@ onMounted(async () => {
 	await refreshDriveItems(null, 1);
 });
 
+definePageMetadata(() => ({
+	title: i18n.ts._drive._system.title,
+	icon: 'ti ti-icons',
+}));
 </script>
 
 <style module lang="scss">
+.root {
+	padding: 16px;
+}
+
 .violationRow {
 	background-color: var(--infoWarnBg);
 }
@@ -355,6 +442,13 @@ onMounted(async () => {
 	justify-content: center;
 	align-items: center;
 	gap: 8px;
+}
+
+.breadcrumbArea {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	padding: 8px;
 }
 
 .gridArea {

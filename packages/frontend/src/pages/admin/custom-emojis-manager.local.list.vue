@@ -165,9 +165,6 @@ import { computed, onMounted, ref, useCssModule } from 'vue';
 import * as Misskey from 'misskey-js';
 import * as os from '@/os.js';
 import {
-	emptyStrToEmptyArray,
-	emptyStrToNull,
-	emptyStrToUndefined,
 	GridSortOrderKey,
 	gridSortOrderKeys,
 	RequestLogItem,
@@ -190,6 +187,7 @@ import { selectFile } from '@/scripts/select-file.js';
 import { copyGridDataToClipboard, removeDataFromGrid } from '@/components/grid/grid-utils.js';
 import MkSortOrderEditor from '@/components/MkSortOrderEditor.vue';
 import { SortOrder } from '@/components/MkSortOrderEditor.define.js';
+import { emptyStrToEmptyArray, emptyStrToNull, emptyStrToUndefined } from '@/scripts/str.js';
 
 type GridItem = {
 	checked: boolean;
@@ -580,7 +578,7 @@ async function refreshCustomEmojis() {
 			query: query,
 			limit: limit,
 			page: currentPage.value,
-			sortKeys: sortOrders.value.map(({ key, direction }) => `${direction}${key}`),
+			sortKeys: sortOrders.value.map(({ key, direction }) => `${direction}${key}`) as any,
 		}),
 		() => {
 		},

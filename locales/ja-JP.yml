@@ -2476,6 +2476,7 @@ _drivecleaner:
 
 _drive:
   _system:
+    title: "システムドライブ"
     searchSettings: "検索設定"
     searchSettingCaption: "ファイル・フォルダの検索条件を詳細に設定します。"
 

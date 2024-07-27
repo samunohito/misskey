@@ -5,7 +5,7 @@
 
 import { Component, ComputedRef, Ref } from 'vue';
 import { GridCellValidator } from '@/components/grid/cell-validators.js';
-import { Size, SizeStyle } from '@/components/grid/grid.js';
+import { Size, SizeStyle, TextAlignStyle } from '@/components/grid/grid.js';
 import { calcCellWidth } from '@/components/grid/grid-utils.js';
 import { CellValue, GridCell } from '@/components/grid/cell.js';
 import { GridRow } from '@/components/grid/row.js';
@@ -75,6 +75,7 @@ export type GridColumnSetting = {
 	icon?: string;
 	type: ColumnType;
 	width: SizeStyle;
+	align?: TextAlignStyle;
 	editable?: boolean;
 	validators?: GridCellValidator[];
 	customValueEditor?: CustomValueEditor;
