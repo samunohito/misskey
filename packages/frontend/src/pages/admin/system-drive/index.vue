@@ -15,9 +15,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<div :class="$style.root" class="_gaps">
 					<MkFolder>
 						<template #icon><i class="ti ti-cloud"></i></template>
-						<template #label>{{ i18n.ts._drive._system.searchSettings }}</template>
+						<template #label>{{ i18n.ts._drive.searchSettings }}</template>
 						<template #caption>
-							{{ i18n.ts._drive._system.searchSettingCaption }}
+							{{ i18n.ts._drive.searchSettingCaption }}
 						</template>
 
 						<div class="_gaps">
@@ -140,13 +140,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<MkPagingButtons :current="currentPage" :max="allPages" :buttonCount="5" @pageChanged="onPageChanged"/>
 
 					<div :class="$style.buttons">
-						<!--				<MkButton danger style="margin-right: auto" @click="onDeleteButtonClicked">{{ i18n.ts.delete }}</MkButton>-->
-						<!--				<MkButton primary :disabled="updateButtonDisabled" @click="onUpdateButtonClicked">-->
-						<!--					{{-->
-						<!--						i18n.ts.update-->
-						<!--					}}-->
-						<!--				</MkButton>-->
-						<!--				<MkButton @click="onGridResetButtonClicked">{{ i18n.ts.reset }}</MkButton>-->
+						<MkButton danger style="margin-right: auto" @click="onDeleteButtonClicked">{{ i18n.ts.delete }}</MkButton>
+						<MkButton @click="onGridResetButtonClicked">{{ i18n.ts.reset }}</MkButton>
 					</div>
 				</div>
 			</template>
@@ -156,7 +151,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, Ref, ref } from 'vue';
+import { computed, onMounted, Ref, ref, useCssModule } from 'vue';
 import * as Misskey from 'misskey-js';
 import XNameCell from './cell-file-name.vue';
 import * as os from '@/os.js';
@@ -196,12 +191,26 @@ const itemSortKeys = [
 type ItemSortKey = typeof itemSortKeys[number];
 
 function setupGrid(): GridSetting {
+	const $style = useCssModule();
+
 	return {
 		row: {
 			showNumber: true,
 			selectable: true,
 			// グリッドの行数をあらかじめ100行確保する
 			minimumDefinitionCount: 100,
+			styleRules: [
+				{
+					// 初期値から変わっていたら背景色を変更
+					condition: ({ row }) => JSON.stringify(gridItems.value[row.index]) !== JSON.stringify(originGridItems.value[row.index]),
+					applyStyle: { className: $style.changedRow },
+				},
+				{
+					// バリデーションに引っかかっていたら背景色を変更
+					condition: ({ cells }) => cells.some(it => !it.violation.valid),
+					applyStyle: { className: $style.violationRow },
+				},
+			],
 			events: {
 				delete(rows) {
 					// 行削除時は元データの行を消さず、削除対象としてマークするのみにする
@@ -272,6 +281,7 @@ const pathHierarchies: Ref<Misskey.entities.DriveFolder[]> = ref([]);
 const spMode = computed(() => ['smartphone', 'tablet'].includes(deviceKind));
 
 const gridItems = ref<GridItem[]>([]);
+const originGridItems = ref<GridItem[]>([]);
 const updateButtonDisabled = ref<boolean>(false);
 
 const connection = useStream().useChannel('drive');
@@ -300,6 +310,44 @@ function onGridCellValueChange(event: GridCellValueChangeEvent) {
 	if (gridItems.value.length > row.index && column.setting.bindTo in gridItems.value[row.index]) {
 		gridItems.value[row.index][column.setting.bindTo] = newValue;
 	}
+}
+
+async function onDeleteButtonClicked() {
+	const _items = gridItems.value;
+	const _originItems = originGridItems.value;
+	if (_items.length !== _originItems.length) {
+		throw new Error('The number of items has been changed. Please refresh the page and try again.');
+	}
+
+	const deleteItems = _items.filter((it) => it.checked);
+	if (deleteItems.length === 0) {
+		await os.alert({
+			type: 'info',
+			text: i18n.ts._drive.alertDeleteFilesNothingDescription,
+		});
+		return;
+	}
+
+	const confirm = await os.confirm({
+		type: 'info',
+		title: i18n.ts._drive.confirmDeleteFilesTitle,
+		text: i18n.tsx._drive.confirmDeleteFilesDescription({ count: deleteItems.length }),
+	});
+	if (confirm.canceled) {
+		return;
+	}
+
+	function action() {
+		return Promise.all(deleteItems.map(it => misskeyApi('drive/files/delete', { fileId: it.id })));
+	}
+
+	await os.promiseDialog(
+		action(),
+	);
+}
+
+function onGridResetButtonClicked() {
+	gridItems.value = JSON.parse(JSON.stringify(originGridItems.value));
 }
 
 async function onPageChanged(pageNumber: number) {
@@ -344,6 +392,7 @@ function onStreamDriveFileUpdated(file: Misskey.entities.DriveFile) {
 
 function onStreamDriveFileDeleted(fileId: string) {
 	gridItems.value = gridItems.value.filter(it => it.id !== fileId);
+	originGridItems.value = originGridItems.value.filter(it => it.id !== fileId);
 }
 
 function onStreamDriveFolderUpdated(updatedFolder: Misskey.entities.DriveFolder) {
@@ -359,6 +408,7 @@ function onStreamDriveFolderUpdated(updatedFolder: Misskey.entities.DriveFolder)
 
 function onStreamDriveFolderDeleted(folderId: string) {
 	gridItems.value = gridItems.value.filter(it => it.id !== folderId);
+	originGridItems.value = originGridItems.value.filter(it => it.id !== folderId);
 }
 
 async function refreshDriveItems(folderId: string | null, page: number) {
@@ -405,6 +455,7 @@ async function refreshDriveItems(folderId: string | null, page: number) {
 
 	currentFolderId.value = folderId;
 	currentPage.value = page;
+	originGridItems.value = JSON.parse(JSON.stringify(gridItems.value));
 }
 
 onMounted(async () => {

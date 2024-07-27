@@ -2477,8 +2477,11 @@ _drivecleaner:
 _drive:
   _system:
     title: "システムドライブ"
-    searchSettings: "検索設定"
-    searchSettingCaption: "ファイル・フォルダの検索条件を詳細に設定します。"
+  searchSettings: "検索設定"
+  searchSettingCaption: "ファイル・フォルダの検索条件を詳細に設定します。"
+  alertDeleteFilesNothingDescription: "削除対象のファイルはありません。"
+  confirmDeleteFilesTitle: "確認"
+  confirmDeleteFilesDescription: "チェックがつけられた{count}個のファイルを削除します。実行しますか？"
 
 _webhookSettings:
   createWebhook: "Webhookを作成"

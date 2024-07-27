@@ -55,7 +55,7 @@ export class MiDriveExploreView {
 	@ViewColumn()
 	public fileType: string | null;
 	@ViewColumn()
-	public size: string | null;
+	public size: number | null;
 	@ViewColumn()
 	public comment: string | null;
 	@ViewColumn()

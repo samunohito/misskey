@@ -9338,15 +9338,27 @@ export interface Locale extends ILocale {
              * システムドライブ
              */
             "title": string;
-            /**
-             * 検索設定
-             */
-            "searchSettings": string;
-            /**
-             * ファイル・フォルダの検索条件を詳細に設定します。
-             */
-            "searchSettingCaption": string;
         };
+        /**
+         * 検索設定
+         */
+        "searchSettings": string;
+        /**
+         * ファイル・フォルダの検索条件を詳細に設定します。
+         */
+        "searchSettingCaption": string;
+        /**
+         * 削除対象のファイルはありません。
+         */
+        "alertDeleteFilesNothingDescription": string;
+        /**
+         * 確認
+         */
+        "confirmDeleteFilesTitle": string;
+        /**
+         * チェックがつけられた{count}個のファイルを削除します。実行しますか？
+         */
+        "confirmDeleteFilesDescription": ParameterizedString<"count">;
     };
     "_webhookSettings": {
         /**

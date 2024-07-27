@@ -148,7 +148,7 @@ const customTemplateExtraParams = computed(() => {
 });
 /** カスタムテンプレートの拡張イベント. 実行結果をキャッシュする＆変更がある時のみ再レンダリングするためcomputedで包む */
 const customTemplateExtraEvents = computed(() => {
-	return cell.value.column.setting.customTemplate?.extraEvents?.();
+	return cell.value.column.setting.customTemplate?.extraEvents?.() ?? {};
 });
 
 watch(() => [cell.value.value], () => {
