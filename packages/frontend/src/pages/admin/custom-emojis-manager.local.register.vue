@@ -73,8 +73,6 @@ import * as Misskey from 'misskey-js';
 import { onMounted, ref, useCssModule } from 'vue';
 import { misskeyApi } from '@/scripts/misskey-api.js';
 import {
-	emptyStrToEmptyArray,
-	emptyStrToNull,
 	RequestLogItem,
 	roleIdsParser,
 } from '@/pages/admin/custom-emojis-manager.impl.js';
@@ -95,6 +93,7 @@ import XRegisterLogsFolder from '@/pages/admin/custom-emojis-manager.logs-folder
 import { GridSetting } from '@/components/grid/grid.js';
 import { copyGridDataToClipboard } from '@/components/grid/grid-utils.js';
 import { GridRow } from '@/components/grid/row.js';
+import { emptyStrToEmptyArray, emptyStrToNull } from '@/scripts/str.js';
 
 const MAXIMUM_EMOJI_REGISTER_COUNT = 100;
 
