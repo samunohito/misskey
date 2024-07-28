@@ -15,3 +15,8 @@ export type GridItem = {
 	isSensitive: boolean | null;
 	kind: 'file' | 'folder'
 }
+
+export type XCellNameParams = {
+	batchRename: boolean;
+	item: GridItem;
+}

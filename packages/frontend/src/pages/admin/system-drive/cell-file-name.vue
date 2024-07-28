@@ -23,19 +23,20 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <script setup lang="ts">
 
-import { computed, onMounted } from 'vue';
+import { computed, onMounted, toRefs } from 'vue';
 import { CellValue, GridCell } from '@/components/grid/cell.js';
-import { GridItem } from '@/pages/admin/system-drive/types.js';
+import { XCellNameParams } from '@/pages/admin/system-drive/types.js';
 
 const imageMimeTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml', 'image/gif'];
 
 const props = defineProps<{
 	cell: GridCell;
-	extraParams: GridItem;
+	extraParams: XCellNameParams;
 	mounted: () => void;
 }>();
 
-const item = computed(() => props.extraParams);
+const { item, batchRename } = toRefs(props.extraParams);
+
 const thumbType = computed(() => {
 	const _item = item.value;
 	switch (true) {
@@ -48,17 +49,34 @@ const thumbType = computed(() => {
 	}
 });
 
+/**
+ * 編集モード開始時にセル側から呼び出される.
+ * この関数が未実装だと編集モードにならない.
+ *
+ * @return falseを返すと編集モードにならない
+ */
 function beginEdit(): boolean {
-	// falseを返すか、この関数が未実装だと編集モードにならない
+	console.log('beginEdit', batchRename.value);
+	if (!batchRename.value) {
+		// 一括リネームモードでない場合は編集モードにならない
+		return false;
+	}
+
 	return true;
 }
 
+/**
+ * 編集モード終了時にセル側から呼び出される.
+ * 編集モードが解除されるタイミングとしては、編集中のセル以外がクリックされた場合、escキーやenterキーが押下された場合がある.
+ *
+ * @return この値がセルおよびグリッドにbindした値に書き込まれる
+ */
 function endEdit(): CellValue {
-	// この値がセルおよびグリッドにbindした値に書き込まれる
-	return '編集後の値';
+	return item.value.name;
 }
 
 onMounted(() => {
+	// サイズ計算のため、かならず呼び出す必要がある
 	props.mounted();
 });
 
@@ -75,6 +93,7 @@ $iconSize: 18px;
 	display: flex;
 	flex-direction: row;
 	align-items: center;
+	padding-left: 8px;
 }
 
 .icon {

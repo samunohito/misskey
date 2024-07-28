@@ -113,16 +113,18 @@ SPDX-License-Identifier: AGPL-3.0-only
 					</MkFolder>
 
 					<div :class="$style.gridArea" class="_gaps_s">
-						<div :class="$style.breadcrumbArea" class="_gaps_s _panel">
-							<div>
-								<span class="ti ti-folder"/>
-							</div>
+						<div :class="$style.gridHeaderArea" class="_gaps_s">
+							<div :class="$style.breadcrumbArea" class="_gaps_s _panel" style="width: 100%">
+								<div>
+									<span class="ti ti-folder"/>
+								</div>
 
-							<MkBreadcrumb
-								:hierarchies="pathHierarchies"
-								:valueConverter="value => value.name"
-								@click="onBreadcrumbClicked"
-							/>
+								<MkBreadcrumb
+									:hierarchies="pathHierarchies"
+									:valueConverter="value => value.name"
+									@click="onBreadcrumbClicked"
+								/>
+							</div>
 						</div>
 
 						<MkGrid :data="gridItems" :settings="setupGrid()" @event="onGridEvent"/>
@@ -147,7 +149,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, Ref, ref, useCssModule } from 'vue';
+import { computed, onMounted, onUnmounted, reactive, Ref, ref, useCssModule } from 'vue';
 import * as Misskey from 'misskey-js';
 import XNameCell from './cell-file-name.vue';
 import * as os from '@/os.js';
@@ -174,6 +176,7 @@ import { emptyStrToUndefined } from '@/scripts/str.js';
 import { createCustomCellTemplate } from '@/components/grid/column.js';
 import { useStream } from '@/stream.js';
 import { validators } from '@/components/grid/cell-validators.js';
+import MkSwitch from '@/components/MkSwitch.vue';
 
 const itemSortKeys = [
 	'id',
@@ -226,7 +229,7 @@ function setupGrid(): GridSetting {
 				validators: [notBlank, nameMaxLength, nameForbiddenWords],
 				customTemplate: createCustomCellTemplate<typeof XNameCell>({
 					template: () => XNameCell,
-					extraParams: (cell: GridCell) => gridItems.value[cell.row.index],
+					extraParams: (cell: GridCell) => reactive({ batchRename: batchRename, item: gridItems.value[cell.row.index] }),
 				}),
 				events: {
 					async dblclick(cell) {
@@ -246,7 +249,7 @@ function setupGrid(): GridSetting {
 			},
 			{ bindTo: 'fileType', type: 'text', editable: false, width: 90 },
 			{
-				bindTo: 'size', title: 'size(kb)', type: 'text', editable: false, width: 90, align: 'right',
+				bindTo: 'size', title: 'size(kb)', type: 'text', editable: false, width: 90, align: 'end',
 				valueTransformer(row, col, val) {
 					if (gridItems.value[row.index].kind === 'file') {
 						const v = val ? val as number : 0;
@@ -283,6 +286,7 @@ const spMode = computed(() => ['smartphone', 'tablet'].includes(deviceKind));
 const gridItems = ref<GridItem[]>([]);
 const originGridItems = ref<GridItem[]>([]);
 const updateButtonDisabled = ref<boolean>(false);
+const batchRename = ref<boolean>(false);
 
 const connection = useStream().useChannel('drive');
 
@@ -532,6 +536,13 @@ onMounted(async () => {
 	connection.on('folderDeleted', onStreamDriveFolderDeleted);
 });
 
+onUnmounted(() => {
+	connection.off('fileUpdated', onStreamDriveFileUpdated);
+	connection.off('fileDeleted', onStreamDriveFileDeleted);
+	connection.off('folderUpdated', onStreamDriveFolderUpdated);
+	connection.off('folderDeleted', onStreamDriveFolderDeleted);
+});
+
 definePageMetadata(() => ({
 	title: i18n.ts._drive._system.title,
 	icon: 'ti ti-icons',
@@ -607,6 +618,13 @@ definePageMetadata(() => ({
 	justify-content: center;
 	align-items: center;
 	gap: 8px;
+}
+
+.gridHeaderArea {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: stretch;
 }
 
 .breadcrumbArea {

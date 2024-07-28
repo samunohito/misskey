@@ -9340,6 +9340,10 @@ export interface Locale extends ILocale {
             "title": string;
         };
         /**
+         * 一括リネーム
+         */
+        "batchRename": string;
+        /**
          * 検索設定
          */
         "searchSettings": string;
@@ -9376,7 +9380,7 @@ export interface Locale extends ILocale {
          */
         "alertFilesRegisterFailedTitle": string;
         /**
-         * ファイルの更新・削除に失敗しました。詳細は登録ログをご確認ください。。
+         * ファイルの更新・削除に失敗しました。詳細は登録ログをご確認ください。
          */
         "alertFilesRegisterFailedDescription": string;
     };

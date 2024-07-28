@@ -8,7 +8,6 @@ SPDX-License-Identifier: AGPL-3.0-only
 	ref="rootEl"
 	class="mk_grid_border"
 	:class="[$style.grid]"
-	@dblclick.prevent="onDblClick"
 	@mousedown.prevent="onMouseDown"
 	@keydown="onKeyDown"
 	@contextmenu.prevent.stop="onContextMenu"
@@ -433,19 +432,6 @@ function onKeyDown(ev: KeyboardEvent) {
 
 			break;
 		}
-	}
-}
-
-function onDblClick(ev: MouseEvent) {
-	const cellAddress = getCellAddress(ev.target as HTMLElement);
-	if (ev.type === 'dblclick') {
-		if (availableCellAddress(cellAddress)) {
-			selectionCell(cellAddress);
-			if (selectedCell.value) {
-				selectedCell.value.column.setting.events?.dblclick?.(selectedCell.value);
-			}
-		}
-		return;
 	}
 }
 

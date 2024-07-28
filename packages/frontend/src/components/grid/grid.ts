@@ -32,7 +32,7 @@ export type Size = {
 }
 
 export type SizeStyle = number | 'auto' | undefined;
-export type TextAlignStyle = 'left' | 'center' | 'right' | undefined;
+export type TextAlignStyle = 'start' | 'center' | 'end' | undefined;
 
 export type AdditionalStyle = {
 	className?: string;

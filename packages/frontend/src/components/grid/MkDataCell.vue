@@ -24,7 +24,6 @@ SPDX-License-Identifier: AGPL-3.0-only
 			[cell.selected ? $style.selected : {}],
 			// 行が選択されているときは範囲選択色の適用を行側に任せる
 			[(cell.ranged && !cell.row.ranged) ? $style.ranged : {}],
-			[cellAlign === 'center' ? $style.center : (cellAlign === 'right' ? $style.right : $style.left)],
 		]"
 	>
 		<div v-if="cellType === 'custom' && customTemplateComponent" :class="$style.customTemplateArea">
@@ -38,7 +37,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			/>
 		</div>
 		<template v-else>
-			<div v-if="!editing" ref="contentAreaEl" :class="$style.contentArea">
+			<div v-if="!editing" ref="contentAreaEl" :class="$style.contentArea" :style="{ justifyContent: cellAlign }">
 				<div :class="$style.content">
 					<div v-if="cellType === 'text'">
 						{{ cell.value }}
@@ -63,7 +62,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					</div>
 				</div>
 			</div>
-			<div v-else ref="inputAreaEl" :class="$style.inputArea">
+			<div v-else ref="inputAreaEl" :class="$style.inputArea" :style="{ justifyContent: cellAlign }">
 				<input
 					v-if="cellType === 'text'"
 					type="text"
@@ -99,7 +98,6 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <script setup lang="ts">
 import { computed, defineAsyncComponent, nextTick, onMounted, onUnmounted, ref, shallowRef, toRefs, watch } from 'vue';
-import { Component } from 'react';
 import { GridEventEmitter, Size } from '@/components/grid/grid.js';
 import { useTooltip } from '@/scripts/use-tooltip.js';
 import * as os from '@/os.js';
@@ -124,7 +122,7 @@ const { cell, bus } = toRefs(props);
 const rootEl = shallowRef<InstanceType<typeof HTMLTableCellElement>>();
 const contentAreaEl = shallowRef<InstanceType<typeof HTMLDivElement>>();
 const inputAreaEl = shallowRef<InstanceType<typeof HTMLDivElement>>();
-const customTemplateEl = shallowRef<InstanceType<typeof Component>>();
+const customTemplateEl = shallowRef();
 
 /** 値が編集中かどうか */
 const editing = ref<boolean>(false);
@@ -138,7 +136,7 @@ const cellAlign = computed(() => {
 		case 'boolean':
 			return 'center';
 		default: {
-			return cell.value.column.setting.align ?? 'left';
+			return cell.value.column.setting.align ?? 'start';
 		}
 	}
 });
@@ -167,10 +165,13 @@ watch(() => cell.value.selected, () => {
 	}
 });
 
-function onCellDoubleClick(ev: MouseEvent) {
+async function onCellDoubleClick(ev: MouseEvent) {
 	switch (ev.type) {
 		case 'dblclick': {
-			beginEditing(ev.target as HTMLElement);
+			if (await beginEditing(ev.target as HTMLElement).then(it => !it)) {
+				// 編集モードにならなかった場合はダブルクリックイベントを呼ぶ
+				cell.value.column.setting.events?.dblclick?.(cell.value);
+			}
 			break;
 		}
 	}
@@ -235,9 +236,14 @@ function unregisterOutsideMouseDown() {
 	removeEventListener('mousedown', onOutsideMouseDown);
 }
 
-async function beginEditing(target: HTMLElement) {
+/**
+ * セルの編集を開始する
+ * @param target 編集対象のセルが乗った要素
+ * @return true: 編集を開始した, false: 編集を開始しなかった
+ */
+async function beginEditing(target: HTMLElement): Promise<boolean> {
 	if (editing.value || !cell.value.selected || !cell.value.column.setting.editable) {
-		return;
+		return false;
 	}
 
 	if (cell.value.column.setting.customValueEditor) {
@@ -255,6 +261,7 @@ async function beginEditing(target: HTMLElement) {
 		}
 
 		requestFocus();
+		return false;
 	} else {
 		switch (cellType.value) {
 			case 'number':
@@ -271,21 +278,26 @@ async function beginEditing(target: HTMLElement) {
 						(inputAreaEl.value.querySelector('*') as HTMLElement).focus();
 					}
 				});
-				break;
+
+				return true;
 			}
 			case 'boolean': {
 				// とくに特殊なUIは設けず、トグルするだけ
 				emitValueChange(!cell.value.value);
-				break;
+				return false;
 			}
 			case 'custom': {
-				if (customTemplateEl.value?.beginEdit() === true) {
+				const beginEdit = customTemplateEl.value?.beginEdit() ?? false;
+				if (beginEdit) {
 					editing.value = true;
 					registerOutsideMouseDown();
 					emit('operation:beginEdit', cell.value);
 				}
 
-				break;
+				return beginEdit;
+			}
+			default: {
+				return false;
 			}
 		}
 	}
@@ -395,18 +407,6 @@ $cellHeight: 28px;
 
 	&.ranged {
 		background-color: var(--accentedBg);
-	}
-
-	&.left {
-		justify-content: start;
-	}
-
-	&.right {
-		justify-content: end;
-	}
-
-	&.center {
-		justify-content: center;
 	}
 
 	&.error {

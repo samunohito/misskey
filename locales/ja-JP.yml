@@ -2477,6 +2477,7 @@ _drivecleaner:
 _drive:
   _system:
     title: "システムドライブ"
+  batchRename: "一括リネーム"
   searchSettings: "検索設定"
   searchSettingCaption: "ファイル・フォルダの検索条件を詳細に設定します。"
   alertDeleteFilesNothingDescription: "削除対象のファイルはありません。"
@@ -2486,7 +2487,7 @@ _drive:
   confirmUpdateFilesTitle: "確認"
   confirmUpdateFilesDescription: "{count}個のファイルを更新します。実行しますか？"
   alertFilesRegisterFailedTitle: "エラー"
-  alertFilesRegisterFailedDescription: "ファイルの更新・削除に失敗しました。詳細は登録ログをご確認ください。。"
+  alertFilesRegisterFailedDescription: "ファイルの更新・削除に失敗しました。詳細は登録ログをご確認ください。"
 
 _webhookSettings:
   createWebhook: "Webhookを作成"

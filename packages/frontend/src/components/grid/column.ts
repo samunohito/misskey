@@ -141,6 +141,7 @@ export type GridColumnSetting = {
 	align?: TextAlignStyle;
 	editable?: boolean;
 	validators?: GridCellValidator[];
+	// TODO: CustomCellTemplateに統合したい
 	customValueEditor?: CustomValueEditor;
 	customTemplate?: CustomCellTemplate<any>,
 	valueTransformer?: CellValueTransformer;
