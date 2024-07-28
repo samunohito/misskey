@@ -134,13 +134,13 @@ $iconSize: 18px;
 }
 
 .editingInput {
-	background-color: pink;
+	background-color: transparent;
 	width: 100%;
 	max-width: 100%;
 	box-sizing: border-box;
-	min-height: 100% - 2;
-	max-height: 100% - 2;
-	height: 100% - 2;
+	min-height: 100%;
+	max-height: 100%;
+	height: 100%;
 	outline: none;
 	border: none;
 	font-family: 'Hiragino Maru Gothic Pro', "BIZ UDGothic", Roboto, HelveticaNeue, Arial, sans-serif;
