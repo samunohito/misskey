@@ -9344,6 +9344,18 @@ export interface Locale extends ILocale {
          */
         "batchRename": string;
         /**
+         * このファイル/フォルダをリネーム
+         */
+        "fileRename": string;
+        /**
+         * このファイルのURLをコピー
+         */
+        "fileCopyUrl": string;
+        /**
+         * このファイルを削除対象にする
+         */
+        "fileDeleteMark": string;
+        /**
          * 検索設定
          */
         "searchSettings": string;

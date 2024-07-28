@@ -176,7 +176,8 @@ import { emptyStrToUndefined } from '@/scripts/str.js';
 import { createCustomCellTemplate } from '@/components/grid/column.js';
 import { useStream } from '@/stream.js';
 import { validators } from '@/components/grid/cell-validators.js';
-import MkSwitch from '@/components/MkSwitch.vue';
+import { copyToClipboard } from '@/scripts/copy-to-clipboard.js';
+import { MenuButton, MenuItem } from '@/types/menu.js';
 
 const itemSortKeys = [
 	'id',
@@ -229,7 +230,10 @@ function setupGrid(): GridSetting {
 				validators: [notBlank, nameMaxLength, nameForbiddenWords],
 				customTemplate: createCustomCellTemplate<typeof XNameCell>({
 					template: () => XNameCell,
-					extraParams: (cell: GridCell) => reactive({ batchRename: batchRename, item: gridItems.value[cell.row.index] }),
+					extraParams: (cell: GridCell) => reactive({
+						batchRename: batchRename,
+						item: gridItems.value[cell.row.index],
+					}),
 				}),
 				events: {
 					async dblclick(cell) {
@@ -263,7 +267,67 @@ function setupGrid(): GridSetting {
 			{ bindTo: 'comment', type: 'text', editable: true, width: 180 },
 			{ bindTo: 'url', type: 'text', editable: false, width: 280 },
 		],
-		cells: {},
+		cells: {
+			contextMenuFactory: (col, row, value, context): MenuItem[] => {
+				const item = gridItems.value[row.index];
+				return [
+					{
+						type: 'switch',
+						text: i18n.ts._drive.batchRename,
+						icon: 'ti ti-pencil',
+						ref: batchRename,
+					},
+					{
+						type: 'divider',
+					},
+					{
+						type: 'button',
+						text: i18n.ts._drive.fileRename,
+						icon: 'ti ti-pencil',
+						action: async () => {
+							const { canceled, result } = await os.inputText({
+								title: i18n.ts.renameFile,
+								placeholder: i18n.ts.inputNewFileName,
+								default: item.name,
+							});
+							if (canceled) {
+								return;
+							}
+
+							await (
+								item.kind === 'file'
+									? misskeyApi('drive/files/update', {
+										fileId: item.id,
+										name: result,
+									})
+									: misskeyApi('drive/folders/update', {
+										folderId: item.id,
+										name: result,
+									})
+							);
+						},
+					},
+					...(
+						item.kind === 'file'
+							? [{
+								type: 'button',
+								text: i18n.ts._drive.fileCopyUrl,
+								icon: 'ti ti-copy',
+								action: () => copyToClipboard(item.url),
+							} as MenuButton]
+							: []
+					),
+					{
+						type: 'button',
+						text: i18n.ts._drive.fileDeleteMark,
+						icon: 'ti ti-trash',
+						action: () => {
+							item.checked = true;
+						},
+					},
+				];
+			},
+		},
 	};
 }
 
@@ -340,7 +404,7 @@ async function onUpdateButtonClicked() {
 	if (confirm.canceled) {
 		return;
 	}
-	console.log(updatedItems);
+
 	const action = () => {
 		return updatedItems.map(item =>
 			(
@@ -407,13 +471,37 @@ async function onDeleteButtonClicked() {
 		return;
 	}
 
-	function action() {
-		return Promise.all(deleteItems.map(it => misskeyApi('drive/files/delete', { fileId: it.id })));
+	const action = () => {
+		return deleteItems.map(item =>
+			(
+				item.kind === 'file'
+					? misskeyApi('drive/files/delete', { fileId: item.id })
+					: misskeyApi('drive/folders/delete', { folderId: item.id })
+			)
+				.then(() => ({ item, success: true, err: undefined }))
+				.catch(err => ({ item, success: false, err })),
+		);
+	};
+
+	const result = await os.promiseDialog(Promise.all(action()));
+	const failedItems = result.filter(it => !it.success);
+
+	if (failedItems.length > 0) {
+		await os.alert({
+			type: 'error',
+			title: i18n.ts._drive.alertFilesRegisterFailedTitle,
+			text: i18n.ts._drive.alertFilesRegisterFailedDescription,
+		});
 	}
 
-	await os.promiseDialog(
-		action(),
-	);
+	// requestLogs.value = result.map(it => ({
+	// 	failed: !it.success,
+	// 	url: it.item.url,
+	// 	name: it.item.name,
+	// 	error: it.err ? JSON.stringify(it.err) : undefined,
+	// }));
+
+	await refreshDriveItems(currentFolderId.value, currentPage.value);
 }
 
 function onGridResetButtonClicked() {

@@ -2478,6 +2478,9 @@ _drive:
   _system:
     title: "システムドライブ"
   batchRename: "一括リネーム"
+  fileRename: "このファイル/フォルダをリネーム"
+  fileCopyUrl: "このファイルのURLをコピー"
+  fileDeleteMark: "このファイルを削除対象にする"
   searchSettings: "検索設定"
   searchSettingCaption: "ファイル・フォルダの検索条件を詳細に設定します。"
   alertDeleteFilesNothingDescription: "削除対象のファイルはありません。"

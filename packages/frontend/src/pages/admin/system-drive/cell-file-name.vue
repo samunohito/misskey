@@ -15,15 +15,22 @@ SPDX-License-Identifier: AGPL-3.0-only
 			:alt="item.comment ?? ''"
 		/>
 	</div>
-	<div>
-		<span>{{ props.cell.value }}</span>
-	</div>
+	<input
+		v-if="editing"
+		v-model="editingValue"
+		type="text"
+		:class="$style.editingInput"
+		@mousedown.stop
+		@contextmenu.stop
+		@dblclick.stop
+	/>
+	<span v-else>{{ props.cell.value }}</span>
 </div>
 </template>
 
 <script setup lang="ts">
 
-import { computed, onMounted, toRefs } from 'vue';
+import { computed, onMounted, ref, toRefs } from 'vue';
 import { CellValue, GridCell } from '@/components/grid/cell.js';
 import { XCellNameParams } from '@/pages/admin/system-drive/types.js';
 
@@ -36,6 +43,9 @@ const props = defineProps<{
 }>();
 
 const { item, batchRename } = toRefs(props.extraParams);
+
+const editing = ref(false);
+const editingValue = ref<string | null>(null);
 
 const thumbType = computed(() => {
 	const _item = item.value;
@@ -56,11 +66,13 @@ const thumbType = computed(() => {
  * @return falseを返すと編集モードにならない
  */
 function beginEdit(): boolean {
-	console.log('beginEdit', batchRename.value);
 	if (!batchRename.value) {
 		// 一括リネームモードでない場合は編集モードにならない
 		return false;
 	}
+
+	editingValue.value = item.value.name;
+	editing.value = true;
 
 	return true;
 }
@@ -72,7 +84,8 @@ function beginEdit(): boolean {
  * @return この値がセルおよびグリッドにbindした値に書き込まれる
  */
 function endEdit(): CellValue {
-	return item.value.name;
+	editing.value = false;
+	return editingValue.value;
 }
 
 onMounted(() => {
@@ -93,7 +106,10 @@ $iconSize: 18px;
 	display: flex;
 	flex-direction: row;
 	align-items: center;
-	padding-left: 8px;
+	justify-content: stretch;
+	height: 100%;
+	width: 100%;
+	min-width: 100%;
 }
 
 .icon {
@@ -105,6 +121,8 @@ $iconSize: 18px;
 	min-width: $iconSize;
 	max-width: $iconSize;
 	height: 100%;
+
+	margin-left: 8px;
 }
 
 .thumbnail {
@@ -113,5 +131,18 @@ $iconSize: 18px;
 	height: auto;
 	object-fit: cover;
 	z-index: 100;
+}
+
+.editingInput {
+	background-color: pink;
+	width: 100%;
+	max-width: 100%;
+	box-sizing: border-box;
+	min-height: 100% - 2;
+	max-height: 100% - 2;
+	height: 100% - 2;
+	outline: none;
+	border: none;
+	font-family: 'Hiragino Maru Gothic Pro', "BIZ UDGothic", Roboto, HelveticaNeue, Arial, sans-serif;
 }
 </style>

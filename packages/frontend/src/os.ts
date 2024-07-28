@@ -600,14 +600,15 @@ export async function selectRole(params: {
 	{ canceled: false; result: Misskey.entities.Role[] }
 > {
 	return new Promise((resolve) => {
-		popup(defineAsyncComponent(() => import('@/components/MkRoleSelectDialog.vue')), params, {
+		const { dispose } = popup(defineAsyncComponent(() => import('@/components/MkRoleSelectDialog.vue')), params, {
 			done: roles => {
 				resolve({ canceled: false, result: roles });
 			},
 			close: () => {
 				resolve({ canceled: true, result: undefined });
+				dispose();
 			},
-		}, 'dispose');
+		});
 	});
 }
 
