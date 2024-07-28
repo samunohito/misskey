@@ -137,9 +137,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<div :class="$style.buttons">
 						<MkButton danger style="margin-right: auto" @click="onDeleteButtonClicked">{{ i18n.ts.delete }}</MkButton>
 						<MkButton primary :disabled="updateButtonDisabled" @click="onUpdateButtonClicked">
-							{{
-								i18n.ts.update
-							}}
+							{{ i18n.ts.update }}
 						</MkButton>
 						<MkButton @click="onGridResetButtonClicked">{{ i18n.ts.reset }}</MkButton>
 					</div>
@@ -157,7 +155,7 @@ import XNameCell from './cell-file-name.vue';
 import XUpdateLogsFolder from './update-logs-folder.vue';
 import * as os from '@/os.js';
 import MkGrid from '@/components/grid/MkGrid.vue';
-import { GridCellValidationEvent, GridCellValueChangeEvent, GridEvent } from '@/components/grid/grid-event.js';
+import { GridEvent } from '@/components/grid/grid-event.js';
 import { misskeyApi } from '@/scripts/misskey-api.js';
 import MkPagingButtons from '@/components/MkPagingButtons.vue';
 import { GridSetting } from '@/components/grid/grid.js';
@@ -201,10 +199,7 @@ function setupGrid(): GridSetting {
 	const nameMaxLength = validators.maxLength(200);
 	return {
 		row: {
-			showNumber: true,
-			selectable: true,
-			// グリッドの行数をあらかじめ100行確保する
-			minimumDefinitionCount: 100,
+			showNumber: true, selectable: true, minimumDefinitionCount: 100,
 			styleRules: [
 				{
 					// 初期値から変わっていたら背景色を変更
@@ -274,19 +269,10 @@ function setupGrid(): GridSetting {
 			contextMenuFactory: (col, row, value, context): MenuItem[] => {
 				const item = gridItems.value[row.index];
 				return [
+					{ type: 'switch', text: i18n.ts._drive.batchRename, icon: 'ti ti-pencil', ref: batchRename },
+					{ type: 'divider' },
 					{
-						type: 'switch',
-						text: i18n.ts._drive.batchRename,
-						icon: 'ti ti-pencil',
-						ref: batchRename,
-					},
-					{
-						type: 'divider',
-					},
-					{
-						type: 'button',
-						text: i18n.ts._drive.fileRename,
-						icon: 'ti ti-pencil',
+						type: 'button', text: i18n.ts._drive.fileRename, icon: 'ti ti-pencil',
 						action: async () => {
 							const { canceled, result } = await os.inputText({
 								title: i18n.ts.renameFile,
@@ -297,17 +283,7 @@ function setupGrid(): GridSetting {
 								return;
 							}
 
-							await (
-								item.kind === 'file'
-									? misskeyApi('drive/files/update', {
-										fileId: item.id,
-										name: result,
-									})
-									: misskeyApi('drive/folders/update', {
-										folderId: item.id,
-										name: result,
-									})
-							);
+							await callUpdate([{ ...item, name: result }]);
 						},
 					},
 					...(
@@ -324,9 +300,7 @@ function setupGrid(): GridSetting {
 						type: 'button',
 						text: i18n.ts._drive.fileDeleteMark,
 						icon: 'ti ti-trash',
-						action: () => {
-							item.checked = true;
-						},
+						action: () => item.checked = true,
 					},
 				];
 			},
@@ -360,12 +334,17 @@ const connection = useStream().useChannel('drive');
 
 function onGridEvent(event: GridEvent) {
 	switch (event.type) {
-		case 'cell-validation':
-			onGridCellValidation(event);
+		case 'cell-validation': {
+			updateButtonDisabled.value = event.all.filter(it => !it.valid).length > 0;
 			break;
-		case 'cell-value-change':
-			onGridCellValueChange(event);
+		}
+		case 'cell-value-change': {
+			const { row, column, newValue } = event;
+			if (gridItems.value.length > row.index && column.setting.bindTo in gridItems.value[row.index]) {
+				gridItems.value[row.index][column.setting.bindTo] = newValue;
+			}
 			break;
+		}
 	}
 }
 
@@ -373,25 +352,10 @@ function onSortOrderUpdate(_sortOrders: SortOrder<ItemSortKey>[]) {
 	sortOrders.value = _sortOrders;
 }
 
-function onGridCellValidation(event: GridCellValidationEvent) {
-	updateButtonDisabled.value = event.all.filter(it => !it.valid).length > 0;
-}
-
-function onGridCellValueChange(event: GridCellValueChangeEvent) {
-	const { row, column, newValue } = event;
-	if (gridItems.value.length > row.index && column.setting.bindTo in gridItems.value[row.index]) {
-		gridItems.value[row.index][column.setting.bindTo] = newValue;
-	}
-}
-
 async function onUpdateButtonClicked() {
-	const _items = gridItems.value;
-	const _originItems = originGridItems.value;
-	if (_items.length !== _originItems.length) {
-		throw new Error('The number of items has been changed. Please refresh the page and try again.');
-	}
+	checkItemLength();
 
-	const updatedItems = _items.filter((it, idx) => !it.checked && JSON.stringify(it) !== JSON.stringify(_originItems[idx]));
+	const updatedItems = gridItems.value.filter((it, idx) => !it.checked && JSON.stringify(it) !== JSON.stringify(originGridItems.value[idx]));
 	if (updatedItems.length === 0) {
 		await os.alert({
 			type: 'info',
@@ -409,54 +373,14 @@ async function onUpdateButtonClicked() {
 		return;
 	}
 
-	const action = () => {
-		return updatedItems.map(item =>
-			(
-				item.kind === 'file'
-					? misskeyApi('drive/files/update', {
-						fileId: item.id,
-						name: item.name,
-						comment: item.comment ?? null,
-						isSensitive: item.isSensitive ?? false,
-					})
-					: misskeyApi('drive/folders/update', {
-						folderId: item.id,
-						name: item.name,
-					})
-			)
-				.then(() => ({ item, success: true, err: undefined }))
-				.catch(err => ({ item, success: false, err })),
-		);
-	};
-
-	const result = await os.promiseDialog(Promise.all(action()));
-	const failedItems = result.filter(it => !it.success);
-
-	if (failedItems.length > 0) {
-		await os.alert({
-			type: 'error',
-			title: i18n.ts._drive.alertFilesRegisterFailedTitle,
-			text: i18n.ts._drive.alertFilesRegisterFailedDescription,
-		});
-	}
-
-	requestLogs.value = result.map(it => ({
-		...it.item,
-		failed: !it.success,
-		error: it.err ? JSON.stringify(it.err) : undefined,
-	}));
-
+	await callUpdate(updatedItems);
 	await refreshDriveItems(currentFolderId.value, currentPage.value);
 }
 
 async function onDeleteButtonClicked() {
-	const _items = gridItems.value;
-	const _originItems = originGridItems.value;
-	if (_items.length !== _originItems.length) {
-		throw new Error('The number of items has been changed. Please refresh the page and try again.');
-	}
+	checkItemLength();
 
-	const deleteItems = _items.filter((it) => it.checked);
+	const deleteItems = gridItems.value.filter((it) => it.checked);
 	if (deleteItems.length === 0) {
 		await os.alert({
 			type: 'info',
@@ -474,36 +398,7 @@ async function onDeleteButtonClicked() {
 		return;
 	}
 
-	const action = () => {
-		return deleteItems.map(item =>
-			(
-				item.kind === 'file'
-					? misskeyApi('drive/files/delete', { fileId: item.id })
-					: misskeyApi('drive/folders/delete', { folderId: item.id })
-			)
-				.then(() => ({ item, success: true, err: undefined }))
-				.catch(err => ({ item, success: false, err })),
-		);
-	};
-
-	const result = await os.promiseDialog(Promise.all(action()));
-	const failedItems = result.filter(it => !it.success);
-
-	if (failedItems.length > 0) {
-		await os.alert({
-			type: 'error',
-			title: i18n.ts._drive.alertFilesRegisterFailedTitle,
-			text: i18n.ts._drive.alertFilesRegisterFailedDescription,
-		});
-	}
-
-	// requestLogs.value = result.map(it => ({
-	// 	failed: !it.success,
-	// 	url: it.item.url,
-	// 	name: it.item.name,
-	// 	error: it.err ? JSON.stringify(it.err) : undefined,
-	// }));
-
+	await callDelete(deleteItems);
 	await refreshDriveItems(currentFolderId.value, currentPage.value);
 }
 
@@ -616,6 +511,82 @@ async function refreshDriveItems(folderId: string | null, page: number) {
 	currentFolderId.value = folderId;
 	currentPage.value = page;
 	originGridItems.value = JSON.parse(JSON.stringify(gridItems.value));
+}
+
+async function callUpdate(items: GridItem[]): Promise<void> {
+	const result = await os.promiseDialog(Promise.all(
+		items.map(item => (
+			item.kind === 'file'
+				? misskeyApi('drive/files/update', {
+					fileId: item.id,
+					name: item.name,
+					comment: item.comment ?? null,
+					isSensitive: item.isSensitive ?? false,
+				})
+				: misskeyApi('drive/folders/update', {
+					folderId: item.id,
+					name: item.name,
+				})
+		)
+			.then(() => ({ item, success: true, err: undefined }))
+			.catch(err => ({ item, success: false, err })),
+		),
+	));
+	const failedItems = result.filter(it => !it.success);
+
+	let beforeNames: Map<string, string> = new Map();
+	if (failedItems.length > 0) {
+		await os.alert({
+			type: 'error',
+			title: i18n.ts._drive.alertFilesRegisterFailedTitle,
+			text: i18n.ts._drive.alertFilesRegisterFailedDescription,
+		});
+
+		// 変更しようとした名前だと元々の名前が分からないので、失敗した場合は元々の名前を取得する
+		beforeNames = new Map(originGridItems.value.map(it => [it.id, it.name]));
+	}
+
+	requestLogs.value = result.map(it => ({
+		...it.item,
+		name: beforeNames.get(it.item.id) ?? it.item.name,
+		failed: !it.success,
+		error: it.err ? JSON.stringify(it.err) : undefined,
+	}));
+}
+
+async function callDelete(items: GridItem[]): Promise<{ item: GridItem, success: boolean, err: any }> {
+	const result = await os.promiseDialog(Promise.all(
+		items.map(item =>
+			(item.kind === 'file'
+				? misskeyApi('drive/files/delete', { fileId: item.id })
+				: misskeyApi('drive/folders/delete', { folderId: item.id })
+			)
+				.then(() => ({ item, success: true, err: undefined }))
+				.catch(err => ({ item, success: false, err })),
+		),
+	));
+	const failedItems = result.filter(it => !it.success);
+	if (failedItems.length > 0) {
+		await os.alert({
+			type: 'error',
+			title: i18n.ts._drive.alertFilesRegisterFailedTitle,
+			text: i18n.ts._drive.alertFilesRegisterFailedDescription,
+		});
+	}
+
+	requestLogs.value = result.map(it => ({
+		...it.item,
+		failed: !it.success,
+		error: it.err ? JSON.stringify(it.err) : undefined,
+	}));
+}
+
+function checkItemLength() {
+	const _items = gridItems.value;
+	const _originItems = originGridItems.value;
+	if (_items.length !== _originItems.length) {
+		throw new Error('The number of items has been changed. Please refresh the page and try again.');
+	}
 }
 
 onMounted(async () => {
