@@ -20,3 +20,8 @@ export type XCellNameParams = {
 	batchRename: boolean;
 	item: GridItem;
 }
+
+export type UpdateRequestLogItem = GridItem & {
+	failed: boolean;
+	error?: string;
+};

@@ -112,6 +112,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 						</div>
 					</MkFolder>
 
+					<XUpdateLogsFolder :logs="requestLogs"/>
+
 					<div :class="$style.gridArea" class="_gaps_s">
 						<div :class="$style.gridHeaderArea" class="_gaps_s">
 							<div :class="$style.breadcrumbArea" class="_gaps_s _panel" style="width: 100%">
@@ -152,6 +154,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 import { computed, onMounted, onUnmounted, reactive, Ref, ref, useCssModule } from 'vue';
 import * as Misskey from 'misskey-js';
 import XNameCell from './cell-file-name.vue';
+import XUpdateLogsFolder from './update-logs-folder.vue';
 import * as os from '@/os.js';
 import MkGrid from '@/components/grid/MkGrid.vue';
 import { GridCellValidationEvent, GridCellValueChangeEvent, GridEvent } from '@/components/grid/grid-event.js';
@@ -159,7 +162,7 @@ import { misskeyApi } from '@/scripts/misskey-api.js';
 import MkPagingButtons from '@/components/MkPagingButtons.vue';
 import { GridSetting } from '@/components/grid/grid.js';
 import { GridCell } from '@/components/grid/cell.js';
-import { GridItem } from '@/pages/admin/system-drive/types.js';
+import { GridItem, UpdateRequestLogItem } from '@/pages/admin/system-drive/types.js';
 import MkBreadcrumb from '@/components/MkBreadcrumb.vue';
 import { i18n } from '@/i18n.js';
 import MkFolder from '@/components/MkFolder.vue';
@@ -347,6 +350,7 @@ const sortOrders = ref<SortOrder<ItemSortKey>[]>([]);
 const pathHierarchies: Ref<Misskey.entities.DriveFolder[]> = ref([]);
 const spMode = computed(() => ['smartphone', 'tablet'].includes(deviceKind));
 
+const requestLogs = ref<UpdateRequestLogItem[]>([]);
 const gridItems = ref<GridItem[]>([]);
 const originGridItems = ref<GridItem[]>([]);
 const updateButtonDisabled = ref<boolean>(false);
@@ -436,12 +440,11 @@ async function onUpdateButtonClicked() {
 		});
 	}
 
-	// requestLogs.value = result.map(it => ({
-	// 	failed: !it.success,
-	// 	url: it.item.url,
-	// 	name: it.item.name,
-	// 	error: it.err ? JSON.stringify(it.err) : undefined,
-	// }));
+	requestLogs.value = result.map(it => ({
+		...it.item,
+		failed: !it.success,
+		error: it.err ? JSON.stringify(it.err) : undefined,
+	}));
 
 	await refreshDriveItems(currentFolderId.value, currentPage.value);
 }
