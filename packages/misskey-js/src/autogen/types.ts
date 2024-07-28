@@ -7040,7 +7040,7 @@ export type operations = {
           /** @default 1 */
           page?: number;
           /** @default [] */
-          sortKeys?: ('+id' | '-id' | '+name' | '-name' | '+fileType' | '-fileType' | '+size' | '-size' | '+comment' | '-comment' | '+isSensitive' | '-isSensitive' | '+isLink' | '-isLink' | '+kind' | '-kind')[];
+          sortKeys?: ('+id' | '-id' | '+name' | '-name' | '+fileType' | '-fileType' | '+size' | '-size' | '+comment' | '-comment' | '+isSensitive' | '-isSensitive' | '+kind' | '-kind')[];
         };
       };
     };

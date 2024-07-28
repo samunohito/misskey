@@ -513,7 +513,7 @@ async function refreshDriveItems(folderId: string | null, page: number) {
 	originGridItems.value = JSON.parse(JSON.stringify(gridItems.value));
 }
 
-async function callUpdate(items: GridItem[]): Promise<void> {
+async function callUpdate(items: GridItem[]) {
 	const result = await os.promiseDialog(Promise.all(
 		items.map(item => (
 			item.kind === 'file'
@@ -554,7 +554,7 @@ async function callUpdate(items: GridItem[]): Promise<void> {
 	}));
 }
 
-async function callDelete(items: GridItem[]): Promise<{ item: GridItem, success: boolean, err: any }> {
+async function callDelete(items: GridItem[]) {
 	const result = await os.promiseDialog(Promise.all(
 		items.map(item =>
 			(item.kind === 'file'
