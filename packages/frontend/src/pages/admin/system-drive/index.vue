@@ -112,7 +112,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 						</div>
 					</MkFolder>
 
-					<XUpdateLogsFolder :logs="requestLogs"/>
+					<!--					<XUpdateLogsFolder :logs="requestLogs"/>-->
+					<div class="_panel" style="padding: 2px 8px">
+						<MkLogConsole style="height: 300px" :logs="requestLogs" :lineConverter="line => (line.failed ? '❌ ' : '✅ ') + line.name + (line.error ? ' ' + line.error : '')"/>
+					</div>
 
 					<div :class="$style.gridArea" class="_gaps_s">
 						<div :class="$style.gridHeaderArea" class="_gaps_s">
@@ -179,6 +182,7 @@ import { useStream } from '@/stream.js';
 import { validators } from '@/components/grid/cell-validators.js';
 import { copyToClipboard } from '@/scripts/copy-to-clipboard.js';
 import { MenuButton, MenuItem } from '@/types/menu.js';
+import MkLogConsole from '@/components/MkLogConsole.vue';
 
 const itemSortKeys = [
 	'id',
@@ -266,7 +270,7 @@ function setupGrid(): GridSetting {
 			{ bindTo: 'url', type: 'text', editable: false, width: 280 },
 		],
 		cells: {
-			contextMenuFactory: (col, row, value, context): MenuItem[] => {
+			contextMenuFactory: (col, row): MenuItem[] => {
 				const item = gridItems.value[row.index];
 				return [
 					{ type: 'switch', text: i18n.ts._drive.batchRename, icon: 'ti ti-pencil', ref: batchRename },

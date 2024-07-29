@@ -4,7 +4,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<MkFolder>
+<MkFolder :spacerMin="0" :spacerMax="0">
 	<template #icon><i class="ti ti-notes"></i></template>
 	<template #label>{{ i18n.ts._customEmojisManager._gridCommon.registrationLogs }}</template>
 	<template #caption>
@@ -12,25 +12,30 @@ SPDX-License-Identifier: AGPL-3.0-only
 	</template>
 
 	<div>
-		<div v-if="logs.length > 0" style="display:flex; flex-direction: column; overflow-y: scroll; gap: 16px;">
-			<MkSwitch v-model="showingSuccessLogs">
-				<template #label>{{ i18n.ts._customEmojisManager._logs.showSuccessLogSwitch }}</template>
-			</MkSwitch>
-			<div>
-				<div v-if="filteredLogs.length > 0">
-					<MkGrid
-						:data="filteredLogs"
-						:settings="setupGrid()"
-					/>
-				</div>
-				<div v-else>
-					{{ i18n.ts._customEmojisManager._logs.failureLogNothing }}
-				</div>
-			</div>
-		</div>
-		<div v-else>
-			{{ i18n.ts._customEmojisManager._logs.logNothing }}
-		</div>
+		<MkLogConsole
+			style="height: 200px"
+			:logs="logs"
+			:lineConverter="line => (line.failed ? `❌ failed ${line.name} : ${line.error}` : `✅ success ${line.name}`)"
+		/>
+		<!--		<div v-if="logs.length > 0" style="display:flex; flex-direction: column; overflow-y: scroll; gap: 16px;">-->
+		<!--			<MkSwitch v-model="showingSuccessLogs">-->
+		<!--				<template #label>{{ i18n.ts._customEmojisManager._logs.showSuccessLogSwitch }}</template>-->
+		<!--			</MkSwitch>-->
+		<!--			<div>-->
+		<!--				<div v-if="filteredLogs.length > 0">-->
+		<!--					<MkGrid-->
+		<!--						:data="filteredLogs"-->
+		<!--						:settings="setupGrid()"-->
+		<!--					/>-->
+		<!--				</div>-->
+		<!--				<div v-else>-->
+		<!--					{{ i18n.ts._customEmojisManager._logs.failureLogNothing }}-->
+		<!--				</div>-->
+		<!--			</div>-->
+		<!--		</div>-->
+		<!--		<div v-else>-->
+		<!--			{{ i18n.ts._customEmojisManager._logs.logNothing }}-->
+		<!--		</div>-->
 	</div>
 </MkFolder>
 </template>
@@ -45,6 +50,7 @@ import MkSwitch from '@/components/MkSwitch.vue';
 import { GridSetting } from '@/components/grid/grid.js';
 import { copyGridDataToClipboard } from '@/components/grid/grid-utils.js';
 import MkFolder from '@/components/MkFolder.vue';
+import MkLogConsole from '@/components/MkLogConsole.vue';
 
 function setupGrid(): GridSetting {
 	return {
