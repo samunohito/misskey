@@ -453,7 +453,6 @@ export class CustomEmojiService implements OnApplicationShutdown {
 				localOnly?: boolean;
 				hostType?: FetchEmojisHostTypes;
 				roleIds?: string[];
-				onUserDrive?: boolean;
 			},
 			sinceId?: string;
 			untilId?: string;
@@ -577,10 +576,6 @@ export class CustomEmojiService implements OnApplicationShutdown {
 		}
 		if (params?.untilId) {
 			builder.andWhere('emoji.id < :untilId', { untilId: params.untilId });
-		}
-
-		if (params?.query?.onUserDrive) {
-
 		}
 
 		if (opts?.sortKeys && opts.sortKeys.length > 0) {
