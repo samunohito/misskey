@@ -142,6 +142,12 @@ SPDX-License-Identifier: AGPL-3.0-only
 									:valueConverter="value => value.name"
 									@click="onBreadcrumbClicked"
 								/>
+
+								<MkButton style="margin-left: auto" icon rounded @click="onCreateNewFolderButton">
+									<i
+										class="ti ti-folder-plus"
+									></i>
+								</MkButton>
 							</div>
 						</div>
 
@@ -160,12 +166,24 @@ SPDX-License-Identifier: AGPL-3.0-only
 					/>
 
 					<div :class="$style.buttons">
-						<MkButton danger style="margin-right: auto" :disabled="gridItems.length <= 0" @click="onDeleteButtonClicked">{{ i18n.ts.delete }}</MkButton>
+						<MkButton
+							danger style="margin-right: auto" :disabled="gridItems.length <= 0"
+							@click="onDeleteButtonClicked"
+						>
+							{{ i18n.ts.delete }}
+						</MkButton>
 						<MkButton primary @click="onUploadButtonClicked">{{ i18n.ts.upload }}</MkButton>
-						<MkButton primary :disabled="updateButtonDisabled || gridItems.length <= 0" @click="onUpdateButtonClicked">
+						<MkButton
+							primary :disabled="updateButtonDisabled || gridItems.length <= 0"
+							@click="onUpdateButtonClicked"
+						>
 							{{ i18n.ts.update }}
 						</MkButton>
-						<MkButton :disabled="gridItems.length <= 0" @click="onGridResetButtonClicked">{{ i18n.ts.reset }}</MkButton>
+						<MkButton :disabled="gridItems.length <= 0" @click="onGridResetButtonClicked">
+							{{
+								i18n.ts.reset
+							}}
+						</MkButton>
 					</div>
 				</div>
 			</template>
@@ -377,6 +395,18 @@ function onGridEvent(event: GridEvent) {
 
 function onSortOrderUpdate(_sortOrders: SortOrder<ItemSortKey>[]) {
 	sortOrders.value = _sortOrders;
+}
+
+async function onCreateNewFolderButton() {
+	const { canceled, result } = await os.inputText({
+		title: i18n.ts.createFolder,
+		placeholder: i18n.ts.inputNewFolderName,
+	});
+	if (canceled || !result) {
+		return;
+	}
+
+	await callCreateFolder(result);
 }
 
 async function onUpdateButtonClicked() {
@@ -622,6 +652,19 @@ async function callDelete(items: GridItem[]) {
 	}));
 }
 
+async function callCreateFolder(name: string) {
+	await os.promiseDialog(misskeyApi('admin/drive/system/folders/create', {
+		parentId: currentFolderId.value,
+		name,
+	}),
+	() => {
+	},
+	() => {
+	},
+	);
+	await refreshDriveItems(currentFolderId.value, currentPage.value);
+}
+
 function checkItemLength() {
 	const _items = gridItems.value;
 	const _originItems = originGridItems.value;
@@ -734,7 +777,7 @@ definePageMetadata(() => ({
 	display: flex;
 	flex-direction: row;
 	align-items: center;
-	padding: 8px;
+	padding: 4px 8px;
 }
 
 .gridArea {

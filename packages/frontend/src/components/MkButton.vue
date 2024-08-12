@@ -7,7 +7,22 @@ SPDX-License-Identifier: AGPL-3.0-only
 <button
 	v-if="!link"
 	ref="el" class="_button"
-	:class="[$style.root, { [$style.inline]: inline, [$style.primary]: primary, [$style.gradate]: gradate, [$style.danger]: danger, [$style.rounded]: rounded, [$style.full]: full, [$style.small]: small, [$style.large]: large, [$style.transparent]: transparent, [$style.asLike]: asLike }]"
+	:class="[
+		$style.root,
+		{
+			[$style.inline]: inline,
+			[$style.primary]: primary,
+			[$style.gradate]: gradate,
+			[$style.danger]: danger,
+			[$style.rounded]: rounded,
+			[$style.full]: full,
+			[$style.small]: small,
+			[$style.large]: large,
+			[$style.icon]: icon,
+			[$style.transparent]: transparent,
+			[$style.asLike]: asLike
+		}
+	]"
 	:type="type"
 	:name="name"
 	:value="value"
@@ -54,6 +69,7 @@ const props = defineProps<{
 	large?: boolean;
 	transparent?: boolean;
 	asLike?: boolean;
+	icon?: boolean;
 	name?: string;
 	value?: string;
 	disabled?: boolean;
@@ -145,6 +161,13 @@ function onMousedown(evt: MouseEvent): void {
 
 	&:not(:disabled):active {
 		background: var(--buttonHoverBg);
+	}
+
+	&.icon {
+		min-width: 32px;
+		min-height: 32px;
+		padding: 7px;
+		line-height: 1em;
 	}
 
 	&.small {

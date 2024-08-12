@@ -53,10 +53,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private driveFolderService: DriveFolderService,
 		private driveFolderEntityService: DriveFolderEntityService,
 	) {
-		super(meta, paramDef, async (ps, me) => {
+		super(meta, paramDef, async (ps) => {
 			try {
 				const hierarchies = await this.driveFolderService.pwd({
-					userId: me.id,
+					userId: null,
 					currentFolderId: ps.currentFolderId,
 				});
 

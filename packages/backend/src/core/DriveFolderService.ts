@@ -375,7 +375,7 @@ export class DriveFolderService {
 			parentId?: MiDriveFolder['id'] | null,
 		},
 	): Promise<MiDriveFolder> {
-		if (params.parentId && await this.exists({ id: params.parentId, userId: params.userId })) {
+		if (params.parentId && !(await this.exists({ id: params.parentId, userId: params.userId }))) {
 			throw new DriveFolderService.NoSuchFolderError;
 		}
 
