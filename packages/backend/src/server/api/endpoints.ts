@@ -42,7 +42,13 @@ import * as ep___admin_drive_files from './endpoints/admin/drive/files.js';
 import * as ep___admin_drive_showFile from './endpoints/admin/drive/show-file.js';
 import * as ep___admin_drive_system_explore from './endpoints/admin/drive/system/explore.js';
 import * as ep___admin_drive_system_files_create from './endpoints/admin/drive/system/files/create.js';
+import * as ep___admin_drive_system_files_delete from './endpoints/admin/drive/system/files/delete.js';
+import * as ep___admin_drive_system_files_search from './endpoints/admin/drive/system/files/search.js';
+import * as ep___admin_drive_system_files_update from './endpoints/admin/drive/system/files/update.js';
 import * as ep___admin_drive_system_folders_create from './endpoints/admin/drive/system/folders/create.js';
+import * as ep___admin_drive_system_folders_delete from './endpoints/admin/drive/system/folders/delete.js';
+import * as ep___admin_drive_system_folders_search from './endpoints/admin/drive/system/folders/search.js';
+import * as ep___admin_drive_system_folders_update from './endpoints/admin/drive/system/folders/update.js';
 import * as ep___admin_drive_system_folders_pwd from './endpoints/admin/drive/system/folders/pwd.js';
 import * as ep___admin_emoji_addAliasesBulk from './endpoints/admin/emoji/add-aliases-bulk.js';
 import * as ep___admin_emoji_add from './endpoints/admin/emoji/add.js';
@@ -429,7 +435,13 @@ const eps = [
 	['admin/drive/show-file', ep___admin_drive_showFile],
 	['admin/drive/system/explore', ep___admin_drive_system_explore],
 	['admin/drive/system/files/create', ep___admin_drive_system_files_create],
+	['admin/drive/system/files/delete', ep___admin_drive_system_files_delete],
+	['admin/drive/system/files/search', ep___admin_drive_system_files_search],
+	['admin/drive/system/files/update', ep___admin_drive_system_files_update],
 	['admin/drive/system/folders/create', ep___admin_drive_system_folders_create],
+	['admin/drive/system/folders/delete', ep___admin_drive_system_folders_delete],
+	['admin/drive/system/folders/search', ep___admin_drive_system_folders_search],
+	['admin/drive/system/folders/update', ep___admin_drive_system_folders_update],
 	['admin/drive/system/folders/pwd', ep___admin_drive_system_folders_pwd],
 	['admin/emoji/add-aliases-bulk', ep___admin_emoji_addAliasesBulk],
 	['admin/emoji/add', ep___admin_emoji_add],
