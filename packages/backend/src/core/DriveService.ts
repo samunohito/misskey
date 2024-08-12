@@ -8,15 +8,10 @@ import * as fs from 'node:fs';
 import { Inject, Injectable } from '@nestjs/common';
 import sharp from 'sharp';
 import { sharpBmp } from '@misskey-dev/sharp-read-bmp';
-import { Brackets, IsNull, SelectQueryBuilder } from 'typeorm';
-import { DeleteObjectCommandInput, PutObjectCommandInput } from '@aws-sdk/client-s3';
+import { IsNull } from 'typeorm';
+import { DeleteObjectCommandInput, PutObjectCommandInput, NoSuchKey } from '@aws-sdk/client-s3';
 import { DI } from '@/di-symbols.js';
-import type {
-	DriveFilesRepository,
-	DriveFoldersRepository,
-	UserProfilesRepository,
-	UsersRepository,
-} from '@/models/_.js';
+import type { DriveFilesRepository, UsersRepository, DriveFoldersRepository, UserProfilesRepository } from '@/models/_.js';
 import type { Config } from '@/config.js';
 import Logger from '@/logger.js';
 import type { MiRemoteUser, MiUser } from '@/models/User.js';
@@ -29,8 +24,8 @@ import { IdentifiableError } from '@/misc/identifiable-error.js';
 import { contentDisposition } from '@/misc/content-disposition.js';
 import { GlobalEventService } from '@/core/GlobalEventService.js';
 import { VideoProcessingService } from '@/core/VideoProcessingService.js';
-import type { IImage } from '@/core/ImageProcessingService.js';
 import { ImageProcessingService } from '@/core/ImageProcessingService.js';
+import type { IImage } from '@/core/ImageProcessingService.js';
 import { QueueService } from '@/core/QueueService.js';
 import type { MiDriveFolder } from '@/models/DriveFolder.js';
 import { createTemp } from '@/misc/create-temp.js';
@@ -48,8 +43,6 @@ import { RoleService } from '@/core/RoleService.js';
 import { correctFilename } from '@/misc/correct-filename.js';
 import { isMimeImage } from '@/misc/is-mime-image.js';
 import { ModerationLogService } from '@/core/ModerationLogService.js';
-import { QueryService } from '@/core/QueryService.js';
-import { sqlLikeEscape } from '@/misc/sql-like-escape.js';
 
 type AddFileArgs = {
 	/** User who wish to add file */
@@ -92,30 +85,11 @@ type UploadFromUrlArgs = {
 	requestHeaders?: Record<string, string> | null;
 };
 
-export const driveFileSearchSortKeys = [
-	'+createdAt',
-	'-createdAt',
-	'+name',
-	'-name',
-	'+userId',
-	'-userId',
-	'+userHost',
-	'-userHost',
-	'+folderId',
-	'-folderId',
-	'+size',
-	'-size',
-];
-export type DriveFileSearchSortKey = typeof driveFileSearchSortKeys[number];
-
 @Injectable()
 export class DriveService {
-	public static NoSuchFolderError = class extends Error {
-	};
-	public static InvalidFileNameError = class extends Error {
-	};
-	public static CannotUnmarkSensitiveError = class extends Error {
-	};
+	public static NoSuchFolderError = class extends Error {};
+	public static InvalidFileNameError = class extends Error {};
+	public static CannotUnmarkSensitiveError = class extends Error {};
 	private registerLogger: Logger;
 	private downloaderLogger: Logger;
 	private deleteLogger: Logger;
@@ -123,15 +97,19 @@ export class DriveService {
 	constructor(
 		@Inject(DI.config)
 		private config: Config,
+
 		@Inject(DI.usersRepository)
 		private usersRepository: UsersRepository,
+
 		@Inject(DI.userProfilesRepository)
 		private userProfilesRepository: UserProfilesRepository,
+
 		@Inject(DI.driveFilesRepository)
 		private driveFilesRepository: DriveFilesRepository,
+
 		@Inject(DI.driveFoldersRepository)
 		private driveFoldersRepository: DriveFoldersRepository,
-		private queryService: QueryService,
+
 		private fileInfoService: FileInfoService,
 		private userEntityService: UserEntityService,
 		private driveFileEntityService: DriveFileEntityService,
@@ -156,170 +134,8 @@ export class DriveService {
 		this.deleteLogger = logger.createSubLogger('delete');
 	}
 
-	/**
-	 * ドライブファイルとして登録されているファイルを検索する.
-	 * 1つの検索項目に複数の値が指定された場合は、それらの値をORで結合する.
-	 * 複数の検索項目に条件が指定された場合は、それらの条件をANDで結合する.
-	 *
-	 * 検索APIから呼ぶことを想定しているため、別Serviceからの呼び出しなどで使う場合はページング処理の負荷を加味する事(必要なら該当処理を省いたものを作成する等).
-	 *
-	 * @param params
-	 * @param {string | undefined} params.sinceId 検索開始ID
-	 * @param {string | undefined} params.untilId 検索終了ID
-	 * @param {MiDriveFolder['id'][] | undefined} params.folderIds 検索対象のフォルダID
-	 * @param {(MiUser['id'] | null)[] | undefined} params.userIds 検索対象のユーザID
-	 * @param {(MiDriveFile['userHost'] | null)[] | undefined} params.userHosts 検索対象のユーザホスト
-	 * @param {MiDriveFile['type'][] | undefined} params.fileTypes 検索対象のファイルタイプ
-	 * @param opts
-	 * @param {number | undefined} opts.limit 取得する最大件数. 省略時は10
-	 * @param {number | undefined} opts.page ページ番号. 省略時は1
-	 * @param {DriveFileSearchSortKey[] | undefined} opts.sortKey ソートキー. 省略時はID降順
-	 * @param {boolean | undefined} opts.idOnly IDのみ取得するかどうか. 省略時はfalse
-	 */
-	@bindThis
-	public async search(
-		params: {
-			sinceId?: MiDriveFile['id'],
-			untilId?: MiDriveFile['id'],
-			folderIds?: MiDriveFolder['id'][],
-			userIds?: (MiUser['id'] | null)[],
-			userHosts?: (MiDriveFile['userHost'] | null)[],
-			names?: string[],
-			fileTypes?: MiDriveFile['type'][],
-		},
-		opts?: {
-			limit?: number,
-			page?: number,
-			sortKeys?: DriveFileSearchSortKey[],
-			idOnly?: boolean,
-		},
-	) {
-		const query: SelectQueryBuilder<MiDriveFile> = this.queryService.makePaginationQuery(
-			this.driveFilesRepository.createQueryBuilder('file'), params.sinceId, params.untilId,
-		);
-
-		if (params.folderIds && params.folderIds.length > 0) {
-			query.andWhere('file.folderId IN (:...folderIds)', { folderIds: params.folderIds });
-		}
-
-		if (params.userIds && params.userIds.length > 0) {
-			const includeNull = params.userIds.includes(null);
-			const withoutNull = params.userIds.filter(x => x != null);
-			query.andWhere(new Brackets(qb => {
-				if (includeNull) {
-					qb.orWhere('file.userId IS NULL');
-				}
-				if (withoutNull.length > 0) {
-					qb.orWhere('file.userId IN (:...userIds)', { userIds: withoutNull });
-				}
-			}));
-		}
-
-		if (params.userHosts && params.userHosts.length > 0) {
-			const includeNull = params.userHosts.includes(null);
-			const withoutNull = params.userHosts.filter(x => x != null);
-			query.andWhere(new Brackets(qb => {
-				if (includeNull) {
-					qb.orWhere('file.userHost IS NULL');
-				}
-				if (withoutNull.length > 0) {
-					qb.orWhere('file.userHost IN (:...userHosts)', { userHosts: withoutNull });
-				}
-			}));
-		}
-
-		if (params.fileTypes && params.fileTypes.length > 0) {
-			const wildcards = params.fileTypes.filter(x => x.endsWith('/*')).map(x => sqlLikeEscape(x).replace('/*', '/%'));
-			const nonWildcards = params.fileTypes.filter(x => !x.endsWith('/*'));
-			query.andWhere(new Brackets(qb => {
-				if (nonWildcards.length > 0) {
-					qb.orWhere('file.type IN (:...nonWildcards)', { nonWildcards });
-				}
-				if (wildcards.length > 0) {
-					qb.orWhere('file.type LIKE ANY(:...wildcards)', { wildcards });
-				}
-			}));
-		}
-
-		if (params.names && params.names.length > 0) {
-			query.andWhere('file.name LIKE ANY(:...names)', {
-				names: params.names.map(x => '%' + sqlLikeEscape(x) + '%'),
-			});
-		}
-
-		if (opts?.sortKeys) {
-			for (const sortKey of opts.sortKeys) {
-				switch (sortKey) {
-					case '+createdAt':
-						query.addOrderBy('file.id', 'DESC');
-						break;
-					case '-createdAt':
-						query.addOrderBy('file.id', 'ASC');
-						break;
-					case '+name':
-						query.addOrderBy('file.name', 'DESC');
-						break;
-					case '-name':
-						query.addOrderBy('file.name', 'ASC');
-						break;
-					case '+userId':
-						query.addOrderBy('file.userId', 'DESC');
-						break;
-					case '-userId':
-						query.addOrderBy('file.userId', 'ASC');
-						break;
-					case '+userHost':
-						query.addOrderBy('file.userHost', 'DESC');
-						break;
-					case '-userHost':
-						query.addOrderBy('file.userHost', 'ASC');
-						break;
-					case '+folderId':
-						query.addOrderBy('file.folderId', 'DESC');
-						break;
-					case '-folderId':
-						query.addOrderBy('file.folderId', 'ASC');
-						break;
-					case '+size':
-						query.addOrderBy('file.size', 'DESC');
-						break;
-					case '-size':
-						query.addOrderBy('file.size', 'ASC');
-						break;
-				}
-			}
-		} else {
-			query.addOrderBy('file.id', 'DESC');
-		}
-
-		if (opts?.idOnly) {
-			query.select('file.id');
-		}
-
-		const limit = opts?.limit ?? 10;
-		if (opts?.page) {
-			query.skip(limit * (opts.page - 1));
-		}
-
-		query.take(limit);
-
-		const [items, count] = await query.getManyAndCount();
-		return {
-			items,
-			count,
-			allCount: count,
-			allPages: Math.ceil(count / (opts?.limit ?? count)),
-		};
-	}
-
-	@bindThis
-	public get(params: { id: MiDriveFile['id'], userId: MiUser['id'] | null }): Promise<MiDriveFile | null> {
-		return this.driveFilesRepository.findOneBy({ id: params.id, userId: params.userId ? params.userId : IsNull() });
-	}
-
 	/***
 	 * Save file
-	 * @param file File object
 	 * @param path Path for original
 	 * @param name Name for original (should be extention corrected)
 	 * @param type Content-Type for original
@@ -328,13 +144,13 @@ export class DriveService {
 	 */
 	@bindThis
 	private async save(file: MiDriveFile, path: string, name: string, type: string, hash: string, size: number): Promise<MiDriveFile> {
-		// thunbnail, webpublic を必要なら生成
+	// thunbnail, webpublic を必要なら生成
 		const alts = await this.generateAlts(path, type, !file.uri);
 
 		const meta = await this.metaService.fetch();
 
 		if (meta.useObjectStorage) {
-			//#region ObjectStorage params
+		//#region ObjectStorage params
 			let [ext] = (name.match(/\.([a-zA-Z0-9_-]+)$/) ?? ['']);
 
 			if (ext === '') {
@@ -353,11 +169,11 @@ export class DriveService {
 			}
 
 			const baseUrl = meta.objectStorageBaseUrl
-				?? `${meta.objectStorageUseSSL ? 'https' : 'http'}://${meta.objectStorageEndpoint}${meta.objectStoragePort ? `:${meta.objectStoragePort}` : ''}/${meta.objectStorageBucket}`;
+				?? `${ meta.objectStorageUseSSL ? 'https' : 'http' }://${ meta.objectStorageEndpoint }${ meta.objectStoragePort ? `:${meta.objectStoragePort}` : '' }/${ meta.objectStorageBucket }`;
 
 			// for original
 			const key = `${meta.objectStoragePrefix}/${randomUUID()}${ext}`;
-			const url = `${baseUrl}/${key}`;
+			const url = `${ baseUrl }/${ key }`;
 
 			// for alts
 			let webpublicKey: string | null = null;
@@ -374,7 +190,7 @@ export class DriveService {
 
 			if (alts.webpublic) {
 				webpublicKey = `${meta.objectStoragePrefix}/webpublic-${randomUUID()}.${alts.webpublic.ext}`;
-				webpublicUrl = `${baseUrl}/${webpublicKey}`;
+				webpublicUrl = `${ baseUrl }/${ webpublicKey }`;
 
 				this.registerLogger.info(`uploading webpublic: ${webpublicKey}`);
 				uploads.push(this.upload(webpublicKey, alts.webpublic.data, alts.webpublic.type, alts.webpublic.ext, name));
@@ -382,7 +198,7 @@ export class DriveService {
 
 			if (alts.thumbnail) {
 				thumbnailKey = `${meta.objectStoragePrefix}/thumbnail-${randomUUID()}.${alts.thumbnail.ext}`;
-				thumbnailUrl = `${baseUrl}/${thumbnailKey}`;
+				thumbnailUrl = `${ baseUrl }/${ thumbnailKey }`;
 
 				this.registerLogger.info(`uploading thumbnail: ${thumbnailKey}`);
 				uploads.push(this.upload(thumbnailKey, alts.thumbnail.data, alts.thumbnail.type, alts.thumbnail.ext, `${name}.thumbnail`));
@@ -494,9 +310,9 @@ export class DriveService {
 			satisfyWebpublic = !!(
 				type !== 'image/svg+xml' && // security reason
 				type !== 'image/avif' && // not supported by Mastodon and MS Edge
-				!(metadata.exif ?? metadata.iptc ?? metadata.xmp ?? metadata.tifftagPhotoshop) &&
-				metadata.width && metadata.width <= 2048 &&
-				metadata.height && metadata.height <= 2048
+			!(metadata.exif ?? metadata.iptc ?? metadata.xmp ?? metadata.tifftagPhotoshop) &&
+			metadata.width && metadata.width <= 2048 &&
+			metadata.height && metadata.height <= 2048
 			);
 		} catch (err) {
 			this.registerLogger.warn(`sharp failed: ${err}`);
@@ -627,20 +443,20 @@ export class DriveService {
 	 */
 	@bindThis
 	public async addFile({
-												 user,
-												 path,
-												 name = null,
-												 comment = null,
-												 folderId = null,
-												 force = false,
-												 isLink = false,
-												 url = null,
-												 uri = null,
-												 sensitive = null,
-												 requestIp = null,
-												 requestHeaders = null,
-												 ext = null,
-											 }: AddFileArgs): Promise<MiDriveFile> {
+		user,
+		path,
+		name = null,
+		comment = null,
+		folderId = null,
+		force = false,
+		isLink = false,
+		url = null,
+		uri = null,
+		sensitive = null,
+		requestIp = null,
+		requestHeaders = null,
+		ext = null,
+	}: AddFileArgs): Promise<MiDriveFile> {
 		let skipNsfwCheck = false;
 		const instance = await this.metaService.fetch();
 		const userRoleNSFW = user && (await this.roleService.getUserPolicies(user.id)).alwaysMarkNsfw;
@@ -656,11 +472,11 @@ export class DriveService {
 		const info = await this.fileInfoService.getFileInfo(path, {
 			skipSensitiveDetection: skipNsfwCheck,
 			sensitiveThreshold: // 感度が高いほどしきい値は低くすることになる
-				instance.sensitiveMediaDetectionSensitivity === 'veryHigh' ? 0.1 :
-				instance.sensitiveMediaDetectionSensitivity === 'high' ? 0.3 :
-				instance.sensitiveMediaDetectionSensitivity === 'low' ? 0.7 :
-				instance.sensitiveMediaDetectionSensitivity === 'veryLow' ? 0.9 :
-				0.5,
+			instance.sensitiveMediaDetectionSensitivity === 'veryHigh' ? 0.1 :
+			instance.sensitiveMediaDetectionSensitivity === 'high' ? 0.3 :
+			instance.sensitiveMediaDetectionSensitivity === 'low' ? 0.7 :
+			instance.sensitiveMediaDetectionSensitivity === 'veryLow' ? 0.9 :
+			0.5,
 			sensitiveThresholdForPorn: 0.75,
 			enableSensitiveMediaDetectionForVideos: instance.enableSensitiveMediaDetectionForVideos,
 		});
@@ -680,7 +496,7 @@ export class DriveService {
 		);
 
 		if (user && !force) {
-			// Check if there is a file with the same hash
+		// Check if there is a file with the same hash
 			const matched = await this.driveFilesRepository.findOneBy({
 				md5: info.md5,
 				userId: user.id,
@@ -801,7 +617,7 @@ export class DriveService {
 
 				file = await this.driveFilesRepository.insertOne(file);
 			} catch (err) {
-				// duplicate key error (when already registered)
+			// duplicate key error (when already registered)
 				if (isDuplicateKeyValueError(err)) {
 					this.registerLogger.info(`already registered ${file.uri}`);
 
@@ -1023,17 +839,17 @@ export class DriveService {
 
 	@bindThis
 	public async uploadFromUrl({
-															 url,
-															 user,
-															 folderId = null,
-															 uri = null,
-															 sensitive = false,
-															 force = false,
-															 isLink = false,
-															 comment = null,
-															 requestIp = null,
-															 requestHeaders = null,
-														 }: UploadFromUrlArgs): Promise<MiDriveFile> {
+		url,
+		user,
+		folderId = null,
+		uri = null,
+		sensitive = false,
+		force = false,
+		isLink = false,
+		comment = null,
+		requestIp = null,
+		requestHeaders = null,
+	}: UploadFromUrlArgs): Promise<MiDriveFile> {
 		// Create temp file
 		const [path, cleanup] = await createTemp();
 
@@ -1047,20 +863,7 @@ export class DriveService {
 				comment = null;
 			}
 
-			const driveFile = await this.addFile({
-				user,
-				path,
-				name,
-				comment,
-				folderId,
-				force,
-				isLink,
-				url,
-				uri,
-				sensitive,
-				requestIp,
-				requestHeaders,
-			});
+			const driveFile = await this.addFile({ user, path, name, comment, folderId, force, isLink, url, uri, sensitive, requestIp, requestHeaders });
 			this.downloaderLogger.succ(`Got: ${driveFile.id}`);
 			return driveFile!;
 		} catch (err) {

@@ -9,7 +9,6 @@ import type { DriveFoldersRepository } from '@/models/_.js';
 import { QueryService } from '@/core/QueryService.js';
 import { DriveFolderEntityService } from '@/core/entities/DriveFolderEntityService.js';
 import { DI } from '@/di-symbols.js';
-import { DriveFolderService } from '@/core/DriveFolderService.js';
 
 export const meta = {
 	tags: ['drive'],
@@ -43,22 +42,25 @@ export const paramDef = {
 @Injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
-		private driveFolderService: DriveFolderService,
+		@Inject(DI.driveFoldersRepository)
+		private driveFoldersRepository: DriveFoldersRepository,
+
 		private driveFolderEntityService: DriveFolderEntityService,
+		private queryService: QueryService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			const folders = await this.driveFolderService.search(
-				{
-					sinceId: ps.sinceId,
-					untilId: ps.untilId,
-					userIds: [me.id],
-					parentIds: ps.folderId ? [ps.folderId] : undefined,
-				},
-				{
-					limit: ps.limit,
-				},
-			);
-			return await Promise.all(folders.items.map(folder => this.driveFolderEntityService.pack(folder)));
+			const query = this.queryService.makePaginationQuery(this.driveFoldersRepository.createQueryBuilder('folder'), ps.sinceId, ps.untilId)
+				.andWhere('folder.userId = :userId', { userId: me.id });
+
+			if (ps.folderId) {
+				query.andWhere('folder.parentId = :parentId', { parentId: ps.folderId });
+			} else {
+				query.andWhere('folder.parentId IS NULL');
+			}
+
+			const folders = await query.limit(ps.limit).getMany();
+
+			return await Promise.all(folders.map(folder => this.driveFolderEntityService.pack(folder)));
 		});
 	}
 }
