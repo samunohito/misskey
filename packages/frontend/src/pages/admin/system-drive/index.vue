@@ -287,7 +287,7 @@ function setupGrid(): GridSetting {
 								break;
 							}
 							case 'folder': {
-								await refreshDriveItems(item.id, 1);
+								await refreshDriveItems(item.id, 1, true);
 								break;
 							}
 						}
@@ -464,15 +464,15 @@ function onGridResetButtonClicked() {
 }
 
 async function onPageChanged(pageNumber: number) {
-	await refreshDriveItems(currentFolderId.value, pageNumber);
+	await refreshDriveItems(currentFolderId.value, pageNumber, true);
 }
 
 async function onBreadcrumbClicked(event: MouseEvent, index: number, value: Misskey.entities.DriveFolder | null) {
-	await refreshDriveItems(value?.id ?? null, 1);
+	await refreshDriveItems(value?.id ?? null, 1, true);
 }
 
 async function onSearchRequest() {
-	await refreshDriveItems(currentFolderId.value, 1);
+	await refreshDriveItems(currentFolderId.value, 1, true);
 }
 
 function onQueryResetButtonClicked() {
@@ -539,13 +539,17 @@ function onStreamDriveFolderDeleted(folderId: string) {
 	originGridItems.value = originGridItems.value.filter(it => it.id !== folderId);
 }
 
-async function refreshDriveItems(folderId: string | null, page: number) {
-	pathHierarchies.value = await misskeyApi('admin/drive/system/folders/pwd', {
-		currentFolderId: folderId,
-	}).then(it => it.hierarchies);
+async function refreshDriveItems(folderId: string | null, page: number, showSpinner = false) {
+	const pwdPromise = misskeyApi(
+		'admin/drive/system/folders/pwd',
+		{
+			currentFolderId: folderId,
+		})
+		.then(it => pathHierarchies.value = it.hierarchies);
 
-	const result = await os.promiseDialog(
-		misskeyApi('admin/drive/system/explore', {
+	const explorePromise = misskeyApi(
+		'admin/drive/system/explore',
+		{
 			currentFolderId: folderId,
 			query: {
 				name: emptyStrToUndefined(queryName.value),
@@ -558,30 +562,32 @@ async function refreshDriveItems(folderId: string | null, page: number) {
 			},
 			limit: 100,
 			page: page,
-		}),
-		() => {
-		},
-		() => {
-		},
-	);
+		})
+		.then(result => {
+			gridItems.value = result.items.map((it: Misskey.entities.DriveExploreItem) => ({
+				checked: false,
+				id: it.id,
+				name: it.name,
+				fileType: it.fileType,
+				size: it.size,
+				comment: it.comment,
+				url: it.url,
+				thumbnailUrl: it.thumbnailUrl,
+				isSensitive: it.isSensitive,
+				kind: it.kind,
+			}));
+			allPages.value = result.allPages;
 
-	gridItems.value = result.items.map((it: Misskey.entities.DriveExploreItem) => ({
-		checked: false,
-		id: it.id,
-		name: it.name,
-		fileType: it.fileType,
-		size: it.size,
-		comment: it.comment,
-		url: it.url,
-		thumbnailUrl: it.thumbnailUrl,
-		isSensitive: it.isSensitive,
-		kind: it.kind,
-	}));
-	allPages.value = result.allPages;
+			currentFolderId.value = folderId;
+			currentPage.value = page;
+			originGridItems.value = JSON.parse(JSON.stringify(gridItems.value));
+		});
 
-	currentFolderId.value = folderId;
-	currentPage.value = page;
-	originGridItems.value = JSON.parse(JSON.stringify(gridItems.value));
+	if (showSpinner) {
+		await os.promiseDialog(Promise.all([pwdPromise, explorePromise]));
+	} else {
+		await Promise.all([pwdPromise, explorePromise]);
+	}
 }
 
 async function callUpdate(items: GridItem[]) {
@@ -674,7 +680,7 @@ function checkItemLength() {
 }
 
 onMounted(async () => {
-	await refreshDriveItems(null, 1);
+	await refreshDriveItems(null, 1, true);
 
 	connection.on('fileUpdated', onStreamDriveFileUpdated);
 	connection.on('fileDeleted', onStreamDriveFileDeleted);
