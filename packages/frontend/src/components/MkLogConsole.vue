@@ -24,7 +24,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script setup lang="ts" generic="T = string">
-import { shallowRef, toRefs } from 'vue';
+import { ref, shallowRef, toRefs } from 'vue';
 import MkLogConsoleSimple from '@/components/MkLogConsoleSimple.vue';
 import MkButton from '@/components/MkButton.vue';
 import { copyToClipboard } from '@/scripts/copy-to-clipboard.js';
@@ -50,10 +50,15 @@ const props = withDefaults(defineProps<{
 });
 
 const consoleEl = shallowRef();
-const { autoScroll, wordWrap, showTimestamp } = toRefs(props);
+// eslint-disable-next-line vue/no-setup-props-reactivity-loss
+const autoScroll = ref(props.autoScroll);
+// eslint-disable-next-line vue/no-setup-props-reactivity-loss
+const wordWrap = ref(props.wordWrap);
+// eslint-disable-next-line vue/no-setup-props-reactivity-loss
+const showTimestamp = ref(props.showTimestamp);
 
-function onSettingButtonClicked() {
-	os.popupMenu(
+async function onSettingButtonClicked(ev: MouseEvent) {
+	await os.popupMenu(
 		[
 			{
 				type: 'switch',
@@ -74,7 +79,7 @@ function onSettingButtonClicked() {
 				ref: showTimestamp,
 			},
 		],
-		consoleEl.value,
+		ev.currentTarget,
 	);
 }
 
