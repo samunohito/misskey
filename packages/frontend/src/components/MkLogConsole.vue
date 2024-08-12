@@ -7,7 +7,6 @@ SPDX-License-Identifier: AGPL-3.0-only
 <div :class="$style.root" class="_panel">
 	<MkLogConsoleSimple
 		ref="consoleEl"
-		style="height: 100%;"
 		:logs="logs"
 		:lineFilter="lineFilter"
 		:lineConverter="lineConverter"
@@ -15,6 +14,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		:autoScroll="autoScroll"
 		:wordWrap="wordWrap"
 		:showTimestamp="showTimestamp"
+		:placeholder="placeholder"
 	/>
 	<div :class="$style.buttonArea" class="_gaps_s">
 		<MkButton :class="$style.rectButton"><span class="ti ti-settings"/></MkButton>
@@ -24,7 +24,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script setup lang="ts" generic="T = string">
-import { ref, shallowRef, toRefs } from 'vue';
+import { computed, ref, shallowRef, toRefs } from 'vue';
 import MkLogConsoleSimple from '@/components/MkLogConsoleSimple.vue';
 import MkButton from '@/components/MkButton.vue';
 import { copyToClipboard } from '@/scripts/copy-to-clipboard.js';
@@ -37,6 +37,7 @@ const props = withDefaults(defineProps<{
 	autoScroll?: boolean;
 	wordWrap?: boolean;
 	showTimestamp?: boolean;
+	placeholder?: string;
 }>(), {
 	lineFilter: () => true,
 	lineConverter: (line: T) => line as unknown as string,
@@ -44,6 +45,7 @@ const props = withDefaults(defineProps<{
 	autoScroll: true,
 	wordWrap: false,
 	showTimestamp: true,
+	placeholder: 'No logs',
 });
 
 const consoleEl = shallowRef();
@@ -60,6 +62,9 @@ $buttonSize: 32px;
 
 .root {
 	position: relative;
+	background-color: var(--bg);
+	height: 100%;
+	min-height: 100%;
 }
 
 .buttonArea {

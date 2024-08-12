@@ -79,11 +79,11 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private driveFolderService: DriveFolderService,
 		private idService: IdService,
 	) {
-		super(meta, paramDef, async (ps, me) => {
+		super(meta, paramDef, async (ps) => {
 			try {
 				const folders = await this.driveFolderService.explore(
 					{
-						userId: me.id,
+						userId: null,
 						currentFolderId: ps.currentFolderId,
 						query: {
 							names: ps.query?.name ? ps.query.name.split(/\s/) : undefined,

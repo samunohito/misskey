@@ -31,13 +31,14 @@ const mimeTypeMap = {
 
 export function uploadFile(
 	file: File,
-	folder?: any,
+	folder?: Misskey.entities.DriveFolder['id'] | Misskey.entities.DriveFolder | null,
 	name?: string,
 	keepOriginal: boolean = defaultStore.state.keepOriginalUploading,
+	system?: boolean,
 ): Promise<Misskey.entities.DriveFile> {
 	if ($i == null) throw new Error('Not logged in');
 
-	if (folder && typeof folder === 'object') folder = folder.id;
+	const folderId = (folder && typeof folder === 'object') ? folder.id : folder;
 
 	return new Promise((resolve, reject) => {
 		const id = uuid();
@@ -83,10 +84,11 @@ export function uploadFile(
 			formData.append('force', 'true');
 			formData.append('file', resizedImage ?? file);
 			formData.append('name', ctx.name);
-			if (folder) formData.append('folderId', folder);
+			if (folderId) formData.append('folderId', folderId);
 
+			const endpoint = system ? '/admin/drive/system/files/create' : '/drive/files/create';
 			const xhr = new XMLHttpRequest();
-			xhr.open('POST', apiUrl + '/drive/files/create', true);
+			xhr.open('POST', apiUrl + endpoint, true);
 			xhr.onload = ((ev: ProgressEvent<XMLHttpRequest>) => {
 				if (xhr.status !== 200 || ev.target == null || ev.target.response == null) {
 					// TODO: 消すのではなくて(ネットワーク的なエラーなら)再送できるようにしたい

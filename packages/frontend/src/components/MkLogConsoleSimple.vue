@@ -5,14 +5,19 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <template>
 <div ref="consoleEl" :class="$style.root" :style="{ overflowX: wordWrap ? 'hidden' : 'scroll' }">
-	<div
-		v-for="line in lines" :key="line.key" :class="[
-			$style.line,
-			{[$style.wordWrap]: wordWrap},
-			{[$style.noWrap]: !wordWrap}
-		]"
-	>
-		{{ line.text }}
+	<template v-if="lines.length > 0">
+		<div
+			v-for="line in lines" :key="line.key" :class="[
+				$style.line,
+				{[$style.wordWrap]: wordWrap},
+				{[$style.noWrap]: !wordWrap}
+			]"
+		>
+			{{ line.text }}
+		</div>
+	</template>
+	<div v-else :class="$style.line">
+		{{ placeholder }}
 	</div>
 </div>
 </template>
@@ -28,6 +33,7 @@ const props = withDefaults(defineProps<{
 	autoScroll?: boolean;
 	wordWrap?: boolean;
 	showTimestamp?: boolean;
+	placeholder?: string;
 }>(), {
 	lineFilter: () => true,
 	lineConverter: (line: T) => line as unknown as string,
@@ -35,6 +41,7 @@ const props = withDefaults(defineProps<{
 	autoScroll: true,
 	wordWrap: false,
 	showTimestamp: true,
+	placeholder: 'No logs',
 });
 
 const consoleEl = ref<InstanceType<typeof HTMLDivElement>>();
@@ -73,6 +80,9 @@ defineExpose({
 	justify-content: stretch;
 	align-items: start;
 	overflow-y: scroll;
+	width: 100%;
+	height: 100%;
+	padding: 2px 0;
 }
 
 .line {

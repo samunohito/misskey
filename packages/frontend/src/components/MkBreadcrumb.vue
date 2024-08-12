@@ -8,13 +8,15 @@ SPDX-License-Identifier: AGPL-3.0-only
 	<div :class="$style.folder" :style="{ gap: gaps + 'px' }">
 		<div>{{ separator }}</div>
 		<div>
-			<a href="#" @click="onClick(-1, null, $event)">(root)</a>
+			<a v-if="clickable" href="#" @click="onClick(-1, null, $event)">(root)</a>
+			<span v-else>(root)</span>
 		</div>
 	</div>
 	<div v-for="(hierarchy, index) in hierarchies" :key="index" :class="$style.folder" :style="{ gap: gaps + 'px' }">
 		<div>{{ separator }}</div>
 		<div>
-			<a href="#" @click.prevent="onClick(index, hierarchy, $event)">{{ valueConverter(hierarchy) }}</a>
+			<a v-if="clickable" href="#" @click.prevent="onClick(index, hierarchy, $event)">{{ valueConverter(hierarchy) }}</a>
+			<span v-else>{{ valueConverter(hierarchy) }}</span>
 		</div>
 	</div>
 </div>
@@ -31,10 +33,12 @@ withDefaults(defineProps<{
 	valueConverter?: (value: T) => string;
 	separator?: string;
 	gaps?: number;
+	clickable?: boolean;
 }>(), {
 	valueConverter: (value: T) => value as unknown as string,
 	separator: '/',
 	gaps: 2,
+	clickable: true,
 });
 
 function onClick(idx: number, value: T | null, event: MouseEvent) {

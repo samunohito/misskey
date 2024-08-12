@@ -64,7 +64,5 @@ export class MiDriveExploreView {
 	@ViewColumn()
 	public isSensitive: boolean | null;
 	@ViewColumn()
-	public isLink: boolean | null;
-	@ViewColumn()
 	public kind: ExploreKind;
 }

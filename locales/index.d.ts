@@ -9339,6 +9339,24 @@ export interface Locale extends ILocale {
              */
             "title": string;
         };
+        "_upload": {
+            /**
+             * アップロード先
+             */
+            "uploadTo": string;
+            /**
+             * いずれかの方法でアップロードするファイルを選択してください。
+             */
+            "fileInputAreaCaption": string;
+            /**
+             * この枠にファイルまたはディレクトリをドラッグ＆ドロップ
+             */
+            "fileInputAreaList1": string;
+            /**
+             * このリンクをクリックしてPCから選択する
+             */
+            "fileInputAreaList2": string;
+        };
         /**
          * 一括リネーム
          */
@@ -9395,6 +9413,26 @@ export interface Locale extends ILocale {
          * ファイルの更新・削除に失敗しました。詳細は登録ログをご確認ください。
          */
         "alertFilesRegisterFailedDescription": string;
+        /**
+         * ファイルがありません
+         */
+        "noFiles": string;
+        /**
+         * 並び順
+         */
+        "sortOrder": string;
+        /**
+         * アップロードログ
+         */
+        "uploadLog": string;
+        /**
+         * ファイルの更新・削除時のログが表示されます。新たに更新・削除操作を行ったり、ページを遷移・リロードすると消えます。
+         */
+        "uploadLogCaption": string;
+        /**
+         * ログがありません
+         */
+        "uploadLogEmpty": string;
     };
     "_webhookSettings": {
         /**

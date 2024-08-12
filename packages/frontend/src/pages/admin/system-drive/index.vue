@@ -93,7 +93,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 							<MkFolder :spacerMax="8" :spacerMin="8">
 								<template #icon><i class="ti ti-arrows-sort"></i></template>
-								<template #label>{{ i18n.ts._customEmojisManager._gridCommon.sortOrder }}</template>
+								<template #label>{{ i18n.ts._drive.sortOrder }}</template>
 								<MkSortOrderEditor
 									:baseOrderKeyNames="itemSortKeys"
 									:currentOrders="sortOrders"
@@ -112,10 +112,23 @@ SPDX-License-Identifier: AGPL-3.0-only
 						</div>
 					</MkFolder>
 
-					<!--					<XUpdateLogsFolder :logs="requestLogs"/>-->
-					<div class="_panel" style="padding: 2px 8px">
-						<MkLogConsole style="height: 300px" :logs="requestLogs" :lineConverter="line => (line.failed ? '❌ ' : '✅ ') + line.name + (line.error ? ' ' + line.error : '')"/>
-					</div>
+					<MkFolder :spacerMin="8" :spacerMax="8">
+						<template #icon><i class="ti ti-notes"></i></template>
+						<template #label>{{ i18n.ts._drive.uploadLog }}</template>
+						<template #caption>
+							{{ i18n.ts._drive.uploadLogCaption }}
+						</template>
+
+						<div class="_gaps">
+							<MkLogConsole
+								v-if="requestLogs.length >= 1"
+								style="height: 200px"
+								:logs="requestLogs"
+								:lineConverter="line => (line.failed ? '❌ ' : '✅ ') + line.name + (line.error ? ' ' + line.error : '')"
+							/>
+							<div v-else style="text-align: center">{{ i18n.ts._drive.uploadLogEmpty }}</div>
+						</div>
+					</MkFolder>
 
 					<div :class="$style.gridArea" class="_gaps_s">
 						<div :class="$style.gridHeaderArea" class="_gaps_s">
@@ -132,17 +145,27 @@ SPDX-License-Identifier: AGPL-3.0-only
 							</div>
 						</div>
 
-						<MkGrid :data="gridItems" :settings="setupGrid()" @event="onGridEvent"/>
+						<MkGrid v-if="gridItems.length >= 1" :data="gridItems" :settings="setupGrid()" @event="onGridEvent"/>
+						<div v-else style="text-align: center; margin: 8px 0;">
+							{{ i18n.ts._drive.noFiles }}
+						</div>
 					</div>
 
-					<MkPagingButtons :current="currentPage" :max="allPages" :buttonCount="5" @pageChanged="onPageChanged"/>
+					<MkPagingButtons
+						v-if="gridItems.length >= 1"
+						:current="currentPage"
+						:max="allPages"
+						:buttonCount="5"
+						@pageChanged="onPageChanged"
+					/>
 
 					<div :class="$style.buttons">
-						<MkButton danger style="margin-right: auto" @click="onDeleteButtonClicked">{{ i18n.ts.delete }}</MkButton>
-						<MkButton primary :disabled="updateButtonDisabled" @click="onUpdateButtonClicked">
+						<MkButton danger style="margin-right: auto" :disabled="gridItems.length <= 0" @click="onDeleteButtonClicked">{{ i18n.ts.delete }}</MkButton>
+						<MkButton primary @click="onUploadButtonClicked">{{ i18n.ts.upload }}</MkButton>
+						<MkButton primary :disabled="updateButtonDisabled || gridItems.length <= 0" @click="onUpdateButtonClicked">
 							{{ i18n.ts.update }}
 						</MkButton>
-						<MkButton @click="onGridResetButtonClicked">{{ i18n.ts.reset }}</MkButton>
+						<MkButton :disabled="gridItems.length <= 0" @click="onGridResetButtonClicked">{{ i18n.ts.reset }}</MkButton>
 					</div>
 				</div>
 			</template>
@@ -152,10 +175,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, reactive, Ref, ref, useCssModule } from 'vue';
+import { computed, defineAsyncComponent, onMounted, onUnmounted, reactive, Ref, ref, useCssModule } from 'vue';
 import * as Misskey from 'misskey-js';
 import XNameCell from './cell-file-name.vue';
-import XUpdateLogsFolder from './update-logs-folder.vue';
 import * as os from '@/os.js';
 import MkGrid from '@/components/grid/MkGrid.vue';
 import { GridEvent } from '@/components/grid/grid-event.js';
@@ -183,6 +205,7 @@ import { validators } from '@/components/grid/cell-validators.js';
 import { copyToClipboard } from '@/scripts/copy-to-clipboard.js';
 import { MenuButton, MenuItem } from '@/types/menu.js';
 import MkLogConsole from '@/components/MkLogConsole.vue';
+import { defaultStore } from '@/store.js';
 
 const itemSortKeys = [
 	'id',
@@ -430,6 +453,20 @@ function onQueryResetButtonClicked() {
 	querySizeMax.value = null;
 	querySensitive.value = null;
 	queryKind.value = null;
+}
+
+function onUploadButtonClicked() {
+	const { dispose } = os.popup(defineAsyncComponent(() => import('./upload-modal.vue')), {
+		selectedFolderId: currentFolderId.value,
+		keepOriginalUploading: defaultStore.state.keepOriginalUploading,
+	}, {
+		closed: (uploaded: boolean) => {
+			dispose();
+			if (uploaded) {
+				refreshDriveItems(currentFolderId.value, currentPage.value);
+			}
+		},
+	});
 }
 
 function onStreamDriveFileUpdated(file: Misskey.entities.DriveFile) {
