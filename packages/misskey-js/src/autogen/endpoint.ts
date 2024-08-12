@@ -46,18 +46,8 @@ import type {
 	AdminDriveSystemExploreResponse,
 	AdminDriveSystemFilesCreateRequest,
 	AdminDriveSystemFilesCreateResponse,
-	AdminDriveSystemFilesDeleteRequest,
-	AdminDriveSystemFilesSearchRequest,
-	AdminDriveSystemFilesSearchResponse,
-	AdminDriveSystemFilesUpdateRequest,
-	AdminDriveSystemFilesUpdateResponse,
 	AdminDriveSystemFoldersCreateRequest,
 	AdminDriveSystemFoldersCreateResponse,
-	AdminDriveSystemFoldersDeleteRequest,
-	AdminDriveSystemFoldersSearchRequest,
-	AdminDriveSystemFoldersSearchResponse,
-	AdminDriveSystemFoldersUpdateRequest,
-	AdminDriveSystemFoldersUpdateResponse,
 	AdminDriveSystemFoldersPwdRequest,
 	AdminDriveSystemFoldersPwdResponse,
 	AdminEmojiAddAliasesBulkRequest,
@@ -625,13 +615,7 @@ export type Endpoints = {
 	'admin/drive/show-file': { req: AdminDriveShowFileRequest; res: AdminDriveShowFileResponse };
 	'admin/drive/system/explore': { req: AdminDriveSystemExploreRequest; res: AdminDriveSystemExploreResponse };
 	'admin/drive/system/files/create': { req: AdminDriveSystemFilesCreateRequest; res: AdminDriveSystemFilesCreateResponse };
-	'admin/drive/system/files/delete': { req: AdminDriveSystemFilesDeleteRequest; res: EmptyResponse };
-	'admin/drive/system/files/search': { req: AdminDriveSystemFilesSearchRequest; res: AdminDriveSystemFilesSearchResponse };
-	'admin/drive/system/files/update': { req: AdminDriveSystemFilesUpdateRequest; res: AdminDriveSystemFilesUpdateResponse };
 	'admin/drive/system/folders/create': { req: AdminDriveSystemFoldersCreateRequest; res: AdminDriveSystemFoldersCreateResponse };
-	'admin/drive/system/folders/delete': { req: AdminDriveSystemFoldersDeleteRequest; res: EmptyResponse };
-	'admin/drive/system/folders/search': { req: AdminDriveSystemFoldersSearchRequest; res: AdminDriveSystemFoldersSearchResponse };
-	'admin/drive/system/folders/update': { req: AdminDriveSystemFoldersUpdateRequest; res: AdminDriveSystemFoldersUpdateResponse };
 	'admin/drive/system/folders/pwd': { req: AdminDriveSystemFoldersPwdRequest; res: AdminDriveSystemFoldersPwdResponse };
 	'admin/emoji/add-aliases-bulk': { req: AdminEmojiAddAliasesBulkRequest; res: EmptyResponse };
 	'admin/emoji/add': { req: AdminEmojiAddRequest; res: AdminEmojiAddResponse };
@@ -1018,13 +1002,7 @@ export const endpointReqTypes: Record<keyof Endpoints, 'application/json' | 'mul
 	'admin/drive/show-file': 'application/json',
 	'admin/drive/system/explore': 'application/json',
 	'admin/drive/system/files/create': 'multipart/form-data',
-	'admin/drive/system/files/delete': 'application/json',
-	'admin/drive/system/files/search': 'application/json',
-	'admin/drive/system/files/update': 'application/json',
 	'admin/drive/system/folders/create': 'application/json',
-	'admin/drive/system/folders/delete': 'application/json',
-	'admin/drive/system/folders/search': 'application/json',
-	'admin/drive/system/folders/update': 'application/json',
 	'admin/drive/system/folders/pwd': 'application/json',
 	'admin/emoji/add-aliases-bulk': 'application/json',
 	'admin/emoji/add': 'application/json',
