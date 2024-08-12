@@ -361,17 +361,6 @@ declare module '../api.js' {
     ): Promise<SwitchCaseResponseType<E, P>>;
 
     /**
-     * No description provided.
-     * 
-     * **Credential required**: *Yes* / **Permission**: *read:admin:drive*
-     */
-    request<E extends 'admin/drive/system/files/search', P extends Endpoints[E]['req']>(
-      endpoint: E,
-      params: P,
-      credential?: string | null,
-    ): Promise<SwitchCaseResponseType<E, P>>;
-
-    /**
      * Update the properties of a drive file.
      * 
      * **Credential required**: *Yes* / **Permission**: *write:admin:drive*
@@ -399,17 +388,6 @@ declare module '../api.js' {
      * **Credential required**: *Yes* / **Permission**: *write:admin:drive*
      */
     request<E extends 'admin/drive/system/folders/delete', P extends Endpoints[E]['req']>(
-      endpoint: E,
-      params: P,
-      credential?: string | null,
-    ): Promise<SwitchCaseResponseType<E, P>>;
-
-    /**
-     * No description provided.
-     * 
-     * **Credential required**: *Yes* / **Permission**: *read:admin:drive*
-     */
-    request<E extends 'admin/drive/system/folders/search', P extends Endpoints[E]['req']>(
       endpoint: E,
       params: P,
       credential?: string | null,

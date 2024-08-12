@@ -14,7 +14,6 @@ import {
 	MiUser,
 } from '@/models/_.js';
 import { bindThis } from '@/decorators.js';
-import { QueryService } from '@/core/QueryService.js';
 import { sqlLikeEscape } from '@/misc/sql-like-escape.js';
 import { IdService } from '@/core/IdService.js';
 import { ExploreKind } from '@/models/DriveExploreView.js';

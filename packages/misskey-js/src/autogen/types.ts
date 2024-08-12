@@ -305,15 +305,6 @@ export type paths = {
      */
     post: operations['admin___drive___system___files___delete'];
   };
-  '/admin/drive/system/files/search': {
-    /**
-     * admin/drive/system/files/search
-     * @description No description provided.
-     *
-     * **Credential required**: *Yes* / **Permission**: *read:admin:drive*
-     */
-    post: operations['admin___drive___system___files___search'];
-  };
   '/admin/drive/system/files/update': {
     /**
      * admin/drive/system/files/update
@@ -340,15 +331,6 @@ export type paths = {
      * **Credential required**: *Yes* / **Permission**: *write:admin:drive*
      */
     post: operations['admin___drive___system___folders___delete'];
-  };
-  '/admin/drive/system/folders/search': {
-    /**
-     * admin/drive/system/folders/search
-     * @description No description provided.
-     *
-     * **Credential required**: *Yes* / **Permission**: *read:admin:drive*
-     */
-    post: operations['admin___drive___system___folders___search'];
   };
   '/admin/drive/system/folders/update': {
     /**
@@ -7226,81 +7208,6 @@ export type operations = {
     };
   };
   /**
-   * admin/drive/system/files/search
-   * @description No description provided.
-   *
-   * **Credential required**: *Yes* / **Permission**: *read:admin:drive*
-   */
-  admin___drive___system___files___search: {
-    requestBody: {
-      content: {
-        'application/json': {
-          query?: ({
-            name?: string;
-            /**
-             * Format: misskey:id
-             * @default null
-             */
-            folderId?: string | null;
-            type?: string | null;
-          }) | null;
-          /** Format: misskey:id */
-          sinceId?: string;
-          /** Format: misskey:id */
-          untilId?: string;
-          /** @default 10 */
-          limit?: number;
-          page?: number;
-          /** @enum {string|null} */
-          sort?: '+createdAt' | '-createdAt' | '+name' | '-name' | '+userId' | '-userId' | '+userHost' | '-userHost' | '+folderId' | '-folderId' | '+size' | '-size';
-        };
-      };
-    };
-    responses: {
-      /** @description OK (with results) */
-      200: {
-        content: {
-          'application/json': {
-            items: components['schemas']['DriveFile'][];
-            count: number;
-            allCount: number;
-            allPages: number;
-          };
-        };
-      };
-      /** @description Client error */
-      400: {
-        content: {
-          'application/json': components['schemas']['Error'];
-        };
-      };
-      /** @description Authentication error */
-      401: {
-        content: {
-          'application/json': components['schemas']['Error'];
-        };
-      };
-      /** @description Forbidden error */
-      403: {
-        content: {
-          'application/json': components['schemas']['Error'];
-        };
-      };
-      /** @description I'm Ai */
-      418: {
-        content: {
-          'application/json': components['schemas']['Error'];
-        };
-      };
-      /** @description Internal server error */
-      500: {
-        content: {
-          'application/json': components['schemas']['Error'];
-        };
-      };
-    };
-  };
-  /**
    * admin/drive/system/files/update
    * @description Update the properties of a drive file.
    *
@@ -7434,75 +7341,6 @@ export type operations = {
       /** @description OK (without any results) */
       204: {
         content: never;
-      };
-      /** @description Client error */
-      400: {
-        content: {
-          'application/json': components['schemas']['Error'];
-        };
-      };
-      /** @description Authentication error */
-      401: {
-        content: {
-          'application/json': components['schemas']['Error'];
-        };
-      };
-      /** @description Forbidden error */
-      403: {
-        content: {
-          'application/json': components['schemas']['Error'];
-        };
-      };
-      /** @description I'm Ai */
-      418: {
-        content: {
-          'application/json': components['schemas']['Error'];
-        };
-      };
-      /** @description Internal server error */
-      500: {
-        content: {
-          'application/json': components['schemas']['Error'];
-        };
-      };
-    };
-  };
-  /**
-   * admin/drive/system/folders/search
-   * @description No description provided.
-   *
-   * **Credential required**: *Yes* / **Permission**: *read:admin:drive*
-   */
-  admin___drive___system___folders___search: {
-    requestBody: {
-      content: {
-        'application/json': {
-          query?: ({
-            name?: string;
-            /** Format: misskey:id */
-            parentId?: string | null;
-          }) | null;
-          /** Format: misskey:id */
-          sinceId?: string;
-          /** Format: misskey:id */
-          untilId?: string;
-          /** @default 10 */
-          limit?: number;
-          page?: number;
-        };
-      };
-    };
-    responses: {
-      /** @description OK (with results) */
-      200: {
-        content: {
-          'application/json': {
-            items: components['schemas']['DriveFolder'][];
-            count: number;
-            allCount: number;
-            allPages: number;
-          };
-        };
       };
       /** @description Client error */
       400: {
@@ -14543,7 +14381,7 @@ export type operations = {
           folderId?: string | null;
           type?: string | null;
           /** @enum {string|null} */
-          sort?: '+createdAt' | '-createdAt' | '+name' | '-name' | '+userId' | '-userId' | '+userHost' | '-userHost' | '+folderId' | '-folderId' | '+size' | '-size';
+          sort?: '+createdAt' | '-createdAt' | '+name' | '-name' | '+size' | '-size' | null;
         };
       };
     };
