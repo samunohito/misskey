@@ -24,7 +24,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		@contextmenu.stop
 		@dblclick.stop
 	/>
-	<span v-else>{{ props.cell.value }}</span>
+	<span v-else>{{ cell.value }}</span>
 </div>
 </template>
 
@@ -42,10 +42,13 @@ const props = defineProps<{
 	mounted: () => void;
 }>();
 
-const { item, batchRename } = toRefs(props.extraParams);
+const { extraParams, cell } = toRefs(props);
 
 const editing = ref(false);
 const editingValue = ref<string | null>(null);
+
+const item = computed(() => extraParams.value.item);
+const batchRename = computed(() => extraParams.value.batchRename);
 
 const thumbType = computed(() => {
 	const _item = item.value;
