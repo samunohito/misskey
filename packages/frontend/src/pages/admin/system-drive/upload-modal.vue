@@ -11,8 +11,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 	:height="350"
 	:withOkButton="false"
 	:okButtonDisabled="false"
-	@click="modal?.close()"
-	@close="modal?.close()"
+	@click="onModalClosing"
+	@close="onModalClosing"
 	@closed="onModalClosed()"
 >
 	<template #header>
@@ -71,7 +71,8 @@ import MkBreadcrumb from '@/components/MkBreadcrumb.vue';
 import { misskeyApi } from '@/scripts/misskey-api.js';
 
 const emit = defineEmits<{
-	(ev: 'closed', uploaded: boolean): void;
+	(ev: 'closing', uploaded: boolean): void;
+	(ev: 'closed'): void;
 }>();
 
 const props = withDefaults(defineProps<{
@@ -162,8 +163,13 @@ async function onFileSelectClicked() {
 	}
 }
 
+function onModalClosing() {
+	emit('closing', uploaded.value);
+	modal.value?.close();
+}
+
 function onModalClosed() {
-	emit('closed', uploaded.value);
+	emit('closed');
 }
 
 onMounted(async () => {

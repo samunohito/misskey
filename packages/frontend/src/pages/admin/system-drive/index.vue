@@ -490,12 +490,12 @@ function onUploadButtonClicked() {
 		selectedFolderId: currentFolderId.value,
 		keepOriginalUploading: defaultStore.state.keepOriginalUploading,
 	}, {
-		closed: (uploaded: boolean) => {
-			dispose();
+		closing: (uploaded: boolean) => {
 			if (uploaded) {
-				refreshDriveItems(currentFolderId.value, currentPage.value);
+				refreshDriveItems(currentFolderId.value, currentPage.value, true);
 			}
 		},
+		closed: () => dispose(),
 	});
 }
 
