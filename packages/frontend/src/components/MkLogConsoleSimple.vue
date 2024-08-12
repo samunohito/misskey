@@ -50,8 +50,8 @@ const lines = computed(() => {
 	return props.logs.slice(-props.lineCount)
 		.filter(props.lineFilter)
 		.map(it => (props.showTimestamp ? '[' + new Date().toLocaleString() + ']\t' : '') + props.lineConverter(it))
-		.map(line => ({
-			key: Date.now(),
+		.map((line, idx) => ({
+			key: Date.now().toString() + idx,
 			text: line,
 		}));
 });
