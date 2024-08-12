@@ -57,7 +57,6 @@ export class DriveFolderService {
 		private driveFilesRepository: DriveFilesRepository,
 		@Inject(DI.driveExploreViewRepository)
 		private driveExploreViewRepository: DriveExploreViewRepository,
-		private queryService: QueryService,
 		private idService: IdService,
 	) {
 	}
@@ -371,7 +370,7 @@ export class DriveFolderService {
 
 	@bindThis
 	public async delete(params: { id: MiDriveFolder['id'], userId: MiUser['id'] | null }): Promise<void> {
-		if (await this.exists(params)) {
+		if (!(await this.exists(params))) {
 			throw new DriveFolderService.NoSuchFolderError;
 		}
 
