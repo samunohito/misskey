@@ -31,7 +31,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	@mousedown="onMousedown"
 >
 	<div ref="ripples" :class="$style.ripples" :data-children-class="$style.ripple"></div>
-	<div :class="$style.content">
+	<div :class="[$style.content, { [$style.contentIcon]: icon }]">
 		<slot></slot>
 	</div>
 </button>
@@ -314,5 +314,9 @@ function onMousedown(evt: MouseEvent): void {
 	position: relative;
 	z-index: 1;
 	pointer-events: none;
+
+	&.contentIcon {
+		line-height: normal;
+	}
 }
 </style>

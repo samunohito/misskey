@@ -17,17 +17,18 @@ SPDX-License-Identifier: AGPL-3.0-only
 		:placeholder="placeholder"
 	/>
 	<div :class="$style.buttonArea" class="_gaps_s">
-		<MkButton :class="$style.rectButton"><span class="ti ti-settings"/></MkButton>
-		<MkButton :class="$style.rectButton" @click="onCopyButtonClicked"><span class="ti ti-copy"/></MkButton>
+		<MkButton icon @click="onSettingButtonClicked"><span class="ti ti-settings"/></MkButton>
+		<MkButton icon @click="onCopyButtonClicked"><span class="ti ti-copy"/></MkButton>
 	</div>
 </div>
 </template>
 
 <script setup lang="ts" generic="T = string">
-import { computed, ref, shallowRef, toRefs } from 'vue';
+import { shallowRef, toRefs } from 'vue';
 import MkLogConsoleSimple from '@/components/MkLogConsoleSimple.vue';
 import MkButton from '@/components/MkButton.vue';
 import { copyToClipboard } from '@/scripts/copy-to-clipboard.js';
+import * as os from '@/os.js';
 
 const props = withDefaults(defineProps<{
 	logs: T[];
@@ -51,15 +52,40 @@ const props = withDefaults(defineProps<{
 const consoleEl = shallowRef();
 const { autoScroll, wordWrap, showTimestamp } = toRefs(props);
 
+function onSettingButtonClicked() {
+	os.popupMenu(
+		[
+			{
+				type: 'switch',
+				icon: 'ti ti-arrows-move-vertical',
+				text: 'Auto scroll',
+				ref: autoScroll,
+			},
+			{
+				type: 'switch',
+				icon: 'ti ti-text-wrap',
+				text: 'Word wrap',
+				ref: wordWrap,
+			},
+			{
+				type: 'switch',
+				icon: 'ti ti-clock-hour-9',
+				text: 'Show timestamp',
+				ref: showTimestamp,
+			},
+		],
+		consoleEl.value,
+	);
+}
+
 function onCopyButtonClicked() {
 	const text = consoleEl.value?.lines?.map(it => it.text).join('\n') ?? '';
 	copyToClipboard(text);
+	os.success();
 }
 </script>
 
 <style module lang="scss">
-$buttonSize: 32px;
-
 .root {
 	position: relative;
 	background-color: var(--bg);
@@ -73,16 +99,5 @@ $buttonSize: 32px;
 	right: 16px;
 	z-index: 100;
 	display: flex;
-}
-
-.rectButton {
-	width: $buttonSize;
-	max-width: $buttonSize;
-	min-width: $buttonSize;
-	height: $buttonSize;
-	max-height: $buttonSize;
-	min-height: $buttonSize;
-
-	padding: 0;
 }
 </style>
