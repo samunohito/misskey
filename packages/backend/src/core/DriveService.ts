@@ -136,6 +136,11 @@ export class DriveService {
 		this.deleteLogger = logger.createSubLogger('delete');
 	}
 
+	@bindThis
+	public get(params: { id: MiDriveFile['id'], userId: MiUser['id'] | null }): Promise<MiDriveFile | null> {
+		return this.driveFilesRepository.findOneBy({ id: params.id, userId: params.userId ? params.userId : IsNull() });
+	}
+
 	/***
 	 * Save file
 	 * @param path Path for original
