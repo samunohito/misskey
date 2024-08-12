@@ -588,13 +588,13 @@ async function callUpdate(items: GridItem[]) {
 	const result = await os.promiseDialog(Promise.all(
 		items.map(item => (
 			item.kind === 'file'
-				? misskeyApi('drive/files/update', {
+				? misskeyApi('admin/drive/system/files/update', {
 					fileId: item.id,
 					name: item.name,
 					comment: item.comment ?? null,
 					isSensitive: item.isSensitive ?? false,
 				})
-				: misskeyApi('drive/folders/update', {
+				: misskeyApi('admin/drive/system/folders/update', {
 					folderId: item.id,
 					name: item.name,
 				})
@@ -629,8 +629,8 @@ async function callDelete(items: GridItem[]) {
 	const result = await os.promiseDialog(Promise.all(
 		items.map(item =>
 			(item.kind === 'file'
-				? misskeyApi('drive/files/delete', { fileId: item.id })
-				: misskeyApi('drive/folders/delete', { folderId: item.id })
+				? misskeyApi('admin/drive/system/files/delete', { fileId: item.id })
+				: misskeyApi('admin/drive/system/folders/delete', { folderId: item.id })
 			)
 				.then(() => ({ item, success: true, err: undefined }))
 				.catch(err => ({ item, success: false, err })),
