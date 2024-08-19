@@ -4,11 +4,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<div v-if="gridItems.length === 0" style="text-align: center">
-	{{ i18n.ts._customEmojisManager._local._list.emojisNothing }}
-</div>
-
-<MkStickyContainer v-else>
+<MkStickyContainer>
 	<template #default>
 		<div class="_gaps">
 			<MkFolder>
@@ -140,11 +136,17 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 			<XRegisterLogsFolder :logs="requestLogs"/>
 
-			<div :class="$style.gridArea">
-				<MkGrid :data="gridItems" :settings="setupGrid()" @event="onGridEvent"/>
+			<div v-if="gridItems.length === 0" style="text-align: center">
+				{{ i18n.ts._customEmojisManager._local._list.emojisNothing }}
 			</div>
 
-			<MkPagingButtons :current="currentPage" :max="allPages" :buttonCount="5" @pageChanged="onPageChanged"/>
+			<template v-else>
+				<div :class="$style.gridArea">
+					<MkGrid :data="gridItems" :settings="setupGrid()" @event="onGridEvent"/>
+				</div>
+
+				<MkPagingButtons :current="currentPage" :max="allPages" :buttonCount="5" @pageChanged="onPageChanged"/>
+			</template>
 
 			<div :class="$style.buttons">
 				<MkButton danger style="margin-right: auto" @click="onDeleteButtonClicked">{{ i18n.ts.delete }}</MkButton>
@@ -557,7 +559,7 @@ function onGridCellValueChange(event: GridCellValueChangeEvent) {
 async function refreshCustomEmojis() {
 	const limit = 100;
 
-	const query: Misskey.entities.AdminEmojiV2ListRequest['query'] = {
+	const query: Misskey.entities.V2AdminEmojiListRequest['query'] = {
 		name: emptyStrToUndefined(queryName.value),
 		type: emptyStrToUndefined(queryType.value),
 		aliases: emptyStrToUndefined(queryAliases.value),
@@ -576,11 +578,11 @@ async function refreshCustomEmojis() {
 	}
 
 	const result = await os.promiseDialog(
-		misskeyApi('admin/emoji/v2/list', {
+		misskeyApi('v2/admin/emoji/list', {
 			query: query,
 			limit: limit,
 			page: currentPage.value,
-			sortKeys: sortOrders.value.map(({ key, direction }) => `${direction}${key}`),
+			sortKeys: sortOrders.value.map(({ key, direction }) => `${direction}${key}` as any),
 		}),
 		() => {
 		},

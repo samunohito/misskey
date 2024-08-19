@@ -76,11 +76,17 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 		<XRegisterLogsFolder :logs="requestLogs"/>
 
-		<div v-if="gridItems.length > 0" :class="$style.gridArea">
-			<MkGrid :data="gridItems" :settings="setupGrid()" @event="onGridEvent"/>
+		<div v-if="gridItems.length === 0" style="text-align: center">
+			{{ i18n.ts._customEmojisManager._local._list.emojisNothing }}
 		</div>
 
-		<MkPagingButtons :current="currentPage" :max="allPages" :buttonCount="5" @pageChanged="onPageChanged"/>
+		<template v-else>
+			<div v-if="gridItems.length > 0" :class="$style.gridArea">
+				<MkGrid :data="gridItems" :settings="setupGrid()" @event="onGridEvent"/>
+			</div>
+
+			<MkPagingButtons :current="currentPage" :max="allPages" :buttonCount="5" @pageChanged="onPageChanged"/>
+		</template>
 
 		<div v-if="gridItems.length > 0" class="_gaps" :class="$style.buttons">
 			<MkButton primary @click="onImportClicked">
@@ -269,7 +275,7 @@ async function importEmojis(targets: GridItem[]) {
 }
 
 async function refreshCustomEmojis() {
-	const query: Misskey.entities.AdminEmojiV2ListRequest['query'] = {
+	const query: Misskey.entities.V2AdminEmojiListRequest['query'] = {
 		name: emptyStrToUndefined(queryName.value),
 		host: emptyStrToUndefined(queryHost.value),
 		uri: emptyStrToUndefined(queryUri.value),
@@ -282,7 +288,7 @@ async function refreshCustomEmojis() {
 	}
 
 	const result = await os.promiseDialog(
-		misskeyApi('admin/emoji/v2/list', {
+		misskeyApi('v2/admin/emoji/list', {
 			limit: 100,
 			query: query,
 			page: currentPage.value,
