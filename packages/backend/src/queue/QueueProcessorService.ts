@@ -11,6 +11,10 @@ import { DI } from '@/di-symbols.js';
 import type Logger from '@/logger.js';
 import { bindThis } from '@/decorators.js';
 import { CheckModeratorsActivityProcessorService } from '@/queue/processors/CheckModeratorsActivityProcessorService.js';
+import { MinimumUser, NoteCreateService, Option } from '@/core/NoteCreateService.js';
+import { MiNote } from '@/models/Note.js';
+import { MiUser } from '@/models/User.js';
+import { PostNoteCreatedJobData } from '@/queue/types.js';
 import { UserWebhookDeliverProcessorService } from './processors/UserWebhookDeliverProcessorService.js';
 import { SystemWebhookDeliverProcessorService } from './processors/SystemWebhookDeliverProcessorService.js';
 import { EndedPollNotificationProcessorService } from './processors/EndedPollNotificationProcessorService.js';
@@ -84,6 +88,7 @@ export class QueueProcessorService implements OnApplicationShutdown {
 	private relationshipQueueWorker: Bull.Worker;
 	private objectStorageQueueWorker: Bull.Worker;
 	private endedPollNotificationQueueWorker: Bull.Worker;
+	private postNoteCreatedQueueWorker: Bull.Worker;
 
 	constructor(
 		@Inject(DI.config)
@@ -123,6 +128,7 @@ export class QueueProcessorService implements OnApplicationShutdown {
 		private bakeBufferedReactionsProcessorService: BakeBufferedReactionsProcessorService,
 		private checkModeratorsActivityProcessorService: CheckModeratorsActivityProcessorService,
 		private cleanProcessorService: CleanProcessorService,
+		private noteCreateService: NoteCreateService,
 	) {
 		this.logger = this.queueLoggerService.logger;
 
@@ -517,6 +523,56 @@ export class QueueProcessorService implements OnApplicationShutdown {
 			});
 		}
 		//#endregion
+
+		//#region postNoteCreated
+		{
+			const processer = (job: Bull.Job) => {
+				const payload = job.data as PostNoteCreatedJobData;
+
+				return this.noteCreateService.postNoteCreated(
+					payload.note,
+					payload.user,
+					payload.data,
+					payload.silent,
+					payload.tags,
+					payload.mentionedUsers,
+				);
+			};
+
+			this.postNoteCreatedQueueWorker = new Bull.Worker(QUEUE.POST_NOTE_CREATED, (job) => {
+				if (this.config.sentryForBackend) {
+					return Sentry.startSpan({ name: 'Queue: PostNoteCreated: ' + job.name }, () => processer(job));
+				} else {
+					return processer(job);
+				}
+			}, {
+				...baseQueueOptions(this.config, QUEUE.POST_NOTE_CREATED),
+				autorun: false,
+				concurrency: 64,
+				limiter: {
+					max: 128,
+					duration: 1000,
+				},
+			});
+
+			const logger = this.logger.createSubLogger('relationship');
+
+			this.relationshipQueueWorker
+				.on('active', (job) => logger.debug(`active id=${job.id}`))
+				.on('completed', (job, result) => logger.debug(`completed(${result}) id=${job.id}`))
+				.on('failed', (job, err) => {
+					logger.error(`failed(${err.name}: ${err.message}) id=${job?.id ?? '?'}`, { job: renderJob(job), e: renderError(err) });
+					if (config.sentryForBackend) {
+						Sentry.captureMessage(`Queue: Relationship: ${job?.name ?? '?'}: ${err.name}: ${err.message}`, {
+							level: 'error',
+							extra: { job, err },
+						});
+					}
+				})
+				.on('error', (err: Error) => logger.error(`error ${err.name}: ${err.message}`, { e: renderError(err) }))
+				.on('stalled', (jobId) => logger.warn(`stalled id=${jobId}`));
+		}
+		//#endregion
 	}
 
 	@bindThis
@@ -531,6 +587,7 @@ export class QueueProcessorService implements OnApplicationShutdown {
 			this.relationshipQueueWorker.run(),
 			this.objectStorageQueueWorker.run(),
 			this.endedPollNotificationQueueWorker.run(),
+			this.postNoteCreatedQueueWorker.run(),
 		]);
 	}
 

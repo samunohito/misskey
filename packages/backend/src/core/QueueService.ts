@@ -18,7 +18,7 @@ import { type SystemWebhookPayload } from '@/core/SystemWebhookService.js';
 import { type UserWebhookPayload } from './UserWebhookService.js';
 import type {
 	DbJobData,
-	DeliverJobData,
+	DeliverJobData, PostNoteCreatedJobData,
 	RelationshipJobData,
 	SystemWebhookDeliverJobData,
 	ThinUser,
@@ -29,7 +29,7 @@ import type {
 	DeliverQueue,
 	EndedPollNotificationQueue,
 	InboxQueue,
-	ObjectStorageQueue,
+	ObjectStorageQueue, PostNoteCreatedQueue,
 	RelationshipQueue,
 	SystemQueue,
 	SystemWebhookDeliverQueue,
@@ -53,6 +53,7 @@ export class QueueService {
 		@Inject('queue:objectStorage') public objectStorageQueue: ObjectStorageQueue,
 		@Inject('queue:userWebhookDeliver') public userWebhookDeliverQueue: UserWebhookDeliverQueue,
 		@Inject('queue:systemWebhookDeliver') public systemWebhookDeliverQueue: SystemWebhookDeliverQueue,
+		@Inject('queue:postNoteCreated') public postNoteCreatedQueue: PostNoteCreatedQueue,
 	) {
 		this.systemQueue.add('tickCharts', {
 		}, {
@@ -523,6 +524,15 @@ export class QueueService {
 			backoff: {
 				type: 'custom',
 			},
+			removeOnComplete: true,
+			removeOnFail: true,
+		});
+	}
+
+	@bindThis
+	public createPostNoteCreatedJob(data: PostNoteCreatedJobData) {
+		return this.postNoteCreatedQueue.add('postNoteCreated', data, {
+			attempts: 1,
 			removeOnComplete: true,
 			removeOnFail: true,
 		});

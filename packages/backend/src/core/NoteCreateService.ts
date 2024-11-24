@@ -116,14 +116,14 @@ class NotificationManager {
 	}
 }
 
-type MinimumUser = {
+export type MinimumUser = {
 	id: MiUser['id'];
 	host: MiUser['host'];
 	username: MiUser['username'];
 	uri: MiUser['uri'];
 };
 
-type Option = {
+export type Option = {
 	createdAt?: Date | null;
 	name?: string | null;
 	text?: string | null;
@@ -394,10 +394,15 @@ export class NoteCreateService implements OnApplicationShutdown {
 
 		const note = await this.insertNote(user, data, tags, emojis, mentionedUsers);
 
-		setImmediate('post created', { signal: this.#shutdownController.signal }).then(
-			() => this.postNoteCreated(note, user, data, silent, tags!, mentionedUsers!),
-			() => { /* aborted, ignore this */ },
-		);
+		// setImmediate('post created', { signal: this.#shutdownController.signal }).then(
+		// 	() => this.postNoteCreated(note, user, data, silent, tags!, mentionedUsers!),
+		// 	() => { /* aborted, ignore this */ },
+		// );
+
+		console.log('note pid: ', process.pid);
+		this.queueService.createPostNoteCreatedJob({
+			note, user, data, silent, tags, mentionedUsers,
+		});
 
 		return note;
 	}
@@ -501,12 +506,14 @@ export class NoteCreateService implements OnApplicationShutdown {
 	}
 
 	@bindThis
-	private async postNoteCreated(note: MiNote, user: {
+	public async postNoteCreated(note: MiNote, user: {
 		id: MiUser['id'];
 		username: MiUser['username'];
 		host: MiUser['host'];
 		isBot: MiUser['isBot'];
 	}, data: Option, silent: boolean, tags: string[], mentionedUsers: MinimumUser[]) {
+		console.log('pid: ', process.pid);
+
 		this.notesChart.update(note, true);
 		if (note.visibility !== 'specified' && (this.meta.enableChartsForRemoteUser || (user.host == null))) {
 			this.perUserNotesChart.update(user, note, true);

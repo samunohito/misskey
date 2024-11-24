@@ -9,6 +9,7 @@ import type { MiNote } from '@/models/Note.js';
 import type { MiUser } from '@/models/User.js';
 import type { MiWebhook } from '@/models/Webhook.js';
 import type { IActivity } from '@/core/activitypub/type.js';
+import { MinimumUser, Option } from '@/core/NoteCreateService.js';
 import type httpSignature from '@peertube/http-signature';
 
 export type DeliverJobData = {
@@ -129,4 +130,18 @@ export type UserWebhookDeliverJobData = {
 
 export type ThinUser = {
 	id: MiUser['id'];
+};
+
+export type PostNoteCreatedJobData = {
+	note: MiNote,
+	user: {
+		id: MiUser['id'];
+		username: MiUser['username'];
+		host: MiUser['host'];
+		isBot: MiUser['isBot'];
+	},
+	data: Option,
+	silent: boolean,
+	tags: string[],
+	mentionedUsers: MinimumUser[],
 };
