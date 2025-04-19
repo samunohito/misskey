@@ -91,7 +91,7 @@ const $redisForReactions: Provider = {
 	},
 	inject: [DI.config],
 };
-
+s;
 const $meta: Provider = {
 	provide: DI.meta,
 	useFactory: async (db: DataSource, redisForSub: Redis.Redis) => {
