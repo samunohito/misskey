@@ -10,7 +10,8 @@ import { DI } from '@/di-symbols.js';
 import type Logger from '@/logger.js';
 import { LoggerService } from '@/core/LoggerService.js';
 import { bindThis } from '@/decorators.js';
-import type { IEndpointMeta } from './endpoints.js';
+
+import { IEndpointMeta } from '@/server/api/endpoint-types.js';
 
 type RateLimitInfo = {
 	code: 'BRIEF_REQUEST_INTERVAL',
