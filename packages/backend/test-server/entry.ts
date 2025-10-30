@@ -10,7 +10,7 @@ import { INestApplicationContext } from '@nestjs/common';
 
 const config = loadConfig();
 const originEnv = JSON.stringify(process.env);
-
+console.log();
 process.env.NODE_ENV = 'test';
 
 let app: INestApplicationContext;
