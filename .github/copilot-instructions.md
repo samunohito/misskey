@@ -17,7 +17,7 @@
 - **ライセンス表記**: すべての新規ファイルには既存の SPDX コメントを付与します (例: `SPDX-License-Identifier: AGPL-3.0-only`)。
 - **依存解決**: `pnpm` コマンドでワークスペースを操作し、`package.json` では `workspace:*` を活用して内部パッケージを参照します。他のパッケージマネージャは使わないでください。
 - **バックエンド**:
-  - NestJS の DI を利用し、サービスは `@Injectable()`、コントローラは `@Controller()` で宣言します。
+  - NestJS の DI を利用します。基本的に `@Injectable()` で宣言します。
   - Fastify プラグイン (Cookie, CORS など) は `ServerModule` 経由で設定済みなので重複設定に注意します。
   - 非同期処理は `async/await` を基本とし、トランザクションやキュー処理は既存のユーティリティ (`queue/`, `postgres.ts`) を利用します。
 - **フロントエンド**:
