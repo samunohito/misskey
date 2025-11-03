@@ -59,7 +59,8 @@ Copilot should read and follow these instructions when suggesting code, refactor
 ## TypeScript / import のルール
 
 * すべての import は **ESM 形式 (`import ... from`)** を使用します。
-* 絶対パス import は `@/`, `@backend/`, `@shared/` など `tsconfig.json` のパスエイリアスに準拠します。
+* 絶対パス import は各パッケージに存在する `tsconfig.json` のパスエイリアスに準拠します。
+  * Copilot は上記エイリアス以外（例: `../../../`）を生成しないでください。
 * CommonJS (`require`, `module.exports`) の生成は禁止です。
 * 型定義 (`*.d.ts`) の重複生成は避け、共通型は `shared` に寄せてください。
 
@@ -92,9 +93,11 @@ Copilot should read and follow these instructions when suggesting code, refactor
 * テストコードの生成時は、既存のフレームワーク (`jest` または `vitest`) に従います。
 * 外部 API を操作するテストでは、既存のモック / ヘルパー (`test/utils/`) を使用します。
 * 不要な外部接続や副作用を含むコードは生成しないでください。
-* テストにおいても DB/Redis を直接使用します。ただし、下記の事項を守ってください。
-  - `.github/misskey/test.yml` を `.config` にコピーしてください。
-  - `packages/backend/test/compose.yml` のコンテナ群を使用してください。
+* テストにおいても DB/Redis を直接使用します。
+```bash
+cp .github/misskey/test.yml .config/test.yml
+docker compose -f packages/backend/test/compose.yml up -d
+```
 
 ---
 
@@ -104,8 +107,17 @@ Copilot should read and follow these instructions when suggesting code, refactor
 * デザイン変更を伴う場合は `ui/` 下のテーマ変数を参照します。
 * UIの文言（i18nキーと呼称）を追加する際は下記の事項を守ってください。
   - i18nキーは `locales/ja-JP.yml` に追加します。
+  - 実装する機能に特化したi18nキーは、機能名（アンダースコア）＋文言の名前という構成で実装します（例: `_settings.description`）。複数の階層になっても問題ありません。
+  - キャメルケースで命名します。
+  - 「はい」「いいえ」のように、短く汎用的な文言は出来る限り既存定義を利用します。 
   - i18nキーを追加したら `pnpm run build-assets` を実行し、 `locales/index.js` および `locales/index.d.ts` を更新します。
   - `locales/index.d.ts` に追加された定義をUIに埋め込みます。
+
+### フロントエンド コンポーネント構成
+
+* 1ファイル1コンポーネント（`.vue`）
+* 複雑なロジックは `.ts` に切り出し、`<script setup>` で import
+* グローバル登録は極力避ける。`components/` 内で `Mk*` を優先
 
 ---
 
@@ -129,8 +141,6 @@ Copilot should read and follow these instructions when suggesting code, refactor
 ## ドキュメント・運用ルール
 
 * 人間向けルールは `CONTRIBUTING.md` を参照し、PR の粒度・CHANGELOG 更新・テスト実行などのチェックリストを尊重します。
-* ActivityPub のペイロード拡張や federation に影響する変更では、
-  `packages/backend/src/core/activitypub` 配下の定義と **misskey-hub** ドキュメントの更新を忘れないでください。
 * Crowdin 連携を考慮し、翻訳ファイルを直接編集する際はキーの重複やフォーマットに注意します。
 
 ---
