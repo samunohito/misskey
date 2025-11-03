@@ -116,7 +116,7 @@ docker compose -f packages/backend/test/compose.yml up -d
   - キャメルケースで命名します。
   - 「はい」「いいえ」のように、短く汎用的な文言は出来る限り既存定義を利用します。 
   - i18nキーを追加したら `pnpm run build-assets` を実行し、`locales/index.js` および `locales/index.d.ts` を更新します。
-  - `locales/index.d.ts` に追加された定義をUIに埋め込みます。
+  - `locales/index.d.ts` に追加された定義を UI に埋め込みます。
 
 ### フロントエンド コンポーネント構成
 
