@@ -10,7 +10,7 @@ import * as fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname } from 'node:path';
 import { Test } from '@nestjs/testing';
-import { jest } from '@jest/globals';
+import { jest } from 'vitest';
 
 import { MockResolver } from '../misc/mock-resolver.js';
 import type { IActor, IApDocument, ICollection, IObject, IPost } from '@/core/activitypub/type.js';

@@ -5,7 +5,7 @@
 
 process.env.NODE_ENV = 'test';
 
-import { jest } from '@jest/globals';
+import { jest } from 'vitest';
 import { Test } from '@nestjs/testing';
 import { ModuleMocker } from 'jest-mock';
 import type { TestingModule } from '@nestjs/testing';

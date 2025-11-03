@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { jest } from '@jest/globals';
+import { jest } from 'vitest';
 import { Test, TestingModule } from '@nestjs/testing';
 import ms from 'ms';
 import {

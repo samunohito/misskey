@@ -5,7 +5,7 @@
  */
 
 import { Test, TestingModule } from '@nestjs/testing';
-import { beforeAll, describe, jest } from '@jest/globals';
+import { beforeAll, describe, jest } from 'vitest';
 import { WebhookTestService } from '@/core/WebhookTestService.js';
 import { UserWebhookPayload, UserWebhookService } from '@/core/UserWebhookService.js';
 import { SystemWebhookService } from '@/core/SystemWebhookService.js';

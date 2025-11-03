@@ -6,7 +6,7 @@
 process.env.NODE_ENV = 'test';
 
 import { setTimeout } from 'node:timers/promises';
-import { jest } from '@jest/globals';
+import { jest } from 'vitest';
 import { ModuleMocker } from 'jest-mock';
 import { Test } from '@nestjs/testing';
 import * as lolex from '@sinonjs/fake-timers';
