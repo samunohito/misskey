@@ -1,6 +1,11 @@
+---
+copilot: true
+---
+
 This document defines the coding and generation rules for GitHub Copilot.  
 Copilot should read and follow these instructions when suggesting code, refactoring, or adding comments.
 
+# GitHub Copilot Development Guide (Misskey)
 # Copilot 開発ガイド
 
 ## プロジェクト概要
@@ -93,7 +98,7 @@ Copilot should read and follow these instructions when suggesting code, refactor
 * テストコードの生成時は、既存のフレームワーク (`jest` または `vitest`) に従います。
 * 外部 API を操作するテストでは、既存のモック / ヘルパー (`test/utils/`) を使用します。
 * 不要な外部接続や副作用を含むコードは生成しないでください。
-* テストにおいても DB/Redis を直接使用します。
+* テストにおいても DB/Redis を実際に起動して利用します（mockではなく実環境を立ち上げてテストする方針です）。
 ```bash
 cp .github/misskey/test.yml .config/test.yml
 docker compose -f packages/backend/test/compose.yml up -d
