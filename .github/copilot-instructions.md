@@ -115,7 +115,7 @@ docker compose -f packages/backend/test/compose.yml up -d
   - 実装する機能に特化したi18nキーは、機能名（アンダースコア）＋文言の名前という構成で実装します（例: `_settings.description`）。複数の階層になっても問題ありません。
   - キャメルケースで命名します。
   - 「はい」「いいえ」のように、短く汎用的な文言は出来る限り既存定義を利用します。 
-  - i18nキーを追加したら `pnpm run build-assets` を実行し、 `locales/index.js` および `locales/index.d.ts` を更新します。
+  - i18nキーを追加したら `pnpm run build-assets` を実行し、`locales/index.js` および `locales/index.d.ts` を更新します。
   - `locales/index.d.ts` に追加された定義をUIに埋め込みます。
 
 ### フロントエンド コンポーネント構成
