@@ -214,8 +214,11 @@ export class FileServerService {
 				}
 
 				reply.header('Content-Type', FILE_TYPE_BROWSERSAFE.includes(image.type) ? image.type : 'application/octet-stream');
-				reply.header('Content-Length', file.file.size);
 				reply.header('Cache-Control', 'max-age=31536000, immutable');
+				reply.header('Accept-Ranges', 'bytes');
+				if (!request.headers.range) {
+					reply.header('Content-Length', file.file.size);
+				}
 				reply.header('Content-Disposition',
 					contentDisposition(
 						'inline',
@@ -233,6 +236,7 @@ export class FileServerService {
 
 				reply.header('Content-Type', FILE_TYPE_BROWSERSAFE.includes(file.mime) ? file.mime : 'application/octet-stream');
 				reply.header('Cache-Control', 'max-age=31536000, immutable');
+				reply.header('Accept-Ranges', 'bytes');
 				reply.header('Content-Disposition', contentDisposition('inline', filename));
 
 				if (request.headers.range && file.file.size > 0) {
@@ -255,11 +259,12 @@ export class FileServerService {
 					return fileStream;
 				}
 
+				reply.header('Content-Length', file.file.size);
 				return fs.createReadStream(file.path);
 			} else {
 				reply.header('Content-Type', FILE_TYPE_BROWSERSAFE.includes(file.file.type) ? file.file.type : 'application/octet-stream');
-				reply.header('Content-Length', file.file.size);
 				reply.header('Cache-Control', 'max-age=31536000, immutable');
+				reply.header('Accept-Ranges', 'bytes');
 				reply.header('Content-Disposition', contentDisposition('inline', file.filename));
 
 				if (request.headers.range && file.file.size > 0) {
@@ -282,6 +287,7 @@ export class FileServerService {
 					return fileStream;
 				}
 
+				reply.header('Content-Length', file.file.size);
 				return fs.createReadStream(file.path);
 			}
 		} catch (e) {
@@ -465,6 +471,10 @@ export class FileServerService {
 
 			reply.header('Content-Type', image.type);
 			reply.header('Cache-Control', 'max-age=31536000, immutable');
+			reply.header('Accept-Ranges', 'bytes');
+			if (!request.headers.range && file.file && file.file.size) {
+				reply.header('Content-Length', file.file.size);
+			}
 			reply.header('Content-Disposition',
 				contentDisposition(
 					'inline',
