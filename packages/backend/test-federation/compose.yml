@@ -68,7 +68,7 @@ services:
         read_only: true
       - type: bind
         source: ../../i18n/package.json
-        target: /misskey/packagesi18n/package.json
+        target: /misskey/packages/i18n/package.json
         read_only: true
       - type: bind
         source: ../../../package.json
