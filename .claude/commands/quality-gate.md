@@ -56,19 +56,25 @@ pnpm --filter frontend typecheck   # vue-tsc 単体 (Vue SFC の型を見るた�
 
 ### Backend scope
 
+`pnpm --filter backend lint` は内部で `pnpm typecheck && pnpm eslint` を実行する ([packages/backend/package.json](../../packages/backend/package.json)) ので、`lint` を回せば typecheck も終わる。軽量ゲートでは typecheck の二重実行を避けるため `lint` + `test` のみ:
+
 ```bash
 pnpm --filter backend lint
-pnpm --filter backend typecheck
 pnpm --filter backend test
 ```
 
+`tsgo` の出力を単独で見たい時のみ optional で `pnpm --filter backend typecheck` を別途回す。
+
 ### Frontend scope
+
+`pnpm --filter frontend lint` も内部で `pnpm typecheck && pnpm eslint` を実行する ([packages/frontend/package.json](../../packages/frontend/package.json)) ため、軽量ゲートでは Backend 同様に `lint` + `test` のみ:
 
 ```bash
 pnpm --filter frontend lint
-pnpm --filter frontend typecheck
 pnpm --filter frontend test
 ```
+
+`vue-tsc` の出力を単独で見たい時のみ optional で `pnpm --filter frontend typecheck` を別途回す。
 
 ### Single file scope
 

@@ -126,7 +126,7 @@ git diff HEAD --name-only -z | xargs -0 grep -nE 'sk-[A-Za-z0-9]{20,}|api[_-]?ke
 git diff HEAD --name-only -z | xargs -0 grep -nE 'console\.(log|debug|warn|error)' 2>/dev/null | head -20
 ```
 
-### Phase 8: SPDX ヘッダー確認 (新規 .ts/.js/.vue/.scss を作った時のみ)
+### Phase 8: SPDX ヘッダー確認 (新規 .ts/.js/.cjs/.mjs/.vue/.scss/.html を作った時のみ)
 
 [AGENTS.md §1 SPDX ヘッダー必須](../../../AGENTS.md#1-spdx-ヘッダー必須) の規約通り、新規ファイルに SPDX が入っているかを確認する。検査対象は **「ブランチ起点 (= `develop`) との差分で追加された全ファイル + 未コミットの追加 + 未追跡の新規」**。`git diff --diff-filter=A HEAD` だけだとブランチ上で既にコミット済の新規ファイルや untracked ファイルを取りこぼすので、3 経路を合算する。
 
@@ -148,7 +148,7 @@ BASE_REF="${BASE_REF:-develop}"
     *eslint*) continue ;;
   esac
   case "$f" in
-    *.ts|*.js|*.cjs|*.mjs|*.scss|*.vue)
+    *.ts|*.js|*.cjs|*.mjs|*.scss|*.vue|*.html)
       head -6 "$f" | grep -q "SPDX-License-Identifier: AGPL-3.0-only" \
         || echo "MISSING SPDX: $f"
       ;;
