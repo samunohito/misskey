@@ -87,6 +87,8 @@ pnpm exec eslint --fix <path>
 | `packages/frontend`          | `pnpm --filter frontend test`                                             |
 | 全体スモーク                 | `pnpm e2e` (Cypress, 要 `start:test` セットアップ)                        |
 
+> **backend `test` / `test:e2e` / `test:fed` の前提**: `.config/test.yml` が存在しない状態だと `loadConfig()` が失敗する。事前に `ncp .github/misskey/test.yml .config/test.yml` (または `cp .github/misskey/test.yml .config/test.yml`) を実行しておくこと。`pnpm --filter backend test:e2e` は内部で `cross-env NODE_ENV=test pnpm compile-config` を呼ぶため、コピー済みであれば追加の compile-config 実行は不要。詳細は [.claude/docs/testing.md](../../docs/testing.md) を参照。
+
 レポート:
 - Total / Passed / Failed
 - Coverage は導入されている場合のみ
@@ -116,11 +118,13 @@ pnpm --filter backend check-migrations
 
 ```bash
 # 秘密値らしき文字列が混入していないか
-git diff HEAD --name-only -z | xargs -0 grep -nE 'sk-[A-Za-z0-9]{20,}|api[_-]?key\s*=' 2>/dev/null | head -10
+git diff HEAD --name-only -z | xargs -0 grep -nE 'sk-[A-Za-z0-9]{20,}|api[_-]?key\s*=' 2>/dev/null | head -10 || true
 
 # console.log の混入
-git diff HEAD --name-only -z | xargs -0 grep -nE 'console\.(log|debug|warn|error)' 2>/dev/null | head -20
+git diff HEAD --name-only -z | xargs -0 grep -nE 'console\.(log|debug|warn|error)' 2>/dev/null | head -20 || true
 ```
+
+> `|| true` は `set -o pipefail` 環境で `head` が先に終了したとき SIGPIPE 由来の非ゼロ終了でゲートが誤 FAIL になるのを防ぐためのもの。
 
 ### Phase 8: SPDX ヘッダー確認 (新規 .ts/.js/.cjs/.mjs/.vue/.scss/.html を作った時のみ)
 

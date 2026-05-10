@@ -41,7 +41,16 @@
 # Track tool call count (increment in a temp file)
 # Use CLAUDE_SESSION_ID for session-specific counter (not $$ which changes per invocation)
 SESSION_ID="${CLAUDE_SESSION_ID:-${PPID:-default}}"
-COUNTER_FILE="${XDG_RUNTIME_DIR:-/tmp}/claude-tool-count-${SESSION_ID}"
+# Use XDG_RUNTIME_DIR (user-private, mode 0700) when available.
+# When falling back to /tmp, create a per-user subdirectory with 0700 to avoid
+# symlink/race-condition attacks from other users on shared machines.
+if [ -n "${XDG_RUNTIME_DIR:-}" ] && [ -d "$XDG_RUNTIME_DIR" ]; then
+  COUNTER_DIR="$XDG_RUNTIME_DIR"
+else
+  COUNTER_DIR="/tmp/claude-compact-${UID:-$(id -u)}"
+  ( umask 077 && mkdir -p "$COUNTER_DIR" ) 2>/dev/null
+fi
+COUNTER_FILE="$COUNTER_DIR/claude-tool-count-${SESSION_ID}"
 THRESHOLD=${COMPACT_THRESHOLD:-50}
 
 # Initialize or increment counter
