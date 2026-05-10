@@ -30,11 +30,20 @@ description: Misskey の TypeORM マイグレーションを公式 CLI (migratio
 
 ### 2-A. エンティティ差分から生成
 
-`-o`/`--outputJs` で **TS ではなく JS を直接生成** させ、`--esm` で ESM 形式に揃える (Misskey 既存 migration は `export class ...` の ESM JS):
+[CONTRIBUTING.md §Migration作成方法](../../../CONTRIBUTING.md#migration作成方法) に記載の基本形:
+
+```bash
+# packages/backend ディレクトリで実行する場合 (CONTRIBUTING.md 記載形式)
+pnpm dlx typeorm migration:generate -d ormconfig.js -o --esm <PascalName>
+```
+
+**リポジトリルートから実行する場合** (AI が使う推奨形式。`pnpm --filter backend exec` を使うと backend の TypeORM バージョンと一致するため確実):
 
 ```bash
 pnpm --filter backend exec typeorm migration:generate -d ormconfig.js -o --esm migration/<PascalName>
 ```
+
+> **`--esm` について**: `-o` / `--outputJs` は「TS ではなく JS を出力する」オプション、`--esm` は「ESM 形式 (`export class ...`) で出力する」オプション。Misskey の既存 migration はすべて ESM JS であるため **両方が必須**。`--esm` を省略すると CommonJS 形式の JS が生成されスタイルが揃わない。
 
 事前準備:
 

@@ -1,7 +1,7 @@
 ---
 description: TypeORM migration の空雛形を生成する。スキーマ差分から自動生成したい時は create-migration skill を使うこと
 argument-hint: <PascalCaseName>
-allowed-tools: Bash(pnpm:*), Bash(ls:*), Bash(test:*), Read, Edit
+allowed-tools: Bash(pnpm:*), Bash(ls:*), Bash(test:*), Bash(head:*), Read, Edit
 ---
 
 ## 引数
