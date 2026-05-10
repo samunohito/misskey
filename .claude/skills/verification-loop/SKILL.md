@@ -33,11 +33,7 @@ Misskey の機能完了前 / PR 作成前に走らせる包括的な検証ルー
 
 各フェーズは Misskey 既定の pnpm スクリプトを使う。正典は [AGENTS.md §必須コマンド](../../../AGENTS.md#必須コマンド) を参照。
 
-> **パイプの注意**: 出力を絞る `| tail -N` / `| head -N` は **pipeline 終了コードを `tail`/`head` 側で上書きしてしまう** ため、そのままでは build/typecheck/lint が落ちてもゲートが PASS と誤認される。各フェーズの bash を流す前にセッションで `set -o pipefail` を一度実行する (これで pipeline が左側の非ゼロを尊重するようになる)。あるいはパイプを外して全文出力させ、必要なら別途 `pnpm <cmd>; echo "exit=$?"` で終了コードを取る。
->
-> ```bash
-> set -o pipefail   # 以後同一シェルでは pipeline 失敗が伝播する
-> ```
+> **パイプの注意**: `| tail -N` は全入力を読み終わってから出力するため SIGPIPE を起こさず安全。一方 `| head -N` は N 行読んだ時点で終了するため、左側コマンドが SIGPIPE で非ゼロ終了し、`set -o pipefail` 有効時に成功していてもゲートが FAIL と誤認される。**Phase 2 は `| head` を使わず全出力を流す**。出力量が心配な場合はパイプを外して `pnpm <cmd>; echo "exit=$?"` で終了コードだけ確認する。
 
 ### Phase 1: Build
 
@@ -52,13 +48,13 @@ build が落ちたら **STOP**。修正してから次へ。
 backend は tsgo 経由:
 
 ```bash
-pnpm --filter backend typecheck 2>&1 | head -40
+pnpm --filter backend typecheck 2>&1
 ```
 
 frontend は vue-tsc (Vue SFC の型まで含めて検査):
 
 ```bash
-pnpm --filter frontend typecheck 2>&1 | head -40
+pnpm --filter frontend typecheck 2>&1
 ```
 
 critical な型エラーは先に潰す。

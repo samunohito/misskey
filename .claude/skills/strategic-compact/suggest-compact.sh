@@ -41,7 +41,7 @@
 # Track tool call count (increment in a temp file)
 # Use CLAUDE_SESSION_ID for session-specific counter (not $$ which changes per invocation)
 SESSION_ID="${CLAUDE_SESSION_ID:-${PPID:-default}}"
-COUNTER_FILE="/tmp/claude-tool-count-${SESSION_ID}"
+COUNTER_FILE="${XDG_RUNTIME_DIR:-/tmp}/claude-tool-count-${SESSION_ID}"
 THRESHOLD=${COMPACT_THRESHOLD:-50}
 
 # Initialize or increment counter
