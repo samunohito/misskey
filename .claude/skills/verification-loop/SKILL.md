@@ -116,10 +116,10 @@ pnpm --filter backend check-migrations
 
 ```bash
 # 秘密値らしき文字列が混入していないか
-git diff HEAD --name-only -z | xargs -0 grep -nE 'sk-[A-Za-z0-9]{20,}|api[_-]?key\s*=' 2>/dev/null | head -10
+git diff HEAD --name-only -z | xargs -0 grep -nE 'sk-[A-Za-z0-9]{20,}|api[_-]?key\s*=' 2>/dev/null | head -10 || true
 
 # console.log の混入
-git diff HEAD --name-only -z | xargs -0 grep -nE 'console\.(log|debug|warn|error)' 2>/dev/null | head -20
+git diff HEAD --name-only -z | xargs -0 grep -nE 'console\.(log|debug|warn|error)' 2>/dev/null | head -20 || true
 ```
 
 ### Phase 8: SPDX ヘッダー確認 (新規 .ts/.js/.cjs/.mjs/.vue/.scss/.html を作った時のみ)
