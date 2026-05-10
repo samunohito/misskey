@@ -1,0 +1,108 @@
+---
+description: Misskey の lint / typecheck / 高速テストを順に実行して品質ゲートを通すコマンド。完了前の軽量検証用。
+argument-hint: "[repo|backend|frontend|<path/to/file.ts>]"
+---
+
+<!--
+SPDX-License-Identifier: MIT
+SPDX-FileCopyrightText: 2026 Affaan Mustafa and everything-claude-code contributors
+
+出典 (upstream): https://github.com/affaan-m/everything-claude-code (v2.0.0-rc.1)
+upstream path: commands/quality-gate.md
+upstream license: MIT — https://github.com/affaan-m/everything-claude-code/blob/main/LICENSE
+project-level notice: see .claude/THIRD_PARTY_LICENSES.md (Misskey 内サードパーティ一覧 + MIT 全文)
+
+Imported into Misskey .claude/ on 2026-05-10. Pipeline 概念 (lint → typecheck → test) は upstream ECC 版から借用 (MIT)。実コマンド層は Misskey の pnpm + tsgo + ESLint + Vitest に固定し、formatter (Prettier/Biome) フェーズは削除した。
+
+note: 元 ECC 版は言語自動判定 + format/lint/type のジェネリック版だったが、Misskey 専用に pnpm + tsgo + ESLint + Vitest の組み合わせに固定。重い test:e2e / test:fed は含まない (verification-loop が担当)。
+-->
+
+# /quality-gate — Misskey 軽量品質ゲート
+
+`/quality-gate [scope]`
+
+完了前の **軽量** 品質チェック。重い E2E / 連合テストは `verification-loop` skill で別途。
+
+## Scope
+
+- `repo` (default) — 全パッケージ
+- `backend` — `packages/backend` のみ
+- `frontend` — `packages/frontend` のみ
+- `path/to/file.ts` — 単一ファイルへの ESLint --fix のみ
+
+## Pipeline
+
+### Repo scope (全部)
+
+各パッケージの `lint` スクリプト実体は `pnpm typecheck && pnpm eslint` ([packages/backend/package.json](../../packages/backend/package.json), [packages/frontend/package.json](../../packages/frontend/package.json)) で、ルートの `pnpm lint` は `pnpm --no-bail -r lint` (= 全パッケージで lint を `--no-bail` で実行)。**typecheck は lint に含まれている**ため、通常はこの 2 コマンドで十分:
+
+```bash
+# 1. Lint (= typecheck + ESLint、全パッケージ。--no-bail で最初の失敗で止まらず全結果を集める)
+pnpm lint
+
+# 2. Unit test (高速、e2e は含まない)
+pnpm --filter backend test
+pnpm --filter frontend test
+```
+
+#### 詳細を分けて見たい時のみ (optional)
+
+lint がまとめて失敗していて typecheck の結果だけ単独で見たい場合は、以下を個別に回す。**通常は不要** (lint の出力を読めば足りる):
+
+```bash
+pnpm --filter backend typecheck    # tsgo 単体
+pnpm --filter frontend typecheck   # vue-tsc 単体 (Vue SFC の型を見るため)
+```
+
+### Backend scope
+
+```bash
+pnpm --filter backend lint
+pnpm --filter backend typecheck
+pnpm --filter backend test
+```
+
+### Frontend scope
+
+```bash
+pnpm --filter frontend lint
+pnpm --filter frontend typecheck
+pnpm --filter frontend test
+```
+
+### Single file scope
+
+```bash
+pnpm exec eslint --fix <path>
+```
+
+## Output
+
+各フェーズの pass/fail と件数を集計:
+
+```text
+Quality Gate (repo):
+
+Lint:        PASS  (0 errors, 2 warnings)
+Backend tc:  PASS  (0 errors)
+Frontend tc: PASS  (0 errors)
+Backend ut:  PASS  (412/412)
+Frontend ut: PASS  (87/87)
+
+→ 完了前の軽量チェック OK。
+  PR 作成前は verification-loop を回してから。
+```
+
+失敗時は最初に落ちたフェーズで停止して詳細を見せる。
+
+## 関連 skill / コマンド
+
+- `verification-loop` skill — 完全な完了前ゲート (build / e2e / misskey-js / SPDX / CHANGELOG まで含む)
+- `/check-misskey-js` コマンド — API 変更時の misskey-js 再生成
+- [AGENTS.md §必須コマンド](../../AGENTS.md#必須コマンド) — pnpm コマンド一覧の正典
+
+## 元 ECC 版との差分
+
+- ジェネリックな言語自動判定を排除し、Misskey 固定 pipeline に。
+- formatter フェーズなし (Misskey は ESLint --fix のみ採用)。
+- e2e / federation / Cypress は重いので除外し `verification-loop` に委譲。
