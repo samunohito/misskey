@@ -182,7 +182,7 @@ grep -r "id: '<生成した UUID>'" packages/backend/src/server/api/endpoints/
 
 ## ステップ 4: ★必須 — endpoint-list.ts に登録
 
-[packages/backend/src/server/api/endpoint-list.ts](../../../packages/backend/src/server/api/endpoint-list.ts) にアルファベット順で 1 行追加する:
+[packages/backend/src/server/api/endpoint-list.ts](../../../packages/backend/src/server/api/endpoint-list.ts) の同カテゴリ末尾に 1 行追加する（既存の並びを崩さない）:
 
 ```ts
 export * as '<category>/<name>' from './endpoints/<category>/<name>.js';

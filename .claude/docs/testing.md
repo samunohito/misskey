@@ -9,7 +9,7 @@
 | Federation | `packages/backend/vitest.config.fed.ts` | `pnpm --filter backend test:fed` |
 
 - 配置: `packages/backend/test/`
-- E2E は `.config/test.yml` から runtime config を生成して動かす。`pnpm --filter backend test:e2e` 自体は `.config/test.yml` をコピーしないため、**事前に `pnpm start:test`** で起動するか、手動で `ncp .github/misskey/test.yml .config/test.yml` を実行してから `cross-env NODE_ENV=test pnpm --filter backend compile-config` でテスト用 config を生成する必要がある (CI ジョブ・`pnpm start:test` はこの ncp コピーを自動でやる)。`compile_config.js` は `NODE_ENV === 'test'` のとき `.config/test.yml` を、それ以外は `.config/default.yml` を読み込む (`scripts/compile_config.js` 参照)。`pnpm --filter backend test:e2e` スクリプト内では `cross-env NODE_ENV=test pnpm compile-config` として呼ばれるため、ncp 済みであれば直接 `test:e2e` を実行するだけでよい。
+- E2E は `.config/test.yml` から runtime config を生成して動かす。`pnpm --filter backend test:e2e` 自体は `.config/test.yml` をコピーしないため、**事前に `pnpm start:test`** で起動するか、手動で `ncp .github/misskey/test.yml .config/test.yml` を実行してから `cross-env NODE_ENV=test pnpm --filter backend compile-config` でテスト用 config を生成する必要がある (CI ジョブ・`pnpm start:test` はこの ncp コピーを自動でやる)。`compile_config.js` は `NODE_ENV === 'test'` のとき `.config/test.yml` を、それ以外は `.config/default.yml` を読み込む (`packages/backend/scripts/compile_config.js` 参照)。`pnpm --filter backend test:e2e` スクリプト内では `cross-env NODE_ENV=test pnpm compile-config` として呼ばれるため、ncp 済みであれば直接 `test:e2e` を実行するだけでよい。
 - カバレッジ: `pnpm --filter backend test-and-coverage`
 
 ## Frontend (Vitest)
