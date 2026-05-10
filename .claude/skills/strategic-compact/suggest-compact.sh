@@ -41,10 +41,17 @@
 # Track tool call count (increment in a temp file)
 # Use CLAUDE_SESSION_ID for session-specific counter (not $$ which changes per invocation)
 SESSION_ID="${CLAUDE_SESSION_ID:-${PPID:-default}}"
+# Sanitize: keep only alphanumeric, _, - to prevent path traversal via SESSION_ID.
+# Use tr instead of ${var//pat/} to support bash 3.2 (macOS system bash).
+SESSION_ID="$(printf '%s' "$SESSION_ID" | LC_ALL=C tr -dc 'a-zA-Z0-9_-')"
+SESSION_ID="${SESSION_ID:-default}"
 # Use XDG_RUNTIME_DIR (user-private, mode 0700) when available.
+# Verify mode is exactly 0700 before trusting; on non-systemd systems the
+# directory may be world-writable. Fall back to a per-user /tmp subdir if not.
 # When falling back to /tmp, create a per-user subdirectory with 0700 to avoid
 # symlink/race-condition attacks from other users on shared machines.
-if [ -n "${XDG_RUNTIME_DIR:-}" ] && [ -d "$XDG_RUNTIME_DIR" ]; then
+_xdg_mode="$(stat -c '%a' "${XDG_RUNTIME_DIR:-}" 2>/dev/null || stat -f '%Lp' "${XDG_RUNTIME_DIR:-}" 2>/dev/null)"
+if [ -n "${XDG_RUNTIME_DIR:-}" ] && [ -d "$XDG_RUNTIME_DIR" ] && [ "$_xdg_mode" = "700" ]; then
   COUNTER_DIR="$XDG_RUNTIME_DIR"
 else
   COUNTER_DIR="/tmp/claude-compact-${UID:-$(id -u)}"
