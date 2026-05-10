@@ -37,7 +37,7 @@ Misskey リポジトリの `.claude/` 構成を 7 カテゴリで採点し、改
 | 4 | Memory Persistence | docs/* の同期状態を評価。プロジェクト側 `.claude/memory/` は未採用方針 (auto-memory はユーザーホーム側で自動運用) のため、ここを採点起点にせず既定 5/10 から開始する |
 | 5 | Eval Coverage | testing.md の網羅、Misskey 固有の e2e/fed/Storybook/Cypress 適用ガイド |
 | 6 | Security Guardrails | SPDX 規約適用、migration 不変性ルール、ja-JP.yml 限定編集ルール、secrets 検出 |
-| 7 | Cost Efficiency | enabledPlugins の重複・過剰、token-budget-advisor / strategic-compact / context-budget の整備、MCP 過剰登録なし |
+| 7 | Cost Efficiency | enabledPlugins の重複・過剰、token-budget-advisor / context-budget の整備、MCP 過剰登録なし |
 
 ## Misskey 固有の確認項目 (採点根拠コマンド)
 

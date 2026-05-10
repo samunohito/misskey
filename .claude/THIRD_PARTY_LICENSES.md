@@ -19,8 +19,6 @@
 |---|---|---|---|
 | `skills/token-budget-advisor/SKILL.md` | `skills/token-budget-advisor/SKILL.md` | community (orig: [Xabilimon1/Token-Budget-Advisor-Claude-Code-](https://github.com/Xabilimon1/Token-Budget-Advisor-Claude-Code-)) | description を日本語化、本文は実質そのまま |
 | `skills/context-budget/SKILL.md` | `skills/context-budget/SKILL.md` | ECC | description を日本語化、Misskey 固有メモを追記 |
-| `skills/strategic-compact/SKILL.md` | `skills/strategic-compact/SKILL.md` | ECC | description を日本語化、Misskey 適用例を追記 |
-| `skills/strategic-compact/suggest-compact.sh` | `skills/strategic-compact/suggest-compact.sh` | ECC (bash script) | 出典コメントの追加と、ヘッダコメント内 hook 設定例のパスを `<repo-root>` プレースホルダに変更。実行ロジックは逐語コピー |
 | `skills/verification-loop/SKILL.md` | `skills/verification-loop/SKILL.md` | ECC | description を日本語化、検証コマンドを Misskey の `pnpm` スクリプトへ置換 |
 | `skills/click-path-audit/SKILL.md` | `skills/click-path-audit/SKILL.md` | community | description を日本語化、React+Zustand 例を Vue 3 + Pizzax store / refs / EventEmitter 文脈に書き換え (Misskey は Pinia を使わない) |
 | `commands/harness-audit.md` | `commands/harness-audit.md` | ECC | scripts 依存の自動採点を、Claude が `pnpm`/`git`/`grep` で手動採点する版に書き換え。Misskey 固有の評価軸 (SPDX / endpoint-list / migration / locales) を組み込み |

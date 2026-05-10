@@ -23,7 +23,6 @@ frontmatter (`name` + `description`) は、Claude が **自動でスキルを呼
 | --- | --- | --- |
 | [token-budget-advisor](token-budget-advisor/SKILL.md) | 応答前にユーザーへ 25/50/75/100% の応答深さを選ばせ、トークン消費を制御 | 中 |
 | [context-budget](context-budget/SKILL.md) | agents / skills / MCP / CLAUDE.md の token overhead を見える化し、肥大コンポーネントを検出 | 中 |
-| [strategic-compact](strategic-compact/SKILL.md) | 探索 → 計画 → 実装 等のフェーズ境界で手動 `/compact` を提案。`suggest-compact.sh` 同梱 | 中 |
 | [verification-loop](verification-loop/SKILL.md) | build → typecheck → lint → test → security → diff の段階ゲートを順に走らせる完了前検証 (Misskey の pnpm スクリプトに置換済) | 高 (PR 前) |
 | [click-path-audit](click-path-audit/SKILL.md) | Vue ボタンの handler を順にトレースし、関数単体は動くが互いに状態を打ち消すバグを検出 (Pizzax store / 共有 ref / EventEmitter 文脈) | 中 |
 
