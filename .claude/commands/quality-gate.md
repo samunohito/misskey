@@ -14,14 +14,14 @@ project-level notice: see .claude/THIRD_PARTY_LICENSES.md (Misskey 内サード�
 
 Imported into Misskey .claude/ on 2026-05-10. Pipeline 概念 (lint → typecheck → test) は upstream ECC 版から借用 (MIT)。実コマンド層は Misskey の pnpm + tsgo + ESLint + Vitest に固定し、formatter (Prettier/Biome) フェーズは削除した。
 
-note: 元 ECC 版は言語自動判定 + format/lint/type のジェネリック版だったが、Misskey 専用に pnpm + tsgo + ESLint + Vitest の組み合わせに固定。重い test:e2e / test:fed は含まない (verification-loop が担当)。
+note: 元 ECC 版は言語自動判定 + format/lint/type のジェネリック版だったが、Misskey 専用に pnpm + tsgo + ESLint + Vitest の組み合わせに固定。重い test:e2e / test:fed は含まない (CI 側で実行される)。
 -->
 
 # /quality-gate — Misskey 軽量品質ゲート
 
 `/quality-gate [scope]`
 
-完了前の **軽量** 品質チェック。重い E2E / 連合テストは `verification-loop` skill で別途。
+完了前の **軽量** 品質チェック。重い E2E / 連合テスト (test:e2e / test:fed / Cypress) は CI 側で実行されるため、本コマンドには含めない。
 
 ## Scope
 
@@ -95,15 +95,13 @@ Frontend tc: PASS  (0 errors)
 Backend ut:  PASS  (412/412)
 Frontend ut: PASS  (87/87)
 
-→ 完了前の軽量チェック OK。
-  PR 作成前は verification-loop を回してから。
+→ 完了前の軽量チェック OK。重い e2e / 連合テストは CI 側で実行される。
 ```
 
 失敗時は最初に落ちたフェーズで停止して詳細を見せる。
 
 ## 関連 skill / コマンド
 
-- `verification-loop` skill — 完全な完了前ゲート (build / e2e / misskey-js / SPDX / CHANGELOG まで含む)
 - `/check-misskey-js` コマンド — API 変更時の misskey-js 再生成
 - [AGENTS.md §必須コマンド](../../AGENTS.md#必須コマンド) — pnpm コマンド一覧の正典
 
@@ -111,4 +109,4 @@ Frontend ut: PASS  (87/87)
 
 - ジェネリックな言語自動判定を排除し、Misskey 固定 pipeline に。
 - formatter フェーズなし (Misskey は ESLint --fix のみ採用)。
-- e2e / federation / Cypress は重いので除外し `verification-loop` に委譲。
+- e2e / federation / Cypress は重いため除外し CI 側に委譲。

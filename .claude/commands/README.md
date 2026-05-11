@@ -18,9 +18,8 @@ ECC の MIT ライセンスファイルを Misskey の規約に合わせて再�
 
 | コマンド | 用途 | 典型ユースケース |
 | --- | --- | --- |
-| [`/quality-gate`](./quality-gate.md) | `pnpm lint` + 各パッケージの unit test を順次実行する軽量品質ゲート | 完了前の軽量チェック (重い E2E は `verification-loop` skill 側) |
+| [`/quality-gate`](./quality-gate.md) | `pnpm lint` + 各パッケージの unit test を順次実行する軽量品質ゲート | 完了前の軽量チェック (重い E2E は CI 側に委譲) |
 | [`/harness-audit`](./harness-audit.md) | `.claude/` ハーネスを 7 カテゴリで採点し改善優先度を提示 | 設定の点検 / 新しい skill / agent / hook を入れた後 |
-| [`/learn-eval`](./learn-eval.md) | 現セッションからパターンを抽出し品質ゲートを通したうえで Global / Project skill 案として提示 | 自明でない手法・ワークアラウンドに気付いた時 |
 
 ## 使い分け
 
@@ -29,9 +28,8 @@ ECC の MIT ライセンスファイルを Misskey の規約に合わせて再�
   - エンティティ差分から自動生成、または CONCURRENTLY などの注意点を含めて完全に誘導してほしい → `create-migration` skill (`migration:generate`)
 - **`/changelog-add` vs 手動編集**:
   - サブセクションの placeholder `-` 置換や、過去リリースセクションへの誤編集を避けるため、原則コマンドを使う。
-- **`/quality-gate` vs [`verification-loop` skill](../skills/verification-loop/SKILL.md)**:
-  - 編集途中の軽量チェック (lint + unit test) → `/quality-gate`
-  - PR 作成前の段階ゲート (build / e2e / misskey-js / SPDX / CHANGELOG まで) → `verification-loop` skill
+- **`/quality-gate` のスコープ**:
+  - 編集途中の軽量チェック (lint + unit test) は `/quality-gate` で十分。重い e2e / federation / Cypress は CI 側で実行されるため、ローカルでは原則回さない。
 
 ## 新規追加時の方針
 

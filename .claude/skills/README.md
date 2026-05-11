@@ -21,10 +21,7 @@ frontmatter (`name` + `description`) は、Claude が **自動でスキルを呼
 
 | スキル名 | 役割 | 優先度 |
 | --- | --- | --- |
-| [token-budget-advisor](token-budget-advisor/SKILL.md) | 応答前にユーザーへ 25/50/75/100% の応答深さを選ばせ、トークン消費を制御 | 中 |
 | [context-budget](context-budget/SKILL.md) | agents / skills / MCP / CLAUDE.md の token overhead を見える化し、肥大コンポーネントを検出 | 中 |
-| [verification-loop](verification-loop/SKILL.md) | build → typecheck → lint → test → security → diff の段階ゲートを順に走らせる完了前検証 (Misskey の pnpm スクリプトに置換済) | 高 (PR 前) |
-| [click-path-audit](click-path-audit/SKILL.md) | Vue ボタンの handler を順にトレースし、関数単体は動くが互いに状態を打ち消すバグを検出 (Pizzax store / 共有 ref / EventEmitter 文脈) | 中 |
 
 設計方針: `create-migration` は手動の `Date.now()` 命名ではなく TypeORM 公式 CLI (`migration:generate` / `migration:create`) を採用。Storybook ファイル名は `*.stories.impl.ts` 規約に準拠する。
 

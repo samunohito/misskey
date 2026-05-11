@@ -33,11 +33,11 @@ Misskey リポジトリの `.claude/` 構成を 7 カテゴリで採点し、改
 | --- | --- | --- |
 | 1 | Tool Coverage | skill / agent / command の数、欠けているワークフロー段、重複なし |
 | 2 | Context Efficiency | frontmatter description の冗長度、SKILL.md の長さ分布、重複情報、CLAUDE.md の肥大化 |
-| 3 | Quality Gates | Stop / PreToolUse / PostToolUse hook の整備、verification-loop の有無、自動 lint/typecheck |
+| 3 | Quality Gates | Stop / PreToolUse / PostToolUse hook の整備、`/quality-gate` 等の完了前ゲートの有無、自動 lint/typecheck |
 | 4 | Memory Persistence | docs/* の同期状態を評価。プロジェクト側 `.claude/memory/` は未採用方針 (auto-memory はユーザーホーム側で自動運用) のため、ここを採点起点にせず既定 5/10 から開始する |
 | 5 | Eval Coverage | testing.md の網羅、Misskey 固有の e2e/fed/Storybook/Cypress 適用ガイド |
 | 6 | Security Guardrails | SPDX 規約適用、migration 不変性ルール、ja-JP.yml 限定編集ルール、secrets 検出 |
-| 7 | Cost Efficiency | enabledPlugins の重複・過剰、token-budget-advisor / context-budget の整備、MCP 過剰登録なし |
+| 7 | Cost Efficiency | enabledPlugins の重複・過剰、context-budget の整備、MCP 過剰登録なし |
 
 ## Misskey 固有の確認項目 (採点根拠コマンド)
 
@@ -107,18 +107,18 @@ grep -rn 'console\.\(log\|debug\)' packages/backend/src packages/frontend/src 2>
 ```text
 Harness Audit (repo): 55/70
 
-Tool Coverage:        9/10   (skills 9, agents 2, commands 6 — 偏りなし)
+Tool Coverage:        9/10   (skills 5, agents 2, commands 5 — 偏りなし)
 Context Efficiency:   8/10   (description 平均 3-5 行、肥大なし)
-Quality Gates:        5/10   (Stop hook 共有設定に未登録 / verification-loop あり)
+Quality Gates:        5/10   (Stop hook 共有設定に未登録 / `/quality-gate` あり)
 Memory Persistence:   5/10   (プロジェクト側 memory/ 未採用方針 = 既定値)
 Eval Coverage:        7/10   (testing.md 網羅、Storybook 一部抜け)
 Security Guardrails:  10/10  (SPDX 100%, locales OK, migrations clean)
-Cost Efficiency:      8/10   (token-budget-advisor 導入済 / MCP 0)
+Cost Efficiency:      8/10   (context-budget 導入済 / MCP 0)
 
 Failed Checks:
 - packages/frontend/src/.../X.vue で SPDX 欠落 (Security Guardrails)
 - console.log が backend に 3 件 (Quality Gates)
-- 共有 Stop hook なし (Quality Gates) — verification-loop SKILL.md の opt-in レシピ前提なら減点しなくて良い
+- 共有 Stop hook なし (Quality Gates) — 各 contributor が `.claude/settings.local.json` で opt-in する方針なら減点しなくて良い
 
 Top 3 Actions:
 1) [Security Guardrails] SPDX 欠落 1 ファイルを修正:
@@ -129,7 +129,7 @@ Top 3 Actions:
    .claude/docs/plugins.md と照合。
 
 Suggested next skills to apply:
-- verification-loop で完了前にゲートを回す
+- /quality-gate で完了前に lint + unit test を回す
 - context-budget で plugin 由来の overhead を確認
 ```
 

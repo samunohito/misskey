@@ -2,7 +2,7 @@
 
 `.claude/` 配下に取り込まれているサードパーティ由来コンポーネントのライセンス・出典情報をまとめる。Misskey 本体は AGPL-3.0-only だが、本ディレクトリ内には MIT ライセンスのファイルが含まれている。各ファイル冒頭にも `SPDX-License-Identifier` と出典コメントを併記している。
 
-最終更新: 2026-05-10
+最終更新: 2026-05-11
 
 ---
 
@@ -17,13 +17,9 @@
 
 | `.claude/` 内のパス | 上流パス | 上流 frontmatter `origin` | Misskey での改変 |
 |---|---|---|---|
-| `skills/token-budget-advisor/SKILL.md` | `skills/token-budget-advisor/SKILL.md` | community (orig: [Xabilimon1/Token-Budget-Advisor-Claude-Code-](https://github.com/Xabilimon1/Token-Budget-Advisor-Claude-Code-)) | description を日本語化、本文は実質そのまま |
 | `skills/context-budget/SKILL.md` | `skills/context-budget/SKILL.md` | ECC | description を日本語化、Misskey 固有メモを追記 |
-| `skills/verification-loop/SKILL.md` | `skills/verification-loop/SKILL.md` | ECC | description を日本語化、検証コマンドを Misskey の `pnpm` スクリプトへ置換 |
-| `skills/click-path-audit/SKILL.md` | `skills/click-path-audit/SKILL.md` | community | description を日本語化、React+Zustand 例を Vue 3 + Pizzax store / refs / EventEmitter 文脈に書き換え (Misskey は Pinia を使わない) |
 | `commands/harness-audit.md` | `commands/harness-audit.md` | ECC | scripts 依存の自動採点を、Claude が `pnpm`/`git`/`grep` で手動採点する版に書き換え。Misskey 固有の評価軸 (SPDX / endpoint-list / migration / locales) を組み込み |
 | `commands/quality-gate.md` | `commands/quality-gate.md` | ECC | 言語自動判定を排除し Misskey 固定 pipeline (`pnpm` + tsgo + ESLint + Vitest) に。Prettier/Biome フェーズを削除 |
-| `commands/learn-eval.md` | `commands/learn-eval.md` | ECC | Misskey の skill 命名規則・SPDX 規約に関する補足を追加 |
 
 ### MIT License (full text)
 
