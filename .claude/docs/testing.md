@@ -1,5 +1,23 @@
 # テスト構成
 
+## Backend 全般の前提: `.config/test.yml`
+
+backend のテストスクリプト (`test` / `test:e2e` / `test:fed`) はすべて内部で `cross-env NODE_ENV=test pnpm compile-config` を実行し、`.config/test.yml` を読み込む ([packages/backend/package.json](../../packages/backend/package.json), [packages/backend/scripts/compile_config.js](../../packages/backend/scripts/compile_config.js))。**未作成だとテスト自体が起動しない。**
+
+未作成なら以下を 1 回だけ手動コピーする (どちらでも可):
+
+```bash
+ncp .github/misskey/test.yml .config/test.yml
+# または
+cp .github/misskey/test.yml .config/test.yml
+```
+
+補足:
+
+- ルートの `pnpm start:test` (Cypress 用にテストサーバーを起動するコマンド) を使う経路では実行時に `ncp` で自動コピーされる ([package.json](../../package.json))。それ以外で backend テストを直接走らせる時は上記の手動コピーが必要。
+- すでに `.config/test.yml` があれば各テストスクリプトの内部 `compile-config` で十分なので、追加で `pnpm --filter backend compile-config` を叩く必要はない。
+- `pnpm start:test` は backend e2e テスト (`pnpm --filter backend test:e2e`) の前提ではない (ポート競合の元になるため使わないこと)。
+
 ## Backend (Vitest 4, 3 設定)
 
 | 種別 | 設定ファイル | 実行コマンド |
@@ -9,7 +27,7 @@
 | Federation | `packages/backend/vitest.config.fed.ts` | `pnpm --filter backend test:fed` |
 
 - 配置: `packages/backend/test/`
-- E2E は `.config/test.yml` から runtime config を生成して動かす。**事前に `.config/test.yml` が必要**なため、未作成の場合は `ncp .github/misskey/test.yml .config/test.yml` (または `cp .github/misskey/test.yml .config/test.yml`) を実行してからテストを走らせる。`pnpm --filter backend test:e2e` 自体はスクリプト内で `cross-env NODE_ENV=test pnpm compile-config` を呼ぶため、`.config/test.yml` さえあれば追加の compile-config 実行は不要。(`packages/backend/scripts/compile_config.js` は `NODE_ENV === 'test'` のとき `.config/test.yml` を、それ以外は `.config/default.yml` を読む。) なお `pnpm start:test` は Cypress 用にテストサーバーを起動したままにするコマンドであり、backend e2e テスト (`pnpm --filter backend test:e2e`) の前提としては不要かつポート競合を招く可能性があるため使わないこと。
+- 事前準備は [§Backend 全般の前提: `.config/test.yml`](#backend-全般の前提-configtestyml) を参照。
 - カバレッジ: `pnpm --filter backend test-and-coverage`
 
 ## Frontend (Vitest)
@@ -49,5 +67,3 @@ pnpm --filter frontend build-storybook    # 静的ビルド
 ```bash
 docker compose -f compose.local-db.yml up -d
 ```
-
-`.config/test.yml` は `pnpm start:test` (Cypress 用サーバー起動コマンド) が実行時に `.github/misskey/test.yml` から ncp で自動的にコピーするが、backend e2e テストには不要。backend e2e テストを手動で実行する場合は上記の通り手動コピーで代替する。

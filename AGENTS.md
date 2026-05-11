@@ -76,7 +76,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 > Backend の TypeScript 型チェックは `pnpm --filter backend typecheck` (tsgo)。
 > 個別ファイルへの ESLint --fix は `pnpm exec eslint --fix <path>`。
-> **backend テスト (`test` / `test:e2e` / `test:fed`) 実行前に `.config/test.yml` が必要。** 未作成の場合は `ncp .github/misskey/test.yml .config/test.yml` (または `cp .github/misskey/test.yml .config/test.yml`) を実行してから走らせる。各テストスクリプトが内部で `cross-env NODE_ENV=test pnpm compile-config` を呼ぶため、コピー済みであれば追加の compile-config は不要。
+> **backend テスト (`test` / `test:e2e` / `test:fed`) 実行前に `.config/test.yml` が必要** (未作成だとテスト自体が起動しない)。コピー手順と詳細は [.claude/docs/testing.md §Backend 全般の前提](.claude/docs/testing.md#backend-全般の前提-configtestyml) を参照。
 
 ---
 

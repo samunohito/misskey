@@ -84,18 +84,28 @@ pnpm exec eslint --fix <path>
 
 ## Output
 
-各フェーズの pass/fail と件数を集計:
+実行したフェーズの pass/fail と件数を集計する。標準パイプラインは `pnpm lint` (typecheck 内包) と unit test のみなので、デフォルトの出力は以下のようになる:
 
 ```text
 Quality Gate (repo):
 
 Lint:        PASS  (0 errors, 2 warnings)
-Backend tc:  PASS  (0 errors)
-Frontend tc: PASS  (0 errors)
 Backend ut:  PASS  (412/412)
 Frontend ut: PASS  (87/87)
 
 → 完了前の軽量チェック OK。重い e2e / 連合テストは CI 側で実行される。
+```
+
+`#### 詳細を分けて見たい時のみ (optional)` で個別 typecheck (`pnpm --filter backend typecheck` / `pnpm --filter frontend typecheck`) も回した場合のみ、その結果を追加行として表示する:
+
+```text
+Quality Gate (repo):
+
+Lint:        PASS  (0 errors, 2 warnings)
+Backend tc:  PASS  (0 errors)        # optional 実行時のみ
+Frontend tc: PASS  (0 errors)        # optional 実行時のみ
+Backend ut:  PASS  (412/412)
+Frontend ut: PASS  (87/87)
 ```
 
 失敗時は最初に落ちたフェーズで停止して詳細を見せる。
