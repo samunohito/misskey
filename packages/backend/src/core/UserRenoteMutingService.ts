@@ -18,7 +18,7 @@ import { CacheService } from '@/core/CacheService.js';
 export class UserRenoteMutingService {
 	constructor(
 		@inject(DI.renoteMutingsRepository)
-		private renoteMutingsRepository: RenoteMutingsRepository,@inject(delay(() => IdService)) private idService: IdService,@inject(delay(() => CacheService)) private cacheService: CacheService) {
+		private renoteMutingsRepository: RenoteMutingsRepository, @inject(delay(() => IdService)) private idService: IdService, @inject(delay(() => CacheService)) private cacheService: CacheService) {
 	}
 
 	@bindThis

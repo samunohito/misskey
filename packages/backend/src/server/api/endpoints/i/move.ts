@@ -84,7 +84,7 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.meta)
-		private serverSettings: MiMeta,@inject(delay(() => RemoteUserResolveService)) private remoteUserResolveService: RemoteUserResolveService,@inject(delay(() => ApiLoggerService)) private apiLoggerService: ApiLoggerService,@inject(delay(() => AccountMoveService)) private accountMoveService: AccountMoveService,@inject(delay(() => GetterService)) private getterService: GetterService,@inject(delay(() => ApPersonService)) private apPersonService: ApPersonService,@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService) {
+		private serverSettings: MiMeta, @inject(delay(() => RemoteUserResolveService)) private remoteUserResolveService: RemoteUserResolveService, @inject(delay(() => ApiLoggerService)) private apiLoggerService: ApiLoggerService, @inject(delay(() => AccountMoveService)) private accountMoveService: AccountMoveService, @inject(delay(() => GetterService)) private getterService: GetterService, @inject(delay(() => ApPersonService)) private apPersonService: ApPersonService, @inject(delay(() => UserEntityService)) private userEntityService: UserEntityService) {
 		super(meta, paramDef, async (ps, me) => {
 			// check parameter
 			if (!ps.moveToAccount) throw new ApiError(meta.errors.noSuchUser);

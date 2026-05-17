@@ -36,7 +36,7 @@ export class AbuseReportNotificationService implements Disposable {
 		private abuseReportNotificationRecipientRepository: AbuseReportNotificationRecipientRepository,
 
 		@inject(DI.redisForSub)
-		private redisForSub: Redis.Redis,@inject(delay(() => IdService)) private idService: IdService,@inject(delay(() => RoleService)) private roleService: RoleService,@inject(delay(() => SystemWebhookService)) private systemWebhookService: SystemWebhookService,@inject(delay(() => EmailService)) private emailService: EmailService,@inject(delay(() => ModerationLogService)) private moderationLogService: ModerationLogService,@inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService,@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService,@inject(delay(() => DisposableRegistry)) registry: DisposableRegistry) {
+		private redisForSub: Redis.Redis, @inject(delay(() => IdService)) private idService: IdService, @inject(delay(() => RoleService)) private roleService: RoleService, @inject(delay(() => SystemWebhookService)) private systemWebhookService: SystemWebhookService, @inject(delay(() => EmailService)) private emailService: EmailService, @inject(delay(() => ModerationLogService)) private moderationLogService: ModerationLogService, @inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService, @inject(delay(() => UserEntityService)) private userEntityService: UserEntityService, @inject(delay(() => DisposableRegistry)) registry: DisposableRegistry) {
 		registry.register(this);
 		this.redisForSub.on('message', this.onMessage);
 	}

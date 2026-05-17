@@ -53,7 +53,7 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.noteFavoritesRepository)
-		private noteFavoritesRepository: NoteFavoritesRepository,@inject(delay(() => IdService)) private idService: IdService,@inject(delay(() => GetterService)) private getterService: GetterService,@inject(delay(() => AchievementService)) private achievementService: AchievementService) {
+		private noteFavoritesRepository: NoteFavoritesRepository, @inject(delay(() => IdService)) private idService: IdService, @inject(delay(() => GetterService)) private getterService: GetterService, @inject(delay(() => AchievementService)) private achievementService: AchievementService) {
 		super(meta, paramDef, async (ps, me) => {
 			// Get favoritee
 			const note = await this.getterService.getNote(ps.noteId).catch(err => {

@@ -89,7 +89,7 @@ export class SearchService {
 		private meilisearch: Meilisearch | null,
 
 		@inject(DI.notesRepository)
-		private notesRepository: NotesRepository,@inject(delay(() => CacheService)) private cacheService: CacheService,@inject(delay(() => QueryService)) private queryService: QueryService,@inject(delay(() => IdService)) private idService: IdService,@inject(delay(() => LoggerService)) private loggerService: LoggerService) {
+		private notesRepository: NotesRepository, @inject(delay(() => CacheService)) private cacheService: CacheService, @inject(delay(() => QueryService)) private queryService: QueryService, @inject(delay(() => IdService)) private idService: IdService, @inject(delay(() => LoggerService)) private loggerService: LoggerService) {
 		if (meilisearch) {
 			this.meilisearchNoteIndex = meilisearch.index(`${config.meilisearch!.index}---notes`);
 			this.meilisearchNoteIndex.updateSettings({

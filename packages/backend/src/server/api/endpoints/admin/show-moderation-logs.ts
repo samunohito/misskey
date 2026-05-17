@@ -77,7 +77,7 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.moderationLogsRepository)
-		private moderationLogsRepository: ModerationLogsRepository,@inject(delay(() => ModerationLogEntityService)) private moderationLogEntityService: ModerationLogEntityService,@inject(delay(() => QueryService)) private queryService: QueryService) {
+		private moderationLogsRepository: ModerationLogsRepository, @inject(delay(() => ModerationLogEntityService)) private moderationLogEntityService: ModerationLogEntityService, @inject(delay(() => QueryService)) private queryService: QueryService) {
 		super(meta, paramDef, async (ps, me) => {
 			const query = this.queryService.makePaginationQuery(this.moderationLogsRepository.createQueryBuilder('log'), ps.sinceId, ps.untilId, ps.sinceDate, ps.untilDate);
 

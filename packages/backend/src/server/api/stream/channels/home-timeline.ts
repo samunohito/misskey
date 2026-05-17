@@ -23,7 +23,7 @@ export class HomeTimelineChannel extends Channel {
 
 	constructor(
 		@inject(RequestToken)
-		request: ChannelRequest,@inject(delay(() => NoteEntityService)) private noteEntityService: NoteEntityService,@inject(delay(() => NoteStreamingHidingService)) private noteStreamingHidingService: NoteStreamingHidingService) {
+		request: ChannelRequest, @inject(delay(() => NoteEntityService)) private noteEntityService: NoteEntityService, @inject(delay(() => NoteStreamingHidingService)) private noteStreamingHidingService: NoteStreamingHidingService) {
 		super(request);
 		//this.onNote = this.onNote.bind(this);
 	}

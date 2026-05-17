@@ -78,7 +78,7 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.driveFilesRepository)
-		private driveFilesRepository: DriveFilesRepository,@inject(delay(() => PageService)) private pageService: PageService) {
+		private driveFilesRepository: DriveFilesRepository, @inject(delay(() => PageService)) private pageService: PageService) {
 		super(meta, paramDef, async (ps, me) => {
 			try {
 				let eyeCatchingImage: MiDriveFile | null | undefined | string = ps.eyeCatchingImageId;

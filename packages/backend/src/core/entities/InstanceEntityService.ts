@@ -17,7 +17,7 @@ import { MiMeta } from '@/models/_.js';
 export class InstanceEntityService {
 	constructor(
 		@inject(DI.meta)
-		private meta: MiMeta,@inject(delay(() => RoleService)) private roleService: RoleService,@inject(delay(() => UtilityService)) private utilityService: UtilityService) {
+		private meta: MiMeta, @inject(delay(() => RoleService)) private roleService: RoleService, @inject(delay(() => UtilityService)) private utilityService: UtilityService) {
 	}
 
 	@bindThis

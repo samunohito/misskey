@@ -33,7 +33,7 @@ export class UserListChannel extends Channel {
 		private userListMembershipsRepository: UserListMembershipsRepository,
 
 		@inject(RequestToken)
-		request: ChannelRequest,@inject(delay(() => NoteEntityService)) private noteEntityService: NoteEntityService,@inject(delay(() => NoteStreamingHidingService)) private noteStreamingHidingService: NoteStreamingHidingService) {
+		request: ChannelRequest, @inject(delay(() => NoteEntityService)) private noteEntityService: NoteEntityService, @inject(delay(() => NoteStreamingHidingService)) private noteStreamingHidingService: NoteStreamingHidingService) {
 		super(request);
 		//this.updateListUsers = this.updateListUsers.bind(this);
 		//this.onNote = this.onNote.bind(this);

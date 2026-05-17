@@ -32,7 +32,7 @@ export class NotePiningService {
 		private notesRepository: NotesRepository,
 
 		@inject(DI.userNotePiningsRepository)
-		private userNotePiningsRepository: UserNotePiningsRepository,@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService,@inject(delay(() => IdService)) private idService: IdService,@inject(delay(() => RoleService)) private roleService: RoleService,@inject(delay(() => RelayService)) private relayService: RelayService,@inject(delay(() => ApDeliverManagerService)) private apDeliverManagerService: ApDeliverManagerService,@inject(delay(() => ApRendererService)) private apRendererService: ApRendererService) {
+		private userNotePiningsRepository: UserNotePiningsRepository, @inject(delay(() => UserEntityService)) private userEntityService: UserEntityService, @inject(delay(() => IdService)) private idService: IdService, @inject(delay(() => RoleService)) private roleService: RoleService, @inject(delay(() => RelayService)) private relayService: RelayService, @inject(delay(() => ApDeliverManagerService)) private apDeliverManagerService: ApDeliverManagerService, @inject(delay(() => ApRendererService)) private apRendererService: ApRendererService) {
 	}
 
 	/**

@@ -29,7 +29,7 @@ export class ExportBlockingProcessorService {
 		private usersRepository: UsersRepository,
 
 		@inject(DI.blockingsRepository)
-		private blockingsRepository: BlockingsRepository,@inject(delay(() => UtilityService)) private utilityService: UtilityService,@inject(delay(() => NotificationService)) private notificationService: NotificationService,@inject(delay(() => DriveService)) private driveService: DriveService,@inject(delay(() => QueueLoggerService)) private queueLoggerService: QueueLoggerService) {
+		private blockingsRepository: BlockingsRepository, @inject(delay(() => UtilityService)) private utilityService: UtilityService, @inject(delay(() => NotificationService)) private notificationService: NotificationService, @inject(delay(() => DriveService)) private driveService: DriveService, @inject(delay(() => QueueLoggerService)) private queueLoggerService: QueueLoggerService) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('export-blocking');
 	}
 

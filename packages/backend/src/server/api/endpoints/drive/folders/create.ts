@@ -53,7 +53,7 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.driveFoldersRepository)
-		private driveFoldersRepository: DriveFoldersRepository,@inject(delay(() => DriveFolderEntityService)) private driveFolderEntityService: DriveFolderEntityService,@inject(delay(() => IdService)) private idService: IdService,@inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService) {
+		private driveFoldersRepository: DriveFoldersRepository, @inject(delay(() => DriveFolderEntityService)) private driveFolderEntityService: DriveFolderEntityService, @inject(delay(() => IdService)) private idService: IdService, @inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService) {
 		super(meta, paramDef, async (ps, me) => {
 			// If the parent folder is specified
 			let parent = null;

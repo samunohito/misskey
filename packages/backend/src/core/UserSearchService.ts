@@ -33,7 +33,7 @@ export class UserSearchService {
 		private followingsRepository: FollowingsRepository,
 
 		@inject(DI.mutingsRepository)
-		private mutingsRepository: MutingsRepository,@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService) {
+		private mutingsRepository: MutingsRepository, @inject(delay(() => UserEntityService)) private userEntityService: UserEntityService) {
 	}
 
 	/**

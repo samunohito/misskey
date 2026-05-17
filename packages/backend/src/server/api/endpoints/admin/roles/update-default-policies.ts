@@ -31,7 +31,7 @@ export const paramDef = {
 
 @injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
-	constructor(@inject(delay(() => MetaService)) private metaService: MetaService,@inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService,@inject(delay(() => ModerationLogService)) private moderationLogService: ModerationLogService) {
+	constructor(@inject(delay(() => MetaService)) private metaService: MetaService, @inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService, @inject(delay(() => ModerationLogService)) private moderationLogService: ModerationLogService) {
 		super(meta, paramDef, async (ps, me) => {
 			const before = await this.metaService.fetch(true);
 

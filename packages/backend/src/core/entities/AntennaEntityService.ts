@@ -15,7 +15,7 @@ import { IdService } from '@/core/IdService.js';
 export class AntennaEntityService {
 	constructor(
 		@inject(DI.antennasRepository)
-		private antennasRepository: AntennasRepository,@inject(delay(() => IdService)) private idService: IdService) {
+		private antennasRepository: AntennasRepository, @inject(delay(() => IdService)) private idService: IdService) {
 	}
 
 	@bindThis

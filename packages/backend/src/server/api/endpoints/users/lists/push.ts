@@ -80,7 +80,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private userListMembershipsRepository: UserListMembershipsRepository,
 
 		@inject(DI.blockingsRepository)
-		private blockingsRepository: BlockingsRepository,@inject(delay(() => GetterService)) private getterService: GetterService,@inject(delay(() => UserListService)) private userListService: UserListService) {
+		private blockingsRepository: BlockingsRepository, @inject(delay(() => GetterService)) private getterService: GetterService, @inject(delay(() => UserListService)) private userListService: UserListService) {
 		super(meta, paramDef, async (ps, me) => {
 			// Fetch the list
 			const userList = await this.userListsRepository.findOneBy({

@@ -57,7 +57,7 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.noteReactionsRepository)
-		private noteReactionsRepository: NoteReactionsRepository,@inject(delay(() => NoteReactionEntityService)) private noteReactionEntityService: NoteReactionEntityService,@inject(delay(() => QueryService)) private queryService: QueryService) {
+		private noteReactionsRepository: NoteReactionsRepository, @inject(delay(() => NoteReactionEntityService)) private noteReactionEntityService: NoteReactionEntityService, @inject(delay(() => QueryService)) private queryService: QueryService) {
 		super(meta, paramDef, async (ps, me) => {
 			const query = this.queryService.makePaginationQuery(this.noteReactionsRepository.createQueryBuilder('reaction'), ps.sinceId, ps.untilId, ps.sinceDate, ps.untilDate)
 				.andWhere('reaction.noteId = :noteId', { noteId: ps.noteId })

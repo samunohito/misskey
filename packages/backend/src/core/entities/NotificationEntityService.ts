@@ -40,14 +40,13 @@ export class NotificationEntityService {
 		private usersRepository: UsersRepository,
 
 		@inject(DI.followRequestsRepository)
-		private followRequestsRepository: FollowRequestsRepository,@inject(delay(() => CacheService)) private cacheService: CacheService,
+		private followRequestsRepository: FollowRequestsRepository, @inject(delay(() => CacheService)) private cacheService: CacheService,
 		@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService,
 		@inject(delay(() => NoteEntityService)) private noteEntityService: NoteEntityService,
 		@inject(delay(() => RoleEntityService)) private roleEntityService: RoleEntityService,
 		@inject(delay(() => ChatEntityService)) private chatEntityService: ChatEntityService,
 	) {
 	}
-
 
 	/**
 	 * 通知をパックする共通処理

@@ -38,7 +38,7 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.pagesRepository)
-		private pagesRepository: PagesRepository,@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService,@inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService) {
+		private pagesRepository: PagesRepository, @inject(delay(() => UserEntityService)) private userEntityService: UserEntityService, @inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService) {
 		super(meta, paramDef, async (ps, me) => {
 			const page = await this.pagesRepository.findOneBy({ id: ps.pageId });
 			if (page == null) {

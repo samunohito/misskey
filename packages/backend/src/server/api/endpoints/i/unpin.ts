@@ -41,7 +41,7 @@ export const paramDef = {
 
 @injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
-	constructor(@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService,@inject(delay(() => NotePiningService)) private notePiningService: NotePiningService) {
+	constructor(@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService, @inject(delay(() => NotePiningService)) private notePiningService: NotePiningService) {
 		super(meta, paramDef, async (ps, me) => {
 			await this.notePiningService.removePinned(me, ps.noteId).catch(err => {
 				if (err.id === 'b302d4cf-c050-400a-bbb3-be208681f40c') throw new ApiError(meta.errors.noSuchNote);

@@ -19,7 +19,7 @@ export class CleanRemoteFilesProcessorService {
 
 	constructor(
 		@inject(DI.driveFilesRepository)
-		private driveFilesRepository: DriveFilesRepository,@inject(delay(() => DriveService)) private driveService: DriveService,@inject(delay(() => QueueLoggerService)) private queueLoggerService: QueueLoggerService) {
+		private driveFilesRepository: DriveFilesRepository, @inject(delay(() => DriveService)) private driveService: DriveService, @inject(delay(() => QueueLoggerService)) private queueLoggerService: QueueLoggerService) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('clean-remote-files');
 	}
 

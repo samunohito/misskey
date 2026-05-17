@@ -22,7 +22,7 @@ export class ReversiGameChannel extends Channel {
 
 	constructor(
 		@inject(RequestToken)
-		request: ChannelRequest,@inject(delay(() => ReversiService)) private reversiService: ReversiService,@inject(delay(() => ReversiGameEntityService)) private reversiGameEntityService: ReversiGameEntityService) {
+		request: ChannelRequest, @inject(delay(() => ReversiService)) private reversiService: ReversiService, @inject(delay(() => ReversiGameEntityService)) private reversiGameEntityService: ReversiGameEntityService) {
 		super(request);
 	}
 

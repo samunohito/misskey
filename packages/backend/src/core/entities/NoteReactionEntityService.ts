@@ -31,7 +31,6 @@ export class NoteReactionEntityService {
 	) {
 	}
 
-
 	@bindThis
 	public async pack(
 		src: MiNoteReaction['id'] | MiNoteReaction,

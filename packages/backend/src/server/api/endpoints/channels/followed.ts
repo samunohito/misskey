@@ -44,7 +44,7 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.channelFollowingsRepository)
-		private channelFollowingsRepository: ChannelFollowingsRepository,@inject(delay(() => ChannelEntityService)) private channelEntityService: ChannelEntityService,@inject(delay(() => QueryService)) private queryService: QueryService) {
+		private channelFollowingsRepository: ChannelFollowingsRepository, @inject(delay(() => ChannelEntityService)) private channelEntityService: ChannelEntityService, @inject(delay(() => QueryService)) private queryService: QueryService) {
 		super(meta, paramDef, async (ps, me) => {
 			const query = this.queryService
 				.makePaginationQuery(

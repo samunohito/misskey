@@ -216,7 +216,7 @@ export const paramDef = {
 
 @injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
-	constructor(@inject(delay(() => NoteEntityService)) private noteEntityService: NoteEntityService,@inject(delay(() => NoteCreateService)) private noteCreateService: NoteCreateService) {
+	constructor(@inject(delay(() => NoteEntityService)) private noteEntityService: NoteEntityService, @inject(delay(() => NoteCreateService)) private noteCreateService: NoteCreateService) {
 		super(meta, paramDef, async (ps, me) => {
 			try {
 				const note = await this.noteCreateService.fetchAndCreate(me, {

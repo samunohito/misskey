@@ -37,7 +37,7 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.antennasRepository)
-		private antennasRepository: AntennasRepository,@inject(delay(() => AntennaEntityService)) private antennaEntityService: AntennaEntityService) {
+		private antennasRepository: AntennasRepository, @inject(delay(() => AntennaEntityService)) private antennaEntityService: AntennaEntityService) {
 		super(meta, paramDef, async (ps, me) => {
 			const antennas = await this.antennasRepository.findBy({
 				userId: me.id,

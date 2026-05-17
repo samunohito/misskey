@@ -18,7 +18,7 @@ import { UserEntityService } from './UserEntityService.js';
 export class InviteCodeEntityService {
 	constructor(
 		@inject(DI.registrationTicketsRepository)
-		private registrationTicketsRepository: RegistrationTicketsRepository,@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService,@inject(delay(() => IdService)) private idService: IdService) {
+		private registrationTicketsRepository: RegistrationTicketsRepository, @inject(delay(() => UserEntityService)) private userEntityService: UserEntityService, @inject(delay(() => IdService)) private idService: IdService) {
 	}
 
 	@bindThis

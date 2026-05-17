@@ -33,7 +33,7 @@ export class ApQuestionService {
 		private notesRepository: NotesRepository,
 
 		@inject(DI.pollsRepository)
-		private pollsRepository: PollsRepository,@inject(delay(() => ApResolverService)) private apResolverService: ApResolverService,@inject(delay(() => ApLoggerService)) private apLoggerService: ApLoggerService,@inject(delay(() => UtilityService)) private utilityService: UtilityService) {
+		private pollsRepository: PollsRepository, @inject(delay(() => ApResolverService)) private apResolverService: ApResolverService, @inject(delay(() => ApLoggerService)) private apLoggerService: ApLoggerService, @inject(delay(() => UtilityService)) private utilityService: UtilityService) {
 		this.logger = this.apLoggerService.logger;
 	}
 

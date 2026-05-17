@@ -34,7 +34,7 @@ export class ApiServerService {
 		private instancesRepository: InstancesRepository,
 
 		@inject(DI.accessTokensRepository)
-		private accessTokensRepository: AccessTokensRepository,@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService,
+		private accessTokensRepository: AccessTokensRepository, @inject(delay(() => UserEntityService)) private userEntityService: UserEntityService,
 		@inject(ApiCallService) private apiCallService: ApiCallService,
 		@inject(SignupApiService) private signupApiService: SignupApiService,
 		@inject(SigninApiService) private signinApiService: SigninApiService,

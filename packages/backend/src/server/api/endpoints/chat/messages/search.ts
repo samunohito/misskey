@@ -49,7 +49,7 @@ export const paramDef = {
 
 @injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
-	constructor(@inject(delay(() => ChatEntityService)) private chatEntityService: ChatEntityService,@inject(delay(() => ChatService)) private chatService: ChatService) {
+	constructor(@inject(delay(() => ChatEntityService)) private chatEntityService: ChatEntityService, @inject(delay(() => ChatService)) private chatService: ChatService) {
 		super(meta, paramDef, async (ps, me) => {
 			await this.chatService.checkChatAvailability(me.id, 'read');
 

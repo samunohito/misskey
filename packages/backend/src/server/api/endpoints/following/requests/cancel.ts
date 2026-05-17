@@ -49,7 +49,7 @@ export const paramDef = {
 
 @injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
-	constructor(@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService,@inject(delay(() => GetterService)) private getterService: GetterService,@inject(delay(() => UserFollowingService)) private userFollowingService: UserFollowingService) {
+	constructor(@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService, @inject(delay(() => GetterService)) private getterService: GetterService, @inject(delay(() => UserFollowingService)) private userFollowingService: UserFollowingService) {
 		super(meta, paramDef, async (ps, me) => {
 			// Fetch followee
 			const followee = await this.getterService.getUser(ps.userId).catch(err => {

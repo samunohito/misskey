@@ -59,7 +59,7 @@ export const paramDef = {
 
 @injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
-	constructor(@inject(delay(() => NoteEntityService)) private noteEntityService: NoteEntityService,@inject(delay(() => SearchService)) private searchService: SearchService,@inject(delay(() => RoleService)) private roleService: RoleService,@inject(delay(() => IdService)) private idService: IdService) {
+	constructor(@inject(delay(() => NoteEntityService)) private noteEntityService: NoteEntityService, @inject(delay(() => SearchService)) private searchService: SearchService, @inject(delay(() => RoleService)) private roleService: RoleService, @inject(delay(() => IdService)) private idService: IdService) {
 		super(meta, paramDef, async (ps, me) => {
 			const untilId = ps.untilId ?? (ps.untilDate ? this.idService.gen(ps.untilDate!) : undefined);
 			const sinceId = ps.sinceId ?? (ps.sinceDate ? this.idService.gen(ps.sinceDate!) : undefined);

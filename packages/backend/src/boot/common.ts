@@ -16,6 +16,7 @@ const activeContainers: DependencyContainer[] = [];
 
 let shutdownHandlerRegistered = false;
 let shutdownPromise: Promise<void> | null = null;
+
 function ensureShutdownHandler(): void {
 	if (shutdownHandlerRegistered) return;
 	shutdownHandlerRegistered = true;

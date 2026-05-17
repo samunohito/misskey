@@ -55,7 +55,7 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.bubbleGameRecordsRepository)
-		private bubbleGameRecordsRepository: BubbleGameRecordsRepository,@inject(delay(() => IdService)) private idService: IdService) {
+		private bubbleGameRecordsRepository: BubbleGameRecordsRepository, @inject(delay(() => IdService)) private idService: IdService) {
 		super(meta, paramDef, async (ps, me) => {
 			const seedDate = new Date(parseInt(ps.seed, 10));
 			const now = new Date();

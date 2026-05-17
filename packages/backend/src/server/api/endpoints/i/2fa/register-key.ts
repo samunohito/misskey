@@ -57,7 +57,7 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> {
 	constructor(
 		@inject(DI.userProfilesRepository)
-		private userProfilesRepository: UserProfilesRepository,@inject(delay(() => WebAuthnService)) private webAuthnService: WebAuthnService,@inject(delay(() => UserAuthService)) private userAuthService: UserAuthService) {
+		private userProfilesRepository: UserProfilesRepository, @inject(delay(() => WebAuthnService)) private webAuthnService: WebAuthnService, @inject(delay(() => UserAuthService)) private userAuthService: UserAuthService) {
 		super(meta, paramDef, async (ps, me) => {
 			const token = ps.token;
 			const profile = await this.userProfilesRepository.findOne({

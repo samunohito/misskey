@@ -52,7 +52,7 @@ export const paramDef = {
 
 @injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
-	constructor(@inject(delay(() => FeaturedService)) private featuredService: FeaturedService,@inject(delay(() => HashtagService)) private hashtagService: HashtagService) {
+	constructor(@inject(delay(() => FeaturedService)) private featuredService: FeaturedService, @inject(delay(() => HashtagService)) private hashtagService: HashtagService) {
 		super(meta, paramDef, async () => {
 			const ranking = await this.featuredService.getHashtagsRanking(10);
 

@@ -89,7 +89,7 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.meta)
-		private serverSettings: MiMeta,@inject(delay(() => DriveFileEntityService)) private driveFileEntityService: DriveFileEntityService,@inject(delay(() => DriveService)) private driveService: DriveService) {
+		private serverSettings: MiMeta, @inject(delay(() => DriveFileEntityService)) private driveFileEntityService: DriveFileEntityService, @inject(delay(() => DriveService)) private driveService: DriveService) {
 		super(meta, paramDef, async (ps, me, _, file, cleanup, ip, headers) => {
 			// Get 'name' parameter
 			let name = ps.name ?? file!.name ?? null;

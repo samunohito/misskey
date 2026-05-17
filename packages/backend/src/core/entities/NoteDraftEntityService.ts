@@ -32,7 +32,6 @@ export class NoteDraftEntityService {
 	) {
 	}
 
-
 	@bindThis
 	public async packAttachedFiles(fileIds: MiNote['fileIds'], packedFiles: Map<MiNote['fileIds'][number], Packed<'DriveFile'> | null>): Promise<Packed<'DriveFile'>[]> {
 		const missingIds = [];

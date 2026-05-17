@@ -17,7 +17,7 @@ import { UserEntityService } from './UserEntityService.js';
 export class FollowRequestEntityService {
 	constructor(
 		@inject(DI.followRequestsRepository)
-		private followRequestsRepository: FollowRequestsRepository,@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService) {
+		private followRequestsRepository: FollowRequestsRepository, @inject(delay(() => UserEntityService)) private userEntityService: UserEntityService) {
 	}
 
 	@bindThis

@@ -37,7 +37,7 @@ export class QueryService {
 		private renoteMutingsRepository: RenoteMutingsRepository,
 
 		@inject(DI.meta)
-		private meta: MiMeta,@inject(delay(() => IdService)) private idService: IdService) {
+		private meta: MiMeta, @inject(delay(() => IdService)) private idService: IdService) {
 	}
 
 	public makePaginationQuery<T extends ObjectLiteral>(

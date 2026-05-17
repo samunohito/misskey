@@ -33,7 +33,7 @@ export class UserListService implements Disposable {
 		private redisForSub: Redis.Redis,
 
 		@inject(DI.userListMembershipsRepository)
-		private userListMembershipsRepository: UserListMembershipsRepository,@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService,@inject(delay(() => IdService)) private idService: IdService,@inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService,@inject(delay(() => QueueService)) private queueService: QueueService,@inject(delay(() => SystemAccountService)) private systemAccountService: SystemAccountService,
+		private userListMembershipsRepository: UserListMembershipsRepository, @inject(delay(() => UserEntityService)) private userEntityService: UserEntityService, @inject(delay(() => IdService)) private idService: IdService, @inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService, @inject(delay(() => QueueService)) private queueService: QueueService, @inject(delay(() => SystemAccountService)) private systemAccountService: SystemAccountService,
 		@inject(delay(() => RoleService)) private roleService: RoleService,
 		@inject(delay(() => DisposableRegistry)) registry: DisposableRegistry,
 	) {
@@ -48,7 +48,6 @@ export class UserListService implements Disposable {
 
 		this.redisForSub.on('message', this.onMessage);
 	}
-
 
 	@bindThis
 	private async onMessage(_: string, data: string): Promise<void> {

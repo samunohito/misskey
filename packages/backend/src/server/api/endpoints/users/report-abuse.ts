@@ -50,7 +50,7 @@ export const paramDef = {
 
 @injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
-	constructor(@inject(delay(() => GetterService)) private getterService: GetterService,@inject(delay(() => RoleService)) private roleService: RoleService,@inject(delay(() => AbuseReportService)) private abuseReportService: AbuseReportService) {
+	constructor(@inject(delay(() => GetterService)) private getterService: GetterService, @inject(delay(() => RoleService)) private roleService: RoleService, @inject(delay(() => AbuseReportService)) private abuseReportService: AbuseReportService) {
 		super(meta, paramDef, async (ps, me) => {
 			// Lookup user
 			const targetUser = await this.getterService.getUser(ps.userId).catch(err => {

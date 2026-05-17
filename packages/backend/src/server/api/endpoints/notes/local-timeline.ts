@@ -70,7 +70,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private serverSettings: MiMeta,
 
 		@inject(DI.notesRepository)
-		private notesRepository: NotesRepository,@inject(delay(() => NoteEntityService)) private noteEntityService: NoteEntityService,@inject(delay(() => RoleService)) private roleService: RoleService,@inject(delay(() => ActiveUsersChart)) private activeUsersChart: ActiveUsersChart,@inject(delay(() => IdService)) private idService: IdService,@inject(delay(() => FanoutTimelineEndpointService)) private fanoutTimelineEndpointService: FanoutTimelineEndpointService,@inject(delay(() => QueryService)) private queryService: QueryService,@inject(delay(() => ChannelMutingService)) private channelMutingService: ChannelMutingService) {
+		private notesRepository: NotesRepository, @inject(delay(() => NoteEntityService)) private noteEntityService: NoteEntityService, @inject(delay(() => RoleService)) private roleService: RoleService, @inject(delay(() => ActiveUsersChart)) private activeUsersChart: ActiveUsersChart, @inject(delay(() => IdService)) private idService: IdService, @inject(delay(() => FanoutTimelineEndpointService)) private fanoutTimelineEndpointService: FanoutTimelineEndpointService, @inject(delay(() => QueryService)) private queryService: QueryService, @inject(delay(() => ChannelMutingService)) private channelMutingService: ChannelMutingService) {
 		super(meta, paramDef, async (ps, me) => {
 			const untilId = ps.untilId ?? (ps.untilDate ? this.idService.gen(ps.untilDate!) : null);
 			const sinceId = ps.sinceId ?? (ps.sinceDate ? this.idService.gen(ps.sinceDate!) : null);

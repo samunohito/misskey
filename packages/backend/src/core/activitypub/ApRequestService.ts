@@ -147,7 +147,7 @@ export class ApRequestService {
 
 	constructor(
 		@inject(DI.config)
-		private config: Config,@inject(delay(() => UserKeypairService)) private userKeypairService: UserKeypairService,@inject(delay(() => HttpRequestService)) private httpRequestService: HttpRequestService,@inject(delay(() => LoggerService)) private loggerService: LoggerService,@inject(delay(() => UtilityService)) private utilityService: UtilityService) {
+		private config: Config, @inject(delay(() => UserKeypairService)) private userKeypairService: UserKeypairService, @inject(delay(() => HttpRequestService)) private httpRequestService: HttpRequestService, @inject(delay(() => LoggerService)) private loggerService: LoggerService, @inject(delay(() => UtilityService)) private utilityService: UtilityService) {
 		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 		this.logger = this.loggerService?.getLogger('ap-request'); // なぜか TypeError: Cannot read properties of undefined (reading 'getLogger') と言われる
 	}

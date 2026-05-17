@@ -46,7 +46,7 @@ export const paramDef = {
 
 @injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
-	constructor(@inject(delay(() => SystemWebhookService)) private systemWebhookService: SystemWebhookService,@inject(delay(() => SystemWebhookEntityService)) private systemWebhookEntityService: SystemWebhookEntityService) {
+	constructor(@inject(delay(() => SystemWebhookService)) private systemWebhookService: SystemWebhookService, @inject(delay(() => SystemWebhookEntityService)) private systemWebhookEntityService: SystemWebhookEntityService) {
 		super(meta, paramDef, async (ps) => {
 			const webhooks = await this.systemWebhookService.fetchSystemWebhooks({ ids: [ps.id] });
 			if (webhooks.length === 0) {

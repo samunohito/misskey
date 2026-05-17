@@ -44,7 +44,7 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.announcementsRepository)
-		private announcementsRepository: AnnouncementsRepository,@inject(delay(() => QueryService)) private queryService: QueryService,@inject(delay(() => AnnouncementEntityService)) private announcementEntityService: AnnouncementEntityService) {
+		private announcementsRepository: AnnouncementsRepository, @inject(delay(() => QueryService)) private queryService: QueryService, @inject(delay(() => AnnouncementEntityService)) private announcementEntityService: AnnouncementEntityService) {
 		super(meta, paramDef, async (ps, me) => {
 			const query = this.queryService.makePaginationQuery(this.announcementsRepository.createQueryBuilder('announcement'), ps.sinceId, ps.untilId, ps.sinceDate, ps.untilDate)
 				.andWhere('announcement.isActive = :isActive', { isActive: ps.isActive })

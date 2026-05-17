@@ -15,7 +15,7 @@ import type { ObjectStorageFileJobData } from '../types.js';
 export class DeleteFileProcessorService {
 	private logger: Logger;
 
-	constructor(@inject(delay(() => DriveService)) private driveService: DriveService,@inject(delay(() => QueueLoggerService)) private queueLoggerService: QueueLoggerService) {
+	constructor(@inject(delay(() => DriveService)) private driveService: DriveService, @inject(delay(() => QueueLoggerService)) private queueLoggerService: QueueLoggerService) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('delete-file');
 	}
 

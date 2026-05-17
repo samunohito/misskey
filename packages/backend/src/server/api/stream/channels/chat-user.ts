@@ -20,7 +20,7 @@ export class ChatUserChannel extends Channel {
 
 	constructor(
 		@inject(RequestToken)
-		request: ChannelRequest,@inject(delay(() => ChatService)) private chatService: ChatService) {
+		request: ChannelRequest, @inject(delay(() => ChatService)) private chatService: ChatService) {
 		super(request);
 	}
 

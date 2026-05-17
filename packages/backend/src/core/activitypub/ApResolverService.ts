@@ -59,7 +59,7 @@ export class Resolver {
 		private noteReactionsRepository: NoteReactionsRepository,
 
 		@inject(DI.followRequestsRepository)
-		private followRequestsRepository: FollowRequestsRepository,@inject(delay(() => UtilityService)) private utilityService: UtilityService,@inject(delay(() => SystemAccountService)) private systemAccountService: SystemAccountService,@inject(delay(() => ApRequestService)) private apRequestService: ApRequestService,@inject(delay(() => HttpRequestService)) private httpRequestService: HttpRequestService,@inject(delay(() => ApRendererService)) private apRendererService: ApRendererService,@inject(delay(() => ApDbResolverService)) private apDbResolverService: ApDbResolverService,@inject(delay(() => LoggerService)) private loggerService: LoggerService) {
+		private followRequestsRepository: FollowRequestsRepository, @inject(delay(() => UtilityService)) private utilityService: UtilityService, @inject(delay(() => SystemAccountService)) private systemAccountService: SystemAccountService, @inject(delay(() => ApRequestService)) private apRequestService: ApRequestService, @inject(delay(() => HttpRequestService)) private httpRequestService: HttpRequestService, @inject(delay(() => ApRendererService)) private apRendererService: ApRendererService, @inject(delay(() => ApDbResolverService)) private apDbResolverService: ApDbResolverService, @inject(delay(() => LoggerService)) private loggerService: LoggerService) {
 		this.history = new Set();
 		this.logger = this.loggerService.getLogger('ap-resolve');
 	}

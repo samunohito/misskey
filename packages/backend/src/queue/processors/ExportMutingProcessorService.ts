@@ -29,7 +29,7 @@ export class ExportMutingProcessorService {
 		private usersRepository: UsersRepository,
 
 		@inject(DI.mutingsRepository)
-		private mutingsRepository: MutingsRepository,@inject(delay(() => UtilityService)) private utilityService: UtilityService,@inject(delay(() => DriveService)) private driveService: DriveService,@inject(delay(() => QueueLoggerService)) private queueLoggerService: QueueLoggerService,@inject(delay(() => NotificationService)) private notificationService: NotificationService) {
+		private mutingsRepository: MutingsRepository, @inject(delay(() => UtilityService)) private utilityService: UtilityService, @inject(delay(() => DriveService)) private driveService: DriveService, @inject(delay(() => QueueLoggerService)) private queueLoggerService: QueueLoggerService, @inject(delay(() => NotificationService)) private notificationService: NotificationService) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('export-muting');
 	}
 

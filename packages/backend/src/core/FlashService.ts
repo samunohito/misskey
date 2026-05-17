@@ -20,7 +20,7 @@ export class FlashService {
 		private flashRepository: FlashsRepository,
 
 		@inject(DI.flashLikesRepository)
-		private flashLikesRepository: FlashLikesRepository,@inject(delay(() => QueryService)) private queryService: QueryService) {
+		private flashLikesRepository: FlashLikesRepository, @inject(delay(() => QueryService)) private queryService: QueryService) {
 	}
 
 	/**

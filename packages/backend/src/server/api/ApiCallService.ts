@@ -46,7 +46,7 @@ export class ApiCallService implements Disposable {
 		private config: Config,
 
 		@inject(DI.userIpsRepository)
-		private userIpsRepository: UserIpsRepository,@inject(delay(() => AuthenticateService)) private authenticateService: AuthenticateService,@inject(delay(() => RateLimiterService)) private rateLimiterService: RateLimiterService,@inject(delay(() => RoleService)) private roleService: RoleService,@inject(delay(() => ApiLoggerService)) private apiLoggerService: ApiLoggerService,@inject(delay(() => DisposableRegistry)) registry: DisposableRegistry) {
+		private userIpsRepository: UserIpsRepository, @inject(delay(() => AuthenticateService)) private authenticateService: AuthenticateService, @inject(delay(() => RateLimiterService)) private rateLimiterService: RateLimiterService, @inject(delay(() => RoleService)) private roleService: RoleService, @inject(delay(() => ApiLoggerService)) private apiLoggerService: ApiLoggerService, @inject(delay(() => DisposableRegistry)) registry: DisposableRegistry) {
 		registry.register(this);
 		this.logger = this.apiLoggerService.logger;
 		this.userIpHistories = new Map<MiUser['id'], Set<string>>();

@@ -60,7 +60,7 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.emojisRepository)
-		private emojisRepository: EmojisRepository,@inject(delay(() => EmojiEntityService)) private emojiEntityService: EmojiEntityService,@inject(delay(() => CustomEmojiService)) private customEmojiService: CustomEmojiService,@inject(delay(() => DriveService)) private driveService: DriveService) {
+		private emojisRepository: EmojisRepository, @inject(delay(() => EmojiEntityService)) private emojiEntityService: EmojiEntityService, @inject(delay(() => CustomEmojiService)) private customEmojiService: CustomEmojiService, @inject(delay(() => DriveService)) private driveService: DriveService) {
 		super(meta, paramDef, async (ps, me) => {
 			const emoji = await this.emojisRepository.findOneBy({ id: ps.emojiId });
 			if (emoji == null) {

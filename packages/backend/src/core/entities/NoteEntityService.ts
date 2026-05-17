@@ -21,6 +21,7 @@ import { CustomEmojiService } from '../CustomEmojiService.js';
 import { ReactionService } from '../ReactionService.js';
 import { UserEntityService } from './UserEntityService.js';
 import { DriveFileEntityService } from './DriveFileEntityService.js';
+
 // is-renote.tsとよしなにリンク
 function isPureRenote(note: MiNote): note is MiNote & { renoteId: MiNote['id']; renote: MiNote } {
 	return (
@@ -100,7 +101,6 @@ export class NoteEntityService {
 		@inject(delay(() => CacheService)) private cacheService: CacheService,
 	) {
 	}
-
 
 	@bindThis
 	private treatVisibility(packedNote: Packed<'Note'>): Packed<'Note'>['visibility'] {

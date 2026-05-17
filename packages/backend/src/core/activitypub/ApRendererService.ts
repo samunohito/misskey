@@ -57,7 +57,7 @@ export class ApRendererService {
 		private driveFilesRepository: DriveFilesRepository,
 
 		@inject(DI.pollsRepository)
-		private pollsRepository: PollsRepository,@inject(delay(() => CustomEmojiService)) private customEmojiService: CustomEmojiService,@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService,@inject(delay(() => DriveFileEntityService)) private driveFileEntityService: DriveFileEntityService,@inject(delay(() => JsonLdService)) private jsonLdService: JsonLdService,@inject(delay(() => UserKeypairService)) private userKeypairService: UserKeypairService,@inject(delay(() => ApMfmService)) private apMfmService: ApMfmService,@inject(delay(() => MfmService)) private mfmService: MfmService,@inject(delay(() => IdService)) private idService: IdService,@inject(delay(() => UtilityService)) private utilityService: UtilityService) {
+		private pollsRepository: PollsRepository, @inject(delay(() => CustomEmojiService)) private customEmojiService: CustomEmojiService, @inject(delay(() => UserEntityService)) private userEntityService: UserEntityService, @inject(delay(() => DriveFileEntityService)) private driveFileEntityService: DriveFileEntityService, @inject(delay(() => JsonLdService)) private jsonLdService: JsonLdService, @inject(delay(() => UserKeypairService)) private userKeypairService: UserKeypairService, @inject(delay(() => ApMfmService)) private apMfmService: ApMfmService, @inject(delay(() => MfmService)) private mfmService: MfmService, @inject(delay(() => IdService)) private idService: IdService, @inject(delay(() => UtilityService)) private utilityService: UtilityService) {
 	}
 
 	@bindThis

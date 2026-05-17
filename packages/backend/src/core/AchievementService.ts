@@ -15,7 +15,7 @@ import { ACHIEVEMENT_TYPES } from '@/models/UserProfile.js';
 export class AchievementService {
 	constructor(
 		@inject(DI.userProfilesRepository)
-		private userProfilesRepository: UserProfilesRepository,@inject(delay(() => NotificationService)) private notificationService: NotificationService) {
+		private userProfilesRepository: UserProfilesRepository, @inject(delay(() => NotificationService)) private notificationService: NotificationService) {
 	}
 
 	@bindThis

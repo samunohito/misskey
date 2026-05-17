@@ -48,7 +48,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private usersRepository: UsersRepository,
 
 		@inject(DI.followingsRepository)
-		private followingsRepository: FollowingsRepository,@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService,@inject(delay(() => QueryService)) private queryService: QueryService) {
+		private followingsRepository: FollowingsRepository, @inject(delay(() => UserEntityService)) private userEntityService: UserEntityService, @inject(delay(() => QueryService)) private queryService: QueryService) {
 		super(meta, paramDef, async (ps, me) => {
 			const query = this.usersRepository.createQueryBuilder('user')
 				.where('user.isLocked = FALSE')

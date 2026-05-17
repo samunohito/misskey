@@ -34,7 +34,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private usersRepository: UsersRepository,
 
 		@inject(DI.userProfilesRepository)
-		private userProfilesRepository: UserProfilesRepository,@inject(delay(() => UserAuthService)) private userAuthService: UserAuthService,@inject(delay(() => DeleteAccountService)) private deleteAccountService: DeleteAccountService) {
+		private userProfilesRepository: UserProfilesRepository, @inject(delay(() => UserAuthService)) private userAuthService: UserAuthService, @inject(delay(() => DeleteAccountService)) private deleteAccountService: DeleteAccountService) {
 		super(meta, paramDef, async (ps, me) => {
 			const token = ps.token;
 			const profile = await this.userProfilesRepository.findOneByOrFail({ userId: me.id });

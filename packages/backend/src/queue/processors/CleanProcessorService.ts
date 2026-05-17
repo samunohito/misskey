@@ -30,7 +30,7 @@ export class CleanProcessorService {
 		private antennasRepository: AntennasRepository,
 
 		@inject(DI.roleAssignmentsRepository)
-		private roleAssignmentsRepository: RoleAssignmentsRepository,@inject(delay(() => QueueLoggerService)) private queueLoggerService: QueueLoggerService,@inject(delay(() => ReversiService)) private reversiService: ReversiService,@inject(delay(() => IdService)) private idService: IdService) {
+		private roleAssignmentsRepository: RoleAssignmentsRepository, @inject(delay(() => QueueLoggerService)) private queueLoggerService: QueueLoggerService, @inject(delay(() => ReversiService)) private reversiService: ReversiService, @inject(delay(() => IdService)) private idService: IdService) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('clean');
 	}
 

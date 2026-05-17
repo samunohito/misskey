@@ -59,7 +59,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private galleryPostsRepository: GalleryPostsRepository,
 
 		@inject(DI.driveFilesRepository)
-		private driveFilesRepository: DriveFilesRepository,@inject(delay(() => GalleryPostEntityService)) private galleryPostEntityService: GalleryPostEntityService,@inject(delay(() => IdService)) private idService: IdService) {
+		private driveFilesRepository: DriveFilesRepository, @inject(delay(() => GalleryPostEntityService)) private galleryPostEntityService: GalleryPostEntityService, @inject(delay(() => IdService)) private idService: IdService) {
 		super(meta, paramDef, async (ps, me) => {
 			const files = (await Promise.all(ps.fileIds.map(fileId =>
 				this.driveFilesRepository.findOneBy({

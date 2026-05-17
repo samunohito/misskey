@@ -46,7 +46,7 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.userSecurityKeysRepository)
-		private userSecurityKeysRepository: UserSecurityKeysRepository,@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService,@inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService) {
+		private userSecurityKeysRepository: UserSecurityKeysRepository, @inject(delay(() => UserEntityService)) private userEntityService: UserEntityService, @inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService) {
 		super(meta, paramDef, async (ps, me) => {
 			const key = await this.userSecurityKeysRepository.findOneBy({
 				id: ps.credentialId,

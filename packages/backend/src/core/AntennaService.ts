@@ -36,7 +36,7 @@ export class AntennaService implements Disposable {
 		private antennasRepository: AntennasRepository,
 
 		@inject(DI.userListMembershipsRepository)
-		private userListMembershipsRepository: UserListMembershipsRepository,@inject(delay(() => CacheService)) private cacheService: CacheService,@inject(delay(() => UtilityService)) private utilityService: UtilityService,@inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService,@inject(delay(() => FanoutTimelineService)) private fanoutTimelineService: FanoutTimelineService,@inject(delay(() => DisposableRegistry)) registry: DisposableRegistry) {
+		private userListMembershipsRepository: UserListMembershipsRepository, @inject(delay(() => CacheService)) private cacheService: CacheService, @inject(delay(() => UtilityService)) private utilityService: UtilityService, @inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService, @inject(delay(() => FanoutTimelineService)) private fanoutTimelineService: FanoutTimelineService, @inject(delay(() => DisposableRegistry)) registry: DisposableRegistry) {
 		registry.register(this);
 		this.antennasFetched = false;
 		this.antennas = [];

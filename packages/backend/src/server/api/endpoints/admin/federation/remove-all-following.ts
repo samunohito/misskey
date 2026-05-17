@@ -32,7 +32,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private usersRepository: UsersRepository,
 
 		@inject(DI.notesRepository)
-		private followingsRepository: FollowingsRepository,@inject(delay(() => QueueService)) private queueService: QueueService) {
+		private followingsRepository: FollowingsRepository, @inject(delay(() => QueueService)) private queueService: QueueService) {
 		super(meta, paramDef, async (ps, me) => {
 			const followings = await this.followingsRepository.findBy({
 				followerHost: ps.host,

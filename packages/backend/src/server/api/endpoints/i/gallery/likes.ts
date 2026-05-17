@@ -55,7 +55,7 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.galleryLikesRepository)
-		private galleryLikesRepository: GalleryLikesRepository,@inject(delay(() => GalleryLikeEntityService)) private galleryLikeEntityService: GalleryLikeEntityService,@inject(delay(() => QueryService)) private queryService: QueryService) {
+		private galleryLikesRepository: GalleryLikesRepository, @inject(delay(() => GalleryLikeEntityService)) private galleryLikeEntityService: GalleryLikeEntityService, @inject(delay(() => QueryService)) private queryService: QueryService) {
 		super(meta, paramDef, async (ps, me) => {
 			const query = this.queryService.makePaginationQuery(this.galleryLikesRepository.createQueryBuilder('like'), ps.sinceId, ps.untilId, ps.sinceDate, ps.untilDate)
 				.andWhere('like.userId = :meId', { meId: me.id })

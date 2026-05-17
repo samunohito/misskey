@@ -16,7 +16,7 @@ import { SystemWebhookEntityService } from '@/core/entities/SystemWebhookEntityS
 export class AbuseReportNotificationRecipientEntityService {
 	constructor(
 		@inject(DI.abuseReportNotificationRecipientRepository)
-		private abuseReportNotificationRecipientRepository: AbuseReportNotificationRecipientRepository,@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService,@inject(delay(() => SystemWebhookEntityService)) private systemWebhookEntityService: SystemWebhookEntityService) {
+		private abuseReportNotificationRecipientRepository: AbuseReportNotificationRecipientRepository, @inject(delay(() => UserEntityService)) private userEntityService: UserEntityService, @inject(delay(() => SystemWebhookEntityService)) private systemWebhookEntityService: SystemWebhookEntityService) {
 	}
 
 	@bindThis

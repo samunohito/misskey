@@ -24,7 +24,7 @@ export class ClipEntityService {
 		private clipNotesRepository: ClipNotesRepository,
 
 		@inject(DI.clipFavoritesRepository)
-		private clipFavoritesRepository: ClipFavoritesRepository,@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService,@inject(delay(() => IdService)) private idService: IdService) {
+		private clipFavoritesRepository: ClipFavoritesRepository, @inject(delay(() => UserEntityService)) private userEntityService: UserEntityService, @inject(delay(() => IdService)) private idService: IdService) {
 	}
 
 	@bindThis

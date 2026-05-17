@@ -27,7 +27,7 @@ export class AntennaChannel extends Channel {
 		request: ChannelRequest,
 
 		@inject(DI.antennasRepository)
-		private antennasReposiotry: AntennasRepository,@inject(delay(() => NoteEntityService)) private noteEntityService: NoteEntityService,@inject(delay(() => NoteStreamingHidingService)) private noteStreamingHidingService: NoteStreamingHidingService) {
+		private antennasReposiotry: AntennasRepository, @inject(delay(() => NoteEntityService)) private noteEntityService: NoteEntityService, @inject(delay(() => NoteStreamingHidingService)) private noteStreamingHidingService: NoteStreamingHidingService) {
 		super(request);
 		//this.onEvent = this.onEvent.bind(this);
 	}

@@ -58,7 +58,7 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.renoteMutingsRepository)
-		private renoteMutingsRepository: RenoteMutingsRepository,@inject(delay(() => GetterService)) private getterService: GetterService,@inject(delay(() => UserRenoteMutingService)) private userRenoteMutingService: UserRenoteMutingService) {
+		private renoteMutingsRepository: RenoteMutingsRepository, @inject(delay(() => GetterService)) private getterService: GetterService, @inject(delay(() => UserRenoteMutingService)) private userRenoteMutingService: UserRenoteMutingService) {
 		super(meta, paramDef, async (ps, me) => {
 			const muter = me;
 

@@ -64,7 +64,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 		private userProfilesRepository: UserProfilesRepository,
 
 		@inject(DI.userSecurityKeysRepository)
-		private userSecurityKeysRepository: UserSecurityKeysRepository,@inject(delay(() => WebAuthnService)) private webAuthnService: WebAuthnService,@inject(delay(() => UserAuthService)) private userAuthService: UserAuthService,@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService,@inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService) {
+		private userSecurityKeysRepository: UserSecurityKeysRepository, @inject(delay(() => WebAuthnService)) private webAuthnService: WebAuthnService, @inject(delay(() => UserAuthService)) private userAuthService: UserAuthService, @inject(delay(() => UserEntityService)) private userEntityService: UserEntityService, @inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService) {
 		super(meta, paramDef, async (ps, me) => {
 			const token = ps.token;
 			const profile = await this.userProfilesRepository.findOneByOrFail({ userId: me.id });

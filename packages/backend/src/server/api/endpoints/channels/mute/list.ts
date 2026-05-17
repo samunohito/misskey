@@ -35,7 +35,7 @@ export const paramDef = {
 
 @injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
-	constructor(@inject(delay(() => ChannelMutingService)) private channelMutingService: ChannelMutingService,@inject(delay(() => ChannelEntityService)) private channelEntityService: ChannelEntityService) {
+	constructor(@inject(delay(() => ChannelMutingService)) private channelMutingService: ChannelMutingService, @inject(delay(() => ChannelEntityService)) private channelEntityService: ChannelEntityService) {
 		super(meta, paramDef, async (ps, me) => {
 			const mutings = await this.channelMutingService.list({
 				requestUserId: me.id,

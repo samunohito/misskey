@@ -16,7 +16,7 @@ import type * as Bull from 'bullmq';
 export class ResyncChartsProcessorService {
 	private logger: Logger;
 
-	constructor(@inject(delay(() => NotesChart)) private notesChart: NotesChart,@inject(delay(() => UsersChart)) private usersChart: UsersChart,@inject(delay(() => DriveChart)) private driveChart: DriveChart,@inject(delay(() => QueueLoggerService)) private queueLoggerService: QueueLoggerService) {
+	constructor(@inject(delay(() => NotesChart)) private notesChart: NotesChart, @inject(delay(() => UsersChart)) private usersChart: UsersChart, @inject(delay(() => DriveChart)) private driveChart: DriveChart, @inject(delay(() => QueueLoggerService)) private queueLoggerService: QueueLoggerService) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('resync-charts');
 	}
 

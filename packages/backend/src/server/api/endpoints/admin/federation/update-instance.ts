@@ -33,7 +33,7 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.instancesRepository)
-		private instancesRepository: InstancesRepository,@inject(delay(() => UtilityService)) private utilityService: UtilityService,@inject(delay(() => FederatedInstanceService)) private federatedInstanceService: FederatedInstanceService,@inject(delay(() => ModerationLogService)) private moderationLogService: ModerationLogService) {
+		private instancesRepository: InstancesRepository, @inject(delay(() => UtilityService)) private utilityService: UtilityService, @inject(delay(() => FederatedInstanceService)) private federatedInstanceService: FederatedInstanceService, @inject(delay(() => ModerationLogService)) private moderationLogService: ModerationLogService) {
 		super(meta, paramDef, async (ps, me) => {
 			const instance = await this.instancesRepository.findOneBy({ host: this.utilityService.toPuny(ps.host) });
 

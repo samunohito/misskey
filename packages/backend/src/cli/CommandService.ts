@@ -16,7 +16,7 @@ export class CommandService {
 
 	constructor(
 		@inject(DI.config)
-		private config: Config,@inject(delay(() => MetaService)) private metaService: MetaService) {
+		private config: Config, @inject(delay(() => MetaService)) private metaService: MetaService) {
 	}
 
 	@bindThis

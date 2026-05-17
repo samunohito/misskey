@@ -27,7 +27,7 @@ export class ImportFollowingProcessorService {
 		private usersRepository: UsersRepository,
 
 		@inject(DI.driveFilesRepository)
-		private driveFilesRepository: DriveFilesRepository,@inject(delay(() => QueueService)) private queueService: QueueService,@inject(delay(() => UtilityService)) private utilityService: UtilityService,@inject(delay(() => RemoteUserResolveService)) private remoteUserResolveService: RemoteUserResolveService,@inject(delay(() => DownloadService)) private downloadService: DownloadService,@inject(delay(() => QueueLoggerService)) private queueLoggerService: QueueLoggerService) {
+		private driveFilesRepository: DriveFilesRepository, @inject(delay(() => QueueService)) private queueService: QueueService, @inject(delay(() => UtilityService)) private utilityService: UtilityService, @inject(delay(() => RemoteUserResolveService)) private remoteUserResolveService: RemoteUserResolveService, @inject(delay(() => DownloadService)) private downloadService: DownloadService, @inject(delay(() => QueueLoggerService)) private queueLoggerService: QueueLoggerService) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('import-following');
 	}
 

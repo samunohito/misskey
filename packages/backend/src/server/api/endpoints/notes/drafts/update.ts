@@ -241,7 +241,7 @@ export const paramDef = {
 
 @injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
-	constructor(@inject(delay(() => NoteDraftService)) private noteDraftService: NoteDraftService,@inject(delay(() => NoteDraftEntityService)) private noteDraftEntityService: NoteDraftEntityService) {
+	constructor(@inject(delay(() => NoteDraftService)) private noteDraftService: NoteDraftService, @inject(delay(() => NoteDraftEntityService)) private noteDraftEntityService: NoteDraftEntityService) {
 		super(meta, paramDef, async (ps, me) => {
 			const draft = await this.noteDraftService.update(me, ps.draftId, {
 				fileIds: ps.fileIds,

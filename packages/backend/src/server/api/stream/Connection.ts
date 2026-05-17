@@ -68,7 +68,7 @@ export default class Connection {
 	private fetchIntervalId: NodeJS.Timeout | null = null;
 
 	constructor(
-		@inject(DependencyContainerToken) private container: DependencyContainer,@inject(delay(() => NotificationService)) private notificationService: NotificationService,@inject(delay(() => CacheService)) private cacheService: CacheService,@inject(delay(() => ChannelFollowingService)) private channelFollowingService: ChannelFollowingService,@inject(delay(() => ChannelMutingService)) private channelMutingService: ChannelMutingService,
+		@inject(DependencyContainerToken) private container: DependencyContainer, @inject(delay(() => NotificationService)) private notificationService: NotificationService, @inject(delay(() => CacheService)) private cacheService: CacheService, @inject(delay(() => ChannelFollowingService)) private channelFollowingService: ChannelFollowingService, @inject(delay(() => ChannelMutingService)) private channelMutingService: ChannelMutingService,
 		@inject(RequestToken)
 		request: ConnectionRequest) {
 		if (request.user) this.user = request.user;

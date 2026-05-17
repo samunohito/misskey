@@ -25,7 +25,7 @@ export class AnnouncementService {
 		private announcementReadsRepository: AnnouncementReadsRepository,
 
 		@inject(DI.usersRepository)
-		private usersRepository: UsersRepository,@inject(delay(() => IdService)) private idService: IdService,@inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService,@inject(delay(() => ModerationLogService)) private moderationLogService: ModerationLogService,@inject(delay(() => AnnouncementEntityService)) private announcementEntityService: AnnouncementEntityService) {
+		private usersRepository: UsersRepository, @inject(delay(() => IdService)) private idService: IdService, @inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService, @inject(delay(() => ModerationLogService)) private moderationLogService: ModerationLogService, @inject(delay(() => AnnouncementEntityService)) private announcementEntityService: AnnouncementEntityService) {
 	}
 
 	@bindThis

@@ -75,7 +75,7 @@ type CaptchaResponse = {
 export class CaptchaService {
 	private readonly logger: Logger;
 
-	constructor(@inject(delay(() => HttpRequestService)) private httpRequestService: HttpRequestService,@inject(delay(() => MetaService)) private metaService: MetaService,@inject(delay(() => LoggerService)) loggerService: LoggerService) {
+	constructor(@inject(delay(() => HttpRequestService)) private httpRequestService: HttpRequestService, @inject(delay(() => MetaService)) private metaService: MetaService, @inject(delay(() => LoggerService)) loggerService: LoggerService) {
 		this.logger = loggerService.getLogger('captcha');
 	}
 

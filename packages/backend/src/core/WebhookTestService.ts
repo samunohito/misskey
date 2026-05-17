@@ -142,7 +142,7 @@ export class WebhookTestService {
 	public static NoSuchWebhookError = class extends Error {
 	};
 
-	constructor(@inject(delay(() => CustomEmojiService)) private customEmojiService: CustomEmojiService,@inject(delay(() => UserWebhookService)) private userWebhookService: UserWebhookService,@inject(delay(() => SystemWebhookService)) private systemWebhookService: SystemWebhookService,@inject(delay(() => QueueService)) private queueService: QueueService) {
+	constructor(@inject(delay(() => CustomEmojiService)) private customEmojiService: CustomEmojiService, @inject(delay(() => UserWebhookService)) private userWebhookService: UserWebhookService, @inject(delay(() => SystemWebhookService)) private systemWebhookService: SystemWebhookService, @inject(delay(() => QueueService)) private queueService: QueueService) {
 	}
 
 	/**

@@ -32,7 +32,7 @@ export class StreamingApiServerService {
 		private redisForSub: Redis.Redis,
 
 		@inject(DependencyContainerToken)
-		private container: DependencyContainer,@inject(delay(() => AuthenticateService)) private authenticateService: AuthenticateService,@inject(delay(() => UserService)) private usersService: UserService) {
+		private container: DependencyContainer, @inject(delay(() => AuthenticateService)) private authenticateService: AuthenticateService, @inject(delay(() => UserService)) private usersService: UserService) {
 	}
 
 	@bindThis

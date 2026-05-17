@@ -49,7 +49,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private clipsRepository: ClipsRepository,
 
 		@inject(DI.clipFavoritesRepository)
-		private clipFavoritesRepository: ClipFavoritesRepository,@inject(delay(() => IdService)) private idService: IdService) {
+		private clipFavoritesRepository: ClipFavoritesRepository, @inject(delay(() => IdService)) private idService: IdService) {
 		super(meta, paramDef, async (ps, me) => {
 			const clip = await this.clipsRepository.findOneBy({ id: ps.clipId });
 			if (clip == null) {

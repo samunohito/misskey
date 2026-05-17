@@ -40,7 +40,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private userProfilesRepository: UserProfilesRepository,
 
 		@inject(DI.userSecurityKeysRepository)
-		private userSecurityKeysRepository: UserSecurityKeysRepository,@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService,@inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService) {
+		private userSecurityKeysRepository: UserSecurityKeysRepository, @inject(delay(() => UserEntityService)) private userEntityService: UserEntityService, @inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService) {
 		super(meta, paramDef, async (ps, me) => {
 			if (ps.value === true) {
 				// セキュリティキーがなければパスワードレスを有効にはできない

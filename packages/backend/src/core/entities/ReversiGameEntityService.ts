@@ -22,7 +22,7 @@ function assertBw(bw: string): bw is Packed<'ReversiGameDetailed'>['bw'] {
 export class ReversiGameEntityService {
 	constructor(
 		@inject(DI.reversiGamesRepository)
-		private reversiGamesRepository: ReversiGamesRepository,@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService,@inject(delay(() => IdService)) private idService: IdService) {
+		private reversiGamesRepository: ReversiGamesRepository, @inject(delay(() => UserEntityService)) private userEntityService: UserEntityService, @inject(delay(() => IdService)) private idService: IdService) {
 	}
 
 	@bindThis

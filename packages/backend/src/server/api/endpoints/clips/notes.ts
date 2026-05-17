@@ -63,7 +63,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private notesRepository: NotesRepository,
 
 		@inject(DI.clipNotesRepository)
-		private clipNotesRepository: ClipNotesRepository,@inject(delay(() => NoteEntityService)) private noteEntityService: NoteEntityService,@inject(delay(() => QueryService)) private queryService: QueryService) {
+		private clipNotesRepository: ClipNotesRepository, @inject(delay(() => NoteEntityService)) private noteEntityService: NoteEntityService, @inject(delay(() => QueryService)) private queryService: QueryService) {
 		super(meta, paramDef, async (ps, me) => {
 			const clip = await this.clipsRepository.findOneBy({
 				id: ps.clipId,

@@ -44,7 +44,7 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.usersRepository)
-		private usersRepository: UsersRepository,@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService) {
+		private usersRepository: UsersRepository, @inject(delay(() => UserEntityService)) private userEntityService: UserEntityService) {
 		super(meta, paramDef, async (ps, me) => {
 			if (!safeForSql(normalizeForSearch(ps.tag))) throw new Error('Injection');
 			const query = this.usersRepository.createQueryBuilder('user')

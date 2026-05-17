@@ -30,7 +30,7 @@ export class WellKnownServerService {
 		private meta: MiMeta,
 
 		@inject(DI.usersRepository)
-		private usersRepository: UsersRepository,@inject(delay(() => NodeinfoServerService)) private nodeinfoServerService: NodeinfoServerService,@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService,@inject(OAuth2ProviderService) private oauth2ProviderService: OAuth2ProviderService) {
+		private usersRepository: UsersRepository, @inject(delay(() => NodeinfoServerService)) private nodeinfoServerService: NodeinfoServerService, @inject(delay(() => UserEntityService)) private userEntityService: UserEntityService, @inject(OAuth2ProviderService) private oauth2ProviderService: OAuth2ProviderService) {
 		//this.createServer = this.createServer.bind(this);
 	}
 

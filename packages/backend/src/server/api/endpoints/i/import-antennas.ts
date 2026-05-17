@@ -65,7 +65,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 		private antennasRepository: AntennasRepository,
 
 		@inject(DI.usersRepository)
-		private usersRepository: UsersRepository,@inject(delay(() => RoleService)) private roleService: RoleService,@inject(delay(() => QueueService)) private queueService: QueueService,@inject(delay(() => DownloadService)) private downloadService: DownloadService) {
+		private usersRepository: UsersRepository, @inject(delay(() => RoleService)) private roleService: RoleService, @inject(delay(() => QueueService)) private queueService: QueueService, @inject(delay(() => DownloadService)) private downloadService: DownloadService) {
 		super(meta, paramDef, async (ps, me) => {
 			const userExist = await this.usersRepository.exists({ where: { id: me.id } });
 			if (!userExist) throw new ApiError(meta.errors.noSuchUser);

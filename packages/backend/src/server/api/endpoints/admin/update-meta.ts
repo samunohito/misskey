@@ -226,7 +226,7 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.meta)
-		private serverSettings: MiMeta,@inject(delay(() => MetaService)) private metaService: MetaService,@inject(delay(() => ModerationLogService)) private moderationLogService: ModerationLogService) {
+		private serverSettings: MiMeta, @inject(delay(() => MetaService)) private metaService: MetaService, @inject(delay(() => ModerationLogService)) private moderationLogService: ModerationLogService) {
 		super(meta, paramDef, async (ps, me) => {
 			const set = {} as Partial<MiMeta>;
 

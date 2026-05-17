@@ -42,7 +42,7 @@ export const paramDef = {
 
 @injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
-	constructor(@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService,@inject(delay(() => UserSearchService)) private userSearchService: UserSearchService) {
+	constructor(@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService, @inject(delay(() => UserSearchService)) private userSearchService: UserSearchService) {
 		super(meta, paramDef, async (ps, me) => {
 			const users = await this.userSearchService.search(ps.query.trim(), me?.id ?? null, {
 				offset: ps.offset,

@@ -16,7 +16,7 @@ import { FlashEntityService } from './FlashEntityService.js';
 export class FlashLikeEntityService {
 	constructor(
 		@inject(DI.flashLikesRepository)
-		private flashLikesRepository: FlashLikesRepository,@inject(delay(() => FlashEntityService)) private flashEntityService: FlashEntityService) {
+		private flashLikesRepository: FlashLikesRepository, @inject(delay(() => FlashEntityService)) private flashEntityService: FlashEntityService) {
 	}
 
 	@bindThis

@@ -48,7 +48,7 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.userIpsRepository)
-		private userIpsRepository: UserIpsRepository,@inject(delay(() => IdService)) private idService: IdService) {
+		private userIpsRepository: UserIpsRepository, @inject(delay(() => IdService)) private idService: IdService) {
 		super(meta, paramDef, async (ps, me) => {
 			const ips = await this.userIpsRepository.find({
 				where: { userId: ps.userId },

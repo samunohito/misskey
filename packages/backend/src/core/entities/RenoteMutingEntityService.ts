@@ -19,7 +19,7 @@ import { UserEntityService } from './UserEntityService.js';
 export class RenoteMutingEntityService {
 	constructor(
 		@inject(DI.renoteMutingsRepository)
-		private renoteMutingsRepository: RenoteMutingsRepository,@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService,@inject(delay(() => IdService)) private idService: IdService) {
+		private renoteMutingsRepository: RenoteMutingsRepository, @inject(delay(() => UserEntityService)) private userEntityService: UserEntityService, @inject(delay(() => IdService)) private idService: IdService) {
 	}
 
 	@bindThis

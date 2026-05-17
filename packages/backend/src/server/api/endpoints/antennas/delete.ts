@@ -38,7 +38,7 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.antennasRepository)
-		private antennasRepository: AntennasRepository,@inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService) {
+		private antennasRepository: AntennasRepository, @inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService) {
 		super(meta, paramDef, async (ps, me) => {
 			const antenna = await this.antennasRepository.findOneBy({
 				id: ps.antennaId,

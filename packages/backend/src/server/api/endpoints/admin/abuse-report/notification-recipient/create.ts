@@ -83,7 +83,7 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.userProfilesRepository)
-		private userProfilesRepository: UserProfilesRepository,@inject(delay(() => AbuseReportNotificationService)) private abuseReportNotificationService: AbuseReportNotificationService,@inject(delay(() => AbuseReportNotificationRecipientEntityService)) private abuseReportNotificationRecipientEntityService: AbuseReportNotificationRecipientEntityService) {
+		private userProfilesRepository: UserProfilesRepository, @inject(delay(() => AbuseReportNotificationService)) private abuseReportNotificationService: AbuseReportNotificationService, @inject(delay(() => AbuseReportNotificationRecipientEntityService)) private abuseReportNotificationRecipientEntityService: AbuseReportNotificationRecipientEntityService) {
 		super(meta, paramDef, async (ps, me) => {
 			if (ps.method === 'email') {
 				const userProfile = await this.userProfilesRepository.findOneBy({ userId: ps.userId });

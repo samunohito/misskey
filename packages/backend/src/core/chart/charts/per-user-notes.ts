@@ -30,7 +30,7 @@ export default class PerUserNotesChart extends Chart<typeof schema> { // eslint-
 		private redisClient: Redis.Redis,
 
 		@inject(DI.notesRepository)
-		private notesRepository: NotesRepository,@inject(delay(() => ChartLoggerService)) private chartLoggerService: ChartLoggerService) {
+		private notesRepository: NotesRepository, @inject(delay(() => ChartLoggerService)) private chartLoggerService: ChartLoggerService) {
 		super(db, (k) => acquireChartInsertLock(redisClient, k), chartLoggerService.logger, name, schema, true);
 	}
 

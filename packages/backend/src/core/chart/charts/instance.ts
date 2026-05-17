@@ -40,7 +40,7 @@ export default class InstanceChart extends Chart<typeof schema> { // eslint-disa
 		private driveFilesRepository: DriveFilesRepository,
 
 		@inject(DI.followingsRepository)
-		private followingsRepository: FollowingsRepository,@inject(delay(() => UtilityService)) private utilityService: UtilityService,@inject(delay(() => ChartLoggerService)) private chartLoggerService: ChartLoggerService) {
+		private followingsRepository: FollowingsRepository, @inject(delay(() => UtilityService)) private utilityService: UtilityService, @inject(delay(() => ChartLoggerService)) private chartLoggerService: ChartLoggerService) {
 		super(db, (k) => acquireChartInsertLock(redisClient, k), chartLoggerService.logger, name, schema, true);
 	}
 

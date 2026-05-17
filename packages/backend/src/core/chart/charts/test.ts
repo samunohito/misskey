@@ -26,7 +26,7 @@ export default class TestChart extends Chart<typeof schema> { // eslint-disable-
 		private db: DataSource,
 
 		@inject(DI.redis)
-		private redisClient: Redis.Redis,@inject(delay(() => Logger)) logger: Logger) {
+		private redisClient: Redis.Redis, @inject(delay(() => Logger)) logger: Logger) {
 		super(db, (k) => acquireChartInsertLock(redisClient, k), logger, name, schema);
 	}
 

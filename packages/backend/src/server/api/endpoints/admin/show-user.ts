@@ -201,7 +201,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private userProfilesRepository: UserProfilesRepository,
 
 		@inject(DI.signinsRepository)
-		private signinsRepository: SigninsRepository,@inject(delay(() => RoleService)) private roleService: RoleService,@inject(delay(() => RoleEntityService)) private roleEntityService: RoleEntityService,@inject(delay(() => IdService)) private idService: IdService) {
+		private signinsRepository: SigninsRepository, @inject(delay(() => RoleService)) private roleService: RoleService, @inject(delay(() => RoleEntityService)) private roleEntityService: RoleEntityService, @inject(delay(() => IdService)) private idService: IdService) {
 		super(meta, paramDef, async (ps, me) => {
 			const [user, profile] = await Promise.all([
 				this.usersRepository.findOneBy({ id: ps.userId }),

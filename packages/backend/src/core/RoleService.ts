@@ -143,7 +143,7 @@ export class RoleService implements Disposable {
 		private rolesRepository: RolesRepository,
 
 		@inject(DI.roleAssignmentsRepository)
-		private roleAssignmentsRepository: RoleAssignmentsRepository,@inject(delay(() => CacheService)) private cacheService: CacheService,@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService,@inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService,@inject(delay(() => IdService)) private idService: IdService,@inject(delay(() => ModerationLogService)) private moderationLogService: ModerationLogService,@inject(delay(() => FanoutTimelineService)) private fanoutTimelineService: FanoutTimelineService,
+		private roleAssignmentsRepository: RoleAssignmentsRepository, @inject(delay(() => CacheService)) private cacheService: CacheService, @inject(delay(() => UserEntityService)) private userEntityService: UserEntityService, @inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService, @inject(delay(() => IdService)) private idService: IdService, @inject(delay(() => ModerationLogService)) private moderationLogService: ModerationLogService, @inject(delay(() => FanoutTimelineService)) private fanoutTimelineService: FanoutTimelineService,
 		@inject(delay(() => NotificationService)) private notificationService: NotificationService,
 		@inject(delay(() => DisposableRegistry)) registry: DisposableRegistry,
 	) {
@@ -153,7 +153,6 @@ export class RoleService implements Disposable {
 
 		this.redisForSub.on('message', this.onMessage);
 	}
-
 
 	@bindThis
 	private async onMessage(_: string, data: string): Promise<void> {

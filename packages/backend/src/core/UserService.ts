@@ -17,7 +17,7 @@ export class UserService {
 		@inject(DI.usersRepository)
 		private usersRepository: UsersRepository,
 		@inject(DI.followingsRepository)
-		private followingsRepository: FollowingsRepository,@inject(delay(() => SystemWebhookService)) private systemWebhookService: SystemWebhookService,@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService) {
+		private followingsRepository: FollowingsRepository, @inject(delay(() => SystemWebhookService)) private systemWebhookService: SystemWebhookService, @inject(delay(() => UserEntityService)) private userEntityService: UserEntityService) {
 	}
 
 	@bindThis

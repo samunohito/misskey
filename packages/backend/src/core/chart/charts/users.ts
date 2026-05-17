@@ -30,7 +30,7 @@ export default class UsersChart extends Chart<typeof schema> { // eslint-disable
 		private redisClient: Redis.Redis,
 
 		@inject(DI.usersRepository)
-		private usersRepository: UsersRepository,@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService,@inject(delay(() => ChartLoggerService)) private chartLoggerService: ChartLoggerService) {
+		private usersRepository: UsersRepository, @inject(delay(() => UserEntityService)) private userEntityService: UserEntityService, @inject(delay(() => ChartLoggerService)) private chartLoggerService: ChartLoggerService) {
 		super(db, (k) => acquireChartInsertLock(redisClient, k), chartLoggerService.logger, name, schema);
 	}
 

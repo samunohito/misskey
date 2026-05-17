@@ -25,7 +25,7 @@ export class UrlPreviewService {
 		private config: Config,
 
 		@inject(DI.meta)
-		private meta: MiMeta,@inject(delay(() => HttpRequestService)) private httpRequestService: HttpRequestService,@inject(delay(() => LoggerService)) private loggerService: LoggerService) {
+		private meta: MiMeta, @inject(delay(() => HttpRequestService)) private httpRequestService: HttpRequestService, @inject(delay(() => LoggerService)) private loggerService: LoggerService) {
 		this.logger = this.loggerService.getLogger('url-preview');
 	}
 

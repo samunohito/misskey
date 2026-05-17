@@ -20,7 +20,7 @@ export class PostScheduledNoteProcessorService {
 
 	constructor(
 		@inject(DI.noteDraftsRepository)
-		private noteDraftsRepository: NoteDraftsRepository,@inject(delay(() => NoteCreateService)) private noteCreateService: NoteCreateService,@inject(delay(() => NotificationService)) private notificationService: NotificationService,@inject(delay(() => QueueLoggerService)) private queueLoggerService: QueueLoggerService) {
+		private noteDraftsRepository: NoteDraftsRepository, @inject(delay(() => NoteCreateService)) private noteCreateService: NoteCreateService, @inject(delay(() => NotificationService)) private notificationService: NotificationService, @inject(delay(() => QueueLoggerService)) private queueLoggerService: QueueLoggerService) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('post-scheduled-note');
 	}
 

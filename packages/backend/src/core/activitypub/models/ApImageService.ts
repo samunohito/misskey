@@ -27,7 +27,7 @@ export class ApImageService {
 		private meta: MiMeta,
 
 		@inject(DI.driveFilesRepository)
-		private driveFilesRepository: DriveFilesRepository,@inject(delay(() => ApResolverService)) private apResolverService: ApResolverService,@inject(delay(() => DriveService)) private driveService: DriveService,@inject(delay(() => ApLoggerService)) private apLoggerService: ApLoggerService) {
+		private driveFilesRepository: DriveFilesRepository, @inject(delay(() => ApResolverService)) private apResolverService: ApResolverService, @inject(delay(() => DriveService)) private driveService: DriveService, @inject(delay(() => ApLoggerService)) private apLoggerService: ApLoggerService) {
 		this.logger = this.apLoggerService.logger;
 	}
 

@@ -40,7 +40,7 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.registrationTicketsRepository)
-		private registrationTicketsRepository: RegistrationTicketsRepository,@inject(delay(() => RoleService)) private roleService: RoleService,@inject(delay(() => IdService)) private idService: IdService) {
+		private registrationTicketsRepository: RegistrationTicketsRepository, @inject(delay(() => RoleService)) private roleService: RoleService, @inject(delay(() => IdService)) private idService: IdService) {
 		super(meta, paramDef, async (ps, me) => {
 			const policies = await this.roleService.getUserPolicies(me.id);
 

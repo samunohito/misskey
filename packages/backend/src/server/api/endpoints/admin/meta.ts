@@ -611,7 +611,7 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.config)
-		private config: Config,@inject(delay(() => MetaService)) private metaService: MetaService,@inject(delay(() => SystemAccountService)) private systemAccountService: SystemAccountService) {
+		private config: Config, @inject(delay(() => MetaService)) private metaService: MetaService, @inject(delay(() => SystemAccountService)) private systemAccountService: SystemAccountService) {
 		super(meta, paramDef, async () => {
 			const instance = await this.metaService.fetch(true);
 

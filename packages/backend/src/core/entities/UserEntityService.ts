@@ -134,7 +134,6 @@ export class UserEntityService {
 	) {
 	}
 
-
 	//#region Validators
 	public validateLocalUsername = ajv.compile(localUsernameSchema);
 	public validatePassword = ajv.compile(passwordSchema);

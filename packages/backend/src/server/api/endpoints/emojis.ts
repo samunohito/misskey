@@ -46,7 +46,7 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.emojisRepository)
-		private emojisRepository: EmojisRepository,@inject(delay(() => EmojiEntityService)) private emojiEntityService: EmojiEntityService) {
+		private emojisRepository: EmojisRepository, @inject(delay(() => EmojiEntityService)) private emojiEntityService: EmojiEntityService) {
 		super(meta, paramDef, async (ps, me) => {
 			const emojis = await this.emojisRepository.find({
 				where: {

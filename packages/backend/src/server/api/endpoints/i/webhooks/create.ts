@@ -76,7 +76,7 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.webhooksRepository)
-		private webhooksRepository: WebhooksRepository,@inject(delay(() => IdService)) private idService: IdService,@inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService,@inject(delay(() => RoleService)) private roleService: RoleService) {
+		private webhooksRepository: WebhooksRepository, @inject(delay(() => IdService)) private idService: IdService, @inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService, @inject(delay(() => RoleService)) private roleService: RoleService) {
 		super(meta, paramDef, async (ps, me) => {
 			const currentWebhooksCount = await this.webhooksRepository.countBy({
 				userId: me.id,

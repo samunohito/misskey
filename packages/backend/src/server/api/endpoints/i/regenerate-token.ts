@@ -33,7 +33,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private usersRepository: UsersRepository,
 
 		@inject(DI.userProfilesRepository)
-		private userProfilesRepository: UserProfilesRepository,@inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService) {
+		private userProfilesRepository: UserProfilesRepository, @inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService) {
 		super(meta, paramDef, async (ps, me) => {
 			const freshUser = await this.usersRepository.findOneByOrFail({ id: me.id });
 			const oldToken = freshUser.token!;

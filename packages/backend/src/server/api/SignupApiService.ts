@@ -43,7 +43,7 @@ export class SignupApiService {
 		private usedUsernamesRepository: UsedUsernamesRepository,
 
 		@inject(DI.registrationTicketsRepository)
-		private registrationTicketsRepository: RegistrationTicketsRepository,@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService,@inject(delay(() => IdService)) private idService: IdService,@inject(delay(() => CaptchaService)) private captchaService: CaptchaService,@inject(delay(() => SignupService)) private signupService: SignupService,@inject(delay(() => SigninService)) private signinService: SigninService,@inject(delay(() => EmailService)) private emailService: EmailService) {
+		private registrationTicketsRepository: RegistrationTicketsRepository, @inject(delay(() => UserEntityService)) private userEntityService: UserEntityService, @inject(delay(() => IdService)) private idService: IdService, @inject(delay(() => CaptchaService)) private captchaService: CaptchaService, @inject(delay(() => SignupService)) private signupService: SignupService, @inject(delay(() => SigninService)) private signinService: SigninService, @inject(delay(() => EmailService)) private emailService: EmailService) {
 	}
 
 	@bindThis

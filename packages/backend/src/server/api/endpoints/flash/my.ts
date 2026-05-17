@@ -44,7 +44,7 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.flashsRepository)
-		private flashsRepository: FlashsRepository,@inject(delay(() => FlashEntityService)) private flashEntityService: FlashEntityService,@inject(delay(() => QueryService)) private queryService: QueryService) {
+		private flashsRepository: FlashsRepository, @inject(delay(() => FlashEntityService)) private flashEntityService: FlashEntityService, @inject(delay(() => QueryService)) private queryService: QueryService) {
 		super(meta, paramDef, async (ps, me) => {
 			const query = this.queryService.makePaginationQuery(this.flashsRepository.createQueryBuilder('flash'), ps.sinceId, ps.untilId, ps.sinceDate, ps.untilDate)
 				.andWhere('flash.userId = :meId', { meId: me.id });

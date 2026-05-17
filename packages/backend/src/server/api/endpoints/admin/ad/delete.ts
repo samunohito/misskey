@@ -38,7 +38,7 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.adsRepository)
-		private adsRepository: AdsRepository,@inject(delay(() => ModerationLogService)) private moderationLogService: ModerationLogService) {
+		private adsRepository: AdsRepository, @inject(delay(() => ModerationLogService)) private moderationLogService: ModerationLogService) {
 		super(meta, paramDef, async (ps, me) => {
 			const ad = await this.adsRepository.findOneBy({ id: ps.id });
 

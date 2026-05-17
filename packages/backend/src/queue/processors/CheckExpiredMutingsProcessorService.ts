@@ -18,7 +18,7 @@ export class CheckExpiredMutingsProcessorService {
 
 	constructor(
 		@inject(DI.mutingsRepository)
-		private mutingsRepository: MutingsRepository,@inject(delay(() => UserMutingService)) private userMutingService: UserMutingService,@inject(delay(() => ChannelMutingService)) private channelMutingService: ChannelMutingService,@inject(delay(() => QueueLoggerService)) private queueLoggerService: QueueLoggerService) {
+		private mutingsRepository: MutingsRepository, @inject(delay(() => UserMutingService)) private userMutingService: UserMutingService, @inject(delay(() => ChannelMutingService)) private channelMutingService: ChannelMutingService, @inject(delay(() => QueueLoggerService)) private queueLoggerService: QueueLoggerService) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('check-expired-mutings');
 	}
 

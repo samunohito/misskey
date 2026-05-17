@@ -34,7 +34,7 @@ export class ImportUserListsProcessorService {
 		private userListsRepository: UserListsRepository,
 
 		@inject(DI.userListMembershipsRepository)
-		private userListMembershipsRepository: UserListMembershipsRepository,@inject(delay(() => UtilityService)) private utilityService: UtilityService,@inject(delay(() => IdService)) private idService: IdService,@inject(delay(() => UserListService)) private userListService: UserListService,@inject(delay(() => RemoteUserResolveService)) private remoteUserResolveService: RemoteUserResolveService,@inject(delay(() => DownloadService)) private downloadService: DownloadService,@inject(delay(() => QueueLoggerService)) private queueLoggerService: QueueLoggerService) {
+		private userListMembershipsRepository: UserListMembershipsRepository, @inject(delay(() => UtilityService)) private utilityService: UtilityService, @inject(delay(() => IdService)) private idService: IdService, @inject(delay(() => UserListService)) private userListService: UserListService, @inject(delay(() => RemoteUserResolveService)) private remoteUserResolveService: RemoteUserResolveService, @inject(delay(() => DownloadService)) private downloadService: DownloadService, @inject(delay(() => QueueLoggerService)) private queueLoggerService: QueueLoggerService) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('import-user-lists');
 	}
 

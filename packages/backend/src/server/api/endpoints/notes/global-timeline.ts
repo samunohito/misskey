@@ -54,7 +54,7 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.notesRepository)
-		private notesRepository: NotesRepository,@inject(delay(() => NoteEntityService)) private noteEntityService: NoteEntityService,@inject(delay(() => QueryService)) private queryService: QueryService,@inject(delay(() => RoleService)) private roleService: RoleService,@inject(delay(() => ActiveUsersChart)) private activeUsersChart: ActiveUsersChart) {
+		private notesRepository: NotesRepository, @inject(delay(() => NoteEntityService)) private noteEntityService: NoteEntityService, @inject(delay(() => QueryService)) private queryService: QueryService, @inject(delay(() => RoleService)) private roleService: RoleService, @inject(delay(() => ActiveUsersChart)) private activeUsersChart: ActiveUsersChart) {
 		super(meta, paramDef, async (ps, me) => {
 			const policies = await this.roleService.getUserPolicies(me ? me.id : null);
 			if (!policies.gtlAvailable) {

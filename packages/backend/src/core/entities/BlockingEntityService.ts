@@ -18,7 +18,7 @@ import { UserEntityService } from './UserEntityService.js';
 export class BlockingEntityService {
 	constructor(
 		@inject(DI.blockingsRepository)
-		private blockingsRepository: BlockingsRepository,@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService,@inject(delay(() => IdService)) private idService: IdService) {
+		private blockingsRepository: BlockingsRepository, @inject(delay(() => UserEntityService)) private userEntityService: UserEntityService, @inject(delay(() => IdService)) private idService: IdService) {
 	}
 
 	@bindThis

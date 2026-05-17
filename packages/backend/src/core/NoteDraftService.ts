@@ -37,7 +37,7 @@ export class NoteDraftService {
 		private driveFilesRepository: DriveFilesRepository,
 
 		@inject(DI.channelsRepository)
-		private channelsRepository: ChannelsRepository,@inject(delay(() => RoleService)) private roleService: RoleService,@inject(delay(() => IdService)) private idService: IdService,@inject(delay(() => NoteEntityService)) private noteEntityService: NoteEntityService,@inject(delay(() => QueueService)) private queueService: QueueService) {
+		private channelsRepository: ChannelsRepository, @inject(delay(() => RoleService)) private roleService: RoleService, @inject(delay(() => IdService)) private idService: IdService, @inject(delay(() => NoteEntityService)) private noteEntityService: NoteEntityService, @inject(delay(() => QueueService)) private queueService: QueueService) {
 	}
 
 	@bindThis

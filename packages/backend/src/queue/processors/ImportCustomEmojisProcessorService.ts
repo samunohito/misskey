@@ -30,7 +30,7 @@ export class ImportCustomEmojisProcessorService {
 		private driveFilesRepository: DriveFilesRepository,
 
 		@inject(DI.emojisRepository)
-		private emojisRepository: EmojisRepository,@inject(delay(() => CustomEmojiService)) private customEmojiService: CustomEmojiService,@inject(delay(() => DriveService)) private driveService: DriveService,@inject(delay(() => DownloadService)) private downloadService: DownloadService,@inject(delay(() => QueueLoggerService)) private queueLoggerService: QueueLoggerService) {
+		private emojisRepository: EmojisRepository, @inject(delay(() => CustomEmojiService)) private customEmojiService: CustomEmojiService, @inject(delay(() => DriveService)) private driveService: DriveService, @inject(delay(() => DownloadService)) private downloadService: DownloadService, @inject(delay(() => QueueLoggerService)) private queueLoggerService: QueueLoggerService) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('import-custom-emojis');
 	}
 

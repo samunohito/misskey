@@ -64,7 +64,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private notesRepository: NotesRepository,
 
 		@inject(DI.antennasRepository)
-		private antennasRepository: AntennasRepository,@inject(delay(() => IdService)) private idService: IdService,@inject(delay(() => NoteEntityService)) private noteEntityService: NoteEntityService,@inject(delay(() => QueryService)) private queryService: QueryService,@inject(delay(() => FanoutTimelineService)) private fanoutTimelineService: FanoutTimelineService,@inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService,@inject(delay(() => ChannelMutingService)) private channelMutingService: ChannelMutingService) {
+		private antennasRepository: AntennasRepository, @inject(delay(() => IdService)) private idService: IdService, @inject(delay(() => NoteEntityService)) private noteEntityService: NoteEntityService, @inject(delay(() => QueryService)) private queryService: QueryService, @inject(delay(() => FanoutTimelineService)) private fanoutTimelineService: FanoutTimelineService, @inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService, @inject(delay(() => ChannelMutingService)) private channelMutingService: ChannelMutingService) {
 		super(meta, paramDef, async (ps, me) => {
 			const untilId = ps.untilId ?? (ps.untilDate ? this.idService.gen(ps.untilDate!) : null);
 			const sinceId = ps.sinceId ?? (ps.sinceDate ? this.idService.gen(ps.sinceDate!) : null);

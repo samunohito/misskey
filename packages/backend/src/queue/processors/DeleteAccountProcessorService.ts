@@ -37,7 +37,7 @@ export class DeleteAccountProcessorService {
 		private driveFilesRepository: DriveFilesRepository,
 
 		@inject(DI.pagesRepository)
-		private pagesRepository: PagesRepository,@inject(delay(() => DriveService)) private driveService: DriveService,@inject(delay(() => PageService)) private pageService: PageService,@inject(delay(() => EmailService)) private emailService: EmailService,@inject(delay(() => QueueLoggerService)) private queueLoggerService: QueueLoggerService,@inject(delay(() => SearchService)) private searchService: SearchService) {
+		private pagesRepository: PagesRepository, @inject(delay(() => DriveService)) private driveService: DriveService, @inject(delay(() => PageService)) private pageService: PageService, @inject(delay(() => EmailService)) private emailService: EmailService, @inject(delay(() => QueueLoggerService)) private queueLoggerService: QueueLoggerService, @inject(delay(() => SearchService)) private searchService: SearchService) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('delete-account');
 	}
 

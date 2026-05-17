@@ -36,7 +36,7 @@ export class NotificationService implements Disposable {
 		private redisClient: Redis.Redis,
 
 		@inject(DI.usersRepository)
-		private usersRepository: UsersRepository,@inject(NotificationEntityService) private notificationEntityService: NotificationEntityService,@inject(delay(() => IdService)) private idService: IdService,@inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService,@inject(delay(() => PushNotificationService)) private pushNotificationService: PushNotificationService,@inject(delay(() => CacheService)) private cacheService: CacheService,@inject(delay(() => UserListService)) private userListService: UserListService,@inject(delay(() => DisposableRegistry)) registry: DisposableRegistry) {
+		private usersRepository: UsersRepository, @inject(NotificationEntityService) private notificationEntityService: NotificationEntityService, @inject(delay(() => IdService)) private idService: IdService, @inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService, @inject(delay(() => PushNotificationService)) private pushNotificationService: PushNotificationService, @inject(delay(() => CacheService)) private cacheService: CacheService, @inject(delay(() => UserListService)) private userListService: UserListService, @inject(delay(() => DisposableRegistry)) registry: DisposableRegistry) {
 		registry.register(this);
 	}
 

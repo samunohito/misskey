@@ -30,7 +30,7 @@ export class FeedService {
 		private notesRepository: NotesRepository,
 
 		@inject(DI.driveFilesRepository)
-		private driveFilesRepository: DriveFilesRepository,@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService,@inject(delay(() => DriveFileEntityService)) private driveFileEntityService: DriveFileEntityService,@inject(delay(() => IdService)) private idService: IdService,@inject(delay(() => MfmService)) private mfmService: MfmService) {
+		private driveFilesRepository: DriveFilesRepository, @inject(delay(() => UserEntityService)) private userEntityService: UserEntityService, @inject(delay(() => DriveFileEntityService)) private driveFileEntityService: DriveFileEntityService, @inject(delay(() => IdService)) private idService: IdService, @inject(delay(() => MfmService)) private mfmService: MfmService) {
 	}
 
 	@bindThis

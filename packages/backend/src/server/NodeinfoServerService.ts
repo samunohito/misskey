@@ -24,7 +24,7 @@ const nodeinfo_homepage = 'https://misskey-hub.net';
 export class NodeinfoServerService {
 	constructor(
 		@inject(DI.config)
-		private config: Config,@inject(delay(() => SystemAccountService)) private systemAccountService: SystemAccountService,@inject(delay(() => MetaService)) private metaService: MetaService,@inject(delay(() => NotesChart)) private notesChart: NotesChart,@inject(delay(() => UsersChart)) private usersChart: UsersChart) {
+		private config: Config, @inject(delay(() => SystemAccountService)) private systemAccountService: SystemAccountService, @inject(delay(() => MetaService)) private metaService: MetaService, @inject(delay(() => NotesChart)) private notesChart: NotesChart, @inject(delay(() => UsersChart)) private usersChart: UsersChart) {
 		//this.createServer = this.createServer.bind(this);
 	}
 

@@ -22,7 +22,7 @@ export class QueueStatsService implements Disposable {
 
 	constructor(
 		@inject(DI.config)
-		private config: Config,@inject(delay(() => QueueService)) private queueService: QueueService,@inject(delay(() => DisposableRegistry)) registry: DisposableRegistry) {
+		private config: Config, @inject(delay(() => QueueService)) private queueService: QueueService, @inject(delay(() => DisposableRegistry)) registry: DisposableRegistry) {
 		registry.register(this);
 	}
 

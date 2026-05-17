@@ -45,7 +45,7 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.channelsRepository)
-		private channelsRepository: ChannelsRepository,@inject(delay(() => ChannelMutingService)) private channelMutingService: ChannelMutingService) {
+		private channelsRepository: ChannelsRepository, @inject(delay(() => ChannelMutingService)) private channelMutingService: ChannelMutingService) {
 		super(meta, paramDef, async (ps, me) => {
 			// Check if exists the channel
 			const targetChannel = await this.channelsRepository.findOneBy({ id: ps.channelId });
