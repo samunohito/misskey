@@ -4,6 +4,7 @@
  */
 
 import { inject, injectable } from 'tsyringe';
+import { RequestToken } from '@/di/container.js';
 import type { Packed } from '@/misc/json-schema.js';
 import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
 import { NoteStreamingHidingService } from '../NoteStreamingHidingService.js';
@@ -13,8 +14,6 @@ import { isInstanceMuted } from '@/misc/is-instance-muted.js';
 import { isUserRelated } from '@/misc/is-user-related.js';
 import type { JsonObject } from '@/misc/json-value.js';
 import Channel, { type ChannelRequest } from '../channel.js';
-import { REQUEST } from '@nestjs/core';
-
 @injectable()
 export class ChannelChannel extends Channel {
 	public readonly chName = 'channel';
@@ -23,7 +22,7 @@ export class ChannelChannel extends Channel {
 	private channelId: string;
 
 	constructor(
-		@inject(REQUEST)
+		@inject(RequestToken)
 		request: ChannelRequest,
 
 		private noteEntityService: NoteEntityService,

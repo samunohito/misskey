@@ -4,6 +4,7 @@
  */
 
 import { inject, injectable } from 'tsyringe';
+import { RequestToken } from '@/di/container.js';
 import type { Packed } from '@/misc/json-schema.js';
 import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
 import { NoteStreamingHidingService } from '../NoteStreamingHidingService.js';
@@ -11,8 +12,6 @@ import { bindThis } from '@/decorators.js';
 import { isRenotePacked, isQuotePacked } from '@/misc/is-renote.js';
 import type { JsonObject } from '@/misc/json-value.js';
 import Channel, { type ChannelRequest } from '../channel.js';
-import { REQUEST } from '@nestjs/core';
-
 @injectable()
 export class HomeTimelineChannel extends Channel {
 	public readonly chName = 'homeTimeline';
@@ -23,7 +22,7 @@ export class HomeTimelineChannel extends Channel {
 	private withFiles: boolean;
 
 	constructor(
-		@inject(REQUEST)
+		@inject(RequestToken)
 		request: ChannelRequest,
 
 		private noteEntityService: NoteEntityService,

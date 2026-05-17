@@ -4,6 +4,7 @@
  */
 
 import { inject, injectable } from 'tsyringe';
+import { RequestToken } from '@/di/container.js';
 import { normalizeForSearch } from '@/misc/normalize-for-search.js';
 import type { Packed } from '@/misc/json-schema.js';
 import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
@@ -12,7 +13,6 @@ import { bindThis } from '@/decorators.js';
 import { isRenotePacked, isQuotePacked } from '@/misc/is-renote.js';
 import type { JsonObject } from '@/misc/json-value.js';
 import Channel, { type ChannelRequest } from '../channel.js';
-import { REQUEST } from '@nestjs/core';
 @injectable()
 export class HashtagChannel extends Channel {
 	public readonly chName = 'hashtag';
@@ -21,7 +21,7 @@ export class HashtagChannel extends Channel {
 	private q: string[][];
 
 	constructor(
-		@inject(REQUEST)
+		@inject(RequestToken)
 		request: ChannelRequest,
 
 		private noteEntityService: NoteEntityService,

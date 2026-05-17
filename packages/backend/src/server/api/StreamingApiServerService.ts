@@ -9,6 +9,8 @@ import { EventEmitter } from 'events';
 import * as Redis from 'ioredis';
 import * as WebSocket from 'ws';
 import { DI } from '@/di-symbols.js';
+import type { DependencyContainer } from 'tsyringe';
+import { DependencyContainerToken, RequestToken } from '@/di/container.js';
 import type { MiAccessToken } from '@/models/_.js';
 import { bindThis } from '@/decorators.js';
 import { MiLocalUser } from '@/models/User.js';
@@ -16,7 +18,6 @@ import { UserService } from '@/core/UserService.js';
 import { AuthenticateService, AuthenticationError } from './AuthenticateService.js';
 import MainStreamConnection, { ConnectionRequest } from './stream/Connection.js';
 import type * as http from 'node:http';
-import { ContextIdFactory, ModuleRef } from '@nestjs/core';
 
 @injectable()
 export class StreamingApiServerService {
@@ -24,11 +25,14 @@ export class StreamingApiServerService {
 	#connections = new Map<WebSocket.WebSocket, number>();
 	#cleanConnectionsIntervalId: NodeJS.Timeout | null = null;
 
+	#connectionContainers = new Map<MainStreamConnection, DependencyContainer>();
+
 	constructor(
 		@inject(DI.redisForSub)
 		private redisForSub: Redis.Redis,
 
-		private moduleRef: ModuleRef,
+		@inject(DependencyContainerToken)
+		private container: DependencyContainer,
 		private authenticateService: AuthenticateService,
 		private usersService: UserService,
 	) {
@@ -84,12 +88,14 @@ export class StreamingApiServerService {
 				return;
 			}
 
-			const contextId = ContextIdFactory.create();
-			this.moduleRef.registerRequestByContextId<ConnectionRequest>({
-				user,
-				token: app,
-			}, contextId);
-			const stream = await this.moduleRef.create(MainStreamConnection, contextId);
+			// Connection 単位の child container を作る (request scope の表現)。
+			// 接続切断時に child.clearInstances() でメモリリークを防ぐ。
+			const child = this.container.createChildContainer();
+			const connectionRequest: ConnectionRequest = { user, token: app };
+			child.register(RequestToken, { useValue: connectionRequest });
+			child.register(DependencyContainerToken, { useValue: child });
+			const stream = child.resolve(MainStreamConnection);
+			this.#connectionContainers.set(stream, child);
 
 			await stream.init();
 
@@ -137,6 +143,11 @@ export class StreamingApiServerService {
 				ev.removeAllListeners();
 				stream.dispose();
 				globalEv.off('message', onRedisMessage);
+				const child = this.#connectionContainers.get(stream);
+				if (child) {
+					child.clearInstances();
+					this.#connectionContainers.delete(stream);
+				}
 				this.#connections.delete(connection);
 				if (userUpdateIntervalId) clearInterval(userUpdateIntervalId);
 			});

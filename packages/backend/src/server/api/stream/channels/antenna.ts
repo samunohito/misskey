@@ -4,6 +4,7 @@
  */
 
 import { inject, injectable } from 'tsyringe';
+import { RequestToken } from '@/di/container.js';
 import { DI } from '@/di-symbols.js';
 import type { AntennasRepository } from '@/models/_.js';
 import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
@@ -13,8 +14,6 @@ import { isRenotePacked, isQuotePacked } from '@/misc/is-renote.js';
 import type { GlobalEvents } from '@/core/GlobalEventService.js';
 import type { JsonObject } from '@/misc/json-value.js';
 import Channel, { type ChannelRequest } from '../channel.js';
-import { REQUEST } from '@nestjs/core';
-
 @injectable()
 export class AntennaChannel extends Channel {
 	public readonly chName = 'antenna';
@@ -24,7 +23,7 @@ export class AntennaChannel extends Channel {
 	private antennaId: string;
 
 	constructor(
-		@inject(REQUEST)
+		@inject(RequestToken)
 		request: ChannelRequest,
 
 		@inject(DI.antennasRepository)

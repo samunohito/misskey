@@ -4,13 +4,13 @@
  */
 
 import { inject, injectable } from 'tsyringe';
+import { RequestToken } from '@/di/container.js';
 import { DI } from '@/di-symbols.js';
 import { bindThis } from '@/decorators.js';
 import type { GlobalEvents } from '@/core/GlobalEventService.js';
 import type { JsonObject } from '@/misc/json-value.js';
 import { ChatService } from '@/core/ChatService.js';
 import Channel, { type ChannelRequest } from '../channel.js';
-import { REQUEST } from '@nestjs/core';
 import type { ChatRoomsRepository } from '@/models/_.js';
 
 @injectable()
@@ -22,7 +22,7 @@ export class ChatRoomChannel extends Channel {
 	private roomId: string;
 
 	constructor(
-		@inject(REQUEST)
+		@inject(RequestToken)
 		request: ChannelRequest,
 
 		@inject(DI.chatRoomsRepository)

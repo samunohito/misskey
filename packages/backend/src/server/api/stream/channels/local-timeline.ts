@@ -4,6 +4,7 @@
  */
 
 import { inject, injectable } from 'tsyringe';
+import { RequestToken } from '@/di/container.js';
 import type { Packed } from '@/misc/json-schema.js';
 import { MetaService } from '@/core/MetaService.js';
 import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
@@ -13,8 +14,6 @@ import { RoleService } from '@/core/RoleService.js';
 import { isQuotePacked, isRenotePacked } from '@/misc/is-renote.js';
 import type { JsonObject } from '@/misc/json-value.js';
 import Channel, { type ChannelRequest } from '../channel.js';
-import { REQUEST } from '@nestjs/core';
-
 @injectable()
 export class LocalTimelineChannel extends Channel {
 	public readonly chName = 'localTimeline';
@@ -25,7 +24,7 @@ export class LocalTimelineChannel extends Channel {
 	private withFiles: boolean;
 
 	constructor(
-		@inject(REQUEST)
+		@inject(RequestToken)
 		request: ChannelRequest,
 
 		private metaService: MetaService,

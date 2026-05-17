@@ -4,6 +4,7 @@
  */
 
 import { inject, injectable } from 'tsyringe';
+import { RequestToken } from '@/di/container.js';
 import type { MiUserListMembership, UserListMembershipsRepository, UserListsRepository } from '@/models/_.js';
 import type { Packed } from '@/misc/json-schema.js';
 import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
@@ -13,8 +14,6 @@ import { bindThis } from '@/decorators.js';
 import { isRenotePacked, isQuotePacked } from '@/misc/is-renote.js';
 import type { JsonObject } from '@/misc/json-value.js';
 import Channel, { type ChannelRequest } from '../channel.js';
-import { REQUEST } from '@nestjs/core';
-
 @injectable()
 export class UserListChannel extends Channel {
 	public readonly chName = 'userList';
@@ -33,7 +32,7 @@ export class UserListChannel extends Channel {
 		@inject(DI.userListMembershipsRepository)
 		private userListMembershipsRepository: UserListMembershipsRepository,
 
-		@inject(REQUEST)
+		@inject(RequestToken)
 		request: ChannelRequest,
 
 		private noteEntityService: NoteEntityService,

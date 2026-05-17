@@ -3,10 +3,11 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { inject, injectable, Lifecycle } from 'tsyringe';
 
 import * as WebSocket from 'ws';
-import { ContextIdFactory, ModuleRef, REQUEST } from '@nestjs/core';
+import type { DependencyContainer } from 'tsyringe';
+import { DependencyContainerToken, RequestToken } from '@/di/container.js';
 import { isJsonObject } from '@/misc/json-value.js';
 import type { JsonObject, JsonValue } from '@/misc/json-value.js';
 import { ChannelMutingService } from '@/core/ChannelMutingService.js';
@@ -54,6 +55,7 @@ export default class Connection {
 	private wsConnection: WebSocket.WebSocket;
 	public subscriber: StreamEventEmitter;
 	private channels: Map<string, Channel> = new Map();
+	private channelContainers: Map<Channel, DependencyContainer> = new Map();
 	private subscribingNotes: Partial<Record<string, number>> = {};
 	public userProfile: MiUserProfile | null = null;
 	public following: Record<string, Pick<MiFollowing, 'withReplies'> | undefined> = {};
@@ -66,12 +68,12 @@ export default class Connection {
 	private fetchIntervalId: NodeJS.Timeout | null = null;
 
 	constructor(
-		private moduleRef: ModuleRef,
+		@inject(DependencyContainerToken) private container: DependencyContainer,
 		private notificationService: NotificationService,
 		private cacheService: CacheService,
 		private channelFollowingService: ChannelFollowingService,
 		private channelMutingService: ChannelMutingService,
-		@inject(REQUEST)
+		@inject(RequestToken)
 		request: ConnectionRequest,
 	) {
 		if (request.user) this.user = request.user;
@@ -296,12 +298,16 @@ export default class Connection {
 			}
 		}
 
-		const contextId = ContextIdFactory.create();
-		this.moduleRef.registerRequestByContextId<ChannelRequest>({
-			id: id,
-			connection: this,
-		}, contextId);
-		const ch: Channel = await this.moduleRef.create<Channel>(channelConstructor, contextId);
+		// Channel 単位の sub-child container を作って request scope を表現する。
+		// 接続切断時に `dispose()` で `child.clearInstances()` を呼んでメモリリークを防ぐ。
+		const child = this.container.createChildContainer();
+		const request: ChannelRequest = { id, connection: this };
+		child.register(RequestToken, { useValue: request });
+		child.register(DependencyContainerToken, { useValue: child });
+		// transient 登録: 同じ Channel クラスでも接続単位の別インスタンスを返す
+		child.register(channelConstructor, { useClass: channelConstructor }, { lifecycle: Lifecycle.Transient });
+		const ch: Channel = child.resolve(channelConstructor);
+		this.channelContainers.set(ch, child);
 
 		this.channels.set(ch.id, ch);
 		const valid = await ch.init(params ?? {});
@@ -356,6 +362,12 @@ export default class Connection {
 		if (channel) {
 			if (channel.dispose) channel.dispose();
 			this.channels.delete(id);
+			// child container を破棄してメモリリークを防ぐ
+			const child = this.channelContainers.get(channel);
+			if (child) {
+				child.clearInstances();
+				this.channelContainers.delete(channel);
+			}
 		}
 	}
 
@@ -385,6 +397,10 @@ export default class Connection {
 		for (const c of this.channels.values()) {
 			if (c.dispose) c.dispose();
 		}
+		for (const child of this.channelContainers.values()) {
+			child.clearInstances();
+		}
+		this.channelContainers.clear();
 	}
 }
 

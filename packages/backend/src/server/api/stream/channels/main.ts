@@ -4,13 +4,12 @@
  */
 
 import { inject, injectable } from 'tsyringe';
+import { RequestToken } from '@/di/container.js';
 import { isInstanceMuted, isUserFromMutedInstance } from '@/misc/is-instance-muted.js';
 import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
 import { bindThis } from '@/decorators.js';
 import type { JsonObject } from '@/misc/json-value.js';
 import Channel, { type ChannelRequest } from '../channel.js';
-import { REQUEST } from '@nestjs/core';
-
 @injectable()
 export class MainChannel extends Channel {
 	public readonly chName = 'main';
@@ -19,7 +18,7 @@ export class MainChannel extends Channel {
 	public static kind = 'read:account';
 
 	constructor(
-		@inject(REQUEST)
+		@inject(RequestToken)
 		request: ChannelRequest,
 
 		private noteEntityService: NoteEntityService,

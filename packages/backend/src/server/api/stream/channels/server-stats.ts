@@ -5,13 +5,12 @@
 
 import { inject, injectable } from 'tsyringe';
 
+import { RequestToken } from '@/di/container.js';
 import Xev from 'xev';
 import { bindThis } from '@/decorators.js';
 import { isJsonObject } from '@/misc/json-value.js';
 import type { JsonObject, JsonValue } from '@/misc/json-value.js';
 import Channel, { type ChannelRequest } from '../channel.js';
-import { REQUEST } from '@nestjs/core';
-
 const ev = new Xev();
 
 @injectable()
@@ -21,7 +20,7 @@ export class ServerStatsChannel extends Channel {
 	public static requireCredential = false as const;
 
 	constructor(
-		@inject(REQUEST)
+		@inject(RequestToken)
 		request: ChannelRequest,
 	) {
 		super(request);

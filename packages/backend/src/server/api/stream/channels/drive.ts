@@ -4,11 +4,10 @@
  */
 
 import { inject, injectable } from 'tsyringe';
+import { RequestToken } from '@/di/container.js';
 import { bindThis } from '@/decorators.js';
 import type { JsonObject } from '@/misc/json-value.js';
 import Channel, { type ChannelRequest } from '../channel.js';
-import { REQUEST } from '@nestjs/core';
-
 @injectable()
 export class DriveChannel extends Channel {
 	public readonly chName = 'drive';
@@ -17,7 +16,7 @@ export class DriveChannel extends Channel {
 	public static kind = 'read:account';
 
 	constructor(
-		@inject(REQUEST)
+		@inject(RequestToken)
 		request: ChannelRequest,
 	) {
 		super(request);

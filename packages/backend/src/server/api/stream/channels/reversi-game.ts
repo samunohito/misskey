@@ -4,6 +4,7 @@
  */
 
 import { inject, injectable } from 'tsyringe';
+import { RequestToken } from '@/di/container.js';
 import type { MiReversiGame } from '@/models/_.js';
 import { bindThis } from '@/decorators.js';
 import { ReversiService } from '@/core/ReversiService.js';
@@ -12,8 +13,6 @@ import { isJsonObject } from '@/misc/json-value.js';
 import type { JsonObject, JsonValue } from '@/misc/json-value.js';
 import Channel, { type ChannelRequest } from '../channel.js';
 import { reversiUpdateKeys } from 'misskey-js';
-import { REQUEST } from '@nestjs/core';
-
 @injectable()
 export class ReversiGameChannel extends Channel {
 	public readonly chName = 'reversiGame';
@@ -22,7 +21,7 @@ export class ReversiGameChannel extends Channel {
 	private gameId: MiReversiGame['id'] | null = null;
 
 	constructor(
-		@inject(REQUEST)
+		@inject(RequestToken)
 		request: ChannelRequest,
 
 		private reversiService: ReversiService,

@@ -4,13 +4,12 @@
  */
 
 import { inject, injectable } from 'tsyringe';
+import { RequestToken } from '@/di/container.js';
 import { bindThis } from '@/decorators.js';
 import type { GlobalEvents } from '@/core/GlobalEventService.js';
 import type { JsonObject } from '@/misc/json-value.js';
 import { ChatService } from '@/core/ChatService.js';
 import Channel, { type ChannelRequest } from '../channel.js';
-import { REQUEST } from '@nestjs/core';
-
 @injectable()
 export class ChatUserChannel extends Channel {
 	public readonly chName = 'chatUser';
@@ -20,7 +19,7 @@ export class ChatUserChannel extends Channel {
 	private otherId: string;
 
 	constructor(
-		@inject(REQUEST)
+		@inject(RequestToken)
 		request: ChannelRequest,
 
 		private chatService: ChatService,
