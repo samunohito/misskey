@@ -3,9 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
-import type { OnModuleInit } from '@nestjs/common';
-import { ModuleRef } from '@nestjs/core';
+import { delay, inject, injectable } from 'tsyringe';
 import { In } from 'typeorm';
 import { DI } from '@/di-symbols.js';
 import type { FollowRequestsRepository, NotesRepository, MiUser, UsersRepository } from '@/models/_.js';
@@ -18,9 +16,8 @@ import { FilterUnionByProperty, groupedNotificationTypes } from '@/types.js';
 import { CacheService } from '@/core/CacheService.js';
 import { RoleEntityService } from './RoleEntityService.js';
 import { ChatEntityService } from './ChatEntityService.js';
-import type { UserEntityService } from './UserEntityService.js';
-import type { NoteEntityService } from './NoteEntityService.js';
-
+import { UserEntityService } from './UserEntityService.js';
+import { NoteEntityService } from './NoteEntityService.js';
 const NOTE_REQUIRED_NOTIFICATION_TYPES = new Set([
 	'note',
 	'mention',
@@ -35,16 +32,8 @@ const NOTE_REQUIRED_NOTIFICATION_TYPES = new Set([
 ] as (typeof groupedNotificationTypes[number])[]);
 
 @injectable()
-export class NotificationEntityService implements OnModuleInit {
-	private userEntityService: UserEntityService;
-	private noteEntityService: NoteEntityService;
-	private roleEntityService: RoleEntityService;
-	private chatEntityService: ChatEntityService;
-
-	constructor(
-		private moduleRef: ModuleRef,
-
-		@inject(DI.notesRepository)
+export class NotificationEntityService {
+	constructor(@inject(DI.notesRepository)
 		private notesRepository: NotesRepository,
 
 		@inject(DI.usersRepository)
@@ -54,15 +43,13 @@ export class NotificationEntityService implements OnModuleInit {
 		private followRequestsRepository: FollowRequestsRepository,
 
 		private cacheService: CacheService,
+		@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService,
+		@inject(delay(() => NoteEntityService)) private noteEntityService: NoteEntityService,
+		@inject(delay(() => RoleEntityService)) private roleEntityService: RoleEntityService,
+		@inject(delay(() => ChatEntityService)) private chatEntityService: ChatEntityService,
 	) {
 	}
 
-	onModuleInit() {
-		this.userEntityService = this.moduleRef.get('UserEntityService');
-		this.noteEntityService = this.moduleRef.get('NoteEntityService');
-		this.roleEntityService = this.moduleRef.get('RoleEntityService');
-		this.chatEntityService = this.moduleRef.get('ChatEntityService');
-	}
 
 	/**
 	 * 通知をパックする共通処理

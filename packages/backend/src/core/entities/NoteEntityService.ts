@@ -3,10 +3,8 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
-import type { OnModuleInit } from '@nestjs/common';
+import { delay, inject, injectable } from 'tsyringe';
 import { EntityNotFoundError, In } from 'typeorm';
-import { ModuleRef } from '@nestjs/core';
 import { DI } from '@/di-symbols.js';
 import type { Packed } from '@/misc/json-schema.js';
 import { awaitAll } from '@/misc/prelude/await-all.js';
@@ -19,11 +17,10 @@ import { IdService } from '@/core/IdService.js';
 import { shouldHideNoteByTime } from '@/misc/should-hide-note-by-time.js';
 import { ReactionsBufferingService } from '@/core/ReactionsBufferingService.js';
 import { CacheService } from '@/core/CacheService.js';
-import type { CustomEmojiService } from '../CustomEmojiService.js';
-import type { ReactionService } from '../ReactionService.js';
-import type { UserEntityService } from './UserEntityService.js';
-import type { DriveFileEntityService } from './DriveFileEntityService.js';
-
+import { CustomEmojiService } from '../CustomEmojiService.js';
+import { ReactionService } from '../ReactionService.js';
+import { UserEntityService } from './UserEntityService.js';
+import { DriveFileEntityService } from './DriveFileEntityService.js';
 // is-renote.tsとよしなにリンク
 function isPureRenote(note: MiNote): note is MiNote & { renoteId: MiNote['id']; renote: MiNote } {
 	return (
@@ -60,20 +57,10 @@ async function nullIfEntityNotFound<T>(promise: Promise<T>): Promise<T | null> {
 }
 
 @injectable()
-export class NoteEntityService implements OnModuleInit {
-	private userEntityService: UserEntityService;
-	private driveFileEntityService: DriveFileEntityService;
-	private customEmojiService: CustomEmojiService;
-	private reactionService: ReactionService;
-	private reactionsBufferingService: ReactionsBufferingService;
-	private idService: IdService;
-	private cacheService: CacheService;
+export class NoteEntityService {
 	private noteLoader = new DebounceLoader(this.findNoteOrFail);
 
-	constructor(
-		private moduleRef: ModuleRef,
-
-		@inject(DI.meta)
+	constructor(@inject(DI.meta)
 		private meta: MiMeta,
 
 		@inject(DI.usersRepository)
@@ -104,18 +91,16 @@ export class NoteEntityService implements OnModuleInit {
 		//private reactionsBufferingService: ReactionsBufferingService,
 		//private idService: IdService,
 		//private cacheService: CacheService,
+		@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService,
+		@inject(delay(() => DriveFileEntityService)) private driveFileEntityService: DriveFileEntityService,
+		@inject(delay(() => CustomEmojiService)) private customEmojiService: CustomEmojiService,
+		@inject(delay(() => ReactionService)) private reactionService: ReactionService,
+		@inject(delay(() => ReactionsBufferingService)) private reactionsBufferingService: ReactionsBufferingService,
+		@inject(delay(() => IdService)) private idService: IdService,
+		@inject(delay(() => CacheService)) private cacheService: CacheService,
 	) {
 	}
 
-	onModuleInit() {
-		this.userEntityService = this.moduleRef.get('UserEntityService');
-		this.driveFileEntityService = this.moduleRef.get('DriveFileEntityService');
-		this.customEmojiService = this.moduleRef.get('CustomEmojiService');
-		this.reactionService = this.moduleRef.get('ReactionService');
-		this.reactionsBufferingService = this.moduleRef.get('ReactionsBufferingService');
-		this.idService = this.moduleRef.get('IdService');
-		this.cacheService = this.moduleRef.get('CacheService');
-	}
 
 	@bindThis
 	private treatVisibility(packedNote: Packed<'Note'>): Packed<'Note'>['visibility'] {

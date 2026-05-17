@@ -89,11 +89,14 @@ export class StreamingApiServerService {
 			}
 
 			// Connection 単位の child container を作る (request scope の表現)。
-			// 接続切断時に child.clearInstances() でメモリリークを防ぐ。
+			// MainStreamConnection 自体は親 container に未登録 (request scope のため)。
+			// child で transient 登録してから resolve する。接続切断時に child.clearInstances() で
+			// メモリリークを防ぐ。
 			const child = this.container.createChildContainer();
 			const connectionRequest: ConnectionRequest = { user, token: app };
 			child.register(RequestToken, { useValue: connectionRequest });
 			child.register(DependencyContainerToken, { useValue: child });
+			child.register(MainStreamConnection, { useClass: MainStreamConnection });
 			const stream = child.resolve(MainStreamConnection);
 			this.#connectionContainers.set(stream, child);
 

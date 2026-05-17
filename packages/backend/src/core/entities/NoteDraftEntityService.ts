@@ -3,9 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
-import type { OnModuleInit } from '@nestjs/common';
-import { ModuleRef } from '@nestjs/core';
+import { delay, inject, injectable } from 'tsyringe';
 import { EntityNotFoundError } from 'typeorm';
 import { DI } from '@/di-symbols.js';
 import type { Packed } from '@/misc/json-schema.js';
@@ -15,35 +13,25 @@ import type { NoteDraftsRepository, ChannelsRepository } from '@/models/_.js';
 import { bindThis } from '@/decorators.js';
 import { DebounceLoader } from '@/misc/loader.js';
 import { IdService } from '@/core/IdService.js';
-import type { UserEntityService } from './UserEntityService.js';
-import type { DriveFileEntityService } from './DriveFileEntityService.js';
-import type { NoteEntityService } from './NoteEntityService.js';
-
+import { UserEntityService } from './UserEntityService.js';
+import { DriveFileEntityService } from './DriveFileEntityService.js';
+import { NoteEntityService } from './NoteEntityService.js';
 @injectable()
-export class NoteDraftEntityService implements OnModuleInit {
-	private userEntityService: UserEntityService;
-	private driveFileEntityService: DriveFileEntityService;
-	private idService: IdService;
-	private noteEntityService: NoteEntityService;
+export class NoteDraftEntityService {
 	private noteDraftLoader = new DebounceLoader(this.findNoteDraftOrFail);
 
-	constructor(
-		private moduleRef: ModuleRef,
-
-		@inject(DI.noteDraftsRepository)
+	constructor(@inject(DI.noteDraftsRepository)
 		private noteDraftsRepository: NoteDraftsRepository,
 
 		@inject(DI.channelsRepository)
 		private channelsRepository: ChannelsRepository,
+		@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService,
+		@inject(delay(() => DriveFileEntityService)) private driveFileEntityService: DriveFileEntityService,
+		@inject(delay(() => IdService)) private idService: IdService,
+		@inject(delay(() => NoteEntityService)) private noteEntityService: NoteEntityService,
 	) {
 	}
 
-	onModuleInit() {
-		this.userEntityService = this.moduleRef.get('UserEntityService');
-		this.driveFileEntityService = this.moduleRef.get('DriveFileEntityService');
-		this.idService = this.moduleRef.get('IdService');
-		this.noteEntityService = this.moduleRef.get('NoteEntityService');
-	}
 
 	@bindThis
 	public async packAttachedFiles(fileIds: MiNote['fileIds'], packedFiles: Map<MiNote['fileIds'][number], Packed<'DriveFile'> | null>): Promise<Packed<'DriveFile'>[]> {

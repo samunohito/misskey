@@ -3,50 +3,48 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
-import type { OnModuleInit } from '@nestjs/common';
+import { delay, inject, injectable } from 'tsyringe';
 import promiseLimit from 'promise-limit';
 import { DataSource } from 'typeorm';
-import { ModuleRef } from '@nestjs/core';
 import { DI } from '@/di-symbols.js';
 import type { FollowingsRepository, InstancesRepository, MiMeta, UserProfilesRepository, UserPublickeysRepository, UsersRepository } from '@/models/_.js';
 import type { Config } from '@/config.js';
 import type { MiLocalUser, MiRemoteUser } from '@/models/User.js';
 import { MiUser } from '@/models/User.js';
 import { truncate } from '@/misc/truncate.js';
-import type { CacheService } from '@/core/CacheService.js';
+import { CacheService } from '@/core/CacheService.js';
 import { normalizeForSearch } from '@/misc/normalize-for-search.js';
 import { isDuplicateKeyValueError } from '@/misc/is-duplicate-key-value-error.js';
 import type Logger from '@/logger.js';
 import type { MiNote } from '@/models/Note.js';
-import type { IdService } from '@/core/IdService.js';
-import type { MfmService } from '@/core/MfmService.js';
+import { IdService } from '@/core/IdService.js';
+import { MfmService } from '@/core/MfmService.js';
 import { toArray } from '@/misc/prelude/array.js';
-import type { GlobalEventService } from '@/core/GlobalEventService.js';
-import type { FederatedInstanceService } from '@/core/FederatedInstanceService.js';
-import type { FetchInstanceMetadataService } from '@/core/FetchInstanceMetadataService.js';
+import { GlobalEventService } from '@/core/GlobalEventService.js';
+import { FederatedInstanceService } from '@/core/FederatedInstanceService.js';
+import { FetchInstanceMetadataService } from '@/core/FetchInstanceMetadataService.js';
 import { MiUserProfile } from '@/models/UserProfile.js';
 import { MiUserPublickey } from '@/models/UserPublickey.js';
-import type UsersChart from '@/core/chart/charts/users.js';
-import type InstanceChart from '@/core/chart/charts/instance.js';
-import type { HashtagService } from '@/core/HashtagService.js';
+import UsersChart from '@/core/chart/charts/users.js';
+import InstanceChart from '@/core/chart/charts/instance.js';
+import { HashtagService } from '@/core/HashtagService.js';
 import { MiUserNotePining } from '@/models/UserNotePining.js';
 import { StatusError } from '@/misc/status-error.js';
-import type { UtilityService } from '@/core/UtilityService.js';
-import type { UserEntityService } from '@/core/entities/UserEntityService.js';
+import { UtilityService } from '@/core/UtilityService.js';
+import { UserEntityService } from '@/core/entities/UserEntityService.js';
 import { bindThis } from '@/decorators.js';
 import { RoleService } from '@/core/RoleService.js';
 import { DriveFileEntityService } from '@/core/entities/DriveFileEntityService.js';
-import type { AccountMoveService } from '@/core/AccountMoveService.js';
+import { AccountMoveService } from '@/core/AccountMoveService.js';
 import { checkHttps } from '@/misc/check-https.js';
 import { getApId, getApType, getOneApHrefNullable, isActor, isCollection, isCollectionOrOrderedCollection, isPropertyValue } from '../type.js';
 import { extractApHashtags } from './tag.js';
-import type { ApNoteService } from './ApNoteService.js';
-import type { ApMfmService } from '../ApMfmService.js';
-import type { ApResolverService, Resolver } from '../ApResolverService.js';
-import type { ApLoggerService } from '../ApLoggerService.js';
-
-import type { ApImageService } from './ApImageService.js';
+import { ApNoteService } from './ApNoteService.js';
+import { ApMfmService } from '../ApMfmService.js';
+import type { Resolver } from '../ApResolverService.js';
+import { ApResolverService } from '../ApResolverService.js';
+import { ApLoggerService } from '../ApLoggerService.js';
+import { ApImageService } from './ApImageService.js';
 import type { IActor, ICollection, IObject, IOrderedCollection } from '../type.js';
 
 const nameLength = 128;
@@ -55,31 +53,10 @@ const summaryLength = 2048;
 type Field = Record<'name' | 'value', string>;
 
 @injectable()
-export class ApPersonService implements OnModuleInit {
-	private utilityService: UtilityService;
-	private userEntityService: UserEntityService;
-	private driveFileEntityService: DriveFileEntityService;
-	private idService: IdService;
-	private globalEventService: GlobalEventService;
-	private federatedInstanceService: FederatedInstanceService;
-	private fetchInstanceMetadataService: FetchInstanceMetadataService;
-	private cacheService: CacheService;
-	private apResolverService: ApResolverService;
-	private apNoteService: ApNoteService;
-	private apImageService: ApImageService;
-	private apMfmService: ApMfmService;
-	private mfmService: MfmService;
-	private hashtagService: HashtagService;
-	private usersChart: UsersChart;
-	private instanceChart: InstanceChart;
-	private apLoggerService: ApLoggerService;
-	private accountMoveService: AccountMoveService;
+export class ApPersonService {
 	private logger: Logger;
 
-	constructor(
-		private moduleRef: ModuleRef,
-
-		@inject(DI.config)
+	constructor(@inject(DI.config)
 		private config: Config,
 
 		@inject(DI.meta)
@@ -104,30 +81,27 @@ export class ApPersonService implements OnModuleInit {
 		private followingsRepository: FollowingsRepository,
 
 		private roleService: RoleService,
+		@inject(delay(() => UtilityService)) private utilityService: UtilityService,
+		@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService,
+		@inject(delay(() => DriveFileEntityService)) private driveFileEntityService: DriveFileEntityService,
+		@inject(delay(() => IdService)) private idService: IdService,
+		@inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService,
+		@inject(delay(() => FederatedInstanceService)) private federatedInstanceService: FederatedInstanceService,
+		@inject(delay(() => FetchInstanceMetadataService)) private fetchInstanceMetadataService: FetchInstanceMetadataService,
+		@inject(delay(() => CacheService)) private cacheService: CacheService,
+		@inject(delay(() => ApResolverService)) private apResolverService: ApResolverService,
+		@inject(delay(() => ApNoteService)) private apNoteService: ApNoteService,
+		@inject(delay(() => ApImageService)) private apImageService: ApImageService,
+		@inject(delay(() => ApMfmService)) private apMfmService: ApMfmService,
+		@inject(delay(() => MfmService)) private mfmService: MfmService,
+		@inject(delay(() => HashtagService)) private hashtagService: HashtagService,
+		@inject(delay(() => UsersChart)) private usersChart: UsersChart,
+		@inject(delay(() => InstanceChart)) private instanceChart: InstanceChart,
+		@inject(delay(() => ApLoggerService)) private apLoggerService: ApLoggerService,
+		@inject(delay(() => AccountMoveService)) private accountMoveService: AccountMoveService,
 	) {
 	}
 
-	onModuleInit(): void {
-		this.utilityService = this.moduleRef.get('UtilityService');
-		this.userEntityService = this.moduleRef.get('UserEntityService');
-		this.driveFileEntityService = this.moduleRef.get('DriveFileEntityService');
-		this.idService = this.moduleRef.get('IdService');
-		this.globalEventService = this.moduleRef.get('GlobalEventService');
-		this.federatedInstanceService = this.moduleRef.get('FederatedInstanceService');
-		this.fetchInstanceMetadataService = this.moduleRef.get('FetchInstanceMetadataService');
-		this.cacheService = this.moduleRef.get('CacheService');
-		this.apResolverService = this.moduleRef.get('ApResolverService');
-		this.apNoteService = this.moduleRef.get('ApNoteService');
-		this.apImageService = this.moduleRef.get('ApImageService');
-		this.apMfmService = this.moduleRef.get('ApMfmService');
-		this.mfmService = this.moduleRef.get('MfmService');
-		this.hashtagService = this.moduleRef.get('HashtagService');
-		this.usersChart = this.moduleRef.get('UsersChart');
-		this.instanceChart = this.moduleRef.get('InstanceChart');
-		this.apLoggerService = this.moduleRef.get('ApLoggerService');
-		this.accountMoveService = this.moduleRef.get('AccountMoveService');
-		this.logger = this.apLoggerService.logger;
-	}
 
 	/**
 	 * Validate and convert to actor object

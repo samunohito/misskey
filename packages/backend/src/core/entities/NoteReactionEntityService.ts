@@ -3,8 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
-import type { OnModuleInit } from '@nestjs/common';
+import { delay, inject, injectable } from 'tsyringe';
 import { DI } from '@/di-symbols.js';
 import type { NoteReactionsRepository } from '@/models/_.js';
 import type { Packed } from '@/misc/json-schema.js';
@@ -13,37 +12,25 @@ import { IdService } from '@/core/IdService.js';
 import type { } from '@/models/Blocking.js';
 import type { MiUser } from '@/models/User.js';
 import type { MiNoteReaction } from '@/models/NoteReaction.js';
-import type { ReactionService } from '../ReactionService.js';
-import type { UserEntityService } from './UserEntityService.js';
-import type { NoteEntityService } from './NoteEntityService.js';
-import { ModuleRef } from '@nestjs/core';
-
+import { ReactionService } from '../ReactionService.js';
+import { UserEntityService } from './UserEntityService.js';
+import { NoteEntityService } from './NoteEntityService.js';
 @injectable()
-export class NoteReactionEntityService implements OnModuleInit {
-	private userEntityService: UserEntityService;
-	private noteEntityService: NoteEntityService;
-	private reactionService: ReactionService;
-	private idService: IdService;
-
-	constructor(
-		private moduleRef: ModuleRef,
-
-		@inject(DI.noteReactionsRepository)
+export class NoteReactionEntityService {
+	constructor(@inject(DI.noteReactionsRepository)
 		private noteReactionsRepository: NoteReactionsRepository,
 
 		//private userEntityService: UserEntityService,
 		//private noteEntityService: NoteEntityService,
 		//private reactionService: ReactionService,
 		//private idService: IdService,
+		@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService,
+		@inject(delay(() => NoteEntityService)) private noteEntityService: NoteEntityService,
+		@inject(delay(() => ReactionService)) private reactionService: ReactionService,
+		@inject(delay(() => IdService)) private idService: IdService,
 	) {
 	}
 
-	onModuleInit() {
-		this.userEntityService = this.moduleRef.get('UserEntityService');
-		this.noteEntityService = this.moduleRef.get('NoteEntityService');
-		this.reactionService = this.moduleRef.get('ReactionService');
-		this.idService = this.moduleRef.get('IdService');
-	}
 
 	@bindThis
 	public async pack(

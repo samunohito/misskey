@@ -3,11 +3,9 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
-import type { OnModuleInit } from '@nestjs/common';
+import { delay, inject, injectable } from 'tsyringe';
 import * as Redis from 'ioredis';
 import _Ajv from 'ajv';
-import { ModuleRef } from '@nestjs/core';
 import { In } from 'typeorm';
 import { DI } from '@/di-symbols.js';
 import type { Config } from '@/config.js';
@@ -45,12 +43,12 @@ import { RoleService } from '@/core/RoleService.js';
 import { ApPersonService } from '@/core/activitypub/models/ApPersonService.js';
 import { FederatedInstanceService } from '@/core/FederatedInstanceService.js';
 import { IdService } from '@/core/IdService.js';
-import type { AnnouncementService } from '@/core/AnnouncementService.js';
-import type { CustomEmojiService } from '@/core/CustomEmojiService.js';
+import { AnnouncementService } from '@/core/AnnouncementService.js';
+import { CustomEmojiService } from '@/core/CustomEmojiService.js';
 import { AvatarDecorationService } from '@/core/AvatarDecorationService.js';
 import { ChatService } from '@/core/ChatService.js';
-import type { NoteEntityService } from './NoteEntityService.js';
-import type { PageEntityService } from './PageEntityService.js';
+import { NoteEntityService } from './NoteEntityService.js';
+import { PageEntityService } from './PageEntityService.js';
 import { toArray } from '@/misc/prelude/array.js';
 
 const Ajv = _Ajv.default;
@@ -84,22 +82,8 @@ export type UserRelation = {
 };
 
 @injectable()
-export class UserEntityService implements OnModuleInit {
-	private apPersonService: ApPersonService;
-	private noteEntityService: NoteEntityService;
-	private pageEntityService: PageEntityService;
-	private customEmojiService: CustomEmojiService;
-	private announcementService: AnnouncementService;
-	private roleService: RoleService;
-	private federatedInstanceService: FederatedInstanceService;
-	private idService: IdService;
-	private avatarDecorationService: AvatarDecorationService;
-	private chatService: ChatService;
-
-	constructor(
-		private moduleRef: ModuleRef,
-
-		@inject(DI.config)
+export class UserEntityService {
+	constructor(@inject(DI.config)
 		private config: Config,
 
 		@inject(DI.meta)
@@ -137,21 +121,19 @@ export class UserEntityService implements OnModuleInit {
 
 		@inject(DI.userMemosRepository)
 		private userMemosRepository: UserMemoRepository,
+		@inject(delay(() => ApPersonService)) private apPersonService: ApPersonService,
+		@inject(delay(() => NoteEntityService)) private noteEntityService: NoteEntityService,
+		@inject(delay(() => PageEntityService)) private pageEntityService: PageEntityService,
+		@inject(delay(() => CustomEmojiService)) private customEmojiService: CustomEmojiService,
+		@inject(delay(() => AnnouncementService)) private announcementService: AnnouncementService,
+		@inject(delay(() => RoleService)) private roleService: RoleService,
+		@inject(delay(() => FederatedInstanceService)) private federatedInstanceService: FederatedInstanceService,
+		@inject(delay(() => IdService)) private idService: IdService,
+		@inject(delay(() => AvatarDecorationService)) private avatarDecorationService: AvatarDecorationService,
+		@inject(delay(() => ChatService)) private chatService: ChatService,
 	) {
 	}
 
-	onModuleInit() {
-		this.apPersonService = this.moduleRef.get('ApPersonService');
-		this.noteEntityService = this.moduleRef.get('NoteEntityService');
-		this.pageEntityService = this.moduleRef.get('PageEntityService');
-		this.customEmojiService = this.moduleRef.get('CustomEmojiService');
-		this.announcementService = this.moduleRef.get('AnnouncementService');
-		this.roleService = this.moduleRef.get('RoleService');
-		this.federatedInstanceService = this.moduleRef.get('FederatedInstanceService');
-		this.idService = this.moduleRef.get('IdService');
-		this.avatarDecorationService = this.moduleRef.get('AvatarDecorationService');
-		this.chatService = this.moduleRef.get('ChatService');
-	}
 
 	//#region Validators
 	public validateLocalUsername = ajv.compile(localUsernameSchema);

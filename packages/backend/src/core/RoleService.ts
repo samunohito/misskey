@@ -3,11 +3,10 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
-import type { OnApplicationShutdown, OnModuleInit } from '@nestjs/common';
+import { delay, inject, injectable } from 'tsyringe';
+import type { OnApplicationShutdown } from '@nestjs/common';
 import * as Redis from 'ioredis';
 import { In } from 'typeorm';
-import { ModuleRef } from '@nestjs/core';
 import type {
 	MiMeta,
 	MiRole,
@@ -122,18 +121,13 @@ export const DEFAULT_POLICIES: RolePolicies = {
 };
 
 @injectable()
-export class RoleService implements OnApplicationShutdown, OnModuleInit {
+export class RoleService implements OnApplicationShutdown {
 	private rolesCache: MemorySingleCache<MiRole[]>;
 	private roleAssignmentByUserIdCache: MemoryKVCache<MiRoleAssignment[]>;
-	private notificationService: NotificationService;
-
 	public static AlreadyAssignedError = class extends Error {};
 	public static NotAssignedError = class extends Error {};
 
-	constructor(
-		private moduleRef: ModuleRef,
-
-		@inject(DI.meta)
+	constructor(@inject(DI.meta)
 		private meta: MiMeta,
 
 		@inject(DI.redisForTimelines)
@@ -157,6 +151,7 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 		private idService: IdService,
 		private moderationLogService: ModerationLogService,
 		private fanoutTimelineService: FanoutTimelineService,
+		@inject(delay(() => NotificationService)) private notificationService: NotificationService,
 	) {
 		this.rolesCache = new MemorySingleCache<MiRole[]>(1000 * 60 * 60); // 1h
 		this.roleAssignmentByUserIdCache = new MemoryKVCache<MiRoleAssignment[]>(1000 * 60 * 5); // 5m
@@ -164,9 +159,6 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 		this.redisForSub.on('message', this.onMessage);
 	}
 
-	async onModuleInit() {
-		this.notificationService = this.moduleRef.get(NotificationService.name);
-	}
 
 	@bindThis
 	private async onMessage(_: string, data: string): Promise<void> {

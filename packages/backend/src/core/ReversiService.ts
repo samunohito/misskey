@@ -3,10 +3,9 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
-import type { OnApplicationShutdown, OnModuleInit } from '@nestjs/common';
+import { delay, inject, injectable } from 'tsyringe';
+import type { OnApplicationShutdown } from '@nestjs/common';
 import * as Redis from 'ioredis';
-import { ModuleRef } from '@nestjs/core';
 import { reversiUpdateKeys } from 'misskey-js';
 import * as Reversi from 'misskey-reversi';
 import { IsNull, LessThan, MoreThan } from 'typeorm';
@@ -27,13 +26,8 @@ import { ReversiGameEntityService } from './entities/ReversiGameEntityService.js
 const INVITATION_TIMEOUT_MS = 1000 * 20; // 20sec
 
 @injectable()
-export class ReversiService implements OnApplicationShutdown, OnModuleInit {
-	private notificationService: NotificationService;
-
-	constructor(
-		private moduleRef: ModuleRef,
-
-		@inject(DI.redis)
+export class ReversiService implements OnApplicationShutdown {
+	constructor(@inject(DI.redis)
 		private redisClient: Redis.Redis,
 
 		@inject(DI.reversiGamesRepository)
@@ -44,12 +38,10 @@ export class ReversiService implements OnApplicationShutdown, OnModuleInit {
 		private globalEventService: GlobalEventService,
 		private reversiGameEntityService: ReversiGameEntityService,
 		private idService: IdService,
+		@inject(delay(() => NotificationService)) private notificationService: NotificationService,
 	) {
 	}
 
-	async onModuleInit() {
-		this.notificationService = this.moduleRef.get(NotificationService.name);
-	}
 
 	@bindThis
 	private async cacheGame(game: MiReversiGame) {

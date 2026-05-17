@@ -6,7 +6,8 @@
 import { inject, injectable } from 'tsyringe';
 import cors from '@fastify/cors';
 import multipart from '@fastify/multipart';
-import { ModuleRef } from '@nestjs/core';
+import type { DependencyContainer } from 'tsyringe';
+import { DependencyContainerToken } from '@/di/container.js';
 import type { AuthenticationResponseJSON } from '@simplewebauthn/server';
 import type { Config } from '@/config.js';
 import type { InstancesRepository, AccessTokensRepository } from '@/models/_.js';
@@ -23,7 +24,8 @@ import type { FastifyInstance, FastifyPluginOptions } from 'fastify';
 @injectable()
 export class ApiServerService {
 	constructor(
-		private moduleRef: ModuleRef,
+		@inject(DependencyContainerToken)
+		private container: DependencyContainer,
 
 		@inject(DI.config)
 		private config: Config,
@@ -67,7 +69,8 @@ export class ApiServerService {
 				name: endpoint.name,
 				meta: endpoint.meta,
 				params: endpoint.params,
-				exec: this.moduleRef.get('ep:' + endpoint.name, { strict: false }).exec,
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+				exec: this.container.resolve<any>('ep:' + endpoint.name).exec,
 			};
 
 			if (endpoint.meta.requireFile) {

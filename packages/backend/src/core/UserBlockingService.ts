@@ -3,9 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
-import type { OnModuleInit } from '@nestjs/common';
-import { ModuleRef } from '@nestjs/core';
+import { delay, inject, injectable } from 'tsyringe';
 import { IdService } from '@/core/IdService.js';
 import type { MiUser } from '@/models/User.js';
 import type { MiBlocking } from '@/models/Blocking.js';
@@ -23,14 +21,9 @@ import { CacheService } from '@/core/CacheService.js';
 import { UserFollowingService } from '@/core/UserFollowingService.js';
 
 @injectable()
-export class UserBlockingService implements OnModuleInit {
+export class UserBlockingService {
 	private logger: Logger;
-	private userFollowingService: UserFollowingService;
-
-	constructor(
-		private moduleRef: ModuleRef,
-
-		@inject(DI.followRequestsRepository)
+	constructor(@inject(DI.followRequestsRepository)
 		private followRequestsRepository: FollowRequestsRepository,
 
 		@inject(DI.blockingsRepository)
@@ -50,13 +43,11 @@ export class UserBlockingService implements OnModuleInit {
 		private webhookService: UserWebhookService,
 		private apRendererService: ApRendererService,
 		private loggerService: LoggerService,
+		@inject(delay(() => UserFollowingService)) private userFollowingService: UserFollowingService,
 	) {
 		this.logger = this.loggerService.getLogger('user-block');
 	}
 
-	onModuleInit() {
-		this.userFollowingService = this.moduleRef.get('UserFollowingService');
-	}
 
 	@bindThis
 	public async block(blocker: MiUser, blockee: MiUser, silent = false) {

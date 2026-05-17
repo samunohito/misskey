@@ -3,10 +3,9 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
-import type { OnApplicationShutdown, OnModuleInit } from '@nestjs/common';
+import { delay, inject, injectable } from 'tsyringe';
+import type { OnApplicationShutdown } from '@nestjs/common';
 import * as Redis from 'ioredis';
-import { ModuleRef } from '@nestjs/core';
 import type { UserListMembershipsRepository } from '@/models/_.js';
 import type { MiUser } from '@/models/User.js';
 import type { MiUserList } from '@/models/UserList.js';
@@ -23,16 +22,11 @@ import { RoleService } from '@/core/RoleService.js';
 import { SystemAccountService } from '@/core/SystemAccountService.js';
 
 @injectable()
-export class UserListService implements OnApplicationShutdown, OnModuleInit {
+export class UserListService implements OnApplicationShutdown {
 	public static TooManyUsersError = class extends Error {};
 
 	public membersCache: RedisKVCache<Set<string>>;
-	private roleService: RoleService;
-
-	constructor(
-		private moduleRef: ModuleRef,
-
-		@inject(DI.redis)
+	constructor(@inject(DI.redis)
 		private redisClient: Redis.Redis,
 
 		@inject(DI.redisForSub)
@@ -46,6 +40,7 @@ export class UserListService implements OnApplicationShutdown, OnModuleInit {
 		private globalEventService: GlobalEventService,
 		private queueService: QueueService,
 		private systemAccountService: SystemAccountService,
+		@inject(delay(() => RoleService)) private roleService: RoleService,
 	) {
 		this.membersCache = new RedisKVCache<Set<string>>(this.redisClient, 'userListMembers', {
 			lifetime: 1000 * 60 * 30, // 30m
@@ -58,9 +53,6 @@ export class UserListService implements OnApplicationShutdown, OnModuleInit {
 		this.redisForSub.on('message', this.onMessage);
 	}
 
-	async onModuleInit() {
-		this.roleService = this.moduleRef.get(RoleService.name);
-	}
 
 	@bindThis
 	private async onMessage(_: string, data: string): Promise<void> {

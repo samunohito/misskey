@@ -28,35 +28,15 @@ import { FeedService } from '@/server/web/FeedService.js';
 import { UrlPreviewService } from '@/server/web/UrlPreviewService.js';
 import { ClientLoggerService } from '@/server/web/ClientLoggerService.js';
 import { OAuth2ProviderService } from '@/server/oauth/OAuth2ProviderService.js';
-import MainStreamConnection from '@/server/api/stream/Connection.js';
-import { MainChannel } from '@/server/api/stream/channels/main.js';
-import { AdminChannel } from '@/server/api/stream/channels/admin.js';
-import { AntennaChannel } from '@/server/api/stream/channels/antenna.js';
-import { ChannelChannel } from '@/server/api/stream/channels/channel.js';
-import { DriveChannel } from '@/server/api/stream/channels/drive.js';
-import { GlobalTimelineChannel } from '@/server/api/stream/channels/global-timeline.js';
-import { HashtagChannel } from '@/server/api/stream/channels/hashtag.js';
-import { HomeTimelineChannel } from '@/server/api/stream/channels/home-timeline.js';
-import { HybridTimelineChannel } from '@/server/api/stream/channels/hybrid-timeline.js';
-import { LocalTimelineChannel } from '@/server/api/stream/channels/local-timeline.js';
-import { QueueStatsChannel } from '@/server/api/stream/channels/queue-stats.js';
-import { ServerStatsChannel } from '@/server/api/stream/channels/server-stats.js';
-import { UserListChannel } from '@/server/api/stream/channels/user-list.js';
-import { RoleTimelineChannel } from '@/server/api/stream/channels/role-timeline.js';
-import { ChatUserChannel } from '@/server/api/stream/channels/chat-user.js';
-import { ChatRoomChannel } from '@/server/api/stream/channels/chat-room.js';
-import { ReversiChannel } from '@/server/api/stream/channels/reversi.js';
-import { ReversiGameChannel } from '@/server/api/stream/channels/reversi-game.js';
 import { NoteStreamingHidingService } from '@/server/api/stream/NoteStreamingHidingService.js';
 import { SigninWithPasskeyApiService } from '@/server/api/SigninWithPasskeyApiService.js';
 
 // 旧 ServerModule. HTTP / WebSocket サーバ層のサービスを登録する。
 //
-// `MainStreamConnection` と Channel 系 (HomeTimelineChannel など) は旧設計で
-// `Scope.TRANSIENT` だった。tsyringe では context container ではなく、
-// WebSocket 接続単位の child container 側で `Lifecycle.Transient` 登録する (step 7)。
-// ここでは singleton として登録するが、Connection から resolve する際に
-// child container 側の登録が優先される。
+// `MainStreamConnection` と Channel 系 (HomeTimelineChannel など) は request scope
+// (旧 `Scope.TRANSIENT` + `@Inject(REQUEST)`) のためここでは登録しない。
+// 接続/購読のたびに `StreamingApiServerService` と `Connection` が child container を作り、
+// その中で `Lifecycle.Transient` で登録 → resolve する。
 export function registerServerServices(c: DependencyContainer): void {
 	const singletons: Array<new (...args: never[]) => unknown> = [
 		ClientServerService,
@@ -87,35 +67,6 @@ export function registerServerServices(c: DependencyContainer): void {
 	];
 
 	for (const cls of singletons) {
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		c.registerSingleton(cls as any);
-	}
-
-	// MainStreamConnection と Channel は WebSocket 接続単位の child container で
-	// transient 登録する。ここでは container resolve 時の参照のために singleton 風に登録するが、
-	// 実際の接続単位生成は StreamingApiServerService が child container を作って resolve する。
-	c.registerSingleton(MainStreamConnection);
-	const channelClasses: Array<new (...args: never[]) => unknown> = [
-		MainChannel,
-		AdminChannel,
-		AntennaChannel,
-		ChannelChannel,
-		DriveChannel,
-		GlobalTimelineChannel,
-		HashtagChannel,
-		HomeTimelineChannel,
-		HybridTimelineChannel,
-		LocalTimelineChannel,
-		QueueStatsChannel,
-		ServerStatsChannel,
-		UserListChannel,
-		RoleTimelineChannel,
-		ChatUserChannel,
-		ChatRoomChannel,
-		ReversiChannel,
-		ReversiGameChannel,
-	];
-	for (const cls of channelClasses) {
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		c.registerSingleton(cls as any);
 	}

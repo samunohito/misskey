@@ -4,6 +4,8 @@
  */
 
 import { inject, injectable } from 'tsyringe';
+import type { DependencyContainer } from 'tsyringe';
+import { DependencyContainerToken } from '@/di/container.js';
 import { IsNull, Not } from 'typeorm';
 import type { MiLocalUser, MiRemoteUser } from '@/models/User.js';
 import type {
@@ -29,7 +31,6 @@ import { ApDbResolverService } from './ApDbResolverService.js';
 import { ApRendererService } from './ApRendererService.js';
 import { ApRequestService } from './ApRequestService.js';
 import { FetchAllowSoftFailMask } from './misc/check-against-url.js';
-import { ModuleRef } from '@nestjs/core';
 
 @injectable()
 export class Resolver {
@@ -203,12 +204,14 @@ export class Resolver {
 @injectable()
 export class ApResolverService {
 	constructor(
-		private moduleRef: ModuleRef,
+		@inject(DependencyContainerToken)
+		private container: DependencyContainer,
 	) {
 	}
 
 	@bindThis
-	public async createResolver(): Promise<Resolver> {
-		return await this.moduleRef.create(Resolver);
+	public createResolver(): Resolver {
+		// Resolver は Lifecycle.Transient で登録されているため、resolve するたびに新インスタンスを得る
+		return this.container.resolve(Resolver);
 	}
 }

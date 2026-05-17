@@ -3,9 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
-import type { OnModuleInit } from '@nestjs/common';
-import { ModuleRef } from '@nestjs/core';
+import { delay, inject, injectable } from 'tsyringe';
 import { Brackets, IsNull } from 'typeorm';
 import type { MiLocalUser, MiPartialLocalUser, MiPartialRemoteUser, MiRemoteUser, MiUser } from '@/models/User.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
@@ -47,13 +45,8 @@ type Remote = MiRemoteUser | {
 type Both = Local | Remote;
 
 @injectable()
-export class UserFollowingService implements OnModuleInit {
-	private userBlockingService: UserBlockingService;
-
-	constructor(
-		private moduleRef: ModuleRef,
-
-		@inject(DI.config)
+export class UserFollowingService {
+	constructor(@inject(DI.config)
 		private config: Config,
 
 		@inject(DI.meta)
@@ -87,12 +80,10 @@ export class UserFollowingService implements OnModuleInit {
 		private accountMoveService: AccountMoveService,
 		private perUserFollowingChart: PerUserFollowingChart,
 		private instanceChart: InstanceChart,
+		@inject(delay(() => UserBlockingService)) private userBlockingService: UserBlockingService,
 	) {
 	}
 
-	onModuleInit() {
-		this.userBlockingService = this.moduleRef.get('UserBlockingService');
-	}
 
 	@bindThis
 	public async deliverAccept(follower: MiRemoteUser, followee: MiPartialLocalUser, requestId?: string) {
