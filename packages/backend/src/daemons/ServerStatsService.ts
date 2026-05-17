@@ -23,7 +23,10 @@ export class ServerStatsService implements Disposable {
 
 	constructor(
 		@inject(DI.meta)
-		private meta: MiMeta, @inject(delay(() => DisposableRegistry)) registry: DisposableRegistry) {
+		private meta: MiMeta,
+
+		@inject(delay(() => DisposableRegistry))
+		registry: DisposableRegistry) {
 		registry.register(this);
 	}
 

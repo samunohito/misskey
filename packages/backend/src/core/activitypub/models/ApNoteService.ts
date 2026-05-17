@@ -56,22 +56,47 @@ export class ApNoteService {
 		private pollsRepository: PollsRepository,
 
 		@inject(DI.emojisRepository)
-		private emojisRepository: EmojisRepository, @inject(delay(() => IdService)) private idService: IdService, @inject(delay(() => ApMfmService)) private apMfmService: ApMfmService, @inject(delay(() => ApResolverService)) private apResolverService: ApResolverService,
+		private emojisRepository: EmojisRepository,
+
+		@inject(delay(() => IdService))
+		private idService: IdService,
+
+		@inject(delay(() => ApMfmService))
+		private apMfmService: ApMfmService,
+
+		@inject(delay(() => ApResolverService))
+		private apResolverService: ApResolverService,
 
 		// 循環参照のため / for circular dependency
 		@inject(delay(() => ApPersonService))
 		private apPersonService: ApPersonService,
 
-		@inject(delay(() => UtilityService)) private utilityService: UtilityService,
-		@inject(delay(() => ApAudienceService)) private apAudienceService: ApAudienceService,
-		@inject(delay(() => ApMentionService)) private apMentionService: ApMentionService,
-		@inject(delay(() => ApImageService)) private apImageService: ApImageService,
-		@inject(delay(() => ApQuestionService)) private apQuestionService: ApQuestionService,
-		@inject(delay(() => PollService)) private pollService: PollService,
-		@inject(delay(() => NoteCreateService)) private noteCreateService: NoteCreateService,
-		@inject(delay(() => ApDbResolverService)) private apDbResolverService: ApDbResolverService,
-		@inject(delay(() => ApLoggerService)) private apLoggerService: ApLoggerService,
-	) {
+		@inject(delay(() => UtilityService))
+		private utilityService: UtilityService,
+
+		@inject(delay(() => ApAudienceService))
+		private apAudienceService: ApAudienceService,
+
+		@inject(delay(() => ApMentionService))
+		private apMentionService: ApMentionService,
+
+		@inject(delay(() => ApImageService))
+		private apImageService: ApImageService,
+
+		@inject(delay(() => ApQuestionService))
+		private apQuestionService: ApQuestionService,
+
+		@inject(delay(() => PollService))
+		private pollService: PollService,
+
+		@inject(delay(() => NoteCreateService))
+		private noteCreateService: NoteCreateService,
+
+		@inject(delay(() => ApDbResolverService))
+		private apDbResolverService: ApDbResolverService,
+
+		@inject(delay(() => ApLoggerService))
+		private apLoggerService: ApLoggerService) {
 		this.logger = this.apLoggerService.logger;
 	}
 

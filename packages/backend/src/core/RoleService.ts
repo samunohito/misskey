@@ -127,7 +127,8 @@ export class RoleService implements Disposable {
 	public static AlreadyAssignedError = class extends Error {};
 	public static NotAssignedError = class extends Error {};
 
-	constructor(@inject(DI.meta)
+	constructor(
+		@inject(DI.meta)
 		private meta: MiMeta,
 
 		@inject(DI.redisForTimelines)
@@ -143,10 +144,31 @@ export class RoleService implements Disposable {
 		private rolesRepository: RolesRepository,
 
 		@inject(DI.roleAssignmentsRepository)
-		private roleAssignmentsRepository: RoleAssignmentsRepository, @inject(delay(() => CacheService)) private cacheService: CacheService, @inject(delay(() => UserEntityService)) private userEntityService: UserEntityService, @inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService, @inject(delay(() => IdService)) private idService: IdService, @inject(delay(() => ModerationLogService)) private moderationLogService: ModerationLogService, @inject(delay(() => FanoutTimelineService)) private fanoutTimelineService: FanoutTimelineService,
-		@inject(delay(() => NotificationService)) private notificationService: NotificationService,
-		@inject(delay(() => DisposableRegistry)) registry: DisposableRegistry,
-	) {
+		private roleAssignmentsRepository: RoleAssignmentsRepository,
+
+		@inject(delay(() => CacheService))
+		private cacheService: CacheService,
+
+		@inject(delay(() => UserEntityService))
+		private userEntityService: UserEntityService,
+
+		@inject(delay(() => GlobalEventService))
+		private globalEventService: GlobalEventService,
+
+		@inject(delay(() => IdService))
+		private idService: IdService,
+
+		@inject(delay(() => ModerationLogService))
+		private moderationLogService: ModerationLogService,
+
+		@inject(delay(() => FanoutTimelineService))
+		private fanoutTimelineService: FanoutTimelineService,
+
+		@inject(delay(() => NotificationService))
+		private notificationService: NotificationService,
+
+		@inject(delay(() => DisposableRegistry))
+		registry: DisposableRegistry) {
 		registry.register(this);
 		this.rolesCache = new MemorySingleCache<MiRole[]>(1000 * 60 * 60); // 1h
 		this.roleAssignmentByUserIdCache = new MemoryKVCache<MiRoleAssignment[]>(1000 * 60 * 5); // 5m

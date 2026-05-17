@@ -65,7 +65,13 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private serverSettings: MiMeta,
 
 		@inject(DI.swSubscriptionsRepository)
-		private swSubscriptionsRepository: SwSubscriptionsRepository, @inject(delay(() => IdService)) private idService: IdService, @inject(delay(() => PushNotificationService)) private pushNotificationService: PushNotificationService) {
+		private swSubscriptionsRepository: SwSubscriptionsRepository,
+
+		@inject(delay(() => IdService))
+		private idService: IdService,
+
+		@inject(delay(() => PushNotificationService))
+		private pushNotificationService: PushNotificationService) {
 		super(meta, paramDef, async (ps, me) => {
 			// if already subscribed
 			const exist = await this.swSubscriptionsRepository.findOneBy({

@@ -27,7 +27,16 @@ export class PageEntityService {
 		private pageLikesRepository: PageLikesRepository,
 
 		@inject(DI.driveFilesRepository)
-		private driveFilesRepository: DriveFilesRepository, @inject(delay(() => UserEntityService)) private userEntityService: UserEntityService, @inject(delay(() => DriveFileEntityService)) private driveFileEntityService: DriveFileEntityService, @inject(delay(() => IdService)) private idService: IdService) {
+		private driveFilesRepository: DriveFilesRepository,
+
+		@inject(delay(() => UserEntityService))
+		private userEntityService: UserEntityService,
+
+		@inject(delay(() => DriveFileEntityService))
+		private driveFileEntityService: DriveFileEntityService,
+
+		@inject(delay(() => IdService))
+		private idService: IdService) {
 	}
 
 	@bindThis

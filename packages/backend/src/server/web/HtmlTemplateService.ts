@@ -35,7 +35,10 @@ export class HtmlTemplateService {
 		private config: Config,
 
 		@inject(DI.meta)
-		private meta: MiMeta, @inject(delay(() => MetaEntityService)) private metaEntityService: MetaEntityService) {
+		private meta: MiMeta,
+
+		@inject(delay(() => MetaEntityService))
+		private metaEntityService: MetaEntityService) {
 		this.frontendViteBuilt = resolve(this.config.rootDir, 'built/_frontend_vite_');
 		this.frontendEmbedViteBuilt = resolve(this.config.rootDir, 'built/_frontend_embed_vite_');
 	}

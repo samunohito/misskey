@@ -54,7 +54,10 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.bubbleGameRecordsRepository)
-		private bubbleGameRecordsRepository: BubbleGameRecordsRepository, @inject(delay(() => UserEntityService)) private userEntityService: UserEntityService) {
+		private bubbleGameRecordsRepository: BubbleGameRecordsRepository,
+
+		@inject(delay(() => UserEntityService))
+		private userEntityService: UserEntityService) {
 		super(meta, paramDef, async (ps) => {
 			const records = await this.bubbleGameRecordsRepository.find({
 				where: {

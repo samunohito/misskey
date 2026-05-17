@@ -51,7 +51,19 @@ export class ApDbResolverService implements Disposable {
 		private notesRepository: NotesRepository,
 
 		@inject(DI.userPublickeysRepository)
-		private userPublickeysRepository: UserPublickeysRepository, @inject(delay(() => CacheService)) private cacheService: CacheService, @inject(delay(() => ApPersonService)) private apPersonService: ApPersonService, @inject(delay(() => UtilityService)) private utilityService: UtilityService, @inject(delay(() => DisposableRegistry)) registry: DisposableRegistry) {
+		private userPublickeysRepository: UserPublickeysRepository,
+
+		@inject(delay(() => CacheService))
+		private cacheService: CacheService,
+
+		@inject(delay(() => ApPersonService))
+		private apPersonService: ApPersonService,
+
+		@inject(delay(() => UtilityService))
+		private utilityService: UtilityService,
+
+		@inject(delay(() => DisposableRegistry))
+		registry: DisposableRegistry) {
 		registry.register(this);
 		this.publicKeyCache = new MemoryKVCache<MiUserPublickey | null>(1000 * 60 * 60 * 12); // 12h
 		this.publicKeyByUserIdCache = new MemoryKVCache<MiUserPublickey | null>(1000 * 60 * 60 * 12); // 12h

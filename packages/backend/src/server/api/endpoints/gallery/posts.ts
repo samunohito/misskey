@@ -40,7 +40,13 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.galleryPostsRepository)
-		private galleryPostsRepository: GalleryPostsRepository, @inject(delay(() => GalleryPostEntityService)) private galleryPostEntityService: GalleryPostEntityService, @inject(delay(() => QueryService)) private queryService: QueryService) {
+		private galleryPostsRepository: GalleryPostsRepository,
+
+		@inject(delay(() => GalleryPostEntityService))
+		private galleryPostEntityService: GalleryPostEntityService,
+
+		@inject(delay(() => QueryService))
+		private queryService: QueryService) {
 		super(meta, paramDef, async (ps, me) => {
 			const query = this.queryService.makePaginationQuery(this.galleryPostsRepository.createQueryBuilder('post'), ps.sinceId, ps.untilId, ps.sinceDate, ps.untilDate)
 				.innerJoinAndSelect('post.user', 'user');

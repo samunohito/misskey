@@ -52,7 +52,16 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.emojisRepository)
-		private emojisRepository: EmojisRepository, @inject(delay(() => UtilityService)) private utilityService: UtilityService, @inject(delay(() => QueryService)) private queryService: QueryService, @inject(delay(() => EmojiEntityService)) private emojiEntityService: EmojiEntityService) {
+		private emojisRepository: EmojisRepository,
+
+		@inject(delay(() => UtilityService))
+		private utilityService: UtilityService,
+
+		@inject(delay(() => QueryService))
+		private queryService: QueryService,
+
+		@inject(delay(() => EmojiEntityService))
+		private emojiEntityService: EmojiEntityService) {
 		super(meta, paramDef, async (ps, me) => {
 			const q = this.queryService.makePaginationQuery(this.emojisRepository.createQueryBuilder('emoji'), ps.sinceId, ps.untilId, ps.sinceDate, ps.untilDate);
 

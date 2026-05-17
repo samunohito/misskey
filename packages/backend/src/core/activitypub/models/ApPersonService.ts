@@ -56,7 +56,8 @@ type Field = Record<'name' | 'value', string>;
 export class ApPersonService {
 	private logger: Logger;
 
-	constructor(@inject(DI.config)
+	constructor(
+		@inject(DI.config)
 		private config: Config,
 
 		@inject(DI.meta)
@@ -78,26 +79,64 @@ export class ApPersonService {
 		private instancesRepository: InstancesRepository,
 
 		@inject(DI.followingsRepository)
-		private followingsRepository: FollowingsRepository, @inject(delay(() => RoleService)) private roleService: RoleService,
-		@inject(delay(() => UtilityService)) private utilityService: UtilityService,
-		@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService,
-		@inject(delay(() => DriveFileEntityService)) private driveFileEntityService: DriveFileEntityService,
-		@inject(delay(() => IdService)) private idService: IdService,
-		@inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService,
-		@inject(delay(() => FederatedInstanceService)) private federatedInstanceService: FederatedInstanceService,
-		@inject(delay(() => FetchInstanceMetadataService)) private fetchInstanceMetadataService: FetchInstanceMetadataService,
-		@inject(delay(() => CacheService)) private cacheService: CacheService,
-		@inject(delay(() => ApResolverService)) private apResolverService: ApResolverService,
-		@inject(delay(() => ApNoteService)) private apNoteService: ApNoteService,
-		@inject(delay(() => ApImageService)) private apImageService: ApImageService,
-		@inject(delay(() => ApMfmService)) private apMfmService: ApMfmService,
-		@inject(delay(() => MfmService)) private mfmService: MfmService,
-		@inject(delay(() => HashtagService)) private hashtagService: HashtagService,
-		@inject(delay(() => UsersChart)) private usersChart: UsersChart,
-		@inject(delay(() => InstanceChart)) private instanceChart: InstanceChart,
-		@inject(delay(() => ApLoggerService)) private apLoggerService: ApLoggerService,
-		@inject(delay(() => AccountMoveService)) private accountMoveService: AccountMoveService,
-	) {
+		private followingsRepository: FollowingsRepository,
+
+		@inject(delay(() => RoleService))
+		private roleService: RoleService,
+
+		@inject(delay(() => UtilityService))
+		private utilityService: UtilityService,
+
+		@inject(delay(() => UserEntityService))
+		private userEntityService: UserEntityService,
+
+		@inject(delay(() => DriveFileEntityService))
+		private driveFileEntityService: DriveFileEntityService,
+
+		@inject(delay(() => IdService))
+		private idService: IdService,
+
+		@inject(delay(() => GlobalEventService))
+		private globalEventService: GlobalEventService,
+
+		@inject(delay(() => FederatedInstanceService))
+		private federatedInstanceService: FederatedInstanceService,
+
+		@inject(delay(() => FetchInstanceMetadataService))
+		private fetchInstanceMetadataService: FetchInstanceMetadataService,
+
+		@inject(delay(() => CacheService))
+		private cacheService: CacheService,
+
+		@inject(delay(() => ApResolverService))
+		private apResolverService: ApResolverService,
+
+		@inject(delay(() => ApNoteService))
+		private apNoteService: ApNoteService,
+
+		@inject(delay(() => ApImageService))
+		private apImageService: ApImageService,
+
+		@inject(delay(() => ApMfmService))
+		private apMfmService: ApMfmService,
+
+		@inject(delay(() => MfmService))
+		private mfmService: MfmService,
+
+		@inject(delay(() => HashtagService))
+		private hashtagService: HashtagService,
+
+		@inject(delay(() => UsersChart))
+		private usersChart: UsersChart,
+
+		@inject(delay(() => InstanceChart))
+		private instanceChart: InstanceChart,
+
+		@inject(delay(() => ApLoggerService))
+		private apLoggerService: ApLoggerService,
+
+		@inject(delay(() => AccountMoveService))
+		private accountMoveService: AccountMoveService) {
 		this.logger = this.apLoggerService.logger;
 	}
 

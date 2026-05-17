@@ -67,7 +67,13 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.driveFilesRepository)
-		private driveFilesRepository: DriveFilesRepository, @inject(delay(() => GetterService)) private getterService: GetterService, @inject(delay(() => ChatService)) private chatService: ChatService) {
+		private driveFilesRepository: DriveFilesRepository,
+
+		@inject(delay(() => GetterService))
+		private getterService: GetterService,
+
+		@inject(delay(() => ChatService))
+		private chatService: ChatService) {
 		super(meta, paramDef, async (ps, me) => {
 			await this.chatService.checkChatAvailability(me.id, 'write');
 

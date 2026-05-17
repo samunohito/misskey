@@ -44,7 +44,13 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.renoteMutingsRepository)
-		private renoteMutingsRepository: RenoteMutingsRepository, @inject(delay(() => RenoteMutingEntityService)) private renoteMutingEntityService: RenoteMutingEntityService, @inject(delay(() => QueryService)) private queryService: QueryService) {
+		private renoteMutingsRepository: RenoteMutingsRepository,
+
+		@inject(delay(() => RenoteMutingEntityService))
+		private renoteMutingEntityService: RenoteMutingEntityService,
+
+		@inject(delay(() => QueryService))
+		private queryService: QueryService) {
 		super(meta, paramDef, async (ps, me) => {
 			const query = this.queryService.makePaginationQuery(this.renoteMutingsRepository.createQueryBuilder('muting'), ps.sinceId, ps.untilId, ps.sinceDate, ps.untilDate)
 				.andWhere('muting.muterId = :meId', { meId: me.id });

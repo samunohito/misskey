@@ -48,7 +48,13 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private flashsRepository: FlashsRepository,
 
 		@inject(DI.usersRepository)
-		private usersRepository: UsersRepository, @inject(delay(() => ModerationLogService)) private moderationLogService: ModerationLogService, @inject(delay(() => RoleService)) private roleService: RoleService) {
+		private usersRepository: UsersRepository,
+
+		@inject(delay(() => ModerationLogService))
+		private moderationLogService: ModerationLogService,
+
+		@inject(delay(() => RoleService))
+		private roleService: RoleService) {
 		super(meta, paramDef, async (ps, me) => {
 			const flash = await this.flashsRepository.findOneBy({ id: ps.flashId });
 

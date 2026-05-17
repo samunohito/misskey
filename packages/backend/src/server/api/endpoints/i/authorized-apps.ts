@@ -64,7 +64,10 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.accessTokensRepository)
-		private accessTokensRepository: AccessTokensRepository, @inject(delay(() => AppEntityService)) private appEntityService: AppEntityService) {
+		private accessTokensRepository: AccessTokensRepository,
+
+		@inject(delay(() => AppEntityService))
+		private appEntityService: AppEntityService) {
 		super(meta, paramDef, async (ps, me) => {
 			// Get tokens
 			const tokens = await this.accessTokensRepository.find({

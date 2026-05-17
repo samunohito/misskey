@@ -54,7 +54,13 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.flashsRepository)
-		private flashsRepository: FlashsRepository, @inject(delay(() => FlashEntityService)) private flashEntityService: FlashEntityService, @inject(delay(() => IdService)) private idService: IdService) {
+		private flashsRepository: FlashsRepository,
+
+		@inject(delay(() => FlashEntityService))
+		private flashEntityService: FlashEntityService,
+
+		@inject(delay(() => IdService))
+		private idService: IdService) {
 		super(meta, paramDef, async (ps, me) => {
 			const flash = await this.flashsRepository.insertOne({
 				id: this.idService.gen(),

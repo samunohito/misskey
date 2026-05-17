@@ -26,7 +26,22 @@ export class UserSuspendService {
 		private followingsRepository: FollowingsRepository,
 
 		@inject(DI.followRequestsRepository)
-		private followRequestsRepository: FollowRequestsRepository, @inject(delay(() => UserEntityService)) private userEntityService: UserEntityService, @inject(delay(() => QueueService)) private queueService: QueueService, @inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService, @inject(delay(() => ApRendererService)) private apRendererService: ApRendererService, @inject(delay(() => ModerationLogService)) private moderationLogService: ModerationLogService) {
+		private followRequestsRepository: FollowRequestsRepository,
+
+		@inject(delay(() => UserEntityService))
+		private userEntityService: UserEntityService,
+
+		@inject(delay(() => QueueService))
+		private queueService: QueueService,
+
+		@inject(delay(() => GlobalEventService))
+		private globalEventService: GlobalEventService,
+
+		@inject(delay(() => ApRendererService))
+		private apRendererService: ApRendererService,
+
+		@inject(delay(() => ModerationLogService))
+		private moderationLogService: ModerationLogService) {
 	}
 
 	@bindThis

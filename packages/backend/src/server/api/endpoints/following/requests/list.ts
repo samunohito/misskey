@@ -60,7 +60,13 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.followRequestsRepository)
-		private followRequestsRepository: FollowRequestsRepository, @inject(delay(() => FollowRequestEntityService)) private followRequestEntityService: FollowRequestEntityService, @inject(delay(() => QueryService)) private queryService: QueryService) {
+		private followRequestsRepository: FollowRequestsRepository,
+
+		@inject(delay(() => FollowRequestEntityService))
+		private followRequestEntityService: FollowRequestEntityService,
+
+		@inject(delay(() => QueryService))
+		private queryService: QueryService) {
 		super(meta, paramDef, async (ps, me) => {
 			const query = this.queryService.makePaginationQuery(this.followRequestsRepository.createQueryBuilder('request'), ps.sinceId, ps.untilId, ps.sinceDate, ps.untilDate)
 				.andWhere('request.followeeId = :meId', { meId: me.id });

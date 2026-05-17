@@ -38,7 +38,10 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.clipFavoritesRepository)
-		private clipFavoritesRepository: ClipFavoritesRepository, @inject(delay(() => ClipEntityService)) private clipEntityService: ClipEntityService) {
+		private clipFavoritesRepository: ClipFavoritesRepository,
+
+		@inject(delay(() => ClipEntityService))
+		private clipEntityService: ClipEntityService) {
 		super(meta, paramDef, async (ps, me) => {
 			const query = this.clipFavoritesRepository.createQueryBuilder('favorite')
 				.andWhere('favorite.userId = :meId', { meId: me.id })

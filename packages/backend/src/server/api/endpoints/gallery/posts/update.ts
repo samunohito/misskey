@@ -58,7 +58,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private galleryPostsRepository: GalleryPostsRepository,
 
 		@inject(DI.driveFilesRepository)
-		private driveFilesRepository: DriveFilesRepository, @inject(delay(() => GalleryPostEntityService)) private galleryPostEntityService: GalleryPostEntityService) {
+		private driveFilesRepository: DriveFilesRepository,
+
+		@inject(delay(() => GalleryPostEntityService))
+		private galleryPostEntityService: GalleryPostEntityService) {
 		super(meta, paramDef, async (ps, me) => {
 			let files: Array<MiDriveFile> | undefined;
 

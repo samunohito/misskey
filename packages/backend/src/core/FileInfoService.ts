@@ -54,7 +54,12 @@ const TYPE_SVG = {
 export class FileInfoService {
 	private logger: Logger;
 
-	constructor(@inject(delay(() => AiService)) private aiService: AiService, @inject(delay(() => LoggerService)) private loggerService: LoggerService) {
+	constructor(
+		@inject(delay(() => AiService))
+		private aiService: AiService,
+
+		@inject(delay(() => LoggerService))
+		private loggerService: LoggerService) {
 		this.logger = this.loggerService.getLogger('file-info');
 	}
 

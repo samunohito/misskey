@@ -16,7 +16,10 @@ import { AppEntityService } from './AppEntityService.js';
 export class AuthSessionEntityService {
 	constructor(
 		@inject(DI.authSessionsRepository)
-		private authSessionsRepository: AuthSessionsRepository, @inject(delay(() => AppEntityService)) private appEntityService: AppEntityService) {
+		private authSessionsRepository: AuthSessionsRepository,
+
+		@inject(delay(() => AppEntityService))
+		private appEntityService: AppEntityService) {
 	}
 
 	@bindThis

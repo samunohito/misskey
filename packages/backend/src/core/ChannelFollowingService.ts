@@ -21,12 +21,21 @@ export class ChannelFollowingService {
 	constructor(
 		@inject(DI.redis)
 		private redisClient: Redis.Redis,
+
 		@inject(DI.redisForSub)
 		private redisForSub: Redis.Redis,
+
 		@inject(DI.channelsRepository)
 		private channelsRepository: ChannelsRepository,
+
 		@inject(DI.channelFollowingsRepository)
-		private channelFollowingsRepository: ChannelFollowingsRepository, @inject(delay(() => IdService)) private idService: IdService, @inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService) {
+		private channelFollowingsRepository: ChannelFollowingsRepository,
+
+		@inject(delay(() => IdService))
+		private idService: IdService,
+
+		@inject(delay(() => GlobalEventService))
+		private globalEventService: GlobalEventService) {
 		this.userFollowingChannelsCache = new RedisKVCache<Set<string>>(this.redisClient, 'userFollowingChannels', {
 			lifetime: 1000 * 60 * 30, // 30m
 			memoryCacheLifetime: 1000 * 60, // 1m

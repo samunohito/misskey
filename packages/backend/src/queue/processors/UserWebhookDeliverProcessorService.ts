@@ -24,7 +24,13 @@ export class UserWebhookDeliverProcessorService {
 		private config: Config,
 
 		@inject(DI.webhooksRepository)
-		private webhooksRepository: WebhooksRepository, @inject(delay(() => HttpRequestService)) private httpRequestService: HttpRequestService, @inject(delay(() => QueueLoggerService)) private queueLoggerService: QueueLoggerService) {
+		private webhooksRepository: WebhooksRepository,
+
+		@inject(delay(() => HttpRequestService))
+		private httpRequestService: HttpRequestService,
+
+		@inject(delay(() => QueueLoggerService))
+		private queueLoggerService: QueueLoggerService) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('webhook');
 	}
 

@@ -63,7 +63,13 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.mutingsRepository)
-		private mutingsRepository: MutingsRepository, @inject(delay(() => GetterService)) private getterService: GetterService, @inject(delay(() => UserMutingService)) private userMutingService: UserMutingService) {
+		private mutingsRepository: MutingsRepository,
+
+		@inject(delay(() => GetterService))
+		private getterService: GetterService,
+
+		@inject(delay(() => UserMutingService))
+		private userMutingService: UserMutingService) {
 		super(meta, paramDef, async (ps, me) => {
 			const muter = me;
 

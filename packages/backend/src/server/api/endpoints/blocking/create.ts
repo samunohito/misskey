@@ -68,7 +68,16 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private usersRepository: UsersRepository,
 
 		@inject(DI.blockingsRepository)
-		private blockingsRepository: BlockingsRepository, @inject(delay(() => UserEntityService)) private userEntityService: UserEntityService, @inject(delay(() => GetterService)) private getterService: GetterService, @inject(delay(() => UserBlockingService)) private userBlockingService: UserBlockingService) {
+		private blockingsRepository: BlockingsRepository,
+
+		@inject(delay(() => UserEntityService))
+		private userEntityService: UserEntityService,
+
+		@inject(delay(() => GetterService))
+		private getterService: GetterService,
+
+		@inject(delay(() => UserBlockingService))
+		private userBlockingService: UserBlockingService) {
 		super(meta, paramDef, async (ps, me) => {
 			const blocker = await this.usersRepository.findOneByOrFail({ id: me.id });
 

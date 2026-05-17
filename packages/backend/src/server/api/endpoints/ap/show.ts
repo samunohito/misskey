@@ -108,7 +108,27 @@ export const paramDef = {
 
 @injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
-	constructor(@inject(delay(() => UtilityService)) private utilityService: UtilityService, @inject(delay(() => UserEntityService)) private userEntityService: UserEntityService, @inject(delay(() => NoteEntityService)) private noteEntityService: NoteEntityService, @inject(delay(() => ApResolverService)) private apResolverService: ApResolverService, @inject(delay(() => ApDbResolverService)) private apDbResolverService: ApDbResolverService, @inject(delay(() => ApPersonService)) private apPersonService: ApPersonService, @inject(delay(() => ApNoteService)) private apNoteService: ApNoteService) {
+	constructor(
+		@inject(delay(() => UtilityService))
+		private utilityService: UtilityService,
+
+		@inject(delay(() => UserEntityService))
+		private userEntityService: UserEntityService,
+
+		@inject(delay(() => NoteEntityService))
+		private noteEntityService: NoteEntityService,
+
+		@inject(delay(() => ApResolverService))
+		private apResolverService: ApResolverService,
+
+		@inject(delay(() => ApDbResolverService))
+		private apDbResolverService: ApDbResolverService,
+
+		@inject(delay(() => ApPersonService))
+		private apPersonService: ApPersonService,
+
+		@inject(delay(() => ApNoteService))
+		private apNoteService: ApNoteService) {
 		super(meta, paramDef, async (ps, me) => {
 			const object = await this.fetchAny(ps.uri, me);
 			if (object) {

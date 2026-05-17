@@ -43,7 +43,13 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.userProfilesRepository)
-		private userProfilesRepository: UserProfilesRepository, @inject(delay(() => UserEntityService)) private userEntityService: UserEntityService, @inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService) {
+		private userProfilesRepository: UserProfilesRepository,
+
+		@inject(delay(() => UserEntityService))
+		private userEntityService: UserEntityService,
+
+		@inject(delay(() => GlobalEventService))
+		private globalEventService: GlobalEventService) {
 		super(meta, paramDef, async (ps, me) => {
 			const token = ps.token.replace(/\s/g, '');
 

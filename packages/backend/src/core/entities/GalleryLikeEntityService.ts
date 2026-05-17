@@ -15,7 +15,10 @@ import { GalleryPostEntityService } from './GalleryPostEntityService.js';
 export class GalleryLikeEntityService {
 	constructor(
 		@inject(DI.galleryLikesRepository)
-		private galleryLikesRepository: GalleryLikesRepository, @inject(delay(() => GalleryPostEntityService)) private galleryPostEntityService: GalleryPostEntityService) {
+		private galleryLikesRepository: GalleryLikesRepository,
+
+		@inject(delay(() => GalleryPostEntityService))
+		private galleryPostEntityService: GalleryPostEntityService) {
 	}
 
 	@bindThis

@@ -23,7 +23,16 @@ export class GalleryPostEntityService {
 		private galleryPostsRepository: GalleryPostsRepository,
 
 		@inject(DI.galleryLikesRepository)
-		private galleryLikesRepository: GalleryLikesRepository, @inject(delay(() => UserEntityService)) private userEntityService: UserEntityService, @inject(delay(() => DriveFileEntityService)) private driveFileEntityService: DriveFileEntityService, @inject(delay(() => IdService)) private idService: IdService) {
+		private galleryLikesRepository: GalleryLikesRepository,
+
+		@inject(delay(() => UserEntityService))
+		private userEntityService: UserEntityService,
+
+		@inject(delay(() => DriveFileEntityService))
+		private driveFileEntityService: DriveFileEntityService,
+
+		@inject(delay(() => IdService))
+		private idService: IdService) {
 	}
 
 	@bindThis

@@ -73,7 +73,13 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private serverSettings: MiMeta,
 
 		@inject(DI.usersRepository)
-		private usersRepository: UsersRepository, @inject(delay(() => UserEntityService)) private userEntityService: UserEntityService, @inject(delay(() => SignupService)) private signupService: SignupService) {
+		private usersRepository: UsersRepository,
+
+		@inject(delay(() => UserEntityService))
+		private userEntityService: UserEntityService,
+
+		@inject(delay(() => SignupService))
+		private signupService: SignupService) {
 		super(meta, paramDef, async (ps, _me, token) => {
 			const me = _me ? await this.usersRepository.findOneByOrFail({ id: _me.id }) : null;
 

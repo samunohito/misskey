@@ -23,7 +23,8 @@ import { UserFollowingService } from '@/core/UserFollowingService.js';
 @injectable()
 export class UserBlockingService {
 	private logger: Logger;
-	constructor(@inject(DI.followRequestsRepository)
+	constructor(
+		@inject(DI.followRequestsRepository)
 		private followRequestsRepository: FollowRequestsRepository,
 
 		@inject(DI.blockingsRepository)
@@ -33,9 +34,34 @@ export class UserBlockingService {
 		private userListsRepository: UserListsRepository,
 
 		@inject(DI.userListMembershipsRepository)
-		private userListMembershipsRepository: UserListMembershipsRepository, @inject(delay(() => CacheService)) private cacheService: CacheService, @inject(delay(() => UserEntityService)) private userEntityService: UserEntityService, @inject(delay(() => IdService)) private idService: IdService, @inject(delay(() => QueueService)) private queueService: QueueService, @inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService, @inject(delay(() => UserWebhookService)) private webhookService: UserWebhookService, @inject(delay(() => ApRendererService)) private apRendererService: ApRendererService, @inject(delay(() => LoggerService)) private loggerService: LoggerService,
-		@inject(delay(() => UserFollowingService)) private userFollowingService: UserFollowingService,
-	) {
+		private userListMembershipsRepository: UserListMembershipsRepository,
+
+		@inject(delay(() => CacheService))
+		private cacheService: CacheService,
+
+		@inject(delay(() => UserEntityService))
+		private userEntityService: UserEntityService,
+
+		@inject(delay(() => IdService))
+		private idService: IdService,
+
+		@inject(delay(() => QueueService))
+		private queueService: QueueService,
+
+		@inject(delay(() => GlobalEventService))
+		private globalEventService: GlobalEventService,
+
+		@inject(delay(() => UserWebhookService))
+		private webhookService: UserWebhookService,
+
+		@inject(delay(() => ApRendererService))
+		private apRendererService: ApRendererService,
+
+		@inject(delay(() => LoggerService))
+		private loggerService: LoggerService,
+
+		@inject(delay(() => UserFollowingService))
+		private userFollowingService: UserFollowingService) {
 		this.logger = this.loggerService.getLogger('user-block');
 	}
 

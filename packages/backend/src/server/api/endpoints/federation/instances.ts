@@ -71,7 +71,13 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.instancesRepository)
-		private instancesRepository: InstancesRepository, @inject(delay(() => InstanceEntityService)) private instanceEntityService: InstanceEntityService, @inject(delay(() => MetaService)) private metaService: MetaService) {
+		private instancesRepository: InstancesRepository,
+
+		@inject(delay(() => InstanceEntityService))
+		private instanceEntityService: InstanceEntityService,
+
+		@inject(delay(() => MetaService))
+		private metaService: MetaService) {
 		super(meta, paramDef, async (ps, me) => {
 			const query = this.instancesRepository.createQueryBuilder('instance');
 

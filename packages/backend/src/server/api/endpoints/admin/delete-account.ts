@@ -29,7 +29,10 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.usersRepository)
-		private usersRepository: UsersRepository, @inject(delay(() => DeleteAccountService)) private deleteAccountService: DeleteAccountService) {
+		private usersRepository: UsersRepository,
+
+		@inject(delay(() => DeleteAccountService))
+		private deleteAccountService: DeleteAccountService) {
 		super(meta, paramDef, async (ps, me) => {
 			const user = await this.usersRepository.findOneByOrFail({ id: ps.userId });
 			if (user.isDeleted) {

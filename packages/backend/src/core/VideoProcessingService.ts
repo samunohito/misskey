@@ -17,7 +17,10 @@ import { appendQuery, query } from '@/misc/prelude/url.js';
 export class VideoProcessingService {
 	constructor(
 		@inject(DI.config)
-		private config: Config, @inject(delay(() => ImageProcessingService)) private imageProcessingService: ImageProcessingService) {
+		private config: Config,
+
+		@inject(delay(() => ImageProcessingService))
+		private imageProcessingService: ImageProcessingService) {
 	}
 
 	@bindThis

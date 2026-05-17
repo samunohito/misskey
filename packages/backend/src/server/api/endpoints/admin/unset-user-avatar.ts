@@ -30,7 +30,10 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> {
 	constructor(
 		@inject(DI.usersRepository)
-		private usersRepository: UsersRepository, @inject(delay(() => ModerationLogService)) private moderationLogService: ModerationLogService) {
+		private usersRepository: UsersRepository,
+
+		@inject(delay(() => ModerationLogService))
+		private moderationLogService: ModerationLogService) {
 		super(meta, paramDef, async (ps, me) => {
 			const user = await this.usersRepository.findOneBy({ id: ps.userId });
 

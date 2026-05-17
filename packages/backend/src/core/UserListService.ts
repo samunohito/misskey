@@ -26,17 +26,36 @@ export class UserListService implements Disposable {
 	public static TooManyUsersError = class extends Error {};
 
 	public membersCache: RedisKVCache<Set<string>>;
-	constructor(@inject(DI.redis)
+	constructor(
+		@inject(DI.redis)
 		private redisClient: Redis.Redis,
 
 		@inject(DI.redisForSub)
 		private redisForSub: Redis.Redis,
 
 		@inject(DI.userListMembershipsRepository)
-		private userListMembershipsRepository: UserListMembershipsRepository, @inject(delay(() => UserEntityService)) private userEntityService: UserEntityService, @inject(delay(() => IdService)) private idService: IdService, @inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService, @inject(delay(() => QueueService)) private queueService: QueueService, @inject(delay(() => SystemAccountService)) private systemAccountService: SystemAccountService,
-		@inject(delay(() => RoleService)) private roleService: RoleService,
-		@inject(delay(() => DisposableRegistry)) registry: DisposableRegistry,
-	) {
+		private userListMembershipsRepository: UserListMembershipsRepository,
+
+		@inject(delay(() => UserEntityService))
+		private userEntityService: UserEntityService,
+
+		@inject(delay(() => IdService))
+		private idService: IdService,
+
+		@inject(delay(() => GlobalEventService))
+		private globalEventService: GlobalEventService,
+
+		@inject(delay(() => QueueService))
+		private queueService: QueueService,
+
+		@inject(delay(() => SystemAccountService))
+		private systemAccountService: SystemAccountService,
+
+		@inject(delay(() => RoleService))
+		private roleService: RoleService,
+
+		@inject(delay(() => DisposableRegistry))
+		registry: DisposableRegistry) {
 		registry.register(this);
 		this.membersCache = new RedisKVCache<Set<string>>(this.redisClient, 'userListMembers', {
 			lifetime: 1000 * 60 * 30, // 30m

@@ -20,12 +20,21 @@ export class ChannelMutingService {
 	constructor(
 		@inject(DI.redis)
 		private redisClient: Redis.Redis,
+
 		@inject(DI.redisForSub)
 		private redisForSub: Redis.Redis,
+
 		@inject(DI.channelsRepository)
 		private channelsRepository: ChannelsRepository,
+
 		@inject(DI.channelMutingRepository)
-		private channelMutingRepository: ChannelMutingRepository, @inject(delay(() => IdService)) private idService: IdService, @inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService) {
+		private channelMutingRepository: ChannelMutingRepository,
+
+		@inject(delay(() => IdService))
+		private idService: IdService,
+
+		@inject(delay(() => GlobalEventService))
+		private globalEventService: GlobalEventService) {
 		this.mutingChannelsCache = new RedisKVCache<Set<string>>(this.redisClient, 'channelMutingChannels', {
 			lifetime: 1000 * 60 * 30, // 30m
 			memoryCacheLifetime: 1000 * 60, // 1m

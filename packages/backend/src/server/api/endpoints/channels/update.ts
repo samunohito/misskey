@@ -73,7 +73,13 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private channelsRepository: ChannelsRepository,
 
 		@inject(DI.driveFilesRepository)
-		private driveFilesRepository: DriveFilesRepository, @inject(delay(() => ChannelEntityService)) private channelEntityService: ChannelEntityService, @inject(delay(() => RoleService)) private roleService: RoleService) {
+		private driveFilesRepository: DriveFilesRepository,
+
+		@inject(delay(() => ChannelEntityService))
+		private channelEntityService: ChannelEntityService,
+
+		@inject(delay(() => RoleService))
+		private roleService: RoleService) {
 		super(meta, paramDef, async (ps, me) => {
 			const channel = await this.channelsRepository.findOneBy({
 				id: ps.channelId,

@@ -43,7 +43,10 @@ export type FanoutTimelineName = (
 export class FanoutTimelineService {
 	constructor(
 		@inject(DI.redisForTimelines)
-		private redisForTimelines: Redis.Redis, @inject(delay(() => IdService)) private idService: IdService) {
+		private redisForTimelines: Redis.Redis,
+
+		@inject(delay(() => IdService))
+		private idService: IdService) {
 	}
 
 	@bindThis

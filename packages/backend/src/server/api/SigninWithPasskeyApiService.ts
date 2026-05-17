@@ -41,7 +41,22 @@ export class SigninWithPasskeyApiService {
 		private userProfilesRepository: UserProfilesRepository,
 
 		@inject(DI.signinsRepository)
-		private signinsRepository: SigninsRepository, @inject(delay(() => IdService)) private idService: IdService, @inject(delay(() => RateLimiterService)) private rateLimiterService: RateLimiterService, @inject(delay(() => SigninService)) private signinService: SigninService, @inject(delay(() => WebAuthnService)) private webAuthnService: WebAuthnService, @inject(delay(() => LoggerService)) private loggerService: LoggerService) {
+		private signinsRepository: SigninsRepository,
+
+		@inject(delay(() => IdService))
+		private idService: IdService,
+
+		@inject(delay(() => RateLimiterService))
+		private rateLimiterService: RateLimiterService,
+
+		@inject(delay(() => SigninService))
+		private signinService: SigninService,
+
+		@inject(delay(() => WebAuthnService))
+		private webAuthnService: WebAuthnService,
+
+		@inject(delay(() => LoggerService))
+		private loggerService: LoggerService) {
 		this.logger = this.loggerService.getLogger('PasskeyAuth');
 	}
 

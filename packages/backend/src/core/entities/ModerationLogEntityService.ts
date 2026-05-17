@@ -18,7 +18,13 @@ import { UserEntityService } from './UserEntityService.js';
 export class ModerationLogEntityService {
 	constructor(
 		@inject(DI.moderationLogsRepository)
-		private moderationLogsRepository: ModerationLogsRepository, @inject(delay(() => UserEntityService)) private userEntityService: UserEntityService, @inject(delay(() => IdService)) private idService: IdService) {
+		private moderationLogsRepository: ModerationLogsRepository,
+
+		@inject(delay(() => UserEntityService))
+		private userEntityService: UserEntityService,
+
+		@inject(delay(() => IdService))
+		private idService: IdService) {
 	}
 
 	@bindThis

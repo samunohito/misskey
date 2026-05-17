@@ -80,7 +80,37 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private serverSettings: MiMeta,
 
 		@inject(DI.notesRepository)
-		private notesRepository: NotesRepository, @inject(delay(() => NoteEntityService)) private noteEntityService: NoteEntityService, @inject(delay(() => RoleService)) private roleService: RoleService, @inject(delay(() => ActiveUsersChart)) private activeUsersChart: ActiveUsersChart, @inject(delay(() => IdService)) private idService: IdService, @inject(delay(() => CacheService)) private cacheService: CacheService, @inject(delay(() => QueryService)) private queryService: QueryService, @inject(delay(() => UserFollowingService)) private userFollowingService: UserFollowingService, @inject(delay(() => ChannelMutingService)) private channelMutingService: ChannelMutingService, @inject(delay(() => ChannelFollowingService)) private channelFollowingService: ChannelFollowingService, @inject(delay(() => FanoutTimelineEndpointService)) private fanoutTimelineEndpointService: FanoutTimelineEndpointService) {
+		private notesRepository: NotesRepository,
+
+		@inject(delay(() => NoteEntityService))
+		private noteEntityService: NoteEntityService,
+
+		@inject(delay(() => RoleService))
+		private roleService: RoleService,
+
+		@inject(delay(() => ActiveUsersChart))
+		private activeUsersChart: ActiveUsersChart,
+
+		@inject(delay(() => IdService))
+		private idService: IdService,
+
+		@inject(delay(() => CacheService))
+		private cacheService: CacheService,
+
+		@inject(delay(() => QueryService))
+		private queryService: QueryService,
+
+		@inject(delay(() => UserFollowingService))
+		private userFollowingService: UserFollowingService,
+
+		@inject(delay(() => ChannelMutingService))
+		private channelMutingService: ChannelMutingService,
+
+		@inject(delay(() => ChannelFollowingService))
+		private channelFollowingService: ChannelFollowingService,
+
+		@inject(delay(() => FanoutTimelineEndpointService))
+		private fanoutTimelineEndpointService: FanoutTimelineEndpointService) {
 		super(meta, paramDef, async (ps, me) => {
 			const untilId = ps.untilId ?? (ps.untilDate ? this.idService.gen(ps.untilDate!) : null);
 			const sinceId = ps.sinceId ?? (ps.sinceDate ? this.idService.gen(ps.sinceDate!) : null);

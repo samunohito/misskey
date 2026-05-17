@@ -51,7 +51,16 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.userListsRepository)
-		private userListsRepository: UserListsRepository, @inject(delay(() => UserListEntityService)) private userListEntityService: UserListEntityService, @inject(delay(() => IdService)) private idService: IdService, @inject(delay(() => RoleService)) private roleService: RoleService) {
+		private userListsRepository: UserListsRepository,
+
+		@inject(delay(() => UserListEntityService))
+		private userListEntityService: UserListEntityService,
+
+		@inject(delay(() => IdService))
+		private idService: IdService,
+
+		@inject(delay(() => RoleService))
+		private roleService: RoleService) {
 		super(meta, paramDef, async (ps, me) => {
 			const currentCount = await this.userListsRepository.countBy({
 				userId: me.id,

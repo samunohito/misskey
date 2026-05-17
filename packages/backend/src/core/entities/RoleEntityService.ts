@@ -22,7 +22,10 @@ export class RoleEntityService {
 		private rolesRepository: RolesRepository,
 
 		@inject(DI.roleAssignmentsRepository)
-		private roleAssignmentsRepository: RoleAssignmentsRepository, @inject(delay(() => IdService)) private idService: IdService) {
+		private roleAssignmentsRepository: RoleAssignmentsRepository,
+
+		@inject(delay(() => IdService))
+		private idService: IdService) {
 	}
 
 	@bindThis

@@ -30,7 +30,13 @@ export default class PerUserFollowingChart extends Chart<typeof schema> { // esl
 		private redisClient: Redis.Redis,
 
 		@inject(DI.followingsRepository)
-		private followingsRepository: FollowingsRepository, @inject(delay(() => UserEntityService)) private userEntityService: UserEntityService, @inject(delay(() => ChartLoggerService)) private chartLoggerService: ChartLoggerService) {
+		private followingsRepository: FollowingsRepository,
+
+		@inject(delay(() => UserEntityService))
+		private userEntityService: UserEntityService,
+
+		@inject(delay(() => ChartLoggerService))
+		private chartLoggerService: ChartLoggerService) {
 		super(db, (k) => acquireChartInsertLock(redisClient, k), chartLoggerService.logger, name, schema, true);
 	}
 

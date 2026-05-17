@@ -29,7 +29,13 @@ export class ClipService {
 		private clipNotesRepository: ClipNotesRepository,
 
 		@inject(DI.notesRepository)
-		private notesRepository: NotesRepository, @inject(delay(() => RoleService)) private roleService: RoleService, @inject(delay(() => IdService)) private idService: IdService) {
+		private notesRepository: NotesRepository,
+
+		@inject(delay(() => RoleService))
+		private roleService: RoleService,
+
+		@inject(delay(() => IdService))
+		private idService: IdService) {
 	}
 
 	@bindThis

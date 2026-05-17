@@ -22,7 +22,25 @@ export class AbuseReportService {
 		private abuseUserReportsRepository: AbuseUserReportsRepository,
 
 		@inject(DI.usersRepository)
-		private usersRepository: UsersRepository, @inject(delay(() => IdService)) private idService: IdService, @inject(delay(() => AbuseReportNotificationService)) private abuseReportNotificationService: AbuseReportNotificationService, @inject(delay(() => QueueService)) private queueService: QueueService, @inject(delay(() => SystemAccountService)) private systemAccountService: SystemAccountService, @inject(delay(() => ApRendererService)) private apRendererService: ApRendererService, @inject(delay(() => ModerationLogService)) private moderationLogService: ModerationLogService) {
+		private usersRepository: UsersRepository,
+
+		@inject(delay(() => IdService))
+		private idService: IdService,
+
+		@inject(delay(() => AbuseReportNotificationService))
+		private abuseReportNotificationService: AbuseReportNotificationService,
+
+		@inject(delay(() => QueueService))
+		private queueService: QueueService,
+
+		@inject(delay(() => SystemAccountService))
+		private systemAccountService: SystemAccountService,
+
+		@inject(delay(() => ApRendererService))
+		private apRendererService: ApRendererService,
+
+		@inject(delay(() => ModerationLogService))
+		private moderationLogService: ModerationLogService) {
 	}
 
 	/**

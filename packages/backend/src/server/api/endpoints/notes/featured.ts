@@ -48,7 +48,19 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 	constructor(
 		@inject(DI.notesRepository)
-		private notesRepository: NotesRepository, @inject(delay(() => CacheService)) private cacheService: CacheService, @inject(delay(() => NoteEntityService)) private noteEntityService: NoteEntityService, @inject(delay(() => FeaturedService)) private featuredService: FeaturedService, @inject(delay(() => QueryService)) private queryService: QueryService) {
+		private notesRepository: NotesRepository,
+
+		@inject(delay(() => CacheService))
+		private cacheService: CacheService,
+
+		@inject(delay(() => NoteEntityService))
+		private noteEntityService: NoteEntityService,
+
+		@inject(delay(() => FeaturedService))
+		private featuredService: FeaturedService,
+
+		@inject(delay(() => QueryService))
+		private queryService: QueryService) {
 		super(meta, paramDef, async (ps, me) => {
 			let noteIds: string[];
 			if (ps.channelId) {

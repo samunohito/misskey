@@ -58,7 +58,10 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.swSubscriptionsRepository)
-		private swSubscriptionsRepository: SwSubscriptionsRepository, @inject(delay(() => PushNotificationService)) private pushNotificationService: PushNotificationService) {
+		private swSubscriptionsRepository: SwSubscriptionsRepository,
+
+		@inject(delay(() => PushNotificationService))
+		private pushNotificationService: PushNotificationService) {
 		super(meta, paramDef, async (ps, me) => {
 			const swSubscription = await this.swSubscriptionsRepository.findOneBy({
 				userId: me.id,

@@ -54,7 +54,13 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private userProfilesRepository: UserProfilesRepository,
 
 		@inject(DI.passwordResetRequestsRepository)
-		private passwordResetRequestsRepository: PasswordResetRequestsRepository, @inject(delay(() => IdService)) private idService: IdService, @inject(delay(() => EmailService)) private emailService: EmailService) {
+		private passwordResetRequestsRepository: PasswordResetRequestsRepository,
+
+		@inject(delay(() => IdService))
+		private idService: IdService,
+
+		@inject(delay(() => EmailService))
+		private emailService: EmailService) {
 		super(meta, paramDef, async (ps, me) => {
 			const user = await this.usersRepository.findOneBy({
 				usernameLower: ps.username.toLowerCase(),

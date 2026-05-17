@@ -26,7 +26,10 @@ export class ChatRoomChannel extends Channel {
 		request: ChannelRequest,
 
 		@inject(DI.chatRoomsRepository)
-		private chatRoomsRepository: ChatRoomsRepository, @inject(delay(() => ChatService)) private chatService: ChatService) {
+		private chatRoomsRepository: ChatRoomsRepository,
+
+		@inject(delay(() => ChatService))
+		private chatService: ChatService) {
 		super(request);
 	}
 

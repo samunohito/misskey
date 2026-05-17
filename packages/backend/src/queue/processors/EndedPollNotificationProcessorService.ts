@@ -23,7 +23,16 @@ export class EndedPollNotificationProcessorService {
 		private notesRepository: NotesRepository,
 
 		@inject(DI.pollVotesRepository)
-		private pollVotesRepository: PollVotesRepository, @inject(delay(() => CacheService)) private cacheService: CacheService, @inject(delay(() => NotificationService)) private notificationService: NotificationService, @inject(delay(() => QueueLoggerService)) private queueLoggerService: QueueLoggerService) {
+		private pollVotesRepository: PollVotesRepository,
+
+		@inject(delay(() => CacheService))
+		private cacheService: CacheService,
+
+		@inject(delay(() => NotificationService))
+		private notificationService: NotificationService,
+
+		@inject(delay(() => QueueLoggerService))
+		private queueLoggerService: QueueLoggerService) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('ended-poll-notification');
 	}
 

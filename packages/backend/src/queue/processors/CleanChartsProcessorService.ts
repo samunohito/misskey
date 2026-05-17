@@ -25,7 +25,45 @@ import type * as Bull from 'bullmq';
 export class CleanChartsProcessorService {
 	private logger: Logger;
 
-	constructor(@inject(delay(() => FederationChart)) private federationChart: FederationChart, @inject(delay(() => NotesChart)) private notesChart: NotesChart, @inject(delay(() => UsersChart)) private usersChart: UsersChart, @inject(delay(() => ActiveUsersChart)) private activeUsersChart: ActiveUsersChart, @inject(delay(() => InstanceChart)) private instanceChart: InstanceChart, @inject(delay(() => PerUserNotesChart)) private perUserNotesChart: PerUserNotesChart, @inject(delay(() => PerUserPvChart)) private perUserPvChart: PerUserPvChart, @inject(delay(() => DriveChart)) private driveChart: DriveChart, @inject(delay(() => PerUserReactionsChart)) private perUserReactionsChart: PerUserReactionsChart, @inject(delay(() => PerUserFollowingChart)) private perUserFollowingChart: PerUserFollowingChart, @inject(delay(() => PerUserDriveChart)) private perUserDriveChart: PerUserDriveChart, @inject(delay(() => ApRequestChart)) private apRequestChart: ApRequestChart, @inject(delay(() => QueueLoggerService)) private queueLoggerService: QueueLoggerService) {
+	constructor(
+		@inject(delay(() => FederationChart))
+		private federationChart: FederationChart,
+
+		@inject(delay(() => NotesChart))
+		private notesChart: NotesChart,
+
+		@inject(delay(() => UsersChart))
+		private usersChart: UsersChart,
+
+		@inject(delay(() => ActiveUsersChart))
+		private activeUsersChart: ActiveUsersChart,
+
+		@inject(delay(() => InstanceChart))
+		private instanceChart: InstanceChart,
+
+		@inject(delay(() => PerUserNotesChart))
+		private perUserNotesChart: PerUserNotesChart,
+
+		@inject(delay(() => PerUserPvChart))
+		private perUserPvChart: PerUserPvChart,
+
+		@inject(delay(() => DriveChart))
+		private driveChart: DriveChart,
+
+		@inject(delay(() => PerUserReactionsChart))
+		private perUserReactionsChart: PerUserReactionsChart,
+
+		@inject(delay(() => PerUserFollowingChart))
+		private perUserFollowingChart: PerUserFollowingChart,
+
+		@inject(delay(() => PerUserDriveChart))
+		private perUserDriveChart: PerUserDriveChart,
+
+		@inject(delay(() => ApRequestChart))
+		private apRequestChart: ApRequestChart,
+
+		@inject(delay(() => QueueLoggerService))
+		private queueLoggerService: QueueLoggerService) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('clean-charts');
 	}
 

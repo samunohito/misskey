@@ -41,7 +41,13 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.appsRepository)
-		private appsRepository: AppsRepository, @inject(delay(() => AppEntityService)) private appEntityService: AppEntityService, @inject(delay(() => IdService)) private idService: IdService) {
+		private appsRepository: AppsRepository,
+
+		@inject(delay(() => AppEntityService))
+		private appEntityService: AppEntityService,
+
+		@inject(delay(() => IdService))
+		private idService: IdService) {
 		super(meta, paramDef, async (ps, me) => {
 			// Generate secret
 			const secret = secureRndstr(32);

@@ -17,7 +17,10 @@ export class AnnouncementEntityService {
 		private announcementsRepository: AnnouncementsRepository,
 
 		@inject(DI.announcementReadsRepository)
-		private announcementReadsRepository: AnnouncementReadsRepository, @inject(delay(() => IdService)) private idService: IdService) {
+		private announcementReadsRepository: AnnouncementReadsRepository,
+
+		@inject(delay(() => IdService))
+		private idService: IdService) {
 	}
 
 	@bindThis

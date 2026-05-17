@@ -26,7 +26,19 @@ export class HybridTimelineChannel extends Channel {
 
 	constructor(
 		@inject(RequestToken)
-		request: ChannelRequest, @inject(delay(() => MetaService)) private metaService: MetaService, @inject(delay(() => RoleService)) private roleService: RoleService, @inject(delay(() => NoteEntityService)) private noteEntityService: NoteEntityService, @inject(delay(() => NoteStreamingHidingService)) private noteStreamingHidingService: NoteStreamingHidingService) {
+		request: ChannelRequest,
+
+		@inject(delay(() => MetaService))
+		private metaService: MetaService,
+
+		@inject(delay(() => RoleService))
+		private roleService: RoleService,
+
+		@inject(delay(() => NoteEntityService))
+		private noteEntityService: NoteEntityService,
+
+		@inject(delay(() => NoteStreamingHidingService))
+		private noteStreamingHidingService: NoteStreamingHidingService) {
 		super(request);
 		//this.onNote = this.onNote.bind(this);
 	}

@@ -43,7 +43,10 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.driveFilesRepository)
-		private driveFilesRepository: DriveFilesRepository, @inject(delay(() => DriveFileEntityService)) private driveFileEntityService: DriveFileEntityService) {
+		private driveFilesRepository: DriveFilesRepository,
+
+		@inject(delay(() => DriveFileEntityService))
+		private driveFileEntityService: DriveFileEntityService) {
 		super(meta, paramDef, async (ps, me) => {
 			const files = await this.driveFilesRepository.findBy({
 				name: ps.name,

@@ -81,7 +81,22 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private userListMembershipsRepository: UserListMembershipsRepository,
 
 		@inject(DI.blockingsRepository)
-		private blockingsRepository: BlockingsRepository, @inject(delay(() => UserListService)) private userListService: UserListService, @inject(delay(() => UserListEntityService)) private userListEntityService: UserListEntityService, @inject(delay(() => IdService)) private idService: IdService, @inject(delay(() => GetterService)) private getterService: GetterService, @inject(delay(() => RoleService)) private roleService: RoleService) {
+		private blockingsRepository: BlockingsRepository,
+
+		@inject(delay(() => UserListService))
+		private userListService: UserListService,
+
+		@inject(delay(() => UserListEntityService))
+		private userListEntityService: UserListEntityService,
+
+		@inject(delay(() => IdService))
+		private idService: IdService,
+
+		@inject(delay(() => GetterService))
+		private getterService: GetterService,
+
+		@inject(delay(() => RoleService))
+		private roleService: RoleService) {
 		super(meta, paramDef, async (ps, me) => {
 			const listExist = await this.userListsRepository.exists({
 				where: {

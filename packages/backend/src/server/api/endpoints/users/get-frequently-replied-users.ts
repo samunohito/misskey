@@ -63,7 +63,13 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.notesRepository)
-		private notesRepository: NotesRepository, @inject(delay(() => UserEntityService)) private userEntityService: UserEntityService, @inject(delay(() => GetterService)) private getterService: GetterService) {
+		private notesRepository: NotesRepository,
+
+		@inject(delay(() => UserEntityService))
+		private userEntityService: UserEntityService,
+
+		@inject(delay(() => GetterService))
+		private getterService: GetterService) {
 		super(meta, paramDef, async (ps, me) => {
 			// Lookup user
 			const user = await this.getterService.getUser(ps.userId).catch(err => {

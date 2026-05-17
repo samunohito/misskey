@@ -33,19 +33,30 @@ const NOTE_REQUIRED_NOTIFICATION_TYPES = new Set([
 
 @injectable()
 export class NotificationEntityService {
-	constructor(@inject(DI.notesRepository)
+	constructor(
+		@inject(DI.notesRepository)
 		private notesRepository: NotesRepository,
 
 		@inject(DI.usersRepository)
 		private usersRepository: UsersRepository,
 
 		@inject(DI.followRequestsRepository)
-		private followRequestsRepository: FollowRequestsRepository, @inject(delay(() => CacheService)) private cacheService: CacheService,
-		@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService,
-		@inject(delay(() => NoteEntityService)) private noteEntityService: NoteEntityService,
-		@inject(delay(() => RoleEntityService)) private roleEntityService: RoleEntityService,
-		@inject(delay(() => ChatEntityService)) private chatEntityService: ChatEntityService,
-	) {
+		private followRequestsRepository: FollowRequestsRepository,
+
+		@inject(delay(() => CacheService))
+		private cacheService: CacheService,
+
+		@inject(delay(() => UserEntityService))
+		private userEntityService: UserEntityService,
+
+		@inject(delay(() => NoteEntityService))
+		private noteEntityService: NoteEntityService,
+
+		@inject(delay(() => RoleEntityService))
+		private roleEntityService: RoleEntityService,
+
+		@inject(delay(() => ChatEntityService))
+		private chatEntityService: ChatEntityService) {
 	}
 
 	/**

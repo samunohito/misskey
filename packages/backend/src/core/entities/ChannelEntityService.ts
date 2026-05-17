@@ -28,16 +28,30 @@ export class ChannelEntityService {
 	constructor(
 		@inject(DI.channelsRepository)
 		private channelsRepository: ChannelsRepository,
+
 		@inject(DI.channelFollowingsRepository)
 		private channelFollowingsRepository: ChannelFollowingsRepository,
+
 		@inject(DI.channelFavoritesRepository)
 		private channelFavoritesRepository: ChannelFavoritesRepository,
+
 		@inject(DI.channelMutingRepository)
 		private channelMutingRepository: ChannelMutingRepository,
+
 		@inject(DI.notesRepository)
 		private notesRepository: NotesRepository,
+
 		@inject(DI.driveFilesRepository)
-		private driveFilesRepository: DriveFilesRepository, @inject(delay(() => NoteEntityService)) private noteEntityService: NoteEntityService, @inject(delay(() => DriveFileEntityService)) private driveFileEntityService: DriveFileEntityService, @inject(delay(() => IdService)) private idService: IdService) {
+		private driveFilesRepository: DriveFilesRepository,
+
+		@inject(delay(() => NoteEntityService))
+		private noteEntityService: NoteEntityService,
+
+		@inject(delay(() => DriveFileEntityService))
+		private driveFileEntityService: DriveFileEntityService,
+
+		@inject(delay(() => IdService))
+		private idService: IdService) {
 	}
 
 	@bindThis

@@ -46,7 +46,8 @@ type Both = Local | Remote;
 
 @injectable()
 export class UserFollowingService {
-	constructor(@inject(DI.config)
+	constructor(
+		@inject(DI.config)
 		private config: Config,
 
 		@inject(DI.meta)
@@ -65,9 +66,49 @@ export class UserFollowingService {
 		private followRequestsRepository: FollowRequestsRepository,
 
 		@inject(DI.instancesRepository)
-		private instancesRepository: InstancesRepository, @inject(delay(() => CacheService)) private cacheService: CacheService, @inject(delay(() => UtilityService)) private utilityService: UtilityService, @inject(delay(() => UserEntityService)) private userEntityService: UserEntityService, @inject(delay(() => IdService)) private idService: IdService, @inject(delay(() => QueueService)) private queueService: QueueService, @inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService, @inject(delay(() => NotificationService)) private notificationService: NotificationService, @inject(delay(() => FederatedInstanceService)) private federatedInstanceService: FederatedInstanceService, @inject(delay(() => UserWebhookService)) private webhookService: UserWebhookService, @inject(delay(() => ApRendererService)) private apRendererService: ApRendererService, @inject(delay(() => AccountMoveService)) private accountMoveService: AccountMoveService, @inject(delay(() => PerUserFollowingChart)) private perUserFollowingChart: PerUserFollowingChart, @inject(delay(() => InstanceChart)) private instanceChart: InstanceChart,
-		@inject(delay(() => UserBlockingService)) private userBlockingService: UserBlockingService,
-	) {
+		private instancesRepository: InstancesRepository,
+
+		@inject(delay(() => CacheService))
+		private cacheService: CacheService,
+
+		@inject(delay(() => UtilityService))
+		private utilityService: UtilityService,
+
+		@inject(delay(() => UserEntityService))
+		private userEntityService: UserEntityService,
+
+		@inject(delay(() => IdService))
+		private idService: IdService,
+
+		@inject(delay(() => QueueService))
+		private queueService: QueueService,
+
+		@inject(delay(() => GlobalEventService))
+		private globalEventService: GlobalEventService,
+
+		@inject(delay(() => NotificationService))
+		private notificationService: NotificationService,
+
+		@inject(delay(() => FederatedInstanceService))
+		private federatedInstanceService: FederatedInstanceService,
+
+		@inject(delay(() => UserWebhookService))
+		private webhookService: UserWebhookService,
+
+		@inject(delay(() => ApRendererService))
+		private apRendererService: ApRendererService,
+
+		@inject(delay(() => AccountMoveService))
+		private accountMoveService: AccountMoveService,
+
+		@inject(delay(() => PerUserFollowingChart))
+		private perUserFollowingChart: PerUserFollowingChart,
+
+		@inject(delay(() => InstanceChart))
+		private instanceChart: InstanceChart,
+
+		@inject(delay(() => UserBlockingService))
+		private userBlockingService: UserBlockingService) {
 	}
 
 	@bindThis

@@ -44,7 +44,13 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.registrationTicketsRepository)
-		private registrationTicketsRepository: RegistrationTicketsRepository, @inject(delay(() => InviteCodeEntityService)) private inviteCodeEntityService: InviteCodeEntityService, @inject(delay(() => QueryService)) private queryService: QueryService) {
+		private registrationTicketsRepository: RegistrationTicketsRepository,
+
+		@inject(delay(() => InviteCodeEntityService))
+		private inviteCodeEntityService: InviteCodeEntityService,
+
+		@inject(delay(() => QueryService))
+		private queryService: QueryService) {
 		super(meta, paramDef, async (ps, me) => {
 			const query = this.queryService.makePaginationQuery(this.registrationTicketsRepository.createQueryBuilder('ticket'), ps.sinceId, ps.untilId, ps.sinceDate, ps.untilDate)
 				.andWhere('ticket.createdById = :meId', { meId: me.id })

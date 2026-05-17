@@ -63,7 +63,16 @@ export class ImportAntennasProcessorService {
 
 	constructor (
 		@inject(DI.antennasRepository)
-		private antennasRepository: AntennasRepository, @inject(delay(() => QueueLoggerService)) private queueLoggerService: QueueLoggerService, @inject(delay(() => IdService)) private idService: IdService, @inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService) {
+		private antennasRepository: AntennasRepository,
+
+		@inject(delay(() => QueueLoggerService))
+		private queueLoggerService: QueueLoggerService,
+
+		@inject(delay(() => IdService))
+		private idService: IdService,
+
+		@inject(delay(() => GlobalEventService))
+		private globalEventService: GlobalEventService) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('import-antennas');
 	}
 

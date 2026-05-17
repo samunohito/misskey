@@ -41,7 +41,13 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.signinsRepository)
-		private signinsRepository: SigninsRepository, @inject(delay(() => SigninEntityService)) private signinEntityService: SigninEntityService, @inject(delay(() => QueryService)) private queryService: QueryService) {
+		private signinsRepository: SigninsRepository,
+
+		@inject(delay(() => SigninEntityService))
+		private signinEntityService: SigninEntityService,
+
+		@inject(delay(() => QueryService))
+		private queryService: QueryService) {
 		super(meta, paramDef, async (ps, me) => {
 			const query = this.queryService.makePaginationQuery(this.signinsRepository.createQueryBuilder('signin'), ps.sinceId, ps.untilId, ps.sinceDate, ps.untilDate)
 				.andWhere('signin.userId = :meId', { meId: me.id });

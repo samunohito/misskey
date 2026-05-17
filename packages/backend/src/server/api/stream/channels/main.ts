@@ -19,7 +19,10 @@ export class MainChannel extends Channel {
 
 	constructor(
 		@inject(RequestToken)
-		request: ChannelRequest, @inject(delay(() => NoteEntityService)) private noteEntityService: NoteEntityService) {
+		request: ChannelRequest,
+
+		@inject(delay(() => NoteEntityService))
+		private noteEntityService: NoteEntityService) {
 		super(request);
 	}
 

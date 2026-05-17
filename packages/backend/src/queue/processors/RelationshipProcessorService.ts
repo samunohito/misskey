@@ -22,7 +22,16 @@ export class RelationshipProcessorService {
 
 	constructor(
 		@inject(DI.usersRepository)
-		private usersRepository: UsersRepository, @inject(delay(() => QueueLoggerService)) private queueLoggerService: QueueLoggerService, @inject(delay(() => UserFollowingService)) private userFollowingService: UserFollowingService, @inject(delay(() => UserBlockingService)) private userBlockingService: UserBlockingService) {
+		private usersRepository: UsersRepository,
+
+		@inject(delay(() => QueueLoggerService))
+		private queueLoggerService: QueueLoggerService,
+
+		@inject(delay(() => UserFollowingService))
+		private userFollowingService: UserFollowingService,
+
+		@inject(delay(() => UserBlockingService))
+		private userBlockingService: UserBlockingService) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('follow-block');
 	}
 

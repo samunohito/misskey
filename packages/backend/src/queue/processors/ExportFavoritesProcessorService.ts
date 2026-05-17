@@ -35,7 +35,22 @@ export class ExportFavoritesProcessorService {
 		private pollsRepository: PollsRepository,
 
 		@inject(DI.noteFavoritesRepository)
-		private noteFavoritesRepository: NoteFavoritesRepository, @inject(delay(() => DriveService)) private driveService: DriveService, @inject(delay(() => QueueLoggerService)) private queueLoggerService: QueueLoggerService, @inject(delay(() => QueryService)) private queryService: QueryService, @inject(delay(() => IdService)) private idService: IdService, @inject(delay(() => NotificationService)) private notificationService: NotificationService) {
+		private noteFavoritesRepository: NoteFavoritesRepository,
+
+		@inject(delay(() => DriveService))
+		private driveService: DriveService,
+
+		@inject(delay(() => QueueLoggerService))
+		private queueLoggerService: QueueLoggerService,
+
+		@inject(delay(() => QueryService))
+		private queryService: QueryService,
+
+		@inject(delay(() => IdService))
+		private idService: IdService,
+
+		@inject(delay(() => NotificationService))
+		private notificationService: NotificationService) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('export-favorites');
 	}
 

@@ -30,7 +30,16 @@ export class EmailService {
 		private meta: MiMeta,
 
 		@inject(DI.userProfilesRepository)
-		private userProfilesRepository: UserProfilesRepository, @inject(delay(() => LoggerService)) private loggerService: LoggerService, @inject(delay(() => UtilityService)) private utilityService: UtilityService, @inject(delay(() => HttpRequestService)) private httpRequestService: HttpRequestService) {
+		private userProfilesRepository: UserProfilesRepository,
+
+		@inject(delay(() => LoggerService))
+		private loggerService: LoggerService,
+
+		@inject(delay(() => UtilityService))
+		private utilityService: UtilityService,
+
+		@inject(delay(() => HttpRequestService))
+		private httpRequestService: HttpRequestService) {
 		this.logger = this.loggerService.getLogger('email');
 	}
 

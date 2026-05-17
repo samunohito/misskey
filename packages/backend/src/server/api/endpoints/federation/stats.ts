@@ -68,7 +68,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private instancesRepository: InstancesRepository,
 
 		@inject(DI.followingsRepository)
-		private followingsRepository: FollowingsRepository, @inject(delay(() => InstanceEntityService)) private instanceEntityService: InstanceEntityService) {
+		private followingsRepository: FollowingsRepository,
+
+		@inject(delay(() => InstanceEntityService))
+		private instanceEntityService: InstanceEntityService) {
 		super(meta, paramDef, async (ps, me) => {
 			const [topSubInstances, topPubInstances, allSubCount, allPubCount] = await Promise.all([
 				this.instancesRepository.find({

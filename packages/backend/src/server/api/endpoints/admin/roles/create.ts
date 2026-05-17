@@ -62,7 +62,12 @@ export const paramDef = {
 
 @injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
-	constructor(@inject(delay(() => RoleEntityService)) private roleEntityService: RoleEntityService, @inject(delay(() => RoleService)) private roleService: RoleService) {
+	constructor(
+		@inject(delay(() => RoleEntityService))
+		private roleEntityService: RoleEntityService,
+
+		@inject(delay(() => RoleService))
+		private roleService: RoleService) {
 		super(meta, paramDef, async (ps, me) => {
 			const created = await this.roleService.create(ps, me);
 

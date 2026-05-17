@@ -35,7 +35,10 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.pagesRepository)
-		private pagesRepository: PagesRepository, @inject(delay(() => PageEntityService)) private pageEntityService: PageEntityService) {
+		private pagesRepository: PagesRepository,
+
+		@inject(delay(() => PageEntityService))
+		private pageEntityService: PageEntityService) {
 		super(meta, paramDef, async (ps, me) => {
 			const query = this.pagesRepository.createQueryBuilder('page')
 				.where('page.visibility = \'public\'')

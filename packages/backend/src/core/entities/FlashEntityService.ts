@@ -18,8 +18,15 @@ export class FlashEntityService {
 	constructor(
 		@inject(DI.flashsRepository)
 		private flashsRepository: FlashsRepository,
+
 		@inject(DI.flashLikesRepository)
-		private flashLikesRepository: FlashLikesRepository, @inject(delay(() => UserEntityService)) private userEntityService: UserEntityService, @inject(delay(() => IdService)) private idService: IdService) {
+		private flashLikesRepository: FlashLikesRepository,
+
+		@inject(delay(() => UserEntityService))
+		private userEntityService: UserEntityService,
+
+		@inject(delay(() => IdService))
+		private idService: IdService) {
 	}
 
 	@bindThis

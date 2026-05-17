@@ -33,7 +33,19 @@ export class ExportAntennasProcessorService {
 		private antennsRepository: AntennasRepository,
 
 		@inject(DI.userListMembershipsRepository)
-		private userListMembershipsRepository: UserListMembershipsRepository, @inject(delay(() => DriveService)) private driveService: DriveService, @inject(delay(() => UtilityService)) private utilityService: UtilityService, @inject(delay(() => QueueLoggerService)) private queueLoggerService: QueueLoggerService, @inject(delay(() => NotificationService)) private notificationService: NotificationService) {
+		private userListMembershipsRepository: UserListMembershipsRepository,
+
+		@inject(delay(() => DriveService))
+		private driveService: DriveService,
+
+		@inject(delay(() => UtilityService))
+		private utilityService: UtilityService,
+
+		@inject(delay(() => QueueLoggerService))
+		private queueLoggerService: QueueLoggerService,
+
+		@inject(delay(() => NotificationService))
+		private notificationService: NotificationService) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('export-antennas');
 	}
 

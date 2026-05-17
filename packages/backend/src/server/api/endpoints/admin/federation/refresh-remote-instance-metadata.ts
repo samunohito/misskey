@@ -30,7 +30,13 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.instancesRepository)
-		private instancesRepository: InstancesRepository, @inject(delay(() => UtilityService)) private utilityService: UtilityService, @inject(delay(() => FetchInstanceMetadataService)) private fetchInstanceMetadataService: FetchInstanceMetadataService) {
+		private instancesRepository: InstancesRepository,
+
+		@inject(delay(() => UtilityService))
+		private utilityService: UtilityService,
+
+		@inject(delay(() => FetchInstanceMetadataService))
+		private fetchInstanceMetadataService: FetchInstanceMetadataService) {
 		super(meta, paramDef, async (ps, me) => {
 			const instance = await this.instancesRepository.findOneBy({ host: this.utilityService.toPuny(ps.host) });
 

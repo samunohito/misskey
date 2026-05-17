@@ -83,7 +83,10 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.driveFilesRepository)
-		private driveFilesRepository: DriveFilesRepository, @inject(delay(() => CustomEmojiService)) private customEmojiService: CustomEmojiService) {
+		private driveFilesRepository: DriveFilesRepository,
+
+		@inject(delay(() => CustomEmojiService))
+		private customEmojiService: CustomEmojiService) {
 		super(meta, paramDef, async (ps, me) => {
 			let driveFile;
 			if (ps.fileId) {

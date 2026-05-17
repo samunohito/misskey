@@ -48,7 +48,13 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.accessTokensRepository)
-		private accessTokensRepository: AccessTokensRepository, @inject(delay(() => IdService)) private idService: IdService, @inject(delay(() => NotificationService)) private notificationService: NotificationService) {
+		private accessTokensRepository: AccessTokensRepository,
+
+		@inject(delay(() => IdService))
+		private idService: IdService,
+
+		@inject(delay(() => NotificationService))
+		private notificationService: NotificationService) {
 		super(meta, paramDef, async (ps, me) => {
 			// Generate access token
 			const accessToken = secureRndstr(32);

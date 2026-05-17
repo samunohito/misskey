@@ -38,7 +38,10 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.rolesRepository)
-		private rolesRepository: RolesRepository, @inject(delay(() => RoleEntityService)) private roleEntityService: RoleEntityService) {
+		private rolesRepository: RolesRepository,
+
+		@inject(delay(() => RoleEntityService))
+		private roleEntityService: RoleEntityService) {
 		super(meta, paramDef, async (ps, me) => {
 			const roles = await this.rolesRepository.findBy({
 				isPublic: true,

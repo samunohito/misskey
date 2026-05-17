@@ -23,10 +23,24 @@ export class HashtagService {
 		private meta: MiMeta,
 
 		@inject(DI.redis)
-		private redisClient: Redis.Redis, // TODO: 専用のRedisサーバーを設定できるようにする
+		private redisClient: Redis.Redis,
+
+		// TODO: 専用のRedisサーバーを設定できるようにする
 
 		@inject(DI.hashtagsRepository)
-		private hashtagsRepository: HashtagsRepository, @inject(delay(() => UserEntityService)) private userEntityService: UserEntityService, @inject(delay(() => FeaturedService)) private featuredService: FeaturedService, @inject(delay(() => IdService)) private idService: IdService, @inject(delay(() => UtilityService)) private utilityService: UtilityService) {
+		private hashtagsRepository: HashtagsRepository,
+
+		@inject(delay(() => UserEntityService))
+		private userEntityService: UserEntityService,
+
+		@inject(delay(() => FeaturedService))
+		private featuredService: FeaturedService,
+
+		@inject(delay(() => IdService))
+		private idService: IdService,
+
+		@inject(delay(() => UtilityService))
+		private utilityService: UtilityService) {
 	}
 
 	@bindThis

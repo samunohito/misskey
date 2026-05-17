@@ -27,7 +27,13 @@ export class CleanRemoteNotesProcessorService {
 		private notesRepository: NotesRepository,
 
 		@inject(DI.db)
-		private db: DataSource, @inject(delay(() => IdService)) private idService: IdService, @inject(delay(() => QueueLoggerService)) private queueLoggerService: QueueLoggerService) {
+		private db: DataSource,
+
+		@inject(delay(() => IdService))
+		private idService: IdService,
+
+		@inject(delay(() => QueueLoggerService))
+		private queueLoggerService: QueueLoggerService) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('clean-remote-notes');
 	}
 

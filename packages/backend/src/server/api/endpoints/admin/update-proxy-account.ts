@@ -35,7 +35,15 @@ export const paramDef = {
 
 @injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
-	constructor(@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService, @inject(delay(() => ModerationLogService)) private moderationLogService: ModerationLogService, @inject(delay(() => SystemAccountService)) private systemAccountService: SystemAccountService) {
+	constructor(
+		@inject(delay(() => UserEntityService))
+		private userEntityService: UserEntityService,
+
+		@inject(delay(() => ModerationLogService))
+		private moderationLogService: ModerationLogService,
+
+		@inject(delay(() => SystemAccountService))
+		private systemAccountService: SystemAccountService) {
 		super(meta, paramDef, async (ps, me) => {
 			const proxy = await this.systemAccountService.updateCorrespondingUserProfile('proxy', {
 				description: ps.description,

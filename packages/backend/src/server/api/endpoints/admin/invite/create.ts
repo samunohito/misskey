@@ -52,7 +52,16 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.registrationTicketsRepository)
-		private registrationTicketsRepository: RegistrationTicketsRepository, @inject(delay(() => InviteCodeEntityService)) private inviteCodeEntityService: InviteCodeEntityService, @inject(delay(() => IdService)) private idService: IdService, @inject(delay(() => ModerationLogService)) private moderationLogService: ModerationLogService) {
+		private registrationTicketsRepository: RegistrationTicketsRepository,
+
+		@inject(delay(() => InviteCodeEntityService))
+		private inviteCodeEntityService: InviteCodeEntityService,
+
+		@inject(delay(() => IdService))
+		private idService: IdService,
+
+		@inject(delay(() => ModerationLogService))
+		private moderationLogService: ModerationLogService) {
 		super(meta, paramDef, async (ps, me) => {
 			if (ps.expiresAt && isNaN(Date.parse(ps.expiresAt))) {
 				throw new ApiError(meta.errors.invalidDateTime);

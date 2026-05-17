@@ -17,7 +17,13 @@ import { NoteEntityService } from './NoteEntityService.js';
 export class NoteFavoriteEntityService {
 	constructor(
 		@inject(DI.noteFavoritesRepository)
-		private noteFavoritesRepository: NoteFavoritesRepository, @inject(delay(() => NoteEntityService)) private noteEntityService: NoteEntityService, @inject(delay(() => IdService)) private idService: IdService) {
+		private noteFavoritesRepository: NoteFavoritesRepository,
+
+		@inject(delay(() => NoteEntityService))
+		private noteEntityService: NoteEntityService,
+
+		@inject(delay(() => IdService))
+		private idService: IdService) {
 	}
 
 	@bindThis

@@ -86,7 +86,28 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private pollsRepository: PollsRepository,
 
 		@inject(DI.pollVotesRepository)
-		private pollVotesRepository: PollVotesRepository, @inject(delay(() => IdService)) private idService: IdService, @inject(delay(() => GetterService)) private getterService: GetterService, @inject(delay(() => QueueService)) private queueService: QueueService, @inject(delay(() => PollService)) private pollService: PollService, @inject(delay(() => ApRendererService)) private apRendererService: ApRendererService, @inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService, @inject(delay(() => UserBlockingService)) private userBlockingService: UserBlockingService) {
+		private pollVotesRepository: PollVotesRepository,
+
+		@inject(delay(() => IdService))
+		private idService: IdService,
+
+		@inject(delay(() => GetterService))
+		private getterService: GetterService,
+
+		@inject(delay(() => QueueService))
+		private queueService: QueueService,
+
+		@inject(delay(() => PollService))
+		private pollService: PollService,
+
+		@inject(delay(() => ApRendererService))
+		private apRendererService: ApRendererService,
+
+		@inject(delay(() => GlobalEventService))
+		private globalEventService: GlobalEventService,
+
+		@inject(delay(() => UserBlockingService))
+		private userBlockingService: UserBlockingService) {
 		super(meta, paramDef, async (ps, me) => {
 			const createdAt = new Date();
 

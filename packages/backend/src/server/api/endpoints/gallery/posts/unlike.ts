@@ -50,7 +50,13 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private galleryPostsRepository: GalleryPostsRepository,
 
 		@inject(DI.galleryLikesRepository)
-		private galleryLikesRepository: GalleryLikesRepository, @inject(delay(() => FeaturedService)) private featuredService: FeaturedService, @inject(delay(() => IdService)) private idService: IdService) {
+		private galleryLikesRepository: GalleryLikesRepository,
+
+		@inject(delay(() => FeaturedService))
+		private featuredService: FeaturedService,
+
+		@inject(delay(() => IdService))
+		private idService: IdService) {
 		super(meta, paramDef, async (ps, me) => {
 			const post = await this.galleryPostsRepository.findOneBy({ id: ps.postId });
 			if (post == null) {

@@ -29,7 +29,22 @@ export class RemoteUserResolveService {
 		private config: Config,
 
 		@inject(DI.usersRepository)
-		private usersRepository: UsersRepository, @inject(delay(() => UtilityService)) private utilityService: UtilityService, @inject(delay(() => WebfingerService)) private webfingerService: WebfingerService, @inject(delay(() => RemoteLoggerService)) private remoteLoggerService: RemoteLoggerService, @inject(delay(() => ApDbResolverService)) private apDbResolverService: ApDbResolverService, @inject(delay(() => ApPersonService)) private apPersonService: ApPersonService) {
+		private usersRepository: UsersRepository,
+
+		@inject(delay(() => UtilityService))
+		private utilityService: UtilityService,
+
+		@inject(delay(() => WebfingerService))
+		private webfingerService: WebfingerService,
+
+		@inject(delay(() => RemoteLoggerService))
+		private remoteLoggerService: RemoteLoggerService,
+
+		@inject(delay(() => ApDbResolverService))
+		private apDbResolverService: ApDbResolverService,
+
+		@inject(delay(() => ApPersonService))
+		private apPersonService: ApPersonService) {
 		this.logger = this.remoteLoggerService.logger.createSubLogger('resolve-user');
 	}
 

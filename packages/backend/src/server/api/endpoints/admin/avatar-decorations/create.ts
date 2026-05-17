@@ -79,7 +79,12 @@ export const paramDef = {
 
 @injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
-	constructor(@inject(delay(() => AvatarDecorationService)) private avatarDecorationService: AvatarDecorationService, @inject(delay(() => IdService)) private idService: IdService) {
+	constructor(
+		@inject(delay(() => AvatarDecorationService))
+		private avatarDecorationService: AvatarDecorationService,
+
+		@inject(delay(() => IdService))
+		private idService: IdService) {
 		super(meta, paramDef, async (ps, me) => {
 			const created = await this.avatarDecorationService.create({
 				name: ps.name,

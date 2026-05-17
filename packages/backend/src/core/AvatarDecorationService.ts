@@ -24,7 +24,19 @@ export class AvatarDecorationService implements Disposable {
 		private redisForSub: Redis.Redis,
 
 		@inject(DI.avatarDecorationsRepository)
-		private avatarDecorationsRepository: AvatarDecorationsRepository, @inject(delay(() => IdService)) private idService: IdService, @inject(delay(() => ModerationLogService)) private moderationLogService: ModerationLogService, @inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService, @inject(delay(() => DisposableRegistry)) registry: DisposableRegistry) {
+		private avatarDecorationsRepository: AvatarDecorationsRepository,
+
+		@inject(delay(() => IdService))
+		private idService: IdService,
+
+		@inject(delay(() => ModerationLogService))
+		private moderationLogService: ModerationLogService,
+
+		@inject(delay(() => GlobalEventService))
+		private globalEventService: GlobalEventService,
+
+		@inject(delay(() => DisposableRegistry))
+		registry: DisposableRegistry) {
 		registry.register(this);
 		this.cache = new MemorySingleCache<MiAvatarDecoration[]>(1000 * 60 * 30); // 30s
 

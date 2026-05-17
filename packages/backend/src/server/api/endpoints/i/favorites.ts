@@ -44,7 +44,13 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.noteFavoritesRepository)
-		private noteFavoritesRepository: NoteFavoritesRepository, @inject(delay(() => NoteFavoriteEntityService)) private noteFavoriteEntityService: NoteFavoriteEntityService, @inject(delay(() => QueryService)) private queryService: QueryService) {
+		private noteFavoritesRepository: NoteFavoritesRepository,
+
+		@inject(delay(() => NoteFavoriteEntityService))
+		private noteFavoriteEntityService: NoteFavoriteEntityService,
+
+		@inject(delay(() => QueryService))
+		private queryService: QueryService) {
 		super(meta, paramDef, async (ps, me) => {
 			const query = this.queryService.makePaginationQuery(this.noteFavoritesRepository.createQueryBuilder('favorite'), ps.sinceId, ps.untilId, ps.sinceDate, ps.untilDate)
 				.andWhere('favorite.userId = :meId', { meId: me.id })

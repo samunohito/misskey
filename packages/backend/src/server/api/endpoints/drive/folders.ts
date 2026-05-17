@@ -45,7 +45,13 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.driveFoldersRepository)
-		private driveFoldersRepository: DriveFoldersRepository, @inject(delay(() => DriveFolderEntityService)) private driveFolderEntityService: DriveFolderEntityService, @inject(delay(() => QueryService)) private queryService: QueryService) {
+		private driveFoldersRepository: DriveFoldersRepository,
+
+		@inject(delay(() => DriveFolderEntityService))
+		private driveFolderEntityService: DriveFolderEntityService,
+
+		@inject(delay(() => QueryService))
+		private queryService: QueryService) {
 		super(meta, paramDef, async (ps, me) => {
 			const query = this.queryService.makePaginationQuery(this.driveFoldersRepository.createQueryBuilder('folder'), ps.sinceId, ps.untilId, ps.sinceDate, ps.untilDate)
 				.andWhere('folder.userId = :userId', { userId: me.id });

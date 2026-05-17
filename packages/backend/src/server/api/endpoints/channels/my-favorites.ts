@@ -38,7 +38,10 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.channelFavoritesRepository)
-		private channelFavoritesRepository: ChannelFavoritesRepository, @inject(delay(() => ChannelEntityService)) private channelEntityService: ChannelEntityService) {
+		private channelFavoritesRepository: ChannelFavoritesRepository,
+
+		@inject(delay(() => ChannelEntityService))
+		private channelEntityService: ChannelEntityService) {
 		super(meta, paramDef, async (ps, me) => {
 			const query = this.channelFavoritesRepository.createQueryBuilder('favorite')
 				.andWhere('favorite.userId = :meId', { meId: me.id })

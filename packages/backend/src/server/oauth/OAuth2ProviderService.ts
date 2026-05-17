@@ -312,11 +312,28 @@ export class OAuth2ProviderService {
 
 	constructor(
 		@inject(DI.config)
-		private config: Config, @inject(delay(() => HttpRequestService)) private httpRequestService: HttpRequestService,
+		private config: Config,
+
+		@inject(delay(() => HttpRequestService))
+		private httpRequestService: HttpRequestService,
+
 		@inject(DI.accessTokensRepository)
-		accessTokensRepository: AccessTokensRepository, @inject(delay(() => IdService)) idService: IdService,
+		accessTokensRepository: AccessTokensRepository,
+
+		@inject(delay(() => IdService))
+		idService: IdService,
+
 		@inject(DI.usersRepository)
-		private usersRepository: UsersRepository, @inject(delay(() => CacheService)) private cacheService: CacheService, @inject(delay(() => LoggerService)) loggerService: LoggerService, @inject(delay(() => HtmlTemplateService)) private htmlTemplateService: HtmlTemplateService) {
+		private usersRepository: UsersRepository,
+
+		@inject(delay(() => CacheService))
+		private cacheService: CacheService,
+
+		@inject(delay(() => LoggerService))
+		loggerService: LoggerService,
+
+		@inject(delay(() => HtmlTemplateService))
+		private htmlTemplateService: HtmlTemplateService) {
 		this.logger = loggerService.getLogger('oauth');
 
 		const grantCodeCache = new MemoryKVCache<{

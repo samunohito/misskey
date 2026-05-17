@@ -16,7 +16,13 @@ import { bindThis } from '@/decorators.js';
 export class RegistryApiService {
 	constructor(
 		@inject(DI.registryItemsRepository)
-		private registryItemsRepository: RegistryItemsRepository, @inject(delay(() => IdService)) private idService: IdService, @inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService) {
+		private registryItemsRepository: RegistryItemsRepository,
+
+		@inject(delay(() => IdService))
+		private idService: IdService,
+
+		@inject(delay(() => GlobalEventService))
+		private globalEventService: GlobalEventService) {
 	}
 
 	@bindThis

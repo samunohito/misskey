@@ -43,7 +43,13 @@ export class SystemAccountService implements Disposable {
 		private usersRepository: UsersRepository,
 
 		@inject(DI.userProfilesRepository)
-		private userProfilesRepository: UserProfilesRepository, @inject(delay(() => IdService)) private idService: IdService, @inject(delay(() => DisposableRegistry)) registry: DisposableRegistry) {
+		private userProfilesRepository: UserProfilesRepository,
+
+		@inject(delay(() => IdService))
+		private idService: IdService,
+
+		@inject(delay(() => DisposableRegistry))
+		registry: DisposableRegistry) {
 		registry.register(this);
 		this.cache = new MemoryKVCache<MiLocalUser>(1000 * 60 * 10); // 10m
 

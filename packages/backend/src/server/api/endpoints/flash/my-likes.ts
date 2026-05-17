@@ -52,7 +52,12 @@ export const paramDef = {
 
 @injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
-	constructor(@inject(delay(() => FlashLikeEntityService)) private flashLikeEntityService: FlashLikeEntityService, @inject(delay(() => FlashService)) private flashService: FlashService) {
+	constructor(
+		@inject(delay(() => FlashLikeEntityService))
+		private flashLikeEntityService: FlashLikeEntityService,
+
+		@inject(delay(() => FlashService))
+		private flashService: FlashService) {
 		super(meta, paramDef, async (ps, me) => {
 			const likes = await this.flashService.myLikes(me.id, {
 				sinceId: ps.sinceId,

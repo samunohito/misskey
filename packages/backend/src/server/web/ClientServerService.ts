@@ -113,7 +113,46 @@ export class ClientServerService {
 		private reversiGamesRepository: ReversiGamesRepository,
 
 		@inject(DI.announcementsRepository)
-		private announcementsRepository: AnnouncementsRepository, @inject(delay(() => FlashEntityService)) private flashEntityService: FlashEntityService, @inject(delay(() => UserEntityService)) private userEntityService: UserEntityService, @inject(delay(() => NoteEntityService)) private noteEntityService: NoteEntityService, @inject(delay(() => PageEntityService)) private pageEntityService: PageEntityService, @inject(delay(() => GalleryPostEntityService)) private galleryPostEntityService: GalleryPostEntityService, @inject(delay(() => ClipEntityService)) private clipEntityService: ClipEntityService, @inject(delay(() => ChannelEntityService)) private channelEntityService: ChannelEntityService, @inject(delay(() => ReversiGameEntityService)) private reversiGameEntityService: ReversiGameEntityService, @inject(delay(() => AnnouncementEntityService)) private announcementEntityService: AnnouncementEntityService, @inject(delay(() => UrlPreviewService)) private urlPreviewService: UrlPreviewService, @inject(delay(() => FeedService)) private feedService: FeedService, @inject(delay(() => HtmlTemplateService)) private htmlTemplateService: HtmlTemplateService, @inject(delay(() => ClientLoggerService)) private clientLoggerService: ClientLoggerService) {
+		private announcementsRepository: AnnouncementsRepository,
+
+		@inject(delay(() => FlashEntityService))
+		private flashEntityService: FlashEntityService,
+
+		@inject(delay(() => UserEntityService))
+		private userEntityService: UserEntityService,
+
+		@inject(delay(() => NoteEntityService))
+		private noteEntityService: NoteEntityService,
+
+		@inject(delay(() => PageEntityService))
+		private pageEntityService: PageEntityService,
+
+		@inject(delay(() => GalleryPostEntityService))
+		private galleryPostEntityService: GalleryPostEntityService,
+
+		@inject(delay(() => ClipEntityService))
+		private clipEntityService: ClipEntityService,
+
+		@inject(delay(() => ChannelEntityService))
+		private channelEntityService: ChannelEntityService,
+
+		@inject(delay(() => ReversiGameEntityService))
+		private reversiGameEntityService: ReversiGameEntityService,
+
+		@inject(delay(() => AnnouncementEntityService))
+		private announcementEntityService: AnnouncementEntityService,
+
+		@inject(delay(() => UrlPreviewService))
+		private urlPreviewService: UrlPreviewService,
+
+		@inject(delay(() => FeedService))
+		private feedService: FeedService,
+
+		@inject(delay(() => HtmlTemplateService))
+		private htmlTemplateService: HtmlTemplateService,
+
+		@inject(delay(() => ClientLoggerService))
+		private clientLoggerService: ClientLoggerService) {
 		//this.createServer = this.createServer.bind(this);
 		const backendRootdir = resolve(this.config.rootDir, 'packages/backend');
 		const frontendRootdir = resolve(this.config.rootDir, 'packages/frontend');

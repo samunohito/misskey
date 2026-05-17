@@ -17,7 +17,13 @@ import { UserEntityService } from './UserEntityService.js';
 export class AbuseUserReportEntityService {
 	constructor(
 		@inject(DI.abuseUserReportsRepository)
-		private abuseUserReportsRepository: AbuseUserReportsRepository, @inject(delay(() => UserEntityService)) private userEntityService: UserEntityService, @inject(delay(() => IdService)) private idService: IdService) {
+		private abuseUserReportsRepository: AbuseUserReportsRepository,
+
+		@inject(delay(() => UserEntityService))
+		private userEntityService: UserEntityService,
+
+		@inject(delay(() => IdService))
+		private idService: IdService) {
 	}
 
 	@bindThis

@@ -43,7 +43,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 		private userListsRepository: UserListsRepository,
 
 		@inject(DI.userListFavoritesRepository)
-		private userListFavoritesRepository: UserListFavoritesRepository, @inject(delay(() => IdService)) private idService: IdService) {
+		private userListFavoritesRepository: UserListFavoritesRepository,
+
+		@inject(delay(() => IdService))
+		private idService: IdService) {
 		super(meta, paramDef, async (ps, me) => {
 			const userListExist = await this.userListsRepository.exists({
 				where: {

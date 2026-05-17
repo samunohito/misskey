@@ -23,7 +23,16 @@ export class MetaService implements Disposable {
 		private redisForSub: Redis.Redis,
 
 		@inject(DI.db)
-		private db: DataSource, @inject(delay(() => FeaturedService)) private featuredService: FeaturedService, @inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService, @inject(delay(() => DisposableRegistry)) registry: DisposableRegistry) {
+		private db: DataSource,
+
+		@inject(delay(() => FeaturedService))
+		private featuredService: FeaturedService,
+
+		@inject(delay(() => GlobalEventService))
+		private globalEventService: GlobalEventService,
+
+		@inject(delay(() => DisposableRegistry))
+		registry: DisposableRegistry) {
 		registry.register(this);
 		//this.onMessage = this.onMessage.bind(this);
 

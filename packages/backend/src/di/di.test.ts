@@ -92,7 +92,12 @@ describe('di', () => {
 
 		@injectable()
 		class B implements Disposable {
-			constructor(@inject(DisposableRegistry) registry: DisposableRegistry, @inject(A) public a: A) { registry.register(this); }
+			constructor(
+				@inject(DisposableRegistry)
+				registry: DisposableRegistry,
+
+				@inject(A)
+				public a: A) { registry.register(this); }
 			dispose(): void { order.push('B'); }
 		}
 
@@ -119,7 +124,12 @@ describe('di', () => {
 
 		@injectable()
 		class Survivor implements Disposable {
-			constructor(@inject(DisposableRegistry) registry: DisposableRegistry, @inject(Bomb) public b: Bomb) { registry.register(this); }
+			constructor(
+				@inject(DisposableRegistry)
+				registry: DisposableRegistry,
+
+				@inject(Bomb)
+				public b: Bomb) { registry.register(this); }
 			dispose(): void { order.push('survivor'); }
 		}
 

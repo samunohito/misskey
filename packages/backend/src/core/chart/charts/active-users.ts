@@ -30,7 +30,13 @@ export default class ActiveUsersChart extends Chart<typeof schema> { // eslint-d
 		private db: DataSource,
 
 		@inject(DI.redis)
-		private redisClient: Redis.Redis, @inject(delay(() => ChartLoggerService)) private chartLoggerService: ChartLoggerService, @inject(delay(() => IdService)) private idService: IdService) {
+		private redisClient: Redis.Redis,
+
+		@inject(delay(() => ChartLoggerService))
+		private chartLoggerService: ChartLoggerService,
+
+		@inject(delay(() => IdService))
+		private idService: IdService) {
 		super(db, (k) => acquireChartInsertLock(redisClient, k), chartLoggerService.logger, name, schema);
 	}
 

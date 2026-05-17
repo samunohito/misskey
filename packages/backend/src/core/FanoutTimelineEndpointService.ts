@@ -52,7 +52,22 @@ export class FanoutTimelineEndpointService {
 		private notesRepository: NotesRepository,
 
 		@inject(DI.meta)
-		private meta: MiMeta, @inject(delay(() => NoteEntityService)) private noteEntityService: NoteEntityService, @inject(delay(() => CacheService)) private cacheService: CacheService, @inject(delay(() => FanoutTimelineService)) private fanoutTimelineService: FanoutTimelineService, @inject(delay(() => UtilityService)) private utilityService: UtilityService, @inject(delay(() => ChannelMutingService)) private channelMutingService: ChannelMutingService) {
+		private meta: MiMeta,
+
+		@inject(delay(() => NoteEntityService))
+		private noteEntityService: NoteEntityService,
+
+		@inject(delay(() => CacheService))
+		private cacheService: CacheService,
+
+		@inject(delay(() => FanoutTimelineService))
+		private fanoutTimelineService: FanoutTimelineService,
+
+		@inject(delay(() => UtilityService))
+		private utilityService: UtilityService,
+
+		@inject(delay(() => ChannelMutingService))
+		private channelMutingService: ChannelMutingService) {
 	}
 
 	@bindThis

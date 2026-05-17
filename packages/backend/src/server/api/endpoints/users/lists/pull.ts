@@ -50,7 +50,13 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.userListsRepository)
-		private userListsRepository: UserListsRepository, @inject(delay(() => UserListService)) private userListService: UserListService, @inject(delay(() => GetterService)) private getterService: GetterService) {
+		private userListsRepository: UserListsRepository,
+
+		@inject(delay(() => UserListService))
+		private userListService: UserListService,
+
+		@inject(delay(() => GetterService))
+		private getterService: GetterService) {
 		super(meta, paramDef, async (ps, me) => {
 			// Fetch the list
 			const userList = await this.userListsRepository.findOneBy({

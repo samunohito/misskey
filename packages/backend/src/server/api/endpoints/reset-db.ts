@@ -38,7 +38,16 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private db: DataSource,
 
 		@inject(DI.redis)
-		private redisClient: Redis.Redis, @inject(delay(() => LoggerService)) private loggerService: LoggerService, @inject(delay(() => MetaService)) private metaService: MetaService, @inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService) {
+		private redisClient: Redis.Redis,
+
+		@inject(delay(() => LoggerService))
+		private loggerService: LoggerService,
+
+		@inject(delay(() => MetaService))
+		private metaService: MetaService,
+
+		@inject(delay(() => GlobalEventService))
+		private globalEventService: GlobalEventService) {
 		super(meta, paramDef, async (ps, me) => {
 			if (process.env.NODE_ENV !== 'test') throw new Error('NODE_ENV is not a test');
 

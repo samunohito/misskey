@@ -42,7 +42,10 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.channelsRepository)
-		private channelsRepository: ChannelsRepository, @inject(delay(() => ChannelEntityService)) private channelEntityService: ChannelEntityService) {
+		private channelsRepository: ChannelsRepository,
+
+		@inject(delay(() => ChannelEntityService))
+		private channelEntityService: ChannelEntityService) {
 		super(meta, paramDef, async (ps, me) => {
 			const channel = await this.channelsRepository.findOneBy({
 				id: ps.channelId,

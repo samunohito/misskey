@@ -16,7 +16,13 @@ import { CacheService } from '@/core/CacheService.js';
 export class UserMutingService {
 	constructor(
 		@inject(DI.mutingsRepository)
-		private mutingsRepository: MutingsRepository, @inject(delay(() => IdService)) private idService: IdService, @inject(delay(() => CacheService)) private cacheService: CacheService) {
+		private mutingsRepository: MutingsRepository,
+
+		@inject(delay(() => IdService))
+		private idService: IdService,
+
+		@inject(delay(() => CacheService))
+		private cacheService: CacheService) {
 	}
 
 	@bindThis

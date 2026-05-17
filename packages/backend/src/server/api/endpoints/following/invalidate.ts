@@ -65,7 +65,16 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.followingsRepository)
-		private followingsRepository: FollowingsRepository, @inject(delay(() => UserEntityService)) private userEntityService: UserEntityService, @inject(delay(() => GetterService)) private getterService: GetterService, @inject(delay(() => UserFollowingService)) private userFollowingService: UserFollowingService) {
+		private followingsRepository: FollowingsRepository,
+
+		@inject(delay(() => UserEntityService))
+		private userEntityService: UserEntityService,
+
+		@inject(delay(() => GetterService))
+		private getterService: GetterService,
+
+		@inject(delay(() => UserFollowingService))
+		private userFollowingService: UserFollowingService) {
 		super(meta, paramDef, async (ps, me) => {
 			const followee = me;
 

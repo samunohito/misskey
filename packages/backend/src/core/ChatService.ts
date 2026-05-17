@@ -75,7 +75,49 @@ export class ChatService {
 		private chatRoomMembershipsRepository: ChatRoomMembershipsRepository,
 
 		@inject(DI.mutingsRepository)
-		private mutingsRepository: MutingsRepository, @inject(delay(() => UserEntityService)) private userEntityService: UserEntityService, @inject(delay(() => ChatEntityService)) private chatEntityService: ChatEntityService, @inject(delay(() => IdService)) private idService: IdService, @inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService, @inject(delay(() => ApRendererService)) private apRendererService: ApRendererService, @inject(delay(() => QueueService)) private queueService: QueueService, @inject(delay(() => PushNotificationService)) private pushNotificationService: PushNotificationService, @inject(delay(() => NotificationService)) private notificationService: NotificationService, @inject(delay(() => UserBlockingService)) private userBlockingService: UserBlockingService, @inject(delay(() => QueryService)) private queryService: QueryService, @inject(delay(() => RoleService)) private roleService: RoleService, @inject(delay(() => UserFollowingService)) private userFollowingService: UserFollowingService, @inject(delay(() => CustomEmojiService)) private customEmojiService: CustomEmojiService, @inject(delay(() => ModerationLogService)) private moderationLogService: ModerationLogService) {
+		private mutingsRepository: MutingsRepository,
+
+		@inject(delay(() => UserEntityService))
+		private userEntityService: UserEntityService,
+
+		@inject(delay(() => ChatEntityService))
+		private chatEntityService: ChatEntityService,
+
+		@inject(delay(() => IdService))
+		private idService: IdService,
+
+		@inject(delay(() => GlobalEventService))
+		private globalEventService: GlobalEventService,
+
+		@inject(delay(() => ApRendererService))
+		private apRendererService: ApRendererService,
+
+		@inject(delay(() => QueueService))
+		private queueService: QueueService,
+
+		@inject(delay(() => PushNotificationService))
+		private pushNotificationService: PushNotificationService,
+
+		@inject(delay(() => NotificationService))
+		private notificationService: NotificationService,
+
+		@inject(delay(() => UserBlockingService))
+		private userBlockingService: UserBlockingService,
+
+		@inject(delay(() => QueryService))
+		private queryService: QueryService,
+
+		@inject(delay(() => RoleService))
+		private roleService: RoleService,
+
+		@inject(delay(() => UserFollowingService))
+		private userFollowingService: UserFollowingService,
+
+		@inject(delay(() => CustomEmojiService))
+		private customEmojiService: CustomEmojiService,
+
+		@inject(delay(() => ModerationLogService))
+		private moderationLogService: ModerationLogService) {
 	}
 
 	@bindThis

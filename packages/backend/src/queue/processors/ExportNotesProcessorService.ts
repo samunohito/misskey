@@ -110,7 +110,22 @@ export class ExportNotesProcessorService {
 		private pollsRepository: PollsRepository,
 
 		@inject(DI.notesRepository)
-		private notesRepository: NotesRepository, @inject(delay(() => DriveService)) private driveService: DriveService, @inject(delay(() => QueueLoggerService)) private queueLoggerService: QueueLoggerService, @inject(delay(() => DriveFileEntityService)) private driveFileEntityService: DriveFileEntityService, @inject(delay(() => IdService)) private idService: IdService, @inject(delay(() => NotificationService)) private notificationService: NotificationService) {
+		private notesRepository: NotesRepository,
+
+		@inject(delay(() => DriveService))
+		private driveService: DriveService,
+
+		@inject(delay(() => QueueLoggerService))
+		private queueLoggerService: QueueLoggerService,
+
+		@inject(delay(() => DriveFileEntityService))
+		private driveFileEntityService: DriveFileEntityService,
+
+		@inject(delay(() => IdService))
+		private idService: IdService,
+
+		@inject(delay(() => NotificationService))
+		private notificationService: NotificationService) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('export-notes');
 	}
 

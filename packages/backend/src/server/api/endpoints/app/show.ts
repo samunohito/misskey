@@ -40,7 +40,10 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.appsRepository)
-		private appsRepository: AppsRepository, @inject(delay(() => AppEntityService)) private appEntityService: AppEntityService) {
+		private appsRepository: AppsRepository,
+
+		@inject(delay(() => AppEntityService))
+		private appEntityService: AppEntityService) {
 		super(meta, paramDef, async (ps, user, token) => {
 			const isSecure = user != null && token == null;
 

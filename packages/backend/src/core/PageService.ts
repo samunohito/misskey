@@ -47,7 +47,16 @@ export class PageService {
 		private notesRepository: NotesRepository,
 
 		@inject(DI.usersRepository)
-		private usersRepository: UsersRepository, @inject(delay(() => RoleService)) private roleService: RoleService, @inject(delay(() => ModerationLogService)) private moderationLogService: ModerationLogService, @inject(delay(() => IdService)) private idService: IdService) {
+		private usersRepository: UsersRepository,
+
+		@inject(delay(() => RoleService))
+		private roleService: RoleService,
+
+		@inject(delay(() => ModerationLogService))
+		private moderationLogService: ModerationLogService,
+
+		@inject(delay(() => IdService))
+		private idService: IdService) {
 	}
 
 	@bindThis

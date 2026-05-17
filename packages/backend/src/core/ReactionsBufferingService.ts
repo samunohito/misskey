@@ -26,10 +26,15 @@ export class ReactionsBufferingService implements Disposable {
 		private redisForSub: Redis.Redis,
 
 		@inject(DI.redisForReactions)
-		private redisForReactions: Redis.Redis, // TODO: 専用のRedisインスタンスにする
+		private redisForReactions: Redis.Redis,
+
+		// TODO: 専用のRedisインスタンスにする
 
 		@inject(DI.notesRepository)
-		private notesRepository: NotesRepository, @inject(delay(() => DisposableRegistry)) registry: DisposableRegistry) {
+		private notesRepository: NotesRepository,
+
+		@inject(delay(() => DisposableRegistry))
+		registry: DisposableRegistry) {
 		registry.register(this);
 		this.redisForSub.on('message', this.onMessage);
 	}

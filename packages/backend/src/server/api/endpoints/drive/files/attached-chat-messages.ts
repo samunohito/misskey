@@ -59,7 +59,19 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private driveFilesRepository: DriveFilesRepository,
 
 		@inject(DI.chatMessagesRepository)
-		private chatMessagesRepository: ChatMessagesRepository, @inject(delay(() => ChatService)) private chatService: ChatService, @inject(delay(() => ChatEntityService)) private chatEntityService: ChatEntityService, @inject(delay(() => QueryService)) private queryService: QueryService, @inject(delay(() => RoleService)) private roleService: RoleService) {
+		private chatMessagesRepository: ChatMessagesRepository,
+
+		@inject(delay(() => ChatService))
+		private chatService: ChatService,
+
+		@inject(delay(() => ChatEntityService))
+		private chatEntityService: ChatEntityService,
+
+		@inject(delay(() => QueryService))
+		private queryService: QueryService,
+
+		@inject(delay(() => RoleService))
+		private roleService: RoleService) {
 		super(meta, paramDef, async (ps, me) => {
 			const isModerator = await this.roleService.isModerator(me);
 

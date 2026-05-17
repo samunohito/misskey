@@ -69,7 +69,28 @@ export class ActivityPubServerService {
 		private followingsRepository: FollowingsRepository,
 
 		@inject(DI.followRequestsRepository)
-		private followRequestsRepository: FollowRequestsRepository, @inject(delay(() => UtilityService)) private utilityService: UtilityService, @inject(delay(() => UserEntityService)) private userEntityService: UserEntityService, @inject(delay(() => ApRendererService)) private apRendererService: ApRendererService, @inject(delay(() => QueueService)) private queueService: QueueService, @inject(delay(() => UserKeypairService)) private userKeypairService: UserKeypairService, @inject(delay(() => QueryService)) private queryService: QueryService, @inject(delay(() => FanoutTimelineEndpointService)) private fanoutTimelineEndpointService: FanoutTimelineEndpointService) {
+		private followRequestsRepository: FollowRequestsRepository,
+
+		@inject(delay(() => UtilityService))
+		private utilityService: UtilityService,
+
+		@inject(delay(() => UserEntityService))
+		private userEntityService: UserEntityService,
+
+		@inject(delay(() => ApRendererService))
+		private apRendererService: ApRendererService,
+
+		@inject(delay(() => QueueService))
+		private queueService: QueueService,
+
+		@inject(delay(() => UserKeypairService))
+		private userKeypairService: UserKeypairService,
+
+		@inject(delay(() => QueryService))
+		private queryService: QueryService,
+
+		@inject(delay(() => FanoutTimelineEndpointService))
+		private fanoutTimelineEndpointService: FanoutTimelineEndpointService) {
 		//this.createServer = this.createServer.bind(this);
 	}
 

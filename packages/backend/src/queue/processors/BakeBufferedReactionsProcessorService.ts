@@ -18,7 +18,13 @@ export class BakeBufferedReactionsProcessorService {
 
 	constructor(
 		@inject(DI.meta)
-		private meta: MiMeta, @inject(delay(() => ReactionsBufferingService)) private reactionsBufferingService: ReactionsBufferingService, @inject(delay(() => QueueLoggerService)) private queueLoggerService: QueueLoggerService) {
+		private meta: MiMeta,
+
+		@inject(delay(() => ReactionsBufferingService))
+		private reactionsBufferingService: ReactionsBufferingService,
+
+		@inject(delay(() => QueueLoggerService))
+		private queueLoggerService: QueueLoggerService) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('bake-buffered-reactions');
 	}
 

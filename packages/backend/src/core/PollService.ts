@@ -29,7 +29,28 @@ export class PollService {
 		private pollsRepository: PollsRepository,
 
 		@inject(DI.pollVotesRepository)
-		private pollVotesRepository: PollVotesRepository, @inject(delay(() => UserEntityService)) private userEntityService: UserEntityService, @inject(delay(() => IdService)) private idService: IdService, @inject(delay(() => RelayService)) private relayService: RelayService, @inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService, @inject(delay(() => UserBlockingService)) private userBlockingService: UserBlockingService, @inject(delay(() => ApRendererService)) private apRendererService: ApRendererService, @inject(delay(() => ApDeliverManagerService)) private apDeliverManagerService: ApDeliverManagerService) {
+		private pollVotesRepository: PollVotesRepository,
+
+		@inject(delay(() => UserEntityService))
+		private userEntityService: UserEntityService,
+
+		@inject(delay(() => IdService))
+		private idService: IdService,
+
+		@inject(delay(() => RelayService))
+		private relayService: RelayService,
+
+		@inject(delay(() => GlobalEventService))
+		private globalEventService: GlobalEventService,
+
+		@inject(delay(() => UserBlockingService))
+		private userBlockingService: UserBlockingService,
+
+		@inject(delay(() => ApRendererService))
+		private apRendererService: ApRendererService,
+
+		@inject(delay(() => ApDeliverManagerService))
+		private apDeliverManagerService: ApDeliverManagerService) {
 	}
 
 	@bindThis

@@ -16,7 +16,10 @@ import { moderationLogTypes } from '@/types.js';
 export class ModerationLogService {
 	constructor(
 		@inject(DI.moderationLogsRepository)
-		private moderationLogsRepository: ModerationLogsRepository, @inject(delay(() => IdService)) private idService: IdService) {
+		private moderationLogsRepository: ModerationLogsRepository,
+
+		@inject(delay(() => IdService))
+		private idService: IdService) {
 	}
 
 	@bindThis

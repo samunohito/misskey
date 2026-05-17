@@ -25,7 +25,25 @@ export class DeleteAccountService {
 		private usersRepository: UsersRepository,
 
 		@inject(DI.followingsRepository)
-		private followingsRepository: FollowingsRepository, @inject(delay(() => UserEntityService)) private userEntityService: UserEntityService, @inject(delay(() => ApRendererService)) private apRendererService: ApRendererService, @inject(delay(() => QueueService)) private queueService: QueueService, @inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService, @inject(delay(() => ModerationLogService)) private moderationLogService: ModerationLogService, @inject(delay(() => SystemAccountService)) private systemAccountService: SystemAccountService) {
+		private followingsRepository: FollowingsRepository,
+
+		@inject(delay(() => UserEntityService))
+		private userEntityService: UserEntityService,
+
+		@inject(delay(() => ApRendererService))
+		private apRendererService: ApRendererService,
+
+		@inject(delay(() => QueueService))
+		private queueService: QueueService,
+
+		@inject(delay(() => GlobalEventService))
+		private globalEventService: GlobalEventService,
+
+		@inject(delay(() => ModerationLogService))
+		private moderationLogService: ModerationLogService,
+
+		@inject(delay(() => SystemAccountService))
+		private systemAccountService: SystemAccountService) {
 	}
 
 	@bindThis

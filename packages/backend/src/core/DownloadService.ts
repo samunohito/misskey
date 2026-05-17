@@ -26,7 +26,13 @@ export class DownloadService {
 
 	constructor(
 		@inject(DI.config)
-		private config: Config, @inject(delay(() => HttpRequestService)) private httpRequestService: HttpRequestService, @inject(delay(() => LoggerService)) private loggerService: LoggerService) {
+		private config: Config,
+
+		@inject(delay(() => HttpRequestService))
+		private httpRequestService: HttpRequestService,
+
+		@inject(delay(() => LoggerService))
+		private loggerService: LoggerService) {
 		this.logger = this.loggerService.getLogger('download');
 	}
 

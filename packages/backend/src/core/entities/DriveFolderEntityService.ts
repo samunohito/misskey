@@ -23,7 +23,10 @@ export class DriveFolderEntityService {
 		private driveFoldersRepository: DriveFoldersRepository,
 
 		@inject(DI.driveFilesRepository)
-		private driveFilesRepository: DriveFilesRepository, @inject(delay(() => IdService)) private idService: IdService) {
+		private driveFilesRepository: DriveFilesRepository,
+
+		@inject(delay(() => IdService))
+		private idService: IdService) {
 	}
 
 	@bindThis

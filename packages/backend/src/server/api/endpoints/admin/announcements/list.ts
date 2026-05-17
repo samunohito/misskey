@@ -113,7 +113,13 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private announcementsRepository: AnnouncementsRepository,
 
 		@inject(DI.announcementReadsRepository)
-		private announcementReadsRepository: AnnouncementReadsRepository, @inject(delay(() => QueryService)) private queryService: QueryService, @inject(delay(() => IdService)) private idService: IdService) {
+		private announcementReadsRepository: AnnouncementReadsRepository,
+
+		@inject(delay(() => QueryService))
+		private queryService: QueryService,
+
+		@inject(delay(() => IdService))
+		private idService: IdService) {
 		super(meta, paramDef, async (ps, me) => {
 			const query = this.queryService.makePaginationQuery(this.announcementsRepository.createQueryBuilder('announcement'), ps.sinceId, ps.untilId, ps.sinceDate, ps.untilDate);
 

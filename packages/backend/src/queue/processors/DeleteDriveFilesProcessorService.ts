@@ -23,7 +23,13 @@ export class DeleteDriveFilesProcessorService {
 		private usersRepository: UsersRepository,
 
 		@inject(DI.driveFilesRepository)
-		private driveFilesRepository: DriveFilesRepository, @inject(delay(() => DriveService)) private driveService: DriveService, @inject(delay(() => QueueLoggerService)) private queueLoggerService: QueueLoggerService) {
+		private driveFilesRepository: DriveFilesRepository,
+
+		@inject(delay(() => DriveService))
+		private driveService: DriveService,
+
+		@inject(delay(() => QueueLoggerService))
+		private queueLoggerService: QueueLoggerService) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('delete-drive-files');
 	}
 

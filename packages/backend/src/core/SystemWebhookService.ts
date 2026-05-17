@@ -55,8 +55,24 @@ export class SystemWebhookService implements Disposable {
 	constructor(
 		@inject(DI.redisForSub)
 		private redisForSub: Redis.Redis,
+
 		@inject(DI.systemWebhooksRepository)
-		private systemWebhooksRepository: SystemWebhooksRepository, @inject(delay(() => IdService)) private idService: IdService, @inject(delay(() => QueueService)) private queueService: QueueService, @inject(delay(() => ModerationLogService)) private moderationLogService: ModerationLogService, @inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService, @inject(delay(() => DisposableRegistry)) registry: DisposableRegistry) {
+		private systemWebhooksRepository: SystemWebhooksRepository,
+
+		@inject(delay(() => IdService))
+		private idService: IdService,
+
+		@inject(delay(() => QueueService))
+		private queueService: QueueService,
+
+		@inject(delay(() => ModerationLogService))
+		private moderationLogService: ModerationLogService,
+
+		@inject(delay(() => GlobalEventService))
+		private globalEventService: GlobalEventService,
+
+		@inject(delay(() => DisposableRegistry))
+		registry: DisposableRegistry) {
 		registry.register(this);
 		this.redisForSub.on('message', this.onMessage);
 	}

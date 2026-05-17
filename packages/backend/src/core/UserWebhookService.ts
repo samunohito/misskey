@@ -32,8 +32,15 @@ export class UserWebhookService implements Disposable {
 	constructor(
 		@inject(DI.redisForSub)
 		private redisForSub: Redis.Redis,
+
 		@inject(DI.webhooksRepository)
-		private webhooksRepository: WebhooksRepository, @inject(delay(() => QueueService)) private queueService: QueueService, @inject(delay(() => DisposableRegistry)) registry: DisposableRegistry) {
+		private webhooksRepository: WebhooksRepository,
+
+		@inject(delay(() => QueueService))
+		private queueService: QueueService,
+
+		@inject(delay(() => DisposableRegistry))
+		registry: DisposableRegistry) {
 		registry.register(this);
 		this.redisForSub.on('message', this.onMessage);
 	}

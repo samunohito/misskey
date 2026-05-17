@@ -22,7 +22,10 @@ export class UserKeypairService implements Disposable {
 		private redisClient: Redis.Redis,
 
 		@inject(DI.userKeypairsRepository)
-		private userKeypairsRepository: UserKeypairsRepository, @inject(delay(() => DisposableRegistry)) registry: DisposableRegistry) {
+		private userKeypairsRepository: UserKeypairsRepository,
+
+		@inject(delay(() => DisposableRegistry))
+		registry: DisposableRegistry) {
 		registry.register(this);
 		this.cache = new RedisKVCache<MiUserKeypair>(this.redisClient, 'userKeypair', {
 			lifetime: 1000 * 60 * 60 * 24, // 24h

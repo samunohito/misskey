@@ -38,7 +38,13 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.promoReadsRepository)
-		private promoReadsRepository: PromoReadsRepository, @inject(delay(() => IdService)) private idService: IdService, @inject(delay(() => GetterService)) private getterService: GetterService) {
+		private promoReadsRepository: PromoReadsRepository,
+
+		@inject(delay(() => IdService))
+		private idService: IdService,
+
+		@inject(delay(() => GetterService))
+		private getterService: GetterService) {
 		super(meta, paramDef, async (ps, me) => {
 			const note = await this.getterService.getNote(ps.noteId).catch(err => {
 				if (err.id === '9725d0ce-ba28-4dde-95a7-2cbb2c15de24') throw new ApiError(meta.errors.noSuchNote);

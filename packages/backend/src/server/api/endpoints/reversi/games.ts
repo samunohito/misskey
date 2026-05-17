@@ -38,7 +38,13 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.reversiGamesRepository)
-		private reversiGamesRepository: ReversiGamesRepository, @inject(delay(() => ReversiGameEntityService)) private reversiGameEntityService: ReversiGameEntityService, @inject(delay(() => QueryService)) private queryService: QueryService) {
+		private reversiGamesRepository: ReversiGamesRepository,
+
+		@inject(delay(() => ReversiGameEntityService))
+		private reversiGameEntityService: ReversiGameEntityService,
+
+		@inject(delay(() => QueryService))
+		private queryService: QueryService) {
 		super(meta, paramDef, async (ps, me) => {
 			const query = this.queryService.makePaginationQuery(this.reversiGamesRepository.createQueryBuilder('game'), ps.sinceId, ps.untilId, ps.sinceDate, ps.untilDate)
 				.innerJoinAndSelect('game.user1', 'user1')

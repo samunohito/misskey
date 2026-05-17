@@ -28,7 +28,16 @@ export class ChatEntityService {
 		private chatRoomInvitationsRepository: ChatRoomInvitationsRepository,
 
 		@inject(DI.chatRoomMembershipsRepository)
-		private chatRoomMembershipsRepository: ChatRoomMembershipsRepository, @inject(delay(() => UserEntityService)) private userEntityService: UserEntityService, @inject(delay(() => DriveFileEntityService)) private driveFileEntityService: DriveFileEntityService, @inject(delay(() => IdService)) private idService: IdService) {
+		private chatRoomMembershipsRepository: ChatRoomMembershipsRepository,
+
+		@inject(delay(() => UserEntityService))
+		private userEntityService: UserEntityService,
+
+		@inject(delay(() => DriveFileEntityService))
+		private driveFileEntityService: DriveFileEntityService,
+
+		@inject(delay(() => IdService))
+		private idService: IdService) {
 	}
 
 	@bindThis

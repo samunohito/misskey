@@ -19,7 +19,10 @@ export class GetterService {
 		private usersRepository: UsersRepository,
 
 		@inject(DI.notesRepository)
-		private notesRepository: NotesRepository, @inject(delay(() => UserEntityService)) private userEntityService: UserEntityService) {
+		private notesRepository: NotesRepository,
+
+		@inject(delay(() => UserEntityService))
+		private userEntityService: UserEntityService) {
 	}
 
 	/**

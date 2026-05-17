@@ -19,7 +19,13 @@ import { UserEntityService } from './UserEntityService.js';
 export class MutingEntityService {
 	constructor(
 		@inject(DI.mutingsRepository)
-		private mutingsRepository: MutingsRepository, @inject(delay(() => UserEntityService)) private userEntityService: UserEntityService, @inject(delay(() => IdService)) private idService: IdService) {
+		private mutingsRepository: MutingsRepository,
+
+		@inject(delay(() => UserEntityService))
+		private userEntityService: UserEntityService,
+
+		@inject(delay(() => IdService))
+		private idService: IdService) {
 	}
 
 	@bindThis

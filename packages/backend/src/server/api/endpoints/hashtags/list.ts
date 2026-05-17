@@ -41,7 +41,10 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.hashtagsRepository)
-		private hashtagsRepository: HashtagsRepository, @inject(delay(() => HashtagEntityService)) private hashtagEntityService: HashtagEntityService) {
+		private hashtagsRepository: HashtagsRepository,
+
+		@inject(delay(() => HashtagEntityService))
+		private hashtagEntityService: HashtagEntityService) {
 		super(meta, paramDef, async (ps, me) => {
 			const query = this.hashtagsRepository.createQueryBuilder('tag');
 

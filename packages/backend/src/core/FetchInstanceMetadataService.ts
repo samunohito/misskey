@@ -40,7 +40,16 @@ type NodeInfo = {
 export class FetchInstanceMetadataService {
 	private logger: Logger;
 
-	constructor(@inject(delay(() => HttpRequestService)) private httpRequestService: HttpRequestService, @inject(delay(() => LoggerService)) private loggerService: LoggerService, @inject(delay(() => FederatedInstanceService)) private federatedInstanceService: FederatedInstanceService,
+	constructor(
+		@inject(delay(() => HttpRequestService))
+		private httpRequestService: HttpRequestService,
+
+		@inject(delay(() => LoggerService))
+		private loggerService: LoggerService,
+
+		@inject(delay(() => FederatedInstanceService))
+		private federatedInstanceService: FederatedInstanceService,
+
 		@inject(DI.redis)
 		private redisClient: Redis.Redis) {
 		this.logger = this.loggerService.getLogger('metadata', 'cyan');

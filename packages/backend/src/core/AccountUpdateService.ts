@@ -17,7 +17,19 @@ import { bindThis } from '@/decorators.js';
 export class AccountUpdateService {
 	constructor(
 		@inject(DI.usersRepository)
-		private usersRepository: UsersRepository, @inject(delay(() => UserEntityService)) private userEntityService: UserEntityService, @inject(delay(() => ApRendererService)) private apRendererService: ApRendererService, @inject(delay(() => ApDeliverManagerService)) private apDeliverManagerService: ApDeliverManagerService, @inject(delay(() => RelayService)) private relayService: RelayService) {
+		private usersRepository: UsersRepository,
+
+		@inject(delay(() => UserEntityService))
+		private userEntityService: UserEntityService,
+
+		@inject(delay(() => ApRendererService))
+		private apRendererService: ApRendererService,
+
+		@inject(delay(() => ApDeliverManagerService))
+		private apDeliverManagerService: ApDeliverManagerService,
+
+		@inject(delay(() => RelayService))
+		private relayService: RelayService) {
 	}
 
 	@bindThis

@@ -152,7 +152,13 @@ class DeliverManager {
 export class ApDeliverManagerService {
 	constructor(
 		@inject(DI.followingsRepository)
-		private followingsRepository: FollowingsRepository, @inject(delay(() => UserEntityService)) private userEntityService: UserEntityService, @inject(delay(() => QueueService)) private queueService: QueueService) {
+		private followingsRepository: FollowingsRepository,
+
+		@inject(delay(() => UserEntityService))
+		private userEntityService: UserEntityService,
+
+		@inject(delay(() => QueueService))
+		private queueService: QueueService) {
 	}
 
 	/**

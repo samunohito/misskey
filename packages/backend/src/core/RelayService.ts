@@ -22,7 +22,19 @@ export class RelayService {
 
 	constructor(
 		@inject(DI.relaysRepository)
-		private relaysRepository: RelaysRepository, @inject(delay(() => IdService)) private idService: IdService, @inject(delay(() => QueueService)) private queueService: QueueService, @inject(delay(() => SystemAccountService)) private systemAccountService: SystemAccountService, @inject(delay(() => ApRendererService)) private apRendererService: ApRendererService) {
+		private relaysRepository: RelaysRepository,
+
+		@inject(delay(() => IdService))
+		private idService: IdService,
+
+		@inject(delay(() => QueueService))
+		private queueService: QueueService,
+
+		@inject(delay(() => SystemAccountService))
+		private systemAccountService: SystemAccountService,
+
+		@inject(delay(() => ApRendererService))
+		private apRendererService: ApRendererService) {
 		this.relaysCache = new MemorySingleCache<MiRelay[]>(1000 * 60 * 10); // 10m
 	}
 
