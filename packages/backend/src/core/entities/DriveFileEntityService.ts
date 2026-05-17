@@ -45,10 +45,10 @@ export class DriveFileEntityService {
 		@inject(delay(() => UserEntityService))
 		private userEntityService: UserEntityService,
 
-		private utilityService: UtilityService,
-		private driveFolderEntityService: DriveFolderEntityService,
-		private videoProcessingService: VideoProcessingService,
-		private idService: IdService,
+		@inject(delay(() => UtilityService)) private utilityService: UtilityService,
+		@inject(delay(() => DriveFolderEntityService)) private driveFolderEntityService: DriveFolderEntityService,
+		@inject(delay(() => VideoProcessingService)) private videoProcessingService: VideoProcessingService,
+		@inject(delay(() => IdService)) private idService: IdService,
 	) {
 	}
 

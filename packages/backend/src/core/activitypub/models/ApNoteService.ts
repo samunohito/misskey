@@ -62,15 +62,15 @@ export class ApNoteService {
 		@inject(delay(() => ApPersonService))
 		private apPersonService: ApPersonService,
 
-		private utilityService: UtilityService,
-		private apAudienceService: ApAudienceService,
-		private apMentionService: ApMentionService,
-		private apImageService: ApImageService,
-		private apQuestionService: ApQuestionService,
-		private pollService: PollService,
-		private noteCreateService: NoteCreateService,
-		private apDbResolverService: ApDbResolverService,
-		private apLoggerService: ApLoggerService,
+		@inject(delay(() => UtilityService)) private utilityService: UtilityService,
+		@inject(delay(() => ApAudienceService)) private apAudienceService: ApAudienceService,
+		@inject(delay(() => ApMentionService)) private apMentionService: ApMentionService,
+		@inject(delay(() => ApImageService)) private apImageService: ApImageService,
+		@inject(delay(() => ApQuestionService)) private apQuestionService: ApQuestionService,
+		@inject(delay(() => PollService)) private pollService: PollService,
+		@inject(delay(() => NoteCreateService)) private noteCreateService: NoteCreateService,
+		@inject(delay(() => ApDbResolverService)) private apDbResolverService: ApDbResolverService,
+		@inject(delay(() => ApLoggerService)) private apLoggerService: ApLoggerService,
 	) {
 		this.logger = this.apLoggerService.logger;
 	}

@@ -38,7 +38,7 @@ const _dirname = fileURLToPath(new URL('.', import.meta.url));
 @injectable()
 export class ServerService implements Disposable {
 	private logger: Logger;
-	#fastify: FastifyInstance;
+	private fastifyInstance: FastifyInstance;
 
 	constructor(
 		@inject(DI.config)
@@ -65,7 +65,7 @@ export class ServerService implements Disposable {
 			trustProxy: this.config.trustProxy,
 			logger: false,
 		});
-		this.#fastify = fastify;
+		this.fastifyInstance = fastify;
 
 		// HSTS
 		// 6months (15552000sec)
@@ -269,13 +269,13 @@ export class ServerService implements Disposable {
 	@bindThis
 	public async dispose(): Promise<void> {
 		await this.streamingApiServerService.detach();
-		await this.#fastify.close();
+		await this.fastifyInstance.close();
 	}
 
 	/**
 	 * Get the Fastify instance for testing.
 	 */
 	public get fastify(): FastifyInstance {
-		return this.#fastify;
+		return this.fastifyInstance;
 	}
 }

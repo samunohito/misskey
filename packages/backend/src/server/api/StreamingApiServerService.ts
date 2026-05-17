@@ -21,11 +21,11 @@ import type * as http from 'node:http';
 
 @injectable()
 export class StreamingApiServerService {
-	#wss: WebSocket.WebSocketServer;
-	#connections = new Map<WebSocket.WebSocket, number>();
-	#cleanConnectionsIntervalId: NodeJS.Timeout | null = null;
+	private wss: WebSocket.WebSocketServer;
+	private connections = new Map<WebSocket.WebSocket, number>();
+	private cleanConnectionsIntervalId: NodeJS.Timeout | null = null;
 
-	#connectionContainers = new Map<MainStreamConnection, DependencyContainer>();
+	private connectionContainers = new Map<MainStreamConnection, DependencyContainer>();
 
 	constructor(
 		@inject(DI.redisForSub)
@@ -37,7 +37,7 @@ export class StreamingApiServerService {
 
 	@bindThis
 	public attach(server: http.Server): void {
-		this.#wss = new WebSocket.WebSocketServer({
+		this.wss = new WebSocket.WebSocketServer({
 			noServer: true,
 		});
 
@@ -95,12 +95,12 @@ export class StreamingApiServerService {
 			child.register(DependencyContainerToken, { useValue: child });
 			child.register(MainStreamConnection, { useClass: MainStreamConnection });
 			const stream = child.resolve(MainStreamConnection);
-			this.#connectionContainers.set(stream, child);
+			this.connectionContainers.set(stream, child);
 
 			await stream.init();
 
-			this.#wss.handleUpgrade(request, socket, head, (ws) => {
-				this.#wss.emit('connection', ws, request, {
+			this.wss.handleUpgrade(request, socket, head, (ws) => {
+				this.wss.emit('connection', ws, request, {
 					stream, user, app,
 				});
 			});
@@ -113,7 +113,7 @@ export class StreamingApiServerService {
 			globalEv.emit('message', parsed);
 		});
 
-		this.#wss.on('connection', async (connection: WebSocket.WebSocket, request: http.IncomingMessage, ctx: {
+		this.wss.on('connection', async (connection: WebSocket.WebSocket, request: http.IncomingMessage, ctx: {
 			stream: MainStreamConnection,
 			user: MiLocalUser | null;
 			app: MiAccessToken | null
@@ -130,7 +130,7 @@ export class StreamingApiServerService {
 
 			await stream.listen(ev, connection);
 
-			this.#connections.set(connection, Date.now());
+			this.connections.set(connection, Date.now());
 
 			const userUpdateIntervalId = user ? setInterval(() => {
 				this.usersService.updateLastActiveDate(user);
@@ -143,27 +143,27 @@ export class StreamingApiServerService {
 				ev.removeAllListeners();
 				stream.dispose();
 				globalEv.off('message', onRedisMessage);
-				const child = this.#connectionContainers.get(stream);
+				const child = this.connectionContainers.get(stream);
 				if (child) {
 					child.clearInstances();
-					this.#connectionContainers.delete(stream);
+					this.connectionContainers.delete(stream);
 				}
-				this.#connections.delete(connection);
+				this.connections.delete(connection);
 				if (userUpdateIntervalId) clearInterval(userUpdateIntervalId);
 			});
 
 			connection.on('pong', () => {
-				this.#connections.set(connection, Date.now());
+				this.connections.set(connection, Date.now());
 			});
 		});
 
 		// 一定期間通信が無いコネクションは実際には切断されている可能性があるため定期的にterminateする
-		this.#cleanConnectionsIntervalId = setInterval(() => {
+		this.cleanConnectionsIntervalId = setInterval(() => {
 			const now = Date.now();
-			for (const [connection, lastActive] of this.#connections.entries()) {
+			for (const [connection, lastActive] of this.connections.entries()) {
 				if (now - lastActive > 1000 * 60 * 2) {
 					connection.terminate();
-					this.#connections.delete(connection);
+					this.connections.delete(connection);
 				} else {
 					connection.ping();
 				}
@@ -173,12 +173,12 @@ export class StreamingApiServerService {
 
 	@bindThis
 	public detach(): Promise<void> {
-		if (this.#cleanConnectionsIntervalId) {
-			clearInterval(this.#cleanConnectionsIntervalId);
-			this.#cleanConnectionsIntervalId = null;
+		if (this.cleanConnectionsIntervalId) {
+			clearInterval(this.cleanConnectionsIntervalId);
+			this.cleanConnectionsIntervalId = null;
 		}
 		return new Promise((resolve) => {
-			this.#wss.close(() => resolve());
+			this.wss.close(() => resolve());
 		});
 	}
 }

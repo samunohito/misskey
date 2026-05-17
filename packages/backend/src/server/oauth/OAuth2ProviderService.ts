@@ -305,10 +305,10 @@ class OAuth2Store {
 
 @injectable()
 export class OAuth2ProviderService {
-	#server = oauth2orize.createServer({
+	private server = oauth2orize.createServer({
 		store: new OAuth2Store(),
 	});
-	#logger: Logger;
+	private logger: Logger;
 
 	constructor(
 		@inject(DI.config)
@@ -317,7 +317,7 @@ export class OAuth2ProviderService {
 		accessTokensRepository: AccessTokensRepository,@inject(delay(() => IdService)) idService: IdService,
 		@inject(DI.usersRepository)
 		private usersRepository: UsersRepository,@inject(delay(() => CacheService)) private cacheService: CacheService,@inject(delay(() => LoggerService)) loggerService: LoggerService,@inject(delay(() => HtmlTemplateService)) private htmlTemplateService: HtmlTemplateService) {
-		this.#logger = loggerService.getLogger('oauth');
+		this.logger = loggerService.getLogger('oauth');
 
 		const grantCodeCache = new MemoryKVCache<{
 			clientId: string,
@@ -334,12 +334,12 @@ export class OAuth2ProviderService {
 
 		// https://datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics
 		// "Authorization servers MUST support PKCE [RFC7636]."
-		this.#server.grant(oauth2Pkce.extensions());
-		this.#server.grant(oauth2orize.grant.code({
+		this.server.grant(oauth2Pkce.extensions());
+		this.server.grant(oauth2orize.grant.code({
 			modes: getQueryMode(config.url),
 		}, (client, redirectUri, token, ares, areq, locals, done) => {
 			(async (): Promise<OmitFirstElement<Parameters<typeof done>>> => {
-				this.#logger.info(`Checking the user before sending authorization code to ${client.id}`);
+				this.logger.info(`Checking the user before sending authorization code to ${client.id}`);
 
 				if (!token) {
 					throw new AuthorizationError('No user', 'invalid_request');
@@ -350,7 +350,7 @@ export class OAuth2ProviderService {
 					throw new AuthorizationError('No such user', 'invalid_request');
 				}
 
-				this.#logger.info(`Sending authorization code on behalf of user ${user.id} to ${client.id} through ${redirectUri}, with scope: [${areq.scope}]`);
+				this.logger.info(`Sending authorization code on behalf of user ${user.id} to ${client.id} through ${redirectUri}, with scope: [${areq.scope}]`);
 
 				const code = secureRndstr(128);
 				grantCodeCache.set(code, {
@@ -363,9 +363,9 @@ export class OAuth2ProviderService {
 				return [code];
 			})().then(args => done(null, ...args), err => done(err));
 		}));
-		this.#server.exchange(oauth2orize.exchange.authorizationCode((client, code, redirectUri, body, authInfo, done) => {
+		this.server.exchange(oauth2orize.exchange.authorizationCode((client, code, redirectUri, body, authInfo, done) => {
 			(async (): Promise<OmitFirstElement<Parameters<typeof done>> | undefined> => {
-				this.#logger.info('Checking the received authorization code for the exchange');
+				this.logger.info('Checking the received authorization code for the exchange');
 				const granted = grantCodeCache.get(code);
 				if (!granted) {
 					return;
@@ -376,7 +376,7 @@ export class OAuth2ProviderService {
 				// MUST deny the request and SHOULD revoke (when possible) all tokens
 				// previously issued based on that authorization code."
 				if (granted.used) {
-					this.#logger.info(`Detected multiple code use from ${granted.clientId} for user ${granted.userId}. Revoking the code.`);
+					this.logger.info(`Detected multiple code use from ${granted.clientId} for user ${granted.userId}. Revoking the code.`);
 					grantCodeCache.delete(code);
 					granted.revoked = true;
 					if (granted.grantedToken) {
@@ -409,13 +409,13 @@ export class OAuth2ProviderService {
 				});
 
 				if (granted.revoked) {
-					this.#logger.info('Canceling the token as the authorization code was revoked in parallel during the process.');
+					this.logger.info('Canceling the token as the authorization code was revoked in parallel during the process.');
 					await accessTokensRepository.delete({ token: accessToken });
 					return;
 				}
 
 				granted.grantedToken = accessToken;
-				this.#logger.info(`Generated access token for ${granted.clientId} for user ${granted.userId}, with scope: [${granted.scopes}]`);
+				this.logger.info(`Generated access token for ${granted.clientId} for user ${granted.userId}, with scope: [${granted.scopes}]`);
 
 				return [accessToken, undefined, { scope: granted.scopes.join(' ') }];
 			})().then(args => done(null, ...args ?? []), err => done(err));
@@ -446,7 +446,7 @@ export class OAuth2ProviderService {
 				throw new Error('Unexpected lack of authorization information');
 			}
 
-			this.#logger.info(`Rendering authorization page for "${oauth2.client.name}"`);
+			this.logger.info(`Rendering authorization page for "${oauth2.client.name}"`);
 
 			reply.header('Cache-Control', 'no-store');
 			return await HtmlTemplateService.replyHtml(reply, OAuthPage({
@@ -460,14 +460,14 @@ export class OAuth2ProviderService {
 		fastify.post('/decision', async () => { });
 
 		await fastify.register(fastifyExpress);
-		fastify.use('/authorize', this.#server.authorize(((areq, done) => {
+		fastify.use('/authorize', this.server.authorize(((areq, done) => {
 			(async (): Promise<Parameters<typeof done>> => {
 				// This should return client/redirectURI AND the error, or
 				// the handler can't send error to the redirection URI
 
 				const { codeChallenge, codeChallengeMethod, clientID, redirectURI, scope } = areq as OAuthParsedRequest;
 
-				this.#logger.info(`Validating authorization parameters, with client_id: ${clientID}, redirect_uri: ${redirectURI}, scope: ${scope}`);
+				this.logger.info(`Validating authorization parameters, with client_id: ${clientID}, redirect_uri: ${redirectURI}, scope: ${scope}`);
 
 				const clientUrl = validateClientId(clientID);
 
@@ -483,7 +483,7 @@ export class OAuth2ProviderService {
 				}
 
 				// Find client information from the remote.
-				const clientInfo = await discoverClientInformation(this.#logger, this.httpRequestService, clientUrl.href);
+				const clientInfo = await discoverClientInformation(this.logger, this.httpRequestService, clientUrl.href);
 
 				// Require the redirect URI to be included in an explicit list, per
 				// https://datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics#section-4.1.3
@@ -514,20 +514,20 @@ export class OAuth2ProviderService {
 				return [null, clientInfo, redirectURI];
 			})().then(args => done(...args), err => done(err));
 		}) as ValidateFunctionArity2));
-		fastify.use('/authorize', this.#server.errorHandler({
+		fastify.use('/authorize', this.server.errorHandler({
 			mode: 'indirect',
 			modes: getQueryMode(this.config.url),
 		}));
-		fastify.use('/authorize', this.#server.errorHandler());
+		fastify.use('/authorize', this.server.errorHandler());
 
 		fastify.use('/decision', bodyParser.urlencoded({ extended: false }));
-		fastify.use('/decision', this.#server.decision((req, done) => {
+		fastify.use('/decision', this.server.decision((req, done) => {
 			const { body } = req as OAuth2DecisionRequest;
-			this.#logger.info(`Received the decision. Cancel: ${!!body.cancel}`);
+			this.logger.info(`Received the decision. Cancel: ${!!body.cancel}`);
 			req.user = body.login_token;
 			done(null, undefined);
 		}));
-		fastify.use('/decision', this.#server.errorHandler());
+		fastify.use('/decision', this.server.errorHandler());
 
 		// Return 404 for any unknown paths under /oauth so that clients can know
 		// whether a certain endpoint is supported or not.
@@ -553,7 +553,7 @@ export class OAuth2ProviderService {
 		// Clients may use JSON or urlencoded
 		fastify.use('', bodyParser.urlencoded({ extended: false }));
 		fastify.use('', bodyParser.json({ strict: true }));
-		fastify.use('', this.#server.token());
-		fastify.use('', this.#server.errorHandler());
+		fastify.use('', this.server.token());
+		fastify.use('', this.server.errorHandler());
 	}
 }

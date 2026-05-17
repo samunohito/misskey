@@ -35,7 +35,7 @@ export class UserListService implements Disposable {
 		@inject(DI.userListMembershipsRepository)
 		private userListMembershipsRepository: UserListMembershipsRepository,@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService,@inject(delay(() => IdService)) private idService: IdService,@inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService,@inject(delay(() => QueueService)) private queueService: QueueService,@inject(delay(() => SystemAccountService)) private systemAccountService: SystemAccountService,
 		@inject(delay(() => RoleService)) private roleService: RoleService,
-		registry: DisposableRegistry,
+		@inject(delay(() => DisposableRegistry)) registry: DisposableRegistry,
 	) {
 		registry.register(this);
 		this.membersCache = new RedisKVCache<Set<string>>(this.redisClient, 'userListMembers', {

@@ -192,7 +192,7 @@ type Option = {
 
 @injectable()
 export class NoteCreateService implements Disposable {
-	#shutdownController = new AbortController();
+	private shutdownController = new AbortController();
 	private updateNotesCountQueue: CollapsedQueue<MiNote['id'], number>;
 
 	constructor(
@@ -579,7 +579,7 @@ export class NoteCreateService implements Disposable {
 
 		const note = await this.insertNote(user, data, tags, emojis, mentionedUsers);
 
-		setImmediate('post created', { signal: this.#shutdownController.signal }).then(
+		setImmediate('post created', { signal: this.shutdownController.signal }).then(
 			() => this.postNoteCreated(note, user, data, silent, tags!, mentionedUsers!),
 			() => { /* aborted, ignore this */ },
 		);
@@ -1205,7 +1205,7 @@ export class NoteCreateService implements Disposable {
 
 	@bindThis
 	public async dispose(): Promise<void> {
-		this.#shutdownController.abort();
+		this.shutdownController.abort();
 		await this.updateNotesCountQueue.performAllNow();
 	}
 }

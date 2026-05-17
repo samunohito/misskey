@@ -26,7 +26,7 @@ import { trackPromise } from '@/misc/promise-tracker.js';
 
 @injectable()
 export class NotificationService implements Disposable {
-	#shutdownController = new AbortController();
+	private shutdownController = new AbortController();
 
 	constructor(
 		@inject(DI.config)
@@ -181,7 +181,7 @@ export class NotificationService implements Disposable {
 		// 2秒経っても(今回作成した)通知が既読にならなかったら「未読の通知がありますよ」イベントを発行する
 		// テスト通知の場合は即時発行
 		const interval = notification.type === 'test' ? 0 : 2000;
-		setTimeout(interval, 'unread notification', { signal: this.#shutdownController.signal }).then(async () => {
+		setTimeout(interval, 'unread notification', { signal: this.shutdownController.signal }).then(async () => {
 			const latestReadNotificationId = await this.redisClient.get(`latestReadNotification:${notifieeId}`);
 			if (latestReadNotificationId && (latestReadNotificationId >= redisId)) return;
 
@@ -235,7 +235,7 @@ export class NotificationService implements Disposable {
 
 	@bindThis
 	public dispose(): void {
-		this.#shutdownController.abort();
+		this.shutdownController.abort();
 	}
 
 	private toXListId(id: string): string {

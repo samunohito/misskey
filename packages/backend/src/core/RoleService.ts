@@ -145,7 +145,7 @@ export class RoleService implements Disposable {
 		@inject(DI.roleAssignmentsRepository)
 		private roleAssignmentsRepository: RoleAssignmentsRepository,@inject(delay(() => CacheService)) private cacheService: CacheService,@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService,@inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService,@inject(delay(() => IdService)) private idService: IdService,@inject(delay(() => ModerationLogService)) private moderationLogService: ModerationLogService,@inject(delay(() => FanoutTimelineService)) private fanoutTimelineService: FanoutTimelineService,
 		@inject(delay(() => NotificationService)) private notificationService: NotificationService,
-		registry: DisposableRegistry,
+		@inject(delay(() => DisposableRegistry)) registry: DisposableRegistry,
 	) {
 		registry.register(this);
 		this.rolesCache = new MemorySingleCache<MiRole[]>(1000 * 60 * 60); // 1h

@@ -33,7 +33,7 @@ export class ReversiService implements Disposable {
 		@inject(DI.reversiGamesRepository)
 		private reversiGamesRepository: ReversiGamesRepository,@inject(delay(() => CacheService)) private cacheService: CacheService,@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService,@inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService,@inject(delay(() => ReversiGameEntityService)) private reversiGameEntityService: ReversiGameEntityService,@inject(delay(() => IdService)) private idService: IdService,
 		@inject(delay(() => NotificationService)) private notificationService: NotificationService,
-		registry: DisposableRegistry,
+		@inject(delay(() => DisposableRegistry)) registry: DisposableRegistry,
 	) {
 		registry.register(this);
 	}

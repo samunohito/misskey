@@ -57,6 +57,7 @@ export class CacheService implements Disposable {
 		// delay() で resolve を遅らせて明示 token を渡すことで paramtypes に依存しない。
 		@inject(delay(() => UserEntityService))
 		private userEntityService: UserEntityService,
+		@inject(delay(() => DisposableRegistry))
 		registry: DisposableRegistry,
 	) {
 		registry.register(this);
