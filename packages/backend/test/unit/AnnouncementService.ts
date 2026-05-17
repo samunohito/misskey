@@ -61,17 +61,21 @@ describe('AnnouncementService', () => {
 
 	beforeEach(async () => {
 		app = await createTestContainer({
-	loadGlobals: true,
-	loadRepositories: true,
-	loadQueueClients: true,
-	loadCore: true,
-	register: (c) => {
-		c.registerSingleton(AnnouncementService);
-		c.registerSingleton(AnnouncementEntityService);
-		c.registerSingleton(CacheService);
-		c.registerSingleton(IdService);
-	},
-});
+			loadGlobals: true,
+			loadRepositories: true,
+			loadQueueClients: true,
+			loadCore: true,
+			register: (c) => {
+				c.registerSingleton(AnnouncementService);
+				c.registerSingleton(AnnouncementEntityService);
+				c.registerSingleton(CacheService);
+				c.registerSingleton(IdService);
+			},
+			mocks: [
+				[GlobalEventService, mockDeep<GlobalEventService>()],
+				[ModerationLogService, mockDeep<ModerationLogService>()],
+			],
+		});
 		announcementService = app.resolve<AnnouncementService>(AnnouncementService);
 		usersRepository = app.resolve<UsersRepository>(DI.usersRepository);
 		announcementsRepository = app.resolve<AnnouncementsRepository>(DI.announcementsRepository);

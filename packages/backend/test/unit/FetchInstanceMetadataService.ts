@@ -7,6 +7,7 @@ process.env.NODE_ENV = 'test';
 
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import type { Mocked } from 'vitest';
+import { mockDeep } from 'vitest-mock-extended';
 import 'reflect-metadata';
 import { createTestContainer } from '@/di/testing.js';
 import { DisposableRegistry } from '@/di/disposable-registry.js';
@@ -49,17 +50,21 @@ describe('FetchInstanceMetadataService', () => {
 
 	beforeEach(async () => {
 		app = await createTestContainer({
-	loadGlobals: true,
-	loadRepositories: true,
-	loadQueueClients: true,
-	loadCore: true,
-	register: (c) => {
-		c.registerSingleton(FetchInstanceMetadataService);
-		c.registerSingleton(LoggerService);
-		c.registerSingleton(UtilityService);
-		c.registerSingleton(IdService);
-	},
-});
+			loadGlobals: true,
+			loadRepositories: true,
+			loadQueueClients: true,
+			loadCore: true,
+			register: (c) => {
+				c.registerSingleton(FetchInstanceMetadataService);
+				c.registerSingleton(LoggerService);
+				c.registerSingleton(UtilityService);
+				c.registerSingleton(IdService);
+			},
+			mocks: [
+				[FederatedInstanceService, mockDeep<FederatedInstanceService>()],
+				[HttpRequestService, mockDeep<HttpRequestService>()],
+			],
+		});
 		fetchInstanceMetadataService = app.resolve<FetchInstanceMetadataService>(FetchInstanceMetadataService) as Mocked<FetchInstanceMetadataService>;
 		federatedInstanceService = app.resolve<FederatedInstanceService>(FederatedInstanceService) as Mocked<FederatedInstanceService>;
 		redisClient = app.resolve<Redis>(DI.redis) as Mocked<Redis>;

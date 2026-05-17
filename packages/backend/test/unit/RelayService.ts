@@ -27,19 +27,22 @@ describe('RelayService', () => {
 
 	beforeAll(async () => {
 		app = await createTestContainer({
-	loadGlobals: true,
-	loadRepositories: true,
-	loadQueueClients: true,
-	loadCore: true,
-	register: (c) => {
-		c.registerSingleton(IdService);
-		c.registerSingleton(ApRendererService);
-		c.registerSingleton(RelayService);
-		c.registerSingleton(UserEntityService);
-		c.registerSingleton(SystemAccountService);
-		c.registerSingleton(UtilityService);
-	},
-});
+			loadGlobals: true,
+			loadRepositories: true,
+			loadQueueClients: true,
+			loadCore: true,
+			register: (c) => {
+				c.registerSingleton(IdService);
+				c.registerSingleton(ApRendererService);
+				c.registerSingleton(RelayService);
+				c.registerSingleton(UserEntityService);
+				c.registerSingleton(SystemAccountService);
+				c.registerSingleton(UtilityService);
+			},
+			mocks: [
+				[QueueService, mockDeep<QueueService>()],
+			],
+		});
 		relayService = app.resolve<RelayService>(RelayService);
 		queueService = app.resolve<QueueService>(QueueService) as Mocked<QueueService>;
 	});

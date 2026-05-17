@@ -21,6 +21,7 @@ import { SigninWithPasskeyApiService } from '@/server/api/SigninWithPasskeyApiSe
 import { RateLimiterService } from '@/server/api/RateLimiterService.js';
 import { WebAuthnService } from '@/core/WebAuthnService.js';
 import { SigninService } from '@/server/api/SigninService.js';
+import { LoggerService } from '@/core/LoggerService.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
 
 class FakeLimiter {
@@ -89,6 +90,9 @@ describe('SigninWithPasskeyApiService', () => {
 			loadGlobals: true,
 			loadRepositories: true,
 			register: (c) => {
+				c.registerSingleton(IdService);
+				c.registerSingleton(WebAuthnService);
+				c.registerSingleton(LoggerService);
 				c.registerSingleton(SigninWithPasskeyApiService);
 				// FakeLimiter / FakeSigninService は本物の型を満たさない test double。
 				// tsyringe の useClass は constructor<T> の型一致を要求するので cast する。

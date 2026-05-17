@@ -8,7 +8,8 @@ import 'reflect-metadata';
 import { createTestContainer } from '@/di/testing.js';
 import { DisposableRegistry } from '@/di/disposable-registry.js';
 import type { DependencyContainer } from 'tsyringe';
-import type { Index, Meilisearch } from 'meilisearch';
+import { Meilisearch } from 'meilisearch';
+import type { Index } from 'meilisearch';
 import { type Config, loadConfig } from '@/config.js';
 import { SearchService } from '@/core/SearchService.js';
 import { CacheService } from '@/core/CacheService.js';
@@ -67,6 +68,12 @@ describe('SearchService', () => {
 	};
 
 	async function buildContext(configOverride?: Config): Promise<TestContext> {
+		const meilisearchOverride = configOverride?.meilisearch
+			? new Meilisearch({
+				host: `${configOverride.meilisearch.ssl ? 'https' : 'http'}://${configOverride.meilisearch.host}:${configOverride.meilisearch.port}`,
+				apiKey: configOverride.meilisearch.apiKey,
+			})
+			: undefined;
 		const app = await createTestContainer({
 			loadGlobals: true,
 			loadRepositories: true,
@@ -75,6 +82,7 @@ describe('SearchService', () => {
 				registerCoreServices(c);
 				if (configOverride) c.register(DI.config, { useValue: configOverride });
 			},
+			mocks: meilisearchOverride ? [[DI.meilisearch, meilisearchOverride]] : [],
 		});
 		return {
 			app,

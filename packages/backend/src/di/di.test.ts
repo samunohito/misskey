@@ -86,13 +86,13 @@ describe('di', () => {
 
 		@injectable()
 		class A implements Disposable {
-			constructor(@inject(delay(() => DisposableRegistry)) registry: DisposableRegistry) { registry.register(this); }
+			constructor(@inject(DisposableRegistry) registry: DisposableRegistry) { registry.register(this); }
 			dispose(): void { order.push('A'); }
 		}
 
 		@injectable()
 		class B implements Disposable {
-			constructor(@inject(delay(() => DisposableRegistry)) registry: DisposableRegistry,@inject(delay(() => A)) public a: A) { registry.register(this); }
+			constructor(@inject(DisposableRegistry) registry: DisposableRegistry, @inject(A) public a: A) { registry.register(this); }
 			dispose(): void { order.push('B'); }
 		}
 
@@ -113,13 +113,13 @@ describe('di', () => {
 
 		@injectable()
 		class Bomb implements Disposable {
-			constructor(@inject(delay(() => DisposableRegistry)) registry: DisposableRegistry) { registry.register(this); }
+			constructor(@inject(DisposableRegistry) registry: DisposableRegistry) { registry.register(this); }
 			dispose(): void { order.push('bomb'); throw new Error('boom'); }
 		}
 
 		@injectable()
 		class Survivor implements Disposable {
-			constructor(@inject(delay(() => DisposableRegistry)) registry: DisposableRegistry,@inject(delay(() => Bomb)) public b: Bomb) { registry.register(this); }
+			constructor(@inject(DisposableRegistry) registry: DisposableRegistry, @inject(Bomb) public b: Bomb) { registry.register(this); }
 			dispose(): void { order.push('survivor'); }
 		}
 

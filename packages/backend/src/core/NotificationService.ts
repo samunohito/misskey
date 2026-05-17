@@ -77,11 +77,11 @@ export class NotificationService implements Disposable {
 		notifierId?: MiUser['id'] | null,
 	) {
 		trackPromise(
-			this.#createNotificationInternal(notifieeId, type, data, notifierId),
+			this.createNotificationInternal(notifieeId, type, data, notifierId),
 		);
 	}
 
-	async #createNotificationInternal<T extends MiNotification['type']>(
+	private async createNotificationInternal<T extends MiNotification['type']>(
 		notifieeId: MiUser['id'],
 		type: T,
 		data: Omit<FilterUnionByProperty<MiNotification, 'type', T>, 'type' | 'id' | 'createdAt' | 'notifierId'>,
