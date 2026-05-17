@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import { Brackets } from 'typeorm';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { NotesRepository, ClipsRepository, ClipNotesRepository } from '@/models/_.js';
@@ -53,16 +53,16 @@ export const paramDef = {
 	required: ['clipId'],
 } as const;
 
-@Injectable()
+@injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
-		@Inject(DI.clipsRepository)
+		@inject(DI.clipsRepository)
 		private clipsRepository: ClipsRepository,
 
-		@Inject(DI.notesRepository)
+		@inject(DI.notesRepository)
 		private notesRepository: NotesRepository,
 
-		@Inject(DI.clipNotesRepository)
+		@inject(DI.clipNotesRepository)
 		private clipNotesRepository: ClipNotesRepository,
 
 		private noteEntityService: NoteEntityService,

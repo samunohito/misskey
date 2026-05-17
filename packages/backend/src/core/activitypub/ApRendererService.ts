@@ -3,8 +3,9 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import { inject, injectable } from 'tsyringe';
+
 import { createPublicKey, randomUUID } from 'node:crypto';
-import { Inject, Injectable } from '@nestjs/common';
 import { In } from 'typeorm';
 import * as mfm from 'mfm-js';
 import { DI } from '@/di-symbols.js';
@@ -34,28 +35,28 @@ import { ApMfmService } from './ApMfmService.js';
 import { CONTEXT } from './misc/contexts.js';
 import type { IAccept, IActivity, IAdd, IAnnounce, IApDocument, IApEmoji, IApHashtag, IApImage, IApMention, IBlock, ICreate, IDelete, IFlag, IFollow, IKey, ILike, IMove, IObject, IPost, IQuestion, IReject, IRemove, ITombstone, IUndo, IUpdate } from './type.js';
 
-@Injectable()
+@injectable()
 export class ApRendererService {
 	constructor(
-		@Inject(DI.config)
+		@inject(DI.config)
 		private config: Config,
 
-		@Inject(DI.meta)
+		@inject(DI.meta)
 		private meta: MiMeta,
 
-		@Inject(DI.usersRepository)
+		@inject(DI.usersRepository)
 		private usersRepository: UsersRepository,
 
-		@Inject(DI.userProfilesRepository)
+		@inject(DI.userProfilesRepository)
 		private userProfilesRepository: UserProfilesRepository,
 
-		@Inject(DI.notesRepository)
+		@inject(DI.notesRepository)
 		private notesRepository: NotesRepository,
 
-		@Inject(DI.driveFilesRepository)
+		@inject(DI.driveFilesRepository)
 		private driveFilesRepository: DriveFilesRepository,
 
-		@Inject(DI.pollsRepository)
+		@inject(DI.pollsRepository)
 		private pollsRepository: PollsRepository,
 
 		private customEmojiService: CustomEmojiService,

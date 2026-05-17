@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import Limiter from 'ratelimiter';
 import * as Redis from 'ioredis';
 import { DI } from '@/di-symbols.js';
@@ -20,13 +20,13 @@ type RateLimitInfo = {
 	info: Limiter.LimiterInfo,
 };
 
-@Injectable()
+@injectable()
 export class RateLimiterService {
 	private logger: Logger;
 	private disabled = false;
 
 	constructor(
-		@Inject(DI.redis)
+		@inject(DI.redis)
 		private redisClient: Redis.Redis,
 
 		private loggerService: LoggerService,

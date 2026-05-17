@@ -3,9 +3,10 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { randomUUID } from 'node:crypto';
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
+
 import type { OnApplicationShutdown } from '@nestjs/common';
+import { randomUUID } from 'node:crypto';
 import { DataSource, IsNull } from 'typeorm';
 import * as Redis from 'ioredis';
 import bcrypt from 'bcryptjs';
@@ -22,27 +23,27 @@ import { genRsaKeyPair } from '@/misc/gen-key-pair.js';
 
 export const SYSTEM_ACCOUNT_TYPES = ['actor', 'relay', 'proxy'] as const;
 
-@Injectable()
+@injectable()
 export class SystemAccountService implements OnApplicationShutdown {
 	private cache: MemoryKVCache<MiLocalUser>;
 
 	constructor(
-		@Inject(DI.redisForSub)
+		@inject(DI.redisForSub)
 		private redisForSub: Redis.Redis,
 
-		@Inject(DI.db)
+		@inject(DI.db)
 		private db: DataSource,
 
-		@Inject(DI.meta)
+		@inject(DI.meta)
 		private meta: MiMeta,
 
-		@Inject(DI.systemAccountsRepository)
+		@inject(DI.systemAccountsRepository)
 		private systemAccountsRepository: SystemAccountsRepository,
 
-		@Inject(DI.usersRepository)
+		@inject(DI.usersRepository)
 		private usersRepository: UsersRepository,
 
-		@Inject(DI.userProfilesRepository)
+		@inject(DI.userProfilesRepository)
 		private userProfilesRepository: UserProfilesRepository,
 
 		private idService: IdService,

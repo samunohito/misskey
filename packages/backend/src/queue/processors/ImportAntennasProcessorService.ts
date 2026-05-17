@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Injectable, Inject } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import _Ajv from 'ajv';
 import { IdService } from '@/core/IdService.js';
 import { GlobalEventService } from '@/core/GlobalEventService.js';
@@ -57,12 +57,12 @@ export type ExportedAntenna = SchemaType<typeof exportedAntennaSchema>;
 
 const validate = new Ajv().compile<ExportedAntenna>(exportedAntennaSchema);
 
-@Injectable()
+@injectable()
 export class ImportAntennasProcessorService {
 	private logger: Logger;
 
 	constructor (
-		@Inject(DI.antennasRepository)
+		@inject(DI.antennasRepository)
 		private antennasRepository: AntennasRepository,
 
 		private queueLoggerService: QueueLoggerService,

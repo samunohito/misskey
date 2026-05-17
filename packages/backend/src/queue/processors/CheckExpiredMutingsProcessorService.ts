@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import { DI } from '@/di-symbols.js';
 import type { MutingsRepository } from '@/models/_.js';
 import type Logger from '@/logger.js';
@@ -12,12 +12,12 @@ import { UserMutingService } from '@/core/UserMutingService.js';
 import { ChannelMutingService } from '@/core/ChannelMutingService.js';
 import { QueueLoggerService } from '../QueueLoggerService.js';
 
-@Injectable()
+@injectable()
 export class CheckExpiredMutingsProcessorService {
 	private logger: Logger;
 
 	constructor(
-		@Inject(DI.mutingsRepository)
+		@inject(DI.mutingsRepository)
 		private mutingsRepository: MutingsRepository,
 
 		private userMutingService: UserMutingService,

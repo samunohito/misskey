@@ -3,8 +3,9 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import { inject, injectable } from 'tsyringe';
+
 import { EventEmitter } from 'events';
-import { Inject, Injectable } from '@nestjs/common';
 import * as Redis from 'ioredis';
 import * as WebSocket from 'ws';
 import { DI } from '@/di-symbols.js';
@@ -17,14 +18,14 @@ import MainStreamConnection, { ConnectionRequest } from './stream/Connection.js'
 import type * as http from 'node:http';
 import { ContextIdFactory, ModuleRef } from '@nestjs/core';
 
-@Injectable()
+@injectable()
 export class StreamingApiServerService {
 	#wss: WebSocket.WebSocketServer;
 	#connections = new Map<WebSocket.WebSocket, number>();
 	#cleanConnectionsIntervalId: NodeJS.Timeout | null = null;
 
 	constructor(
-		@Inject(DI.redisForSub)
+		@inject(DI.redisForSub)
 		private redisForSub: Redis.Redis,
 
 		private moduleRef: ModuleRef,

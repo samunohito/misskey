@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import { DI } from '@/di-symbols.js';
 import type { ModerationLogsRepository } from '@/models/_.js';
 import { awaitAll } from '@/misc/prelude/await-all.js';
@@ -14,10 +14,10 @@ import { IdService } from '@/core/IdService.js';
 import type { Packed } from '@/misc/json-schema.js';
 import { UserEntityService } from './UserEntityService.js';
 
-@Injectable()
+@injectable()
 export class ModerationLogEntityService {
 	constructor(
-		@Inject(DI.moderationLogsRepository)
+		@inject(DI.moderationLogsRepository)
 		private moderationLogsRepository: ModerationLogsRepository,
 
 		private userEntityService: UserEntityService,

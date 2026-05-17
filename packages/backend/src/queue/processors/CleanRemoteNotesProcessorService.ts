@@ -3,8 +3,9 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import { inject, injectable } from 'tsyringe';
+
 import { setTimeout } from 'node:timers/promises';
-import { Inject, Injectable } from '@nestjs/common';
 import { DataSource, IsNull, LessThan, QueryFailedError, Not } from 'typeorm';
 import { DI } from '@/di-symbols.js';
 import type { MiMeta, MiNote, NotesRepository } from '@/models/_.js';
@@ -14,18 +15,18 @@ import { IdService } from '@/core/IdService.js';
 import { QueueLoggerService } from '../QueueLoggerService.js';
 import type * as Bull from 'bullmq';
 
-@Injectable()
+@injectable()
 export class CleanRemoteNotesProcessorService {
 	private logger: Logger;
 
 	constructor(
-		@Inject(DI.meta)
+		@inject(DI.meta)
 		private meta: MiMeta,
 
-		@Inject(DI.notesRepository)
+		@inject(DI.notesRepository)
 		private notesRepository: NotesRepository,
 
-		@Inject(DI.db)
+		@inject(DI.db)
 		private db: DataSource,
 
 		private idService: IdService,

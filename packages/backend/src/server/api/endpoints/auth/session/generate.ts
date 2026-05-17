@@ -3,8 +3,9 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import { inject, injectable } from 'tsyringe';
+
 import { randomUUID } from 'node:crypto';
-import { Inject, Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { AppsRepository, AuthSessionsRepository } from '@/models/_.js';
 import { IdService } from '@/core/IdService.js';
@@ -50,16 +51,16 @@ export const paramDef = {
 	required: ['appSecret'],
 } as const;
 
-@Injectable()
+@injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
-		@Inject(DI.config)
+		@inject(DI.config)
 		private config: Config,
 
-		@Inject(DI.appsRepository)
+		@inject(DI.appsRepository)
 		private appsRepository: AppsRepository,
 
-		@Inject(DI.authSessionsRepository)
+		@inject(DI.authSessionsRepository)
 		private authSessionsRepository: AuthSessionsRepository,
 
 		private idService: IdService,

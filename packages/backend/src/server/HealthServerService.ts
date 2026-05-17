@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import * as Redis from 'ioredis';
 import { DataSource } from 'typeorm';
 import { bindThis } from '@/decorators.js';
@@ -12,28 +12,28 @@ import { readyRef } from '@/boot/ready.js';
 import type { FastifyInstance, FastifyPluginOptions } from 'fastify';
 import type { Meilisearch } from 'meilisearch';
 
-@Injectable()
+@injectable()
 export class HealthServerService {
 	constructor(
-		@Inject(DI.redis)
+		@inject(DI.redis)
 		private redis: Redis.Redis,
 
-		@Inject(DI.redisForPub)
+		@inject(DI.redisForPub)
 		private redisForPub: Redis.Redis,
 
-		@Inject(DI.redisForSub)
+		@inject(DI.redisForSub)
 		private redisForSub: Redis.Redis,
 
-		@Inject(DI.redisForTimelines)
+		@inject(DI.redisForTimelines)
 		private redisForTimelines: Redis.Redis,
 
-		@Inject(DI.redisForReactions)
+		@inject(DI.redisForReactions)
 		private redisForReactions: Redis.Redis,
 
-		@Inject(DI.db)
+		@inject(DI.db)
 		private db: DataSource,
 
-		@Inject(DI.meilisearch)
+		@inject(DI.meilisearch)
 		private meilisearch: Meilisearch | null,
 	) {}
 

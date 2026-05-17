@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Injectable } from '@nestjs/common';
-
+import { injectable } from 'tsyringe';
+import type { OnApplicationShutdown } from '@nestjs/common';
 import { bindThis } from '@/decorators.js';
 import FederationChart from './charts/federation.js';
 import NotesChart from './charts/notes.js';
@@ -18,9 +18,7 @@ import PerUserReactionsChart from './charts/per-user-reactions.js';
 import PerUserFollowingChart from './charts/per-user-following.js';
 import PerUserDriveChart from './charts/per-user-drive.js';
 import ApRequestChart from './charts/ap-request.js';
-import type { OnApplicationShutdown } from '@nestjs/common';
-
-@Injectable()
+@injectable()
 export class ChartManagementService implements OnApplicationShutdown {
 	private charts;
 	private saveIntervalId: NodeJS.Timeout;

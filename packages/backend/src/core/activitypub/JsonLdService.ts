@@ -3,9 +3,10 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import { injectable } from 'tsyringe';
+
 import * as crypto from 'node:crypto';
 import { promisify } from 'node:util';
-import { Injectable } from '@nestjs/common';
 import { RsaKeyPair } from 'slacc';
 import { HttpRequestService } from '@/core/HttpRequestService.js';
 import { bindThis } from '@/decorators.js';
@@ -165,7 +166,7 @@ class JsonLd {
 	}
 }
 
-@Injectable()
+@injectable()
 export class JsonLdService {
 	constructor(
 		private httpRequestService: HttpRequestService,

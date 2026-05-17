@@ -3,9 +3,10 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import { inject, injectable } from 'tsyringe';
+
 import * as fs from 'node:fs';
 import * as stream from 'node:stream/promises';
-import { Inject, Injectable } from '@nestjs/common';
 import chalk from 'chalk';
 import got, * as Got from 'got';
 import { parse } from 'content-disposition';
@@ -19,12 +20,12 @@ import type Logger from '@/logger.js';
 
 import { bindThis } from '@/decorators.js';
 
-@Injectable()
+@injectable()
 export class DownloadService {
 	private logger: Logger;
 
 	constructor(
-		@Inject(DI.config)
+		@inject(DI.config)
 		private config: Config,
 
 		private httpRequestService: HttpRequestService,

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import { DI } from '@/di-symbols.js';
 import type { Config } from '@/config.js';
 import { MetaService } from '@/core/MetaService.js';
@@ -20,10 +20,10 @@ const nodeinfo2_1path = '/nodeinfo/2.1';
 const nodeinfo2_0path = '/nodeinfo/2.0';
 const nodeinfo_homepage = 'https://misskey-hub.net';
 
-@Injectable()
+@injectable()
 export class NodeinfoServerService {
 	constructor(
-		@Inject(DI.config)
+		@inject(DI.config)
 		private config: Config,
 
 		private systemAccountService: SystemAccountService,

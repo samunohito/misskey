@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import { Brackets, EntityNotFoundError } from 'typeorm';
 import { DI } from '@/di-symbols.js';
 import type { MiUser } from '@/models/User.js';
@@ -15,16 +15,16 @@ import { AnnouncementEntityService } from '@/core/entities/AnnouncementEntitySer
 import { GlobalEventService } from '@/core/GlobalEventService.js';
 import { ModerationLogService } from '@/core/ModerationLogService.js';
 
-@Injectable()
+@injectable()
 export class AnnouncementService {
 	constructor(
-		@Inject(DI.announcementsRepository)
+		@inject(DI.announcementsRepository)
 		private announcementsRepository: AnnouncementsRepository,
 
-		@Inject(DI.announcementReadsRepository)
+		@inject(DI.announcementReadsRepository)
 		private announcementReadsRepository: AnnouncementReadsRepository,
 
-		@Inject(DI.usersRepository)
+		@inject(DI.usersRepository)
 		private usersRepository: UsersRepository,
 
 		private idService: IdService,

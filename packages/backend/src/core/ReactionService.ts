@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import { DI } from '@/di-symbols.js';
 import type { EmojisRepository, NoteReactionsRepository, UsersRepository, NotesRepository, MiMeta } from '@/models/_.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
@@ -67,22 +67,22 @@ type DecodedReaction = {
 const isCustomEmojiRegexp = /^:([\w+-]+)(?:@\.)?:$/;
 const decodeCustomEmojiRegexp = /^:([\w+-]+)(?:@([\w.-]+))?:$/;
 
-@Injectable()
+@injectable()
 export class ReactionService {
 	constructor(
-		@Inject(DI.meta)
+		@inject(DI.meta)
 		private meta: MiMeta,
 
-		@Inject(DI.usersRepository)
+		@inject(DI.usersRepository)
 		private usersRepository: UsersRepository,
 
-		@Inject(DI.notesRepository)
+		@inject(DI.notesRepository)
 		private notesRepository: NotesRepository,
 
-		@Inject(DI.noteReactionsRepository)
+		@inject(DI.noteReactionsRepository)
 		private noteReactionsRepository: NoteReactionsRepository,
 
-		@Inject(DI.emojisRepository)
+		@inject(DI.emojisRepository)
 		private emojisRepository: EmojisRepository,
 
 		private utilityService: UtilityService,

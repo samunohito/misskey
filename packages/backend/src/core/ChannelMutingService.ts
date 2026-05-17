@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import Redis from 'ioredis';
 import { Brackets, In } from 'typeorm';
 import { DI } from '@/di-symbols.js';
@@ -13,18 +13,18 @@ import { GlobalEvents, GlobalEventService } from '@/core/GlobalEventService.js';
 import { bindThis } from '@/decorators.js';
 import { RedisKVCache } from '@/misc/cache.js';
 
-@Injectable()
+@injectable()
 export class ChannelMutingService {
 	public mutingChannelsCache: RedisKVCache<Set<string>>;
 
 	constructor(
-		@Inject(DI.redis)
+		@inject(DI.redis)
 		private redisClient: Redis.Redis,
-		@Inject(DI.redisForSub)
+		@inject(DI.redisForSub)
 		private redisForSub: Redis.Redis,
-		@Inject(DI.channelsRepository)
+		@inject(DI.channelsRepository)
 		private channelsRepository: ChannelsRepository,
-		@Inject(DI.channelMutingRepository)
+		@inject(DI.channelMutingRepository)
 		private channelMutingRepository: ChannelMutingRepository,
 		private idService: IdService,
 		private globalEventService: GlobalEventService,

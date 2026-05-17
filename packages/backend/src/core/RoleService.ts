@@ -3,7 +3,8 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
+import type { OnApplicationShutdown, OnModuleInit } from '@nestjs/common';
 import * as Redis from 'ioredis';
 import { In } from 'typeorm';
 import { ModuleRef } from '@nestjs/core';
@@ -29,8 +30,6 @@ import { ModerationLogService } from '@/core/ModerationLogService.js';
 import type { Packed } from '@/misc/json-schema.js';
 import { FanoutTimelineService } from '@/core/FanoutTimelineService.js';
 import { NotificationService } from '@/core/NotificationService.js';
-import type { OnApplicationShutdown, OnModuleInit } from '@nestjs/common';
-
 // misskey-js の rolePolicies と同期すべし
 export type RolePolicies = {
 	gtlAvailable: boolean;
@@ -122,7 +121,7 @@ export const DEFAULT_POLICIES: RolePolicies = {
 	watermarkAvailable: true,
 };
 
-@Injectable()
+@injectable()
 export class RoleService implements OnApplicationShutdown, OnModuleInit {
 	private rolesCache: MemorySingleCache<MiRole[]>;
 	private roleAssignmentByUserIdCache: MemoryKVCache<MiRoleAssignment[]>;
@@ -134,22 +133,22 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 	constructor(
 		private moduleRef: ModuleRef,
 
-		@Inject(DI.meta)
+		@inject(DI.meta)
 		private meta: MiMeta,
 
-		@Inject(DI.redisForTimelines)
+		@inject(DI.redisForTimelines)
 		private redisForTimelines: Redis.Redis,
 
-		@Inject(DI.redisForSub)
+		@inject(DI.redisForSub)
 		private redisForSub: Redis.Redis,
 
-		@Inject(DI.usersRepository)
+		@inject(DI.usersRepository)
 		private usersRepository: UsersRepository,
 
-		@Inject(DI.rolesRepository)
+		@inject(DI.rolesRepository)
 		private rolesRepository: RolesRepository,
 
-		@Inject(DI.roleAssignmentsRepository)
+		@inject(DI.roleAssignmentsRepository)
 		private roleAssignmentsRepository: RoleAssignmentsRepository,
 
 		private cacheService: CacheService,

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable, Scope } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
 import { bindThis } from '@/decorators.js';
 import { RoleService } from '@/core/RoleService.js';
@@ -14,7 +14,7 @@ import type { JsonObject } from '@/misc/json-value.js';
 import Channel, { type ChannelRequest } from '../channel.js';
 import { REQUEST } from '@nestjs/core';
 
-@Injectable({ scope: Scope.TRANSIENT })
+@injectable()
 export class RoleTimelineChannel extends Channel {
 	public readonly chName = 'roleTimeline';
 	public static shouldShare = false;
@@ -22,7 +22,7 @@ export class RoleTimelineChannel extends Channel {
 	private roleId: string;
 
 	constructor(
-		@Inject(REQUEST)
+		@inject(REQUEST)
 		request: ChannelRequest,
 
 		private noteEntityService: NoteEntityService,

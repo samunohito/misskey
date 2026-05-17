@@ -3,20 +3,20 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import { DI } from '@/di-symbols.js';
 import type { AnnouncementsRepository, AnnouncementReadsRepository, MiAnnouncement, MiUser } from '@/models/_.js';
 import type { Packed } from '@/misc/json-schema.js';
 import { bindThis } from '@/decorators.js';
 import { IdService } from '@/core/IdService.js';
 
-@Injectable()
+@injectable()
 export class AnnouncementEntityService {
 	constructor(
-		@Inject(DI.announcementsRepository)
+		@inject(DI.announcementsRepository)
 		private announcementsRepository: AnnouncementsRepository,
 
-		@Inject(DI.announcementReadsRepository)
+		@inject(DI.announcementReadsRepository)
 		private announcementReadsRepository: AnnouncementReadsRepository,
 
 		private idService: IdService,

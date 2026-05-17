@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { delay, inject, injectable } from 'tsyringe';
 import { In } from 'typeorm';
 import { DI } from '@/di-symbols.js';
 import type { DriveFilesRepository, MiMeta } from '@/models/_.js';
@@ -29,20 +29,20 @@ type PackOptions = {
 	withUser?: boolean,
 };
 
-@Injectable()
+@injectable()
 export class DriveFileEntityService {
 	constructor(
-		@Inject(DI.config)
+		@inject(DI.config)
 		private config: Config,
 
-		@Inject(DI.meta)
+		@inject(DI.meta)
 		private meta: MiMeta,
 
-		@Inject(DI.driveFilesRepository)
+		@inject(DI.driveFilesRepository)
 		private driveFilesRepository: DriveFilesRepository,
 
 		// 循環参照のため / for circular dependency
-		@Inject(forwardRef(() => UserEntityService))
+		@inject(delay(() => UserEntityService))
 		private userEntityService: UserEntityService,
 
 		private utilityService: UtilityService,

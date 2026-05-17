@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { AdsRepository } from '@/models/_.js';
 import { IdService } from '@/core/IdService.js';
@@ -41,10 +41,10 @@ export const paramDef = {
 	required: ['url', 'memo', 'place', 'priority', 'ratio', 'expiresAt', 'startsAt', 'imageUrl', 'dayOfWeek'],
 } as const;
 
-@Injectable()
+@injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
-		@Inject(DI.adsRepository)
+		@inject(DI.adsRepository)
 		private adsRepository: AdsRepository,
 
 		private idService: IdService,

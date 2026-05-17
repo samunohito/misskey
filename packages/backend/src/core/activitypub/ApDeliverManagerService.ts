@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import { IsNull, Not } from 'typeorm';
 import { DI } from '@/di-symbols.js';
 import type { FollowingsRepository } from '@/models/_.js';
@@ -148,10 +148,10 @@ class DeliverManager {
 	}
 }
 
-@Injectable()
+@injectable()
 export class ApDeliverManagerService {
 	constructor(
-		@Inject(DI.followingsRepository)
+		@inject(DI.followingsRepository)
 		private followingsRepository: FollowingsRepository,
 
 		private userEntityService: UserEntityService,

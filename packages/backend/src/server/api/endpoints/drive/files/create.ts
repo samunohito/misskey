@@ -3,8 +3,9 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import { inject, injectable } from 'tsyringe';
+
 import ms from 'ms';
-import { Inject, Injectable } from '@nestjs/common';
 import { DB_MAX_IMAGE_COMMENT_LENGTH } from '@/const.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
@@ -84,10 +85,10 @@ export const paramDef = {
 	required: [],
 } as const;
 
-@Injectable()
+@injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
-		@Inject(DI.meta)
+		@inject(DI.meta)
 		private serverSettings: MiMeta,
 
 		private driveFileEntityService: DriveFileEntityService,

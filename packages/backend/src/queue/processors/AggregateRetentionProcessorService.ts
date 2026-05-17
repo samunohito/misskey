@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import { IsNull, MoreThan } from 'typeorm';
 import { DI } from '@/di-symbols.js';
 import type Logger from '@/logger.js';
@@ -15,15 +15,15 @@ import { isDuplicateKeyValueError } from '@/misc/is-duplicate-key-value-error.js
 import { QueueLoggerService } from '../QueueLoggerService.js';
 import type * as Bull from 'bullmq';
 
-@Injectable()
+@injectable()
 export class AggregateRetentionProcessorService {
 	private logger: Logger;
 
 	constructor(
-		@Inject(DI.usersRepository)
+		@inject(DI.usersRepository)
 		private usersRepository: UsersRepository,
 
-		@Inject(DI.retentionAggregationsRepository)
+		@inject(DI.retentionAggregationsRepository)
 		private retentionAggregationsRepository: RetentionAggregationsRepository,
 
 		private idService: IdService,

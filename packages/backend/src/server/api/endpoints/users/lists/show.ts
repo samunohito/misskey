@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import type { UserListsRepository, UserListFavoritesRepository } from '@/models/_.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { UserListEntityService } from '@/core/entities/UserListEntityService.js';
@@ -62,13 +62,13 @@ export const paramDef = {
 	required: ['listId'],
 } as const;
 
-@Injectable() // eslint-disable-next-line import/no-default-export
+@injectable() // eslint-disable-next-line import/no-default-export
 export default class extends Endpoint<typeof meta, typeof paramDef> {
 	constructor(
-		@Inject(DI.userListsRepository)
+		@inject(DI.userListsRepository)
 		private userListsRepository: UserListsRepository,
 
-		@Inject(DI.userListFavoritesRepository)
+		@inject(DI.userListFavoritesRepository)
 		private userListFavoritesRepository: UserListFavoritesRepository,
 
 		private userListEntityService: UserListEntityService,

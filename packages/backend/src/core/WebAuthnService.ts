@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import * as Redis from 'ioredis';
 import {
 	generateAuthenticationOptions,
@@ -26,19 +26,19 @@ import type {
 	RegistrationResponseJSON,
 } from '@simplewebauthn/server';
 
-@Injectable()
+@injectable()
 export class WebAuthnService {
 	constructor(
-		@Inject(DI.config)
+		@inject(DI.config)
 		private config: Config,
 
-		@Inject(DI.meta)
+		@inject(DI.meta)
 		private meta: MiMeta,
 
-		@Inject(DI.redis)
+		@inject(DI.redis)
 		private redisClient: Redis.Redis,
 
-		@Inject(DI.userSecurityKeysRepository)
+		@inject(DI.userSecurityKeysRepository)
 		private userSecurityKeysRepository: UserSecurityKeysRepository,
 	) {
 	}

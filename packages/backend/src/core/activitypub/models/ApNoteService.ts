@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { delay, inject, injectable } from 'tsyringe';
 import { In } from 'typeorm';
 import * as Redis from 'ioredis';
 import { DI } from '@/di-symbols.js';
@@ -38,24 +38,24 @@ import { ApImageService } from './ApImageService.js';
 import type { Resolver } from '../ApResolverService.js';
 import type { IObject, IPost } from '../type.js';
 
-@Injectable()
+@injectable()
 export class ApNoteService {
 	private logger: Logger;
 
 	constructor(
-		@Inject(DI.config)
+		@inject(DI.config)
 		private config: Config,
 
-		@Inject(DI.meta)
+		@inject(DI.meta)
 		private meta: MiMeta,
 
-		@Inject(DI.redis)
+		@inject(DI.redis)
 		private redisClient: Redis.Redis,
 
-		@Inject(DI.pollsRepository)
+		@inject(DI.pollsRepository)
 		private pollsRepository: PollsRepository,
 
-		@Inject(DI.emojisRepository)
+		@inject(DI.emojisRepository)
 		private emojisRepository: EmojisRepository,
 
 		private idService: IdService,
@@ -63,7 +63,7 @@ export class ApNoteService {
 		private apResolverService: ApResolverService,
 
 		// 循環参照のため / for circular dependency
-		@Inject(forwardRef(() => ApPersonService))
+		@inject(delay(() => ApPersonService))
 		private apPersonService: ApPersonService,
 
 		private utilityService: UtilityService,

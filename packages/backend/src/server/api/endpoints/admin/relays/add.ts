@@ -3,8 +3,9 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import { injectable } from 'tsyringe';
+
 import { URL } from 'node:url';
-import { Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { RelayService } from '@/core/RelayService.js';
 import { ApiError } from '../../../error.js';
@@ -60,7 +61,7 @@ export const paramDef = {
 	required: ['inbox'],
 } as const;
 
-@Injectable()
+@injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		private relayService: RelayService,

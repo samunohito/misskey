@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import { Brackets, SelectQueryBuilder } from 'typeorm';
 import { DI } from '@/di-symbols.js';
 import { type FollowingsRepository, MiUser, type MutingsRepository, type UserProfilesRepository, type UsersRepository } from '@/models/_.js';
@@ -17,22 +17,22 @@ function defaultActiveThreshold() {
 	return new Date(Date.now() - 1000 * 60 * 60 * 24 * 30);
 }
 
-@Injectable()
+@injectable()
 export class UserSearchService {
 	constructor(
-		@Inject(DI.config)
+		@inject(DI.config)
 		private config: Config,
 
-		@Inject(DI.usersRepository)
+		@inject(DI.usersRepository)
 		private usersRepository: UsersRepository,
 
-		@Inject(DI.userProfilesRepository)
+		@inject(DI.userProfilesRepository)
 		private userProfilesRepository: UserProfilesRepository,
 
-		@Inject(DI.followingsRepository)
+		@inject(DI.followingsRepository)
 		private followingsRepository: FollowingsRepository,
 
-		@Inject(DI.mutingsRepository)
+		@inject(DI.mutingsRepository)
 		private mutingsRepository: MutingsRepository,
 
 		private userEntityService: UserEntityService,

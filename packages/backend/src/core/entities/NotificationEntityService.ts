@@ -3,7 +3,8 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
+import type { OnModuleInit } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { In } from 'typeorm';
 import { DI } from '@/di-symbols.js';
@@ -17,7 +18,6 @@ import { FilterUnionByProperty, groupedNotificationTypes } from '@/types.js';
 import { CacheService } from '@/core/CacheService.js';
 import { RoleEntityService } from './RoleEntityService.js';
 import { ChatEntityService } from './ChatEntityService.js';
-import type { OnModuleInit } from '@nestjs/common';
 import type { UserEntityService } from './UserEntityService.js';
 import type { NoteEntityService } from './NoteEntityService.js';
 
@@ -34,7 +34,7 @@ const NOTE_REQUIRED_NOTIFICATION_TYPES = new Set([
 	'scheduledNotePosted',
 ] as (typeof groupedNotificationTypes[number])[]);
 
-@Injectable()
+@injectable()
 export class NotificationEntityService implements OnModuleInit {
 	private userEntityService: UserEntityService;
 	private noteEntityService: NoteEntityService;
@@ -44,13 +44,13 @@ export class NotificationEntityService implements OnModuleInit {
 	constructor(
 		private moduleRef: ModuleRef,
 
-		@Inject(DI.notesRepository)
+		@inject(DI.notesRepository)
 		private notesRepository: NotesRepository,
 
-		@Inject(DI.usersRepository)
+		@inject(DI.usersRepository)
 		private usersRepository: UsersRepository,
 
-		@Inject(DI.followRequestsRepository)
+		@inject(DI.followRequestsRepository)
 		private followRequestsRepository: FollowRequestsRepository,
 
 		private cacheService: CacheService,

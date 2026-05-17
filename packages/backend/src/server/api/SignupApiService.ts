@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import bcrypt from 'bcryptjs';
 import { IsNull } from 'typeorm';
 import { DI } from '@/di-symbols.js';
@@ -21,28 +21,28 @@ import { L_CHARS, secureRndstr } from '@/misc/secure-rndstr.js';
 import { SigninService } from './SigninService.js';
 import type { FastifyRequest, FastifyReply } from 'fastify';
 
-@Injectable()
+@injectable()
 export class SignupApiService {
 	constructor(
-		@Inject(DI.config)
+		@inject(DI.config)
 		private config: Config,
 
-		@Inject(DI.meta)
+		@inject(DI.meta)
 		private meta: MiMeta,
 
-		@Inject(DI.usersRepository)
+		@inject(DI.usersRepository)
 		private usersRepository: UsersRepository,
 
-		@Inject(DI.userProfilesRepository)
+		@inject(DI.userProfilesRepository)
 		private userProfilesRepository: UserProfilesRepository,
 
-		@Inject(DI.userPendingsRepository)
+		@inject(DI.userPendingsRepository)
 		private userPendingsRepository: UserPendingsRepository,
 
-		@Inject(DI.usedUsernamesRepository)
+		@inject(DI.usedUsernamesRepository)
 		private usedUsernamesRepository: UsedUsernamesRepository,
 
-		@Inject(DI.registrationTicketsRepository)
+		@inject(DI.registrationTicketsRepository)
 		private registrationTicketsRepository: RegistrationTicketsRepository,
 
 		private userEntityService: UserEntityService,

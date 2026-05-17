@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import { QueryFailedError } from 'typeorm';
 import { DI } from '@/di-symbols.js';
 import type { ClipsRepository, MiNote, MiClip, ClipNotesRepository, NotesRepository } from '@/models/_.js';
@@ -13,7 +13,7 @@ import { RoleService } from '@/core/RoleService.js';
 import { IdService } from '@/core/IdService.js';
 import type { MiLocalUser } from '@/models/User.js';
 
-@Injectable()
+@injectable()
 export class ClipService {
 	public static NoSuchNoteError = class extends Error {};
 	public static NoSuchClipError = class extends Error {};
@@ -22,13 +22,13 @@ export class ClipService {
 	public static TooManyClipsError = class extends Error {};
 
 	constructor(
-		@Inject(DI.clipsRepository)
+		@inject(DI.clipsRepository)
 		private clipsRepository: ClipsRepository,
 
-		@Inject(DI.clipNotesRepository)
+		@inject(DI.clipNotesRepository)
 		private clipNotesRepository: ClipNotesRepository,
 
-		@Inject(DI.notesRepository)
+		@inject(DI.notesRepository)
 		private notesRepository: NotesRepository,
 
 		private roleService: RoleService,

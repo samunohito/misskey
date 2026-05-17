@@ -3,9 +3,10 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import { inject, injectable } from 'tsyringe';
+
 import * as crypto from 'node:crypto';
 import { IncomingMessage } from 'node:http';
-import { Inject, Injectable } from '@nestjs/common';
 import fastifyAccepts from '@fastify/accepts';
 import httpSignature from '@peertube/http-signature';
 import { Brackets, In, IsNull, LessThan, Not } from 'typeorm';
@@ -37,37 +38,37 @@ import type { FindOptionsWhere } from 'typeorm';
 const ACTIVITY_JSON = 'application/activity+json; charset=utf-8';
 const LD_JSON = 'application/ld+json; profile="https://www.w3.org/ns/activitystreams"; charset=utf-8';
 
-@Injectable()
+@injectable()
 export class ActivityPubServerService {
 	constructor(
-		@Inject(DI.config)
+		@inject(DI.config)
 		private config: Config,
 
-		@Inject(DI.meta)
+		@inject(DI.meta)
 		private meta: MiMeta,
 
-		@Inject(DI.usersRepository)
+		@inject(DI.usersRepository)
 		private usersRepository: UsersRepository,
 
-		@Inject(DI.userProfilesRepository)
+		@inject(DI.userProfilesRepository)
 		private userProfilesRepository: UserProfilesRepository,
 
-		@Inject(DI.notesRepository)
+		@inject(DI.notesRepository)
 		private notesRepository: NotesRepository,
 
-		@Inject(DI.noteReactionsRepository)
+		@inject(DI.noteReactionsRepository)
 		private noteReactionsRepository: NoteReactionsRepository,
 
-		@Inject(DI.emojisRepository)
+		@inject(DI.emojisRepository)
 		private emojisRepository: EmojisRepository,
 
-		@Inject(DI.userNotePiningsRepository)
+		@inject(DI.userNotePiningsRepository)
 		private userNotePiningsRepository: UserNotePiningsRepository,
 
-		@Inject(DI.followingsRepository)
+		@inject(DI.followingsRepository)
 		private followingsRepository: FollowingsRepository,
 
-		@Inject(DI.followRequestsRepository)
+		@inject(DI.followRequestsRepository)
 		private followRequestsRepository: FollowRequestsRepository,
 
 		private utilityService: UtilityService,

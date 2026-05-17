@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import type { UsersRepository, PollsRepository, PollVotesRepository } from '@/models/_.js';
 import type { MiRemoteUser } from '@/models/User.js';
 import { IdService } from '@/core/IdService.js';
@@ -76,16 +76,16 @@ export const paramDef = {
 
 // TODO: ロジックをサービスに切り出す
 
-@Injectable()
+@injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
-		@Inject(DI.usersRepository)
+		@inject(DI.usersRepository)
 		private usersRepository: UsersRepository,
 
-		@Inject(DI.pollsRepository)
+		@inject(DI.pollsRepository)
 		private pollsRepository: PollsRepository,
 
-		@Inject(DI.pollVotesRepository)
+		@inject(DI.pollVotesRepository)
 		private pollVotesRepository: PollVotesRepository,
 
 		private idService: IdService,

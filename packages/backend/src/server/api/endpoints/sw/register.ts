@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import { IdService } from '@/core/IdService.js';
 import type { MiMeta, SwSubscriptionsRepository } from '@/models/_.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
@@ -58,13 +58,13 @@ export const paramDef = {
 	required: ['endpoint', 'auth', 'publickey'],
 } as const;
 
-@Injectable()
+@injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
-		@Inject(DI.meta)
+		@inject(DI.meta)
 		private serverSettings: MiMeta,
 
-		@Inject(DI.swSubscriptionsRepository)
+		@inject(DI.swSubscriptionsRepository)
 		private swSubscriptionsRepository: SwSubscriptionsRepository,
 
 		private idService: IdService,

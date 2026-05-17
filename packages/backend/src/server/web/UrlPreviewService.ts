@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import type { SummalyResult } from '@misskey-dev/summaly';
 import { DI } from '@/di-symbols.js';
 import type { Config } from '@/config.js';
@@ -16,15 +16,15 @@ import { ApiError } from '@/server/api/error.js';
 import { MiMeta } from '@/models/Meta.js';
 import type { FastifyRequest, FastifyReply } from 'fastify';
 
-@Injectable()
+@injectable()
 export class UrlPreviewService {
 	private logger: Logger;
 
 	constructor(
-		@Inject(DI.config)
+		@inject(DI.config)
 		private config: Config,
 
-		@Inject(DI.meta)
+		@inject(DI.meta)
 		private meta: MiMeta,
 
 		private httpRequestService: HttpRequestService,

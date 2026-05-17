@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import type Logger from '@/logger.js';
 import { bindThis } from '@/decorators.js';
 import { ReactionsBufferingService } from '@/core/ReactionsBufferingService.js';
@@ -12,12 +12,12 @@ import type * as Bull from 'bullmq';
 import { MiMeta } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
 
-@Injectable()
+@injectable()
 export class BakeBufferedReactionsProcessorService {
 	private logger: Logger;
 
 	constructor(
-		@Inject(DI.meta)
+		@inject(DI.meta)
 		private meta: MiMeta,
 
 		private reactionsBufferingService: ReactionsBufferingService,

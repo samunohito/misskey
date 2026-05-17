@@ -3,10 +3,11 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import { inject, injectable } from 'tsyringe';
+
 import * as crypto from 'node:crypto';
 import { URL } from 'node:url';
 import { promisify } from 'node:util';
-import { Inject, Injectable } from '@nestjs/common';
 import * as htmlParser from 'node-html-parser';
 import { RsaKeyPair } from 'slacc';
 import { DI } from '@/di-symbols.js';
@@ -140,12 +141,12 @@ export class ApRequestCreator {
 	}
 }
 
-@Injectable()
+@injectable()
 export class ApRequestService {
 	private logger: Logger;
 
 	constructor(
-		@Inject(DI.config)
+		@inject(DI.config)
 		private config: Config,
 
 		private userKeypairService: UserKeypairService,

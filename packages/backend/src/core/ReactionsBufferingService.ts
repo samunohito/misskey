@@ -3,7 +3,8 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
+import type { OnApplicationShutdown } from '@nestjs/common';
 import * as Redis from 'ioredis';
 import { DI } from '@/di-symbols.js';
 import type { MiNote } from '@/models/Note.js';
@@ -12,24 +13,22 @@ import type { MiUser, NotesRepository } from '@/models/_.js';
 import type { Config } from '@/config.js';
 import { PER_NOTE_REACTION_USER_PAIR_CACHE_MAX } from '@/const.js';
 import type { GlobalEvents } from '@/core/GlobalEventService.js';
-import type { OnApplicationShutdown } from '@nestjs/common';
-
 const REDIS_DELTA_PREFIX = 'reactionsBufferDeltas';
 const REDIS_PAIR_PREFIX = 'reactionsBufferPairs';
 
-@Injectable()
+@injectable()
 export class ReactionsBufferingService implements OnApplicationShutdown {
 	constructor(
-		@Inject(DI.config)
+		@inject(DI.config)
 		private config: Config,
 
-		@Inject(DI.redisForSub)
+		@inject(DI.redisForSub)
 		private redisForSub: Redis.Redis,
 
-		@Inject(DI.redisForReactions)
+		@inject(DI.redisForReactions)
 		private redisForReactions: Redis.Redis, // TODO: 専用のRedisインスタンスにする
 
-		@Inject(DI.notesRepository)
+		@inject(DI.notesRepository)
 		private notesRepository: NotesRepository,
 	) {
 		this.redisForSub.on('message', this.onMessage);

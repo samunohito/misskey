@@ -3,13 +3,13 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable, Scope } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import { bindThis } from '@/decorators.js';
 import type { JsonObject } from '@/misc/json-value.js';
 import Channel, { type ChannelRequest } from '../channel.js';
 import { REQUEST } from '@nestjs/core';
 
-@Injectable({ scope: Scope.TRANSIENT })
+@injectable()
 export class AdminChannel extends Channel {
 	public readonly chName = 'admin';
 	public static shouldShare = true;
@@ -17,7 +17,7 @@ export class AdminChannel extends Channel {
 	public static kind = 'read:admin:stream';
 
 	constructor(
-		@Inject(REQUEST)
+		@inject(REQUEST)
 		request: ChannelRequest,
 	) {
 		super(request);

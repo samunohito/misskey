@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import { Brackets, ObjectLiteral } from 'typeorm';
 import { DI } from '@/di-symbols.js';
 import type { MiUser } from '@/models/User.js';
@@ -12,31 +12,31 @@ import { bindThis } from '@/decorators.js';
 import { IdService } from '@/core/IdService.js';
 import type { SelectQueryBuilder } from 'typeorm';
 
-@Injectable()
+@injectable()
 export class QueryService {
 	constructor(
-		@Inject(DI.userProfilesRepository)
+		@inject(DI.userProfilesRepository)
 		private userProfilesRepository: UserProfilesRepository,
 
-		@Inject(DI.followingsRepository)
+		@inject(DI.followingsRepository)
 		private followingsRepository: FollowingsRepository,
 
-		@Inject(DI.channelFollowingsRepository)
+		@inject(DI.channelFollowingsRepository)
 		private channelFollowingsRepository: ChannelFollowingsRepository,
 
-		@Inject(DI.blockingsRepository)
+		@inject(DI.blockingsRepository)
 		private blockingsRepository: BlockingsRepository,
 
-		@Inject(DI.noteThreadMutingsRepository)
+		@inject(DI.noteThreadMutingsRepository)
 		private noteThreadMutingsRepository: NoteThreadMutingsRepository,
 
-		@Inject(DI.mutingsRepository)
+		@inject(DI.mutingsRepository)
 		private mutingsRepository: MutingsRepository,
 
-		@Inject(DI.renoteMutingsRepository)
+		@inject(DI.renoteMutingsRepository)
 		private renoteMutingsRepository: RenoteMutingsRepository,
 
-		@Inject(DI.meta)
+		@inject(DI.meta)
 		private meta: MiMeta,
 
 		private idService: IdService,

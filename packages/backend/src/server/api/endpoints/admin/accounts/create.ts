@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { MiMeta, UsersRepository } from '@/models/_.js';
 import { SignupService } from '@/core/SignupService.js';
@@ -63,16 +63,16 @@ export const paramDef = {
 	required: ['username', 'password'],
 } as const;
 
-@Injectable()
+@injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
-		@Inject(DI.config)
+		@inject(DI.config)
 		private config: Config,
 
-		@Inject(DI.meta)
+		@inject(DI.meta)
 		private serverSettings: MiMeta,
 
-		@Inject(DI.usersRepository)
+		@inject(DI.usersRepository)
 		private usersRepository: UsersRepository,
 
 		private userEntityService: UserEntityService,

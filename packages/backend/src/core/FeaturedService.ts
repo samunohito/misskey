@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import * as Redis from 'ioredis';
 import type { MiGalleryPost, MiNote, MiUser } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
@@ -16,10 +16,10 @@ const HASHTAG_RANKING_WINDOW = 1000 * 60 * 60; // 1時間ごと
 
 const featuredEpoc = new Date('2023-01-01T00:00:00Z').getTime();
 
-@Injectable()
+@injectable()
 export class FeaturedService {
 	constructor(
-		@Inject(DI.redis)
+		@inject(DI.redis)
 		private redisClient: Redis.Redis, // TODO: 専用のRedisサーバーを設定できるようにする
 	) {
 	}

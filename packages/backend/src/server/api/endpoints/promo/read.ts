@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import type { PromoReadsRepository } from '@/models/_.js';
 import { IdService } from '@/core/IdService.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
@@ -34,10 +34,10 @@ export const paramDef = {
 	required: ['noteId'],
 } as const;
 
-@Injectable()
+@injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
-		@Inject(DI.promoReadsRepository)
+		@inject(DI.promoReadsRepository)
 		private promoReadsRepository: PromoReadsRepository,
 
 		private idService: IdService,

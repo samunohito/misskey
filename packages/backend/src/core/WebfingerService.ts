@@ -3,8 +3,9 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import { injectable } from 'tsyringe';
+
 import { URL } from 'node:url';
-import { Injectable } from '@nestjs/common';
 import { query as urlQuery } from '@/misc/prelude/url.js';
 import { HttpRequestService } from '@/core/HttpRequestService.js';
 import { bindThis } from '@/decorators.js';
@@ -22,7 +23,7 @@ export type IWebFinger = {
 const urlRegex = /^https?:\/\//;
 const mRegex = /^([^@]+)@(.*)/;
 
-@Injectable()
+@injectable()
 export class WebfingerService {
 	constructor(
 		private httpRequestService: HttpRequestService,

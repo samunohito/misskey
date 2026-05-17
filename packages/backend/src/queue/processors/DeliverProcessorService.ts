@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import * as Bull from 'bullmq';
 import { Not } from 'typeorm';
 import { DI } from '@/di-symbols.js';
@@ -23,17 +23,17 @@ import { bindThis } from '@/decorators.js';
 import { QueueLoggerService } from '../QueueLoggerService.js';
 import type { DeliverJobData } from '../types.js';
 
-@Injectable()
+@injectable()
 export class DeliverProcessorService {
 	private logger: Logger;
 	private suspendedHostsCache: MemorySingleCache<MiInstance[]>;
 	private latest: string | null;
 
 	constructor(
-		@Inject(DI.meta)
+		@inject(DI.meta)
 		private meta: MiMeta,
 
-		@Inject(DI.instancesRepository)
+		@inject(DI.instancesRepository)
 		private instancesRepository: InstancesRepository,
 
 		private utilityService: UtilityService,

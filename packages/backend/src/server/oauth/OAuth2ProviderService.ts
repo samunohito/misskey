@@ -3,9 +3,10 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import { inject, injectable } from 'tsyringe';
+
 import dns from 'node:dns/promises';
 import { fileURLToPath } from 'node:url';
-import { Inject, Injectable } from '@nestjs/common';
 import * as htmlParser from 'node-html-parser';
 import httpLinkHeader from 'http-link-header';
 import ipaddr from 'ipaddr.js';
@@ -302,7 +303,7 @@ class OAuth2Store {
 	}
 }
 
-@Injectable()
+@injectable()
 export class OAuth2ProviderService {
 	#server = oauth2orize.createServer({
 		store: new OAuth2Store(),
@@ -310,13 +311,13 @@ export class OAuth2ProviderService {
 	#logger: Logger;
 
 	constructor(
-		@Inject(DI.config)
+		@inject(DI.config)
 		private config: Config,
 		private httpRequestService: HttpRequestService,
-		@Inject(DI.accessTokensRepository)
+		@inject(DI.accessTokensRepository)
 		accessTokensRepository: AccessTokensRepository,
 		idService: IdService,
-		@Inject(DI.usersRepository)
+		@inject(DI.usersRepository)
 		private usersRepository: UsersRepository,
 		private cacheService: CacheService,
 		loggerService: LoggerService,

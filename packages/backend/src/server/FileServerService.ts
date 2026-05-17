@@ -3,9 +3,10 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import { inject, injectable } from 'tsyringe';
+
 import * as fs from 'node:fs';
 import { resolve } from 'node:path';
-import { Inject, Injectable } from '@nestjs/common';
 import type { Config } from '@/config.js';
 import type { DriveFilesRepository } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
@@ -24,7 +25,7 @@ import { FileServerFileResolver } from './file/FileServerFileResolver.js';
 import { FileServerProxyHandler } from './file/FileServerProxyHandler.js';
 import type { FastifyInstance, FastifyRequest, FastifyReply, FastifyPluginOptions } from 'fastify';
 
-@Injectable()
+@injectable()
 export class FileServerService {
 	private logger: Logger;
 	private driveHandler: FileServerDriveHandler;
@@ -34,10 +35,10 @@ export class FileServerService {
 	private readonly assets: string;
 
 	constructor(
-		@Inject(DI.config)
+		@inject(DI.config)
 		private config: Config,
 
-		@Inject(DI.driveFilesRepository)
+		@inject(DI.driveFilesRepository)
 		private driveFilesRepository: DriveFilesRepository,
 
 		private fileInfoService: FileInfoService,

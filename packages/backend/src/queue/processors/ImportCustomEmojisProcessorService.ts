@@ -3,8 +3,9 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import { inject, injectable } from 'tsyringe';
+
 import * as fs from 'node:fs';
-import { Inject, Injectable } from '@nestjs/common';
 import { ZipReader } from 'slacc';
 import { IsNull } from 'typeorm';
 import { DI } from '@/di-symbols.js';
@@ -20,15 +21,15 @@ import type * as Bull from 'bullmq';
 import type { DbUserImportJobData } from '../types.js';
 
 // TODO: 名前衝突時の動作を選べるようにする
-@Injectable()
+@injectable()
 export class ImportCustomEmojisProcessorService {
 	private logger: Logger;
 
 	constructor(
-		@Inject(DI.driveFilesRepository)
+		@inject(DI.driveFilesRepository)
 		private driveFilesRepository: DriveFilesRepository,
 
-		@Inject(DI.emojisRepository)
+		@inject(DI.emojisRepository)
 		private emojisRepository: EmojisRepository,
 
 		private customEmojiService: CustomEmojiService,

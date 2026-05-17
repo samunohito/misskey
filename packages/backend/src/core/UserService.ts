@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import type { FollowingsRepository, UsersRepository } from '@/models/_.js';
 import type { MiUser } from '@/models/User.js';
 import { DI } from '@/di-symbols.js';
@@ -11,12 +11,12 @@ import { bindThis } from '@/decorators.js';
 import { SystemWebhookService } from '@/core/SystemWebhookService.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
 
-@Injectable()
+@injectable()
 export class UserService {
 	constructor(
-		@Inject(DI.usersRepository)
+		@inject(DI.usersRepository)
 		private usersRepository: UsersRepository,
-		@Inject(DI.followingsRepository)
+		@inject(DI.followingsRepository)
 		private followingsRepository: FollowingsRepository,
 		private systemWebhookService: SystemWebhookService,
 		private userEntityService: UserEntityService,

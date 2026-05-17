@@ -3,8 +3,9 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import { inject, injectable } from 'tsyringe';
+
 import { IsNull } from 'typeorm';
-import { Inject, Injectable } from '@nestjs/common';
 import type { UsersRepository, PagesRepository } from '@/models/_.js';
 import type { MiPage } from '@/models/Page.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
@@ -52,13 +53,13 @@ export const paramDef = {
 	],
 } as const;
 
-@Injectable()
+@injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
-		@Inject(DI.usersRepository)
+		@inject(DI.usersRepository)
 		private usersRepository: UsersRepository,
 
-		@Inject(DI.pagesRepository)
+		@inject(DI.pagesRepository)
 		private pagesRepository: PagesRepository,
 
 		private pageEntityService: PageEntityService,

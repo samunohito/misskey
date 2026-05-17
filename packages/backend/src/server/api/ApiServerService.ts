@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import cors from '@fastify/cors';
 import multipart from '@fastify/multipart';
 import { ModuleRef } from '@nestjs/core';
@@ -20,18 +20,18 @@ import { SigninApiService } from './SigninApiService.js';
 import { SigninWithPasskeyApiService } from './SigninWithPasskeyApiService.js';
 import type { FastifyInstance, FastifyPluginOptions } from 'fastify';
 
-@Injectable()
+@injectable()
 export class ApiServerService {
 	constructor(
 		private moduleRef: ModuleRef,
 
-		@Inject(DI.config)
+		@inject(DI.config)
 		private config: Config,
 
-		@Inject(DI.instancesRepository)
+		@inject(DI.instancesRepository)
 		private instancesRepository: InstancesRepository,
 
-		@Inject(DI.accessTokensRepository)
+		@inject(DI.accessTokensRepository)
 		private accessTokensRepository: AccessTokensRepository,
 
 		private userEntityService: UserEntityService,

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import { IsNull, MoreThan, Not } from 'typeorm';
 import { DI } from '@/di-symbols.js';
 import type { MiDriveFile, DriveFilesRepository } from '@/models/_.js';
@@ -13,12 +13,12 @@ import { bindThis } from '@/decorators.js';
 import { QueueLoggerService } from '../QueueLoggerService.js';
 import type * as Bull from 'bullmq';
 
-@Injectable()
+@injectable()
 export class CleanRemoteFilesProcessorService {
 	private logger: Logger;
 
 	constructor(
-		@Inject(DI.driveFilesRepository)
+		@inject(DI.driveFilesRepository)
 		private driveFilesRepository: DriveFilesRepository,
 
 		private driveService: DriveService,

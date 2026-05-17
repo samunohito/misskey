@@ -3,8 +3,9 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import { inject, injectable } from 'tsyringe';
+
 import Xev from 'xev';
-import { Inject, Injectable, Scope } from '@nestjs/common';
 import { bindThis } from '@/decorators.js';
 import { isJsonObject } from '@/misc/json-value.js';
 import type { JsonObject, JsonValue } from '@/misc/json-value.js';
@@ -13,14 +14,14 @@ import { REQUEST } from '@nestjs/core';
 
 const ev = new Xev();
 
-@Injectable({ scope: Scope.TRANSIENT })
+@injectable()
 export class ServerStatsChannel extends Channel {
 	public readonly chName = 'serverStats';
 	public static shouldShare = true;
 	public static requireCredential = false as const;
 
 	constructor(
-		@Inject(REQUEST)
+		@inject(REQUEST)
 		request: ChannelRequest,
 	) {
 		super(request);

@@ -3,7 +3,8 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
+import type { OnApplicationShutdown } from '@nestjs/common';
 import * as Redis from 'ioredis';
 import { In } from 'typeorm';
 import { FanoutTimelineService } from '@/core/FanoutTimelineService.js';
@@ -19,24 +20,22 @@ import type { MiAntenna } from '@/models/Antenna.js';
 import type { MiNote } from '@/models/Note.js';
 import type { MiUser } from '@/models/User.js';
 import { CacheService } from './CacheService.js';
-import type { OnApplicationShutdown } from '@nestjs/common';
-
-@Injectable()
+@injectable()
 export class AntennaService implements OnApplicationShutdown {
 	private antennasFetched: boolean;
 	private antennas: MiAntenna[];
 
 	constructor(
-		@Inject(DI.redisForTimelines)
+		@inject(DI.redisForTimelines)
 		private redisForTimelines: Redis.Redis,
 
-		@Inject(DI.redisForSub)
+		@inject(DI.redisForSub)
 		private redisForSub: Redis.Redis,
 
-		@Inject(DI.antennasRepository)
+		@inject(DI.antennasRepository)
 		private antennasRepository: AntennasRepository,
 
-		@Inject(DI.userListMembershipsRepository)
+		@inject(DI.userListMembershipsRepository)
 		private userListMembershipsRepository: UserListMembershipsRepository,
 
 		private cacheService: CacheService,

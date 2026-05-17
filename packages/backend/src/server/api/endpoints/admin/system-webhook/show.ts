@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Injectable } from '@nestjs/common';
+import { injectable } from 'tsyringe';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { SystemWebhookEntityService } from '@/core/entities/SystemWebhookEntityService.js';
 import { ApiError } from '@/server/api/error.js';
@@ -44,7 +44,7 @@ export const paramDef = {
 	required: ['id'],
 } as const;
 
-@Injectable()
+@injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		private systemWebhookService: SystemWebhookService,

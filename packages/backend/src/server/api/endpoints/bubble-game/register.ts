@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import ms from 'ms';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { IdService } from '@/core/IdService.js';
@@ -51,10 +51,10 @@ export const paramDef = {
 	required: ['score', 'seed', 'logs', 'gameMode', 'gameVersion'],
 } as const;
 
-@Injectable()
+@injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
-		@Inject(DI.bubbleGameRecordsRepository)
+		@inject(DI.bubbleGameRecordsRepository)
 		private bubbleGameRecordsRepository: BubbleGameRecordsRepository,
 
 		private idService: IdService,

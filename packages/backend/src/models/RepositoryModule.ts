@@ -2,8 +2,6 @@
  * SPDX-FileCopyrightText: syuilo and misskey-project
  * SPDX-License-Identifier: AGPL-3.0-only
  */
-
-import { Module } from '@nestjs/common';
 import { DI } from '@/di-symbols.js';
 import {
 	MiAbuseReportNotificationRecipient,
@@ -85,7 +83,6 @@ import {
 	MiChatRoomInvitation,
 	MiChatApproval,
 } from './_.js';
-import type { Provider } from '@nestjs/common';
 import type { DataSource } from 'typeorm';
 
 const $usersRepository: Provider = {

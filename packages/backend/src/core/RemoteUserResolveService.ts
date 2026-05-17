@@ -3,8 +3,9 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import { inject, injectable } from 'tsyringe';
+
 import { URL } from 'node:url';
-import { Inject, Injectable } from '@nestjs/common';
 import chalk from 'chalk';
 import { IsNull } from 'typeorm';
 import { DI } from '@/di-symbols.js';
@@ -19,15 +20,15 @@ import { ApDbResolverService } from '@/core/activitypub/ApDbResolverService.js';
 import { ApPersonService } from '@/core/activitypub/models/ApPersonService.js';
 import { bindThis } from '@/decorators.js';
 
-@Injectable()
+@injectable()
 export class RemoteUserResolveService {
 	private logger: Logger;
 
 	constructor(
-		@Inject(DI.config)
+		@inject(DI.config)
 		private config: Config,
 
-		@Inject(DI.usersRepository)
+		@inject(DI.usersRepository)
 		private usersRepository: UsersRepository,
 
 		private utilityService: UtilityService,

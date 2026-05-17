@@ -3,8 +3,9 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import { inject, injectable } from 'tsyringe';
+
 import { Brackets, In, IsNull, Not } from 'typeorm';
-import { Injectable, Inject } from '@nestjs/common';
 import type { MiUser, MiLocalUser, MiRemoteUser } from '@/models/User.js';
 import type { MiNote, IMentionedRemoteUsers } from '@/models/Note.js';
 import type { InstancesRepository, MiMeta, NotesRepository, UsersRepository } from '@/models/_.js';
@@ -24,22 +25,22 @@ import { SearchService } from '@/core/SearchService.js';
 import { ModerationLogService } from '@/core/ModerationLogService.js';
 import { isQuote, isRenote } from '@/misc/is-renote.js';
 
-@Injectable()
+@injectable()
 export class NoteDeleteService {
 	constructor(
-		@Inject(DI.config)
+		@inject(DI.config)
 		private config: Config,
 
-		@Inject(DI.meta)
+		@inject(DI.meta)
 		private meta: MiMeta,
 
-		@Inject(DI.usersRepository)
+		@inject(DI.usersRepository)
 		private usersRepository: UsersRepository,
 
-		@Inject(DI.notesRepository)
+		@inject(DI.notesRepository)
 		private notesRepository: NotesRepository,
 
-		@Inject(DI.instancesRepository)
+		@inject(DI.instancesRepository)
 		private instancesRepository: InstancesRepository,
 
 		private userEntityService: UserEntityService,

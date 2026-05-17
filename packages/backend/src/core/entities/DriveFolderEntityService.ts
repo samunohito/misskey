@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import { DI } from '@/di-symbols.js';
 import type { DriveFilesRepository, DriveFoldersRepository } from '@/models/_.js';
 import { awaitAll } from '@/misc/prelude/await-all.js';
@@ -16,13 +16,13 @@ import { In } from 'typeorm';
 import { uniqueByKey } from '@/misc/unique-by-key.js';
 import { splitIdAndObjects } from '@/misc/split-id-and-objects.js';
 
-@Injectable()
+@injectable()
 export class DriveFolderEntityService {
 	constructor(
-		@Inject(DI.driveFoldersRepository)
+		@inject(DI.driveFoldersRepository)
 		private driveFoldersRepository: DriveFoldersRepository,
 
-		@Inject(DI.driveFilesRepository)
+		@inject(DI.driveFilesRepository)
 		private driveFilesRepository: DriveFilesRepository,
 
 		private idService: IdService,

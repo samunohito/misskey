@@ -3,10 +3,11 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import { inject, injectable } from 'tsyringe';
+
 import * as fs from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import { resolve } from 'node:path';
-import { Injectable, Inject } from '@nestjs/common';
 import { Mutex } from 'async-mutex';
 import fetch from 'node-fetch';
 import { DI } from '@/di-symbols.js';
@@ -17,14 +18,14 @@ import type { NSFWJS, PredictionType } from 'nsfwjs/core';
 const REQUIRED_CPU_FLAGS_X64 = ['avx2', 'fma'];
 let isSupportedCpu: undefined | boolean = undefined;
 
-@Injectable()
+@injectable()
 export class AiService {
 	private readonly modelDir: string;
 	private model: NSFWJS;
 	private modelLoadMutex: Mutex = new Mutex();
 
 	constructor(
-		@Inject(DI.config)
+		@inject(DI.config)
 		private config: Config,
 	) {
 		const md = resolve(this.config.rootDir, 'packages/backend/nsfw-model');

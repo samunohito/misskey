@@ -3,7 +3,8 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
+import type { OnModuleInit } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { Brackets, IsNull } from 'typeorm';
 import type { MiLocalUser, MiPartialLocalUser, MiPartialRemoteUser, MiRemoteUser, MiUser } from '@/models/User.js';
@@ -45,32 +46,32 @@ type Remote = MiRemoteUser | {
 };
 type Both = Local | Remote;
 
-@Injectable()
+@injectable()
 export class UserFollowingService implements OnModuleInit {
 	private userBlockingService: UserBlockingService;
 
 	constructor(
 		private moduleRef: ModuleRef,
 
-		@Inject(DI.config)
+		@inject(DI.config)
 		private config: Config,
 
-		@Inject(DI.meta)
+		@inject(DI.meta)
 		private meta: MiMeta,
 
-		@Inject(DI.usersRepository)
+		@inject(DI.usersRepository)
 		private usersRepository: UsersRepository,
 
-		@Inject(DI.userProfilesRepository)
+		@inject(DI.userProfilesRepository)
 		private userProfilesRepository: UserProfilesRepository,
 
-		@Inject(DI.followingsRepository)
+		@inject(DI.followingsRepository)
 		private followingsRepository: FollowingsRepository,
 
-		@Inject(DI.followRequestsRepository)
+		@inject(DI.followRequestsRepository)
 		private followRequestsRepository: FollowRequestsRepository,
 
-		@Inject(DI.instancesRepository)
+		@inject(DI.instancesRepository)
 		private instancesRepository: InstancesRepository,
 
 		private cacheService: CacheService,

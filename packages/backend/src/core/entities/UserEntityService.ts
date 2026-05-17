@@ -3,7 +3,8 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
+import type { OnModuleInit } from '@nestjs/common';
 import * as Redis from 'ioredis';
 import _Ajv from 'ajv';
 import { ModuleRef } from '@nestjs/core';
@@ -48,7 +49,6 @@ import type { AnnouncementService } from '@/core/AnnouncementService.js';
 import type { CustomEmojiService } from '@/core/CustomEmojiService.js';
 import { AvatarDecorationService } from '@/core/AvatarDecorationService.js';
 import { ChatService } from '@/core/ChatService.js';
-import type { OnModuleInit } from '@nestjs/common';
 import type { NoteEntityService } from './NoteEntityService.js';
 import type { PageEntityService } from './PageEntityService.js';
 import { toArray } from '@/misc/prelude/array.js';
@@ -83,7 +83,7 @@ export type UserRelation = {
 	isRenoteMuted: boolean
 };
 
-@Injectable()
+@injectable()
 export class UserEntityService implements OnModuleInit {
 	private apPersonService: ApPersonService;
 	private noteEntityService: NoteEntityService;
@@ -99,43 +99,43 @@ export class UserEntityService implements OnModuleInit {
 	constructor(
 		private moduleRef: ModuleRef,
 
-		@Inject(DI.config)
+		@inject(DI.config)
 		private config: Config,
 
-		@Inject(DI.meta)
+		@inject(DI.meta)
 		private meta: MiMeta,
 
-		@Inject(DI.redis)
+		@inject(DI.redis)
 		private redisClient: Redis.Redis,
 
-		@Inject(DI.usersRepository)
+		@inject(DI.usersRepository)
 		private usersRepository: UsersRepository,
 
-		@Inject(DI.userSecurityKeysRepository)
+		@inject(DI.userSecurityKeysRepository)
 		private userSecurityKeysRepository: UserSecurityKeysRepository,
 
-		@Inject(DI.followingsRepository)
+		@inject(DI.followingsRepository)
 		private followingsRepository: FollowingsRepository,
 
-		@Inject(DI.followRequestsRepository)
+		@inject(DI.followRequestsRepository)
 		private followRequestsRepository: FollowRequestsRepository,
 
-		@Inject(DI.blockingsRepository)
+		@inject(DI.blockingsRepository)
 		private blockingsRepository: BlockingsRepository,
 
-		@Inject(DI.mutingsRepository)
+		@inject(DI.mutingsRepository)
 		private mutingsRepository: MutingsRepository,
 
-		@Inject(DI.renoteMutingsRepository)
+		@inject(DI.renoteMutingsRepository)
 		private renoteMutingsRepository: RenoteMutingsRepository,
 
-		@Inject(DI.userNotePiningsRepository)
+		@inject(DI.userNotePiningsRepository)
 		private userNotePiningsRepository: UserNotePiningsRepository,
 
-		@Inject(DI.userProfilesRepository)
+		@inject(DI.userProfilesRepository)
 		private userProfilesRepository: UserProfilesRepository,
 
-		@Inject(DI.userMemosRepository)
+		@inject(DI.userMemosRepository)
 		private userMemosRepository: UserMemoRepository,
 	) {
 	}

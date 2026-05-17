@@ -3,8 +3,10 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import { inject, injectable } from 'tsyringe';
+
+import type { OnApplicationShutdown } from '@nestjs/common';
 import { URL } from 'node:url';
-import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
 import httpSignature from '@peertube/http-signature';
 import * as Bull from 'bullmq';
 import type Logger from '@/logger.js';
@@ -37,13 +39,13 @@ type UpdateInstanceJob = {
 	shouldUnsuspend: boolean,
 };
 
-@Injectable()
+@injectable()
 export class InboxProcessorService implements OnApplicationShutdown {
 	private logger: Logger;
 	private updateInstanceQueue: CollapsedQueue<MiNote['id'], UpdateInstanceJob>;
 
 	constructor(
-		@Inject(DI.meta)
+		@inject(DI.meta)
 		private meta: MiMeta,
 
 		private utilityService: UtilityService,

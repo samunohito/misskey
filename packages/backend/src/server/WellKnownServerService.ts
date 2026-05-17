@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import { IsNull } from 'typeorm';
 import vary from 'vary';
 import fastifyAccepts from '@fastify/accepts';
@@ -20,16 +20,16 @@ import { OAuth2ProviderService } from './oauth/OAuth2ProviderService.js';
 import type { FindOptionsWhere } from 'typeorm';
 import type { FastifyInstance, FastifyPluginOptions } from 'fastify';
 
-@Injectable()
+@injectable()
 export class WellKnownServerService {
 	constructor(
-		@Inject(DI.config)
+		@inject(DI.config)
 		private config: Config,
 
-		@Inject(DI.meta)
+		@inject(DI.meta)
 		private meta: MiMeta,
 
-		@Inject(DI.usersRepository)
+		@inject(DI.usersRepository)
 		private usersRepository: UsersRepository,
 
 		private nodeinfoServerService: NodeinfoServerService,

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { GalleryPostsRepository } from '@/models/_.js';
 import { GalleryPostEntityService } from '@/core/entities/GalleryPostEntityService.js';
@@ -35,13 +35,13 @@ export const paramDef = {
 	required: [],
 } as const;
 
-@Injectable()
+@injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	private galleryPostsRankingCache: string[] = [];
 	private galleryPostsRankingCacheLastFetchedAt = 0;
 
 	constructor(
-		@Inject(DI.galleryPostsRepository)
+		@inject(DI.galleryPostsRepository)
 		private galleryPostsRepository: GalleryPostsRepository,
 
 		private galleryPostEntityService: GalleryPostEntityService,

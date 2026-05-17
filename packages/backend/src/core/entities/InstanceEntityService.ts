@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import type { Packed } from '@/misc/json-schema.js';
 import type { MiInstance } from '@/models/Instance.js';
 import { bindThis } from '@/decorators.js';
@@ -13,10 +13,10 @@ import { MiUser } from '@/models/User.js';
 import { DI } from '@/di-symbols.js';
 import { MiMeta } from '@/models/_.js';
 
-@Injectable()
+@injectable()
 export class InstanceEntityService {
 	constructor(
-		@Inject(DI.meta)
+		@inject(DI.meta)
 		private meta: MiMeta,
 
 		private roleService: RoleService,

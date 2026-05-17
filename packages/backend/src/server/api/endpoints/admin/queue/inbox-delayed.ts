@@ -3,8 +3,9 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import { inject, injectable } from 'tsyringe';
+
 import { URL } from 'node:url';
-import { Inject, Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { InboxQueue } from '@/core/QueueModule.js';
 
@@ -44,10 +45,10 @@ export const paramDef = {
 	required: [],
 } as const;
 
-@Injectable()
+@injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
-		@Inject('queue:inbox') public inboxQueue: InboxQueue,
+		@inject('queue:inbox') public inboxQueue: InboxQueue,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const jobs = await this.inboxQueue.getJobs(['delayed']);

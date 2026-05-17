@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import { DI } from '@/di-symbols.js';
 import type { FollowRequestsRepository } from '@/models/_.js';
 import type { } from '@/models/Blocking.js';
@@ -13,10 +13,10 @@ import { bindThis } from '@/decorators.js';
 import type { Packed } from '@/misc/json-schema.js';
 import { UserEntityService } from './UserEntityService.js';
 
-@Injectable()
+@injectable()
 export class FollowRequestEntityService {
 	constructor(
-		@Inject(DI.followRequestsRepository)
+		@inject(DI.followRequestsRepository)
 		private followRequestsRepository: FollowRequestsRepository,
 
 		private userEntityService: UserEntityService,

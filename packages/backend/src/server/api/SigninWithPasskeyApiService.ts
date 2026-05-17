@@ -3,8 +3,9 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import { inject, injectable } from 'tsyringe';
+
 import { randomUUID } from 'crypto';
-import { Inject, Injectable } from '@nestjs/common';
 import { IsNull } from 'typeorm';
 import { DI } from '@/di-symbols.js';
 import type {
@@ -26,20 +27,20 @@ import { SigninService } from './SigninService.js';
 import type { AuthenticationResponseJSON } from '@simplewebauthn/server';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 
-@Injectable()
+@injectable()
 export class SigninWithPasskeyApiService {
 	private logger: Logger;
 	constructor(
-		@Inject(DI.config)
+		@inject(DI.config)
 		private config: Config,
 
-		@Inject(DI.usersRepository)
+		@inject(DI.usersRepository)
 		private usersRepository: UsersRepository,
 
-		@Inject(DI.userProfilesRepository)
+		@inject(DI.userProfilesRepository)
 		private userProfilesRepository: UserProfilesRepository,
 
-		@Inject(DI.signinsRepository)
+		@inject(DI.signinsRepository)
 		private signinsRepository: SigninsRepository,
 
 		private idService: IdService,

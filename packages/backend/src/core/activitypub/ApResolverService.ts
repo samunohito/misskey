@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable, Scope } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import { IsNull, Not } from 'typeorm';
 import type { MiLocalUser, MiRemoteUser } from '@/models/User.js';
 import type {
@@ -31,7 +31,7 @@ import { ApRequestService } from './ApRequestService.js';
 import { FetchAllowSoftFailMask } from './misc/check-against-url.js';
 import { ModuleRef } from '@nestjs/core';
 
-@Injectable({ scope: Scope.TRANSIENT })
+@injectable()
 export class Resolver {
 	private history: Set<string>;
 	private user?: MiLocalUser;
@@ -39,25 +39,25 @@ export class Resolver {
 	private recursionLimit = 256;
 
 	constructor(
-		@Inject(DI.config)
+		@inject(DI.config)
 		private config: Config,
 
-		@Inject(DI.meta)
+		@inject(DI.meta)
 		private meta: MiMeta,
 
-		@Inject(DI.usersRepository)
+		@inject(DI.usersRepository)
 		private usersRepository: UsersRepository,
 
-		@Inject(DI.notesRepository)
+		@inject(DI.notesRepository)
 		private notesRepository: NotesRepository,
 
-		@Inject(DI.pollsRepository)
+		@inject(DI.pollsRepository)
 		private pollsRepository: PollsRepository,
 
-		@Inject(DI.noteReactionsRepository)
+		@inject(DI.noteReactionsRepository)
 		private noteReactionsRepository: NoteReactionsRepository,
 
-		@Inject(DI.followRequestsRepository)
+		@inject(DI.followRequestsRepository)
 		private followRequestsRepository: FollowRequestsRepository,
 
 		private utilityService: UtilityService,
@@ -200,7 +200,7 @@ export class Resolver {
 	}
 }
 
-@Injectable()
+@injectable()
 export class ApResolverService {
 	constructor(
 		private moduleRef: ModuleRef,

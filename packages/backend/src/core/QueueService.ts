@@ -3,8 +3,9 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import { inject, injectable } from 'tsyringe';
+
 import { randomUUID } from 'node:crypto';
-import { Inject, Injectable } from '@nestjs/common';
 import { MetricsTime, type JobType } from 'bullmq';
 import type { IActivity } from '@/core/activitypub/type.js';
 import type { MiDriveFile } from '@/models/DriveFile.js';
@@ -98,22 +99,22 @@ function parseRedisInfo(infoText: string): Record<string, string> {
 	return result;
 }
 
-@Injectable()
+@injectable()
 export class QueueService {
 	constructor(
-		@Inject(DI.config)
+		@inject(DI.config)
 		private config: Config,
 
-		@Inject('queue:system') public systemQueue: SystemQueue,
-		@Inject('queue:endedPollNotification') public endedPollNotificationQueue: EndedPollNotificationQueue,
-		@Inject('queue:postScheduledNote') public postScheduledNoteQueue: PostScheduledNoteQueue,
-		@Inject('queue:deliver') public deliverQueue: DeliverQueue,
-		@Inject('queue:inbox') public inboxQueue: InboxQueue,
-		@Inject('queue:db') public dbQueue: DbQueue,
-		@Inject('queue:relationship') public relationshipQueue: RelationshipQueue,
-		@Inject('queue:objectStorage') public objectStorageQueue: ObjectStorageQueue,
-		@Inject('queue:userWebhookDeliver') public userWebhookDeliverQueue: UserWebhookDeliverQueue,
-		@Inject('queue:systemWebhookDeliver') public systemWebhookDeliverQueue: SystemWebhookDeliverQueue,
+		@inject('queue:system') public systemQueue: SystemQueue,
+		@inject('queue:endedPollNotification') public endedPollNotificationQueue: EndedPollNotificationQueue,
+		@inject('queue:postScheduledNote') public postScheduledNoteQueue: PostScheduledNoteQueue,
+		@inject('queue:deliver') public deliverQueue: DeliverQueue,
+		@inject('queue:inbox') public inboxQueue: InboxQueue,
+		@inject('queue:db') public dbQueue: DbQueue,
+		@inject('queue:relationship') public relationshipQueue: RelationshipQueue,
+		@inject('queue:objectStorage') public objectStorageQueue: ObjectStorageQueue,
+		@inject('queue:userWebhookDeliver') public userWebhookDeliverQueue: UserWebhookDeliverQueue,
+		@inject('queue:systemWebhookDeliver') public systemWebhookDeliverQueue: SystemWebhookDeliverQueue,
 	) {
 		for (const def of REPEATABLE_SYSTEM_JOB_DEF) {
 			this.systemQueue.upsertJobScheduler(def.name, {

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable, Scope } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import { DI } from '@/di-symbols.js';
 import type { AntennasRepository } from '@/models/_.js';
 import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
@@ -15,7 +15,7 @@ import type { JsonObject } from '@/misc/json-value.js';
 import Channel, { type ChannelRequest } from '../channel.js';
 import { REQUEST } from '@nestjs/core';
 
-@Injectable({ scope: Scope.TRANSIENT })
+@injectable()
 export class AntennaChannel extends Channel {
 	public readonly chName = 'antenna';
 	public static shouldShare = false;
@@ -24,10 +24,10 @@ export class AntennaChannel extends Channel {
 	private antennaId: string;
 
 	constructor(
-		@Inject(REQUEST)
+		@inject(REQUEST)
 		request: ChannelRequest,
 
-		@Inject(DI.antennasRepository)
+		@inject(DI.antennasRepository)
 		private antennasReposiotry: AntennasRepository,
 
 		private noteEntityService: NoteEntityService,

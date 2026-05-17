@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import { DI } from '@/di-symbols.js';
 import type { GalleryLikesRepository, GalleryPostsRepository } from '@/models/_.js';
 import { awaitAll } from '@/misc/prelude/await-all.js';
@@ -16,13 +16,13 @@ import { IdService } from '@/core/IdService.js';
 import { UserEntityService } from './UserEntityService.js';
 import { DriveFileEntityService } from './DriveFileEntityService.js';
 
-@Injectable()
+@injectable()
 export class GalleryPostEntityService {
 	constructor(
-		@Inject(DI.galleryPostsRepository)
+		@inject(DI.galleryPostsRepository)
 		private galleryPostsRepository: GalleryPostsRepository,
 
-		@Inject(DI.galleryLikesRepository)
+		@inject(DI.galleryLikesRepository)
 		private galleryLikesRepository: GalleryLikesRepository,
 
 		private userEntityService: UserEntityService,

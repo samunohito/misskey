@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import { In } from 'typeorm';
 import { DI } from '@/di-symbols.js';
 import type { AbuseReportNotificationRecipientRepository, MiAbuseReportNotificationRecipient } from '@/models/_.js';
@@ -12,10 +12,10 @@ import { UserEntityService } from '@/core/entities/UserEntityService.js';
 import { Packed } from '@/misc/json-schema.js';
 import { SystemWebhookEntityService } from '@/core/entities/SystemWebhookEntityService.js';
 
-@Injectable()
+@injectable()
 export class AbuseReportNotificationRecipientEntityService {
 	constructor(
-		@Inject(DI.abuseReportNotificationRecipientRepository)
+		@inject(DI.abuseReportNotificationRecipientRepository)
 		private abuseReportNotificationRecipientRepository: AbuseReportNotificationRecipientRepository,
 		private userEntityService: UserEntityService,
 		private systemWebhookEntityService: SystemWebhookEntityService,

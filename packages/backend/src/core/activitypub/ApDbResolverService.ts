@@ -3,7 +3,8 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
+import type { OnApplicationShutdown } from '@nestjs/common';
 import { DI } from '@/di-symbols.js';
 import type { NotesRepository, UserPublickeysRepository, UsersRepository } from '@/models/_.js';
 import type { Config } from '@/config.js';
@@ -34,22 +35,22 @@ export type UriParseResult = {
 	uri: string;
 };
 
-@Injectable()
+@injectable()
 export class ApDbResolverService implements OnApplicationShutdown {
 	private publicKeyCache: MemoryKVCache<MiUserPublickey | null>;
 	private publicKeyByUserIdCache: MemoryKVCache<MiUserPublickey | null>;
 
 	constructor(
-		@Inject(DI.config)
+		@inject(DI.config)
 		private config: Config,
 
-		@Inject(DI.usersRepository)
+		@inject(DI.usersRepository)
 		private usersRepository: UsersRepository,
 
-		@Inject(DI.notesRepository)
+		@inject(DI.notesRepository)
 		private notesRepository: NotesRepository,
 
-		@Inject(DI.userPublickeysRepository)
+		@inject(DI.userPublickeysRepository)
 		private userPublickeysRepository: UserPublickeysRepository,
 
 		private cacheService: CacheService,

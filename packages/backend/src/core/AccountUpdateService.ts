@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import { DI } from '@/di-symbols.js';
 import type { UsersRepository } from '@/models/_.js';
 import type { MiUser } from '@/models/User.js';
@@ -13,10 +13,10 @@ import { ApDeliverManagerService } from '@/core/activitypub/ApDeliverManagerServ
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
 import { bindThis } from '@/decorators.js';
 
-@Injectable()
+@injectable()
 export class AccountUpdateService {
 	constructor(
-		@Inject(DI.usersRepository)
+		@inject(DI.usersRepository)
 		private usersRepository: UsersRepository,
 
 		private userEntityService: UserEntityService,

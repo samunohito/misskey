@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import { In } from 'typeorm';
 import type { MutingsRepository, MiMuting } from '@/models/_.js';
 import { IdService } from '@/core/IdService.js';
@@ -12,10 +12,10 @@ import { DI } from '@/di-symbols.js';
 import { bindThis } from '@/decorators.js';
 import { CacheService } from '@/core/CacheService.js';
 
-@Injectable()
+@injectable()
 export class UserMutingService {
 	constructor(
-		@Inject(DI.mutingsRepository)
+		@inject(DI.mutingsRepository)
 		private mutingsRepository: MutingsRepository,
 
 		private idService: IdService,

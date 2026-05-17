@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import { DI } from '@/di-symbols.js';
 import type { FollowingsRepository } from '@/models/_.js';
 import { awaitAll } from '@/misc/prelude/await-all.js';
@@ -39,10 +39,10 @@ type RemoteFolloweeFollowing = MiFollowing & {
 	followeeSharedInbox: string;
 };
 
-@Injectable()
+@injectable()
 export class FollowingEntityService {
 	constructor(
-		@Inject(DI.followingsRepository)
+		@inject(DI.followingsRepository)
 		private followingsRepository: FollowingsRepository,
 
 		private userEntityService: UserEntityService,

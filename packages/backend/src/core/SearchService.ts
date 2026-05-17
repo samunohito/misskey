@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import { In } from 'typeorm';
 import { DI } from '@/di-symbols.js';
 import { type Config, FulltextSearchProvider } from '@/config.js';
@@ -74,20 +74,20 @@ function compileQuery(q: Q): string {
 	}
 }
 
-@Injectable()
+@injectable()
 export class SearchService {
 	private readonly meilisearchIndexScope: 'local' | 'global' | string[] = 'local';
 	private readonly meilisearchNoteIndex: Index | null = null;
 	private readonly provider: FulltextSearchProvider;
 
 	constructor(
-		@Inject(DI.config)
+		@inject(DI.config)
 		private config: Config,
 
-		@Inject(DI.meilisearch)
+		@inject(DI.meilisearch)
 		private meilisearch: Meilisearch | null,
 
-		@Inject(DI.notesRepository)
+		@inject(DI.notesRepository)
 		private notesRepository: NotesRepository,
 
 		private cacheService: CacheService,

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { GalleryLikesRepository, GalleryPostsRepository } from '@/models/_.js';
 import { FeaturedService, GALLERY_POSTS_RANKING_WINDOW } from '@/core/FeaturedService.js';
@@ -49,13 +49,13 @@ export const paramDef = {
 	required: ['postId'],
 } as const;
 
-@Injectable()
+@injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
-		@Inject(DI.galleryPostsRepository)
+		@inject(DI.galleryPostsRepository)
 		private galleryPostsRepository: GalleryPostsRepository,
 
-		@Inject(DI.galleryLikesRepository)
+		@inject(DI.galleryLikesRepository)
 		private galleryLikesRepository: GalleryLikesRepository,
 
 		private featuredService: FeaturedService,

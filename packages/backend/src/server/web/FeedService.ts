@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import { In, IsNull } from 'typeorm';
 import { Feed } from 'feed';
 import { DI } from '@/di-symbols.js';
@@ -17,19 +17,19 @@ import { IdService } from '@/core/IdService.js';
 import { MfmService } from "@/core/MfmService.js";
 import { parse as mfmParse } from 'mfm-js';
 
-@Injectable()
+@injectable()
 export class FeedService {
 	constructor(
-		@Inject(DI.config)
+		@inject(DI.config)
 		private config: Config,
 
-		@Inject(DI.userProfilesRepository)
+		@inject(DI.userProfilesRepository)
 		private userProfilesRepository: UserProfilesRepository,
 
-		@Inject(DI.notesRepository)
+		@inject(DI.notesRepository)
 		private notesRepository: NotesRepository,
 
-		@Inject(DI.driveFilesRepository)
+		@inject(DI.driveFilesRepository)
 		private driveFilesRepository: DriveFilesRepository,
 
 		private userEntityService: UserEntityService,

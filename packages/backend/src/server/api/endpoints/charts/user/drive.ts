@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Injectable } from '@nestjs/common';
+import { injectable } from 'tsyringe';
 import { getJsonSchema } from '@/core/chart/core.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import PerUserDriveChart from '@/core/chart/charts/per-user-drive.js';
@@ -29,7 +29,7 @@ export const paramDef = {
 	required: ['span', 'userId'],
 } as const;
 
-@Injectable()
+@injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		private perUserDriveChart: PerUserDriveChart,

@@ -3,8 +3,9 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import { inject, injectable } from 'tsyringe';
+
 import { URL } from 'node:url';
-import { Inject, Injectable } from '@nestjs/common';
 import tinycolor from 'tinycolor2';
 import * as Redis from 'ioredis';
 import * as htmlParser from 'node-html-parser';
@@ -35,7 +36,7 @@ type NodeInfo = {
 	};
 };
 
-@Injectable()
+@injectable()
 export class FetchInstanceMetadataService {
 	private logger: Logger;
 
@@ -43,7 +44,7 @@ export class FetchInstanceMetadataService {
 		private httpRequestService: HttpRequestService,
 		private loggerService: LoggerService,
 		private federatedInstanceService: FederatedInstanceService,
-		@Inject(DI.redis)
+		@inject(DI.redis)
 		private redisClient: Redis.Redis,
 	) {
 		this.logger = this.loggerService.getLogger('metadata', 'cyan');

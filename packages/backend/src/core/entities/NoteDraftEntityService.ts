@@ -3,7 +3,8 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
+import type { OnModuleInit } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { EntityNotFoundError } from 'typeorm';
 import { DI } from '@/di-symbols.js';
@@ -14,12 +15,11 @@ import type { NoteDraftsRepository, ChannelsRepository } from '@/models/_.js';
 import { bindThis } from '@/decorators.js';
 import { DebounceLoader } from '@/misc/loader.js';
 import { IdService } from '@/core/IdService.js';
-import type { OnModuleInit } from '@nestjs/common';
 import type { UserEntityService } from './UserEntityService.js';
 import type { DriveFileEntityService } from './DriveFileEntityService.js';
 import type { NoteEntityService } from './NoteEntityService.js';
 
-@Injectable()
+@injectable()
 export class NoteDraftEntityService implements OnModuleInit {
 	private userEntityService: UserEntityService;
 	private driveFileEntityService: DriveFileEntityService;
@@ -30,10 +30,10 @@ export class NoteDraftEntityService implements OnModuleInit {
 	constructor(
 		private moduleRef: ModuleRef,
 
-		@Inject(DI.noteDraftsRepository)
+		@inject(DI.noteDraftsRepository)
 		private noteDraftsRepository: NoteDraftsRepository,
 
-		@Inject(DI.channelsRepository)
+		@inject(DI.channelsRepository)
 		private channelsRepository: ChannelsRepository,
 	) {
 	}

@@ -3,7 +3,8 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
+import type { OnApplicationShutdown } from '@nestjs/common';
 import * as Redis from 'ioredis';
 import { In, IsNull } from 'typeorm';
 import { EmojiEntityService } from '@/core/entities/EmojiEntityService.js';
@@ -57,15 +58,15 @@ export const fetchEmojisSortKeys = [
 ] as const;
 export type FetchEmojisSortKeys = typeof fetchEmojisSortKeys[number];
 
-@Injectable()
+@injectable()
 export class CustomEmojiService implements OnApplicationShutdown {
 	private emojisCache: MemoryKVCache<MiEmoji | null>;
 	public localEmojisCache: RedisSingleCache<Map<string, MiEmoji>>;
 
 	constructor(
-		@Inject(DI.redis)
+		@inject(DI.redis)
 		private redisClient: Redis.Redis,
-		@Inject(DI.emojisRepository)
+		@inject(DI.emojisRepository)
 		private emojisRepository: EmojisRepository,
 		private utilityService: UtilityService,
 		private idService: IdService,

@@ -3,9 +3,11 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import { inject, injectable } from 'tsyringe';
+
+import type { OnApplicationShutdown } from '@nestjs/common';
 import { setTimeout } from 'node:timers/promises';
 import * as Redis from 'ioredis';
-import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { In } from 'typeorm';
 import { ReplyError } from 'ioredis';
 import { DI } from '@/di-symbols.js';
@@ -23,18 +25,18 @@ import { UserListService } from '@/core/UserListService.js';
 import { FilterUnionByProperty, groupedNotificationTypes, obsoleteNotificationTypes } from '@/types.js';
 import { trackPromise } from '@/misc/promise-tracker.js';
 
-@Injectable()
+@injectable()
 export class NotificationService implements OnApplicationShutdown {
 	#shutdownController = new AbortController();
 
 	constructor(
-		@Inject(DI.config)
+		@inject(DI.config)
 		private config: Config,
 
-		@Inject(DI.redis)
+		@inject(DI.redis)
 		private redisClient: Redis.Redis,
 
-		@Inject(DI.usersRepository)
+		@inject(DI.usersRepository)
 		private usersRepository: UsersRepository,
 
 		private notificationEntityService: NotificationEntityService,

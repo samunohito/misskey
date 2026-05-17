@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { ChannelsRepository, MiMeta, NotesRepository } from '@/models/_.js';
 import { QueryService } from '@/core/QueryService.js';
@@ -55,16 +55,16 @@ export const paramDef = {
 	required: ['channelId'],
 } as const;
 
-@Injectable()
+@injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
-		@Inject(DI.meta)
+		@inject(DI.meta)
 		private serverSettings: MiMeta,
 
-		@Inject(DI.notesRepository)
+		@inject(DI.notesRepository)
 		private notesRepository: NotesRepository,
 
-		@Inject(DI.channelsRepository)
+		@inject(DI.channelsRepository)
 		private channelsRepository: ChannelsRepository,
 
 		private idService: IdService,

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable, Scope } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import type { MiReversiGame } from '@/models/_.js';
 import { bindThis } from '@/decorators.js';
 import { ReversiService } from '@/core/ReversiService.js';
@@ -14,7 +14,7 @@ import Channel, { type ChannelRequest } from '../channel.js';
 import { reversiUpdateKeys } from 'misskey-js';
 import { REQUEST } from '@nestjs/core';
 
-@Injectable({ scope: Scope.TRANSIENT })
+@injectable()
 export class ReversiGameChannel extends Channel {
 	public readonly chName = 'reversiGame';
 	public static shouldShare = false;
@@ -22,7 +22,7 @@ export class ReversiGameChannel extends Channel {
 	private gameId: MiReversiGame['id'] | null = null;
 
 	constructor(
-		@Inject(REQUEST)
+		@inject(REQUEST)
 		request: ChannelRequest,
 
 		private reversiService: ReversiService,

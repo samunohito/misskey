@@ -3,9 +3,10 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import { inject, injectable } from 'tsyringe';
+
 import * as fs from 'node:fs';
 import { Writable } from 'node:stream';
-import { Inject, Injectable } from '@nestjs/common';
 import { format as dateFormat } from 'date-fns';
 import { DI } from '@/di-symbols.js';
 import type { ClipNotesRepository, ClipsRepository, MiClip, MiClipNote, MiUser, PollsRepository, UsersRepository } from '@/models/_.js';
@@ -23,21 +24,21 @@ import { QueueLoggerService } from '../QueueLoggerService.js';
 import type * as Bull from 'bullmq';
 import type { DbJobDataWithUser } from '../types.js';
 
-@Injectable()
+@injectable()
 export class ExportClipsProcessorService {
 	private logger: Logger;
 
 	constructor(
-		@Inject(DI.usersRepository)
+		@inject(DI.usersRepository)
 		private usersRepository: UsersRepository,
 
-		@Inject(DI.pollsRepository)
+		@inject(DI.pollsRepository)
 		private pollsRepository: PollsRepository,
 
-		@Inject(DI.clipsRepository)
+		@inject(DI.clipsRepository)
 		private clipsRepository: ClipsRepository,
 
-		@Inject(DI.clipNotesRepository)
+		@inject(DI.clipNotesRepository)
 		private clipNotesRepository: ClipNotesRepository,
 
 		private driveService: DriveService,

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import * as Redis from 'ioredis';
 import { DI } from '@/di-symbols.js';
 import { bindThis } from '@/decorators.js';
@@ -39,10 +39,10 @@ export type FanoutTimelineName = (
 	| `roleTimeline:${string}` // any notes are included
 );
 
-@Injectable()
+@injectable()
 export class FanoutTimelineService {
 	constructor(
-		@Inject(DI.redisForTimelines)
+		@inject(DI.redisForTimelines)
 		private redisForTimelines: Redis.Redis,
 
 		private idService: IdService,

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable, Scope } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import { DI } from '@/di-symbols.js';
 import { bindThis } from '@/decorators.js';
 import type { GlobalEvents } from '@/core/GlobalEventService.js';
@@ -13,7 +13,7 @@ import Channel, { type ChannelRequest } from '../channel.js';
 import { REQUEST } from '@nestjs/core';
 import type { ChatRoomsRepository } from '@/models/_.js';
 
-@Injectable({ scope: Scope.TRANSIENT })
+@injectable()
 export class ChatRoomChannel extends Channel {
 	public readonly chName = 'chatRoom';
 	public static shouldShare = false;
@@ -22,10 +22,10 @@ export class ChatRoomChannel extends Channel {
 	private roomId: string;
 
 	constructor(
-		@Inject(REQUEST)
+		@inject(REQUEST)
 		request: ChannelRequest,
 
-		@Inject(DI.chatRoomsRepository)
+		@inject(DI.chatRoomsRepository)
 		private chatRoomsRepository: ChatRoomsRepository,
 
 		private chatService: ChatService,

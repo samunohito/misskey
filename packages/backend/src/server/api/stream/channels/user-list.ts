@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable, Scope } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import type { MiUserListMembership, UserListMembershipsRepository, UserListsRepository } from '@/models/_.js';
 import type { Packed } from '@/misc/json-schema.js';
 import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
@@ -15,7 +15,7 @@ import type { JsonObject } from '@/misc/json-value.js';
 import Channel, { type ChannelRequest } from '../channel.js';
 import { REQUEST } from '@nestjs/core';
 
-@Injectable({ scope: Scope.TRANSIENT })
+@injectable()
 export class UserListChannel extends Channel {
 	public readonly chName = 'userList';
 	public static shouldShare = false;
@@ -27,13 +27,13 @@ export class UserListChannel extends Channel {
 	private withRenotes: boolean;
 
 	constructor(
-		@Inject(DI.userListsRepository)
+		@inject(DI.userListsRepository)
 		private userListsRepository: UserListsRepository,
 
-		@Inject(DI.userListMembershipsRepository)
+		@inject(DI.userListMembershipsRepository)
 		private userListMembershipsRepository: UserListMembershipsRepository,
 
-		@Inject(REQUEST)
+		@inject(REQUEST)
 		request: ChannelRequest,
 
 		private noteEntityService: NoteEntityService,

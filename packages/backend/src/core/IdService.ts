@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import { ulid } from 'ulid';
 import { DI } from '@/di-symbols.js';
 import type { Config } from '@/config.js';
@@ -15,12 +15,12 @@ import { genObjectId, isSafeObjectIdT, parseObjectId, parseObjectIdFull } from '
 import { bindThis } from '@/decorators.js';
 import { parseUlid, parseUlidFull } from '@/misc/id/ulid.js';
 
-@Injectable()
+@injectable()
 export class IdService {
 	private method: string;
 
 	constructor(
-		@Inject(DI.config)
+		@inject(DI.config)
 		private config: Config,
 	) {
 		this.method = config.id.toLowerCase();

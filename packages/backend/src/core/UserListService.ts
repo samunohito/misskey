@@ -3,7 +3,8 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable, OnApplicationShutdown, OnModuleInit } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
+import type { OnApplicationShutdown, OnModuleInit } from '@nestjs/common';
 import * as Redis from 'ioredis';
 import { ModuleRef } from '@nestjs/core';
 import type { UserListMembershipsRepository } from '@/models/_.js';
@@ -21,7 +22,7 @@ import { RedisKVCache } from '@/misc/cache.js';
 import { RoleService } from '@/core/RoleService.js';
 import { SystemAccountService } from '@/core/SystemAccountService.js';
 
-@Injectable()
+@injectable()
 export class UserListService implements OnApplicationShutdown, OnModuleInit {
 	public static TooManyUsersError = class extends Error {};
 
@@ -31,13 +32,13 @@ export class UserListService implements OnApplicationShutdown, OnModuleInit {
 	constructor(
 		private moduleRef: ModuleRef,
 
-		@Inject(DI.redis)
+		@inject(DI.redis)
 		private redisClient: Redis.Redis,
 
-		@Inject(DI.redisForSub)
+		@inject(DI.redisForSub)
 		private redisForSub: Redis.Redis,
 
-		@Inject(DI.userListMembershipsRepository)
+		@inject(DI.userListMembershipsRepository)
 		private userListMembershipsRepository: UserListMembershipsRepository,
 
 		private userEntityService: UserEntityService,

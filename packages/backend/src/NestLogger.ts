@@ -2,8 +2,6 @@
  * SPDX-FileCopyrightText: syuilo and misskey-project
  * SPDX-License-Identifier: AGPL-3.0-only
  */
-
-import { LoggerService } from '@nestjs/common';
 import Logger from '@/logger.js';
 
 const logger = new Logger('core', 'cyan');

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import * as Redis from 'ioredis';
 import * as Reversi from 'misskey-reversi';
 import type { MiChannel } from '@/models/Channel.js';
@@ -337,13 +337,13 @@ export type StreamEventEmitter = UnionToIntersection<EventEmitterDictionary[keyo
 // provide stream channels union
 export type StreamChannels = GlobalEvents[keyof GlobalEvents]['name'];
 
-@Injectable()
+@injectable()
 export class GlobalEventService {
 	constructor(
-		@Inject(DI.config)
+		@inject(DI.config)
 		private config: Config,
 
-		@Inject(DI.redisForPub)
+		@inject(DI.redisForPub)
 		private redisForPub: Redis.Redis,
 	) {
 	}

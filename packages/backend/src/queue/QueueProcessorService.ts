@@ -3,7 +3,8 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
+import type { OnApplicationShutdown } from '@nestjs/common';
 import * as Bull from 'bullmq';
 import type { Config } from '@/config.js';
 import { DI } from '@/di-symbols.js';
@@ -73,7 +74,7 @@ function getJobInfo(job: Bull.Job | undefined, increment = false): string {
 	return `id=${job.id} attempts=${currentAttempts}/${maxAttempts} age=${formated}`;
 }
 
-@Injectable()
+@injectable()
 export class QueueProcessorService implements OnApplicationShutdown {
 	private logger: Logger;
 	private systemQueueWorker: Bull.Worker;
@@ -88,7 +89,7 @@ export class QueueProcessorService implements OnApplicationShutdown {
 	private postScheduledNoteQueueWorker: Bull.Worker;
 
 	constructor(
-		@Inject(DI.config)
+		@inject(DI.config)
 		private config: Config,
 
 		private queueLoggerService: QueueLoggerService,

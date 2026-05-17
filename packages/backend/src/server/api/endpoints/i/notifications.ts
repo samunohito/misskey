@@ -3,9 +3,10 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import { inject, injectable } from 'tsyringe';
+
 import { In } from 'typeorm';
 import * as Redis from 'ioredis';
-import { Inject, Injectable } from '@nestjs/common';
 import type { NotesRepository } from '@/models/_.js';
 import { FilterUnionByProperty, notificationTypes, obsoleteNotificationTypes } from '@/types.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
@@ -58,7 +59,7 @@ export const paramDef = {
 	required: [],
 } as const;
 
-@Injectable()
+@injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		private idService: IdService,

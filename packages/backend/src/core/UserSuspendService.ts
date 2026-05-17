@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import { Not, IsNull } from 'typeorm';
 import type { FollowingsRepository, FollowRequestsRepository, UsersRepository } from '@/models/_.js';
 import type { MiUser } from '@/models/User.js';
@@ -16,16 +16,16 @@ import { bindThis } from '@/decorators.js';
 import { RelationshipJobData } from '@/queue/types.js';
 import { ModerationLogService } from '@/core/ModerationLogService.js';
 
-@Injectable()
+@injectable()
 export class UserSuspendService {
 	constructor(
-		@Inject(DI.usersRepository)
+		@inject(DI.usersRepository)
 		private usersRepository: UsersRepository,
 
-		@Inject(DI.followingsRepository)
+		@inject(DI.followingsRepository)
 		private followingsRepository: FollowingsRepository,
 
-		@Inject(DI.followRequestsRepository)
+		@inject(DI.followRequestsRepository)
 		private followRequestsRepository: FollowRequestsRepository,
 
 		private userEntityService: UserEntityService,

@@ -3,13 +3,13 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
+import type { OnModuleInit } from '@nestjs/common';
 import { DI } from '@/di-symbols.js';
 import type { NoteReactionsRepository } from '@/models/_.js';
 import type { Packed } from '@/misc/json-schema.js';
 import { bindThis } from '@/decorators.js';
 import { IdService } from '@/core/IdService.js';
-import type { OnModuleInit } from '@nestjs/common';
 import type { } from '@/models/Blocking.js';
 import type { MiUser } from '@/models/User.js';
 import type { MiNoteReaction } from '@/models/NoteReaction.js';
@@ -18,7 +18,7 @@ import type { UserEntityService } from './UserEntityService.js';
 import type { NoteEntityService } from './NoteEntityService.js';
 import { ModuleRef } from '@nestjs/core';
 
-@Injectable()
+@injectable()
 export class NoteReactionEntityService implements OnModuleInit {
 	private userEntityService: UserEntityService;
 	private noteEntityService: NoteEntityService;
@@ -28,7 +28,7 @@ export class NoteReactionEntityService implements OnModuleInit {
 	constructor(
 		private moduleRef: ModuleRef,
 
-		@Inject(DI.noteReactionsRepository)
+		@inject(DI.noteReactionsRepository)
 		private noteReactionsRepository: NoteReactionsRepository,
 
 		//private userEntityService: UserEntityService,

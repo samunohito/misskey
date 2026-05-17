@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Injectable } from '@nestjs/common';
+import { injectable } from 'tsyringe';
 import promiseLimit from 'promise-limit';
 import type { MiRemoteUser, MiUser } from '@/models/User.js';
 import { concat, unique } from '@/misc/prelude/array.js';
@@ -23,7 +23,7 @@ type AudienceInfo = {
 
 type GroupedAudience = Record<'public' | 'followers' | 'other', string[]>;
 
-@Injectable()
+@injectable()
 export class ApAudienceService {
 	constructor(
 		private apPersonService: ApPersonService,

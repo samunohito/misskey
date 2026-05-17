@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import { DI } from '@/di-symbols.js';
 import type { NoteFavoritesRepository } from '@/models/_.js';
 import type { } from '@/models/Blocking.js';
@@ -13,10 +13,10 @@ import { bindThis } from '@/decorators.js';
 import { IdService } from '@/core/IdService.js';
 import { NoteEntityService } from './NoteEntityService.js';
 
-@Injectable()
+@injectable()
 export class NoteFavoriteEntityService {
 	constructor(
-		@Inject(DI.noteFavoritesRepository)
+		@inject(DI.noteFavoritesRepository)
 		private noteFavoritesRepository: NoteFavoritesRepository,
 
 		private noteEntityService: NoteEntityService,

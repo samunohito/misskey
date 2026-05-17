@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Injectable } from '@nestjs/common';
+import { injectable } from 'tsyringe';
 import sharp from 'sharp';
 
 export type IImage = {
@@ -46,7 +46,7 @@ export const avifDefault: sharp.AvifOptions = {
 import { bindThis } from '@/decorators.js';
 import { Readable } from 'node:stream';
 
-@Injectable()
+@injectable()
 export class ImageProcessingService {
 	constructor(
 	) {

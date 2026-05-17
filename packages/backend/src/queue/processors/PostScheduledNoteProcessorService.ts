@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import { DI } from '@/di-symbols.js';
 import type { NoteDraftsRepository } from '@/models/_.js';
 import type Logger from '@/logger.js';
@@ -14,12 +14,12 @@ import { QueueLoggerService } from '../QueueLoggerService.js';
 import type * as Bull from 'bullmq';
 import type { PostScheduledNoteJobData } from '../types.js';
 
-@Injectable()
+@injectable()
 export class PostScheduledNoteProcessorService {
 	private logger: Logger;
 
 	constructor(
-		@Inject(DI.noteDraftsRepository)
+		@inject(DI.noteDraftsRepository)
 		private noteDraftsRepository: NoteDraftsRepository,
 
 		private noteCreateService: NoteCreateService,

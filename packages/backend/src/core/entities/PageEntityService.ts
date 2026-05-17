@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import { DI } from '@/di-symbols.js';
 import type { DriveFilesRepository, PagesRepository, PageLikesRepository } from '@/models/_.js';
 import { awaitAll } from '@/misc/prelude/await-all.js';
@@ -17,16 +17,16 @@ import { IdService } from '@/core/IdService.js';
 import { UserEntityService } from './UserEntityService.js';
 import { DriveFileEntityService } from './DriveFileEntityService.js';
 
-@Injectable()
+@injectable()
 export class PageEntityService {
 	constructor(
-		@Inject(DI.pagesRepository)
+		@inject(DI.pagesRepository)
 		private pagesRepository: PagesRepository,
 
-		@Inject(DI.pageLikesRepository)
+		@inject(DI.pageLikesRepository)
 		private pageLikesRepository: PageLikesRepository,
 
-		@Inject(DI.driveFilesRepository)
+		@inject(DI.driveFilesRepository)
 		private driveFilesRepository: DriveFilesRepository,
 
 		private userEntityService: UserEntityService,

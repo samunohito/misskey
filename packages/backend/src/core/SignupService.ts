@@ -3,8 +3,9 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import { inject, injectable } from 'tsyringe';
+
 import { generateKeyPair } from 'node:crypto';
-import { Inject, Injectable } from '@nestjs/common';
 import bcrypt from 'bcryptjs';
 import { DataSource, IsNull } from 'typeorm';
 import { DI } from '@/di-symbols.js';
@@ -23,19 +24,19 @@ import { UserService } from '@/core/UserService.js';
 import { SystemAccountService } from '@/core/SystemAccountService.js';
 import { MetaService } from '@/core/MetaService.js';
 
-@Injectable()
+@injectable()
 export class SignupService {
 	constructor(
-		@Inject(DI.db)
+		@inject(DI.db)
 		private db: DataSource,
 
-		@Inject(DI.meta)
+		@inject(DI.meta)
 		private meta: MiMeta,
 
-		@Inject(DI.usersRepository)
+		@inject(DI.usersRepository)
 		private usersRepository: UsersRepository,
 
-		@Inject(DI.usedUsernamesRepository)
+		@inject(DI.usedUsernamesRepository)
 		private usedUsernamesRepository: UsedUsernamesRepository,
 
 		private utilityService: UtilityService,

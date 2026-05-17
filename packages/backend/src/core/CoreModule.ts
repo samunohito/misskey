@@ -2,8 +2,6 @@
  * SPDX-FileCopyrightText: syuilo and misskey-project
  * SPDX-License-Identifier: AGPL-3.0-only
  */
-
-import { Module } from '@nestjs/common';
 import { FanoutTimelineEndpointService } from '@/core/FanoutTimelineEndpointService.js';
 import { AbuseReportService } from '@/core/AbuseReportService.js';
 import { SystemWebhookEntityService } from '@/core/entities/SystemWebhookEntityService.js';
@@ -154,8 +152,6 @@ import { ApQuestionService } from './activitypub/models/ApQuestionService.js';
 import { QueueModule } from './QueueModule.js';
 import { QueueService } from './QueueService.js';
 import { LoggerService } from './LoggerService.js';
-import type { Provider } from '@nestjs/common';
-
 //#region 文字列ベースでのinjection用(循環参照対応のため)
 const $LoggerService: Provider = { provide: 'LoggerService', useExisting: LoggerService };
 const $AbuseReportService: Provider = { provide: 'AbuseReportService', useExisting: AbuseReportService };

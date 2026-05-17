@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Injectable, Inject } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import { DataSource } from 'typeorm';
 import * as Redis from 'ioredis';
 import { DI } from '@/di-symbols.js';
@@ -17,13 +17,13 @@ import type { KVs } from '../core.js';
 /**
  * Chart about ActivityPub requests
  */
-@Injectable()
+@injectable()
 export default class ApRequestChart extends Chart<typeof schema> { // eslint-disable-line import/no-default-export
 	constructor(
-		@Inject(DI.db)
+		@inject(DI.db)
 		private db: DataSource,
 
-		@Inject(DI.redis)
+		@inject(DI.redis)
 		private redisClient: Redis.Redis,
 
 		private chartLoggerService: ChartLoggerService,

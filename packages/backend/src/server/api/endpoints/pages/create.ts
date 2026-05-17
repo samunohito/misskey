@@ -3,8 +3,9 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import { inject, injectable } from 'tsyringe';
+
 import ms from 'ms';
-import { Inject, Injectable } from '@nestjs/common';
 import type { DriveFilesRepository, MiDriveFile, PagesRepository } from '@/models/_.js';
 import { pageNameSchema } from '@/models/Page.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
@@ -69,13 +70,13 @@ export const paramDef = {
 	required: ['title', 'name', 'content', 'variables', 'script'],
 } as const;
 
-@Injectable()
+@injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
-		@Inject(DI.pagesRepository)
+		@inject(DI.pagesRepository)
 		private pagesRepository: PagesRepository,
 
-		@Inject(DI.driveFilesRepository)
+		@inject(DI.driveFilesRepository)
 		private driveFilesRepository: DriveFilesRepository,
 
 		private pageService: PageService,

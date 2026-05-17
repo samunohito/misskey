@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { HashtagsRepository } from '@/models/_.js';
 import { HashtagEntityService } from '@/core/entities/HashtagEntityService.js';
@@ -37,10 +37,10 @@ export const paramDef = {
 	required: ['sort'],
 } as const;
 
-@Injectable()
+@injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
-		@Inject(DI.hashtagsRepository)
+		@inject(DI.hashtagsRepository)
 		private hashtagsRepository: HashtagsRepository,
 
 		private hashtagEntityService: HashtagEntityService,

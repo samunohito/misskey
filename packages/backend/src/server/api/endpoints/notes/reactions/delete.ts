@@ -3,8 +3,9 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import { injectable } from 'tsyringe';
+
 import ms from 'ms';
-import { Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { GetterService } from '@/server/api/GetterService.js';
 import { ReactionService } from '@/core/ReactionService.js';
@@ -46,7 +47,7 @@ export const paramDef = {
 	required: ['noteId'],
 } as const;
 
-@Injectable()
+@injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		private getterService: GetterService,

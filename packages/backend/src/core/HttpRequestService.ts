@@ -3,6 +3,8 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import { inject, injectable } from 'tsyringe';
+
 import * as http from 'node:http';
 import * as https from 'node:https';
 import * as net from 'node:net';
@@ -11,7 +13,6 @@ import ipaddr from 'ipaddr.js';
 import CacheableLookup from 'cacheable-lookup';
 import fetch from 'node-fetch';
 import { HttpProxyAgent, HttpsProxyAgent } from 'hpagent';
-import { Inject, Injectable } from '@nestjs/common';
 import { DI } from '@/di-symbols.js';
 import type { Config } from '@/config.js';
 import { StatusError } from '@/misc/status-error.js';
@@ -117,7 +118,7 @@ class HttpsRequestServiceAgent extends https.Agent {
 	}
 }
 
-@Injectable()
+@injectable()
 export class HttpRequestService {
 	/**
 	 * Get http non-proxy agent (without local address filtering)
@@ -150,7 +151,7 @@ export class HttpRequestService {
 	public readonly httpsAgent: https.Agent;
 
 	constructor(
-		@Inject(DI.config)
+		@inject(DI.config)
 		private config: Config,
 	) {
 		const cache = new CacheableLookup({

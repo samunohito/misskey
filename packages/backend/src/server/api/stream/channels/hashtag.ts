@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable, Scope } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import { normalizeForSearch } from '@/misc/normalize-for-search.js';
 import type { Packed } from '@/misc/json-schema.js';
 import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
@@ -13,7 +13,7 @@ import { isRenotePacked, isQuotePacked } from '@/misc/is-renote.js';
 import type { JsonObject } from '@/misc/json-value.js';
 import Channel, { type ChannelRequest } from '../channel.js';
 import { REQUEST } from '@nestjs/core';
-@Injectable({ scope: Scope.TRANSIENT })
+@injectable()
 export class HashtagChannel extends Channel {
 	public readonly chName = 'hashtag';
 	public static shouldShare = false;
@@ -21,7 +21,7 @@ export class HashtagChannel extends Channel {
 	private q: string[][];
 
 	constructor(
-		@Inject(REQUEST)
+		@inject(REQUEST)
 		request: ChannelRequest,
 
 		private noteEntityService: NoteEntityService,

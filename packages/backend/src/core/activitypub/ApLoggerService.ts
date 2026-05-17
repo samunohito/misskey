@@ -3,11 +3,11 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Injectable } from '@nestjs/common';
+import { injectable } from 'tsyringe';
 import type Logger from '@/logger.js';
 import { RemoteLoggerService } from '@/core/RemoteLoggerService.js';
 
-@Injectable()
+@injectable()
 export class ApLoggerService {
 	public logger: Logger;
 

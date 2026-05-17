@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import { DI } from '@/di-symbols.js';
 import type { DriveFilesRepository, MiMeta } from '@/models/_.js';
 import type { MiRemoteUser } from '@/models/User.js';
@@ -18,15 +18,15 @@ import { ApResolverService } from '../ApResolverService.js';
 import { ApLoggerService } from '../ApLoggerService.js';
 import { isDocument, type IObject } from '../type.js';
 
-@Injectable()
+@injectable()
 export class ApImageService {
 	private logger: Logger;
 
 	constructor(
-		@Inject(DI.meta)
+		@inject(DI.meta)
 		private meta: MiMeta,
 
-		@Inject(DI.driveFilesRepository)
+		@inject(DI.driveFilesRepository)
 		private driveFilesRepository: DriveFilesRepository,
 
 		private apResolverService: ApResolverService,

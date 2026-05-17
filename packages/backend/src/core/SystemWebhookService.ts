@@ -3,7 +3,8 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
+import type { OnApplicationShutdown } from '@nestjs/common';
 import * as Redis from 'ioredis';
 import type { MiUser, SystemWebhooksRepository } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
@@ -18,8 +19,6 @@ import Logger from '@/logger.js';
 import { Packed } from '@/misc/json-schema.js';
 import { AbuseReportResolveType } from '@/models/AbuseUserReport.js';
 import { ModeratorInactivityRemainingTime } from '@/queue/processors/CheckModeratorsActivityProcessorService.js';
-import type { OnApplicationShutdown } from '@nestjs/common';
-
 export type AbuseReportPayload = {
 	id: string;
 	targetUserId: string;
@@ -48,15 +47,15 @@ export type SystemWebhookPayload<T extends SystemWebhookEventType> =
 	T extends 'inactiveModeratorsInvitationOnlyChanged' ? Record<string, never> :
 		never;
 
-@Injectable()
+@injectable()
 export class SystemWebhookService implements OnApplicationShutdown {
 	private activeSystemWebhooksFetched = false;
 	private activeSystemWebhooks: MiSystemWebhook[] = [];
 
 	constructor(
-		@Inject(DI.redisForSub)
+		@inject(DI.redisForSub)
 		private redisForSub: Redis.Redis,
-		@Inject(DI.systemWebhooksRepository)
+		@inject(DI.systemWebhooksRepository)
 		private systemWebhooksRepository: SystemWebhooksRepository,
 		private idService: IdService,
 		private queueService: QueueService,

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import { DI } from '@/di-symbols.js';
 import type { AntennasRepository } from '@/models/_.js';
 import type { Packed } from '@/misc/json-schema.js';
@@ -11,10 +11,10 @@ import type { MiAntenna } from '@/models/Antenna.js';
 import { bindThis } from '@/decorators.js';
 import { IdService } from '@/core/IdService.js';
 
-@Injectable()
+@injectable()
 export class AntennaEntityService {
 	constructor(
-		@Inject(DI.antennasRepository)
+		@inject(DI.antennasRepository)
 		private antennasRepository: AntennasRepository,
 
 		private idService: IdService,

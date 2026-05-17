@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import type { Config } from '@/config.js';
 import { DI } from '@/di-symbols.js';
 import { bindThis } from '@/decorators.js';
@@ -11,10 +11,10 @@ import { genOpenapiSpec } from './gen-spec.js';
 import { ApiDocPage } from './api-doc.js';
 import type { FastifyInstance, FastifyPluginOptions } from 'fastify';
 
-@Injectable()
+@injectable()
 export class OpenApiServerService {
 	constructor(
-		@Inject(DI.config)
+		@inject(DI.config)
 		private config: Config,
 	) {
 	}

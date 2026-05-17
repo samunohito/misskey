@@ -3,7 +3,8 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Module, OnApplicationShutdown } from '@nestjs/common';
+import { inject } from 'tsyringe';
+import type { OnApplicationShutdown, Provider } from '@nestjs/common';
 import * as Bull from 'bullmq';
 import { DI } from '@/di-symbols.js';
 import type { Config } from '@/config.js';
@@ -18,8 +19,6 @@ import {
 	SystemWebhookDeliverJobData,
 	PostScheduledNoteJobData,
 } from '../queue/types.js';
-import type { Provider } from '@nestjs/common';
-
 export type SystemQueue = Bull.Queue<Record<string, unknown>>;
 export type EndedPollNotificationQueue = Bull.Queue<EndedPollNotificationJobData>;
 export type PostScheduledNoteQueue = Bull.Queue<PostScheduledNoteJobData>;
@@ -121,16 +120,16 @@ const $systemWebhookDeliver: Provider = {
 })
 export class QueueModule implements OnApplicationShutdown {
 	constructor(
-		@Inject('queue:system') public systemQueue: SystemQueue,
-		@Inject('queue:endedPollNotification') public endedPollNotificationQueue: EndedPollNotificationQueue,
-		@Inject('queue:postScheduledNote') public postScheduledNoteQueue: PostScheduledNoteQueue,
-		@Inject('queue:deliver') public deliverQueue: DeliverQueue,
-		@Inject('queue:inbox') public inboxQueue: InboxQueue,
-		@Inject('queue:db') public dbQueue: DbQueue,
-		@Inject('queue:relationship') public relationshipQueue: RelationshipQueue,
-		@Inject('queue:objectStorage') public objectStorageQueue: ObjectStorageQueue,
-		@Inject('queue:userWebhookDeliver') public userWebhookDeliverQueue: UserWebhookDeliverQueue,
-		@Inject('queue:systemWebhookDeliver') public systemWebhookDeliverQueue: SystemWebhookDeliverQueue,
+		@inject('queue:system') public systemQueue: SystemQueue,
+		@inject('queue:endedPollNotification') public endedPollNotificationQueue: EndedPollNotificationQueue,
+		@inject('queue:postScheduledNote') public postScheduledNoteQueue: PostScheduledNoteQueue,
+		@inject('queue:deliver') public deliverQueue: DeliverQueue,
+		@inject('queue:inbox') public inboxQueue: InboxQueue,
+		@inject('queue:db') public dbQueue: DbQueue,
+		@inject('queue:relationship') public relationshipQueue: RelationshipQueue,
+		@inject('queue:objectStorage') public objectStorageQueue: ObjectStorageQueue,
+		@inject('queue:userWebhookDeliver') public userWebhookDeliverQueue: UserWebhookDeliverQueue,
+		@inject('queue:systemWebhookDeliver') public systemWebhookDeliverQueue: SystemWebhookDeliverQueue,
 	) {}
 
 	public async dispose(): Promise<void> {

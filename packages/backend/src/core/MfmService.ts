@@ -3,8 +3,9 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import { inject, injectable } from 'tsyringe';
+
 import { URL } from 'node:url';
-import { Inject, Injectable } from '@nestjs/common';
 import * as htmlParser from 'node-html-parser';
 import { DI } from '@/di-symbols.js';
 import type { Config } from '@/config.js';
@@ -18,10 +19,10 @@ import type * as mfm from 'mfm-js';
 const urlRegex = /^https?:\/\/[\w\/:%#@$&?!()\[\]~.,=+\-]+/;
 const urlRegexFull = /^https?:\/\/[\w\/:%#@$&?!()\[\]~.,=+\-]+$/;
 
-@Injectable()
+@injectable()
 export class MfmService {
 	constructor(
-		@Inject(DI.config)
+		@inject(DI.config)
 		private config: Config,
 	) {
 	}

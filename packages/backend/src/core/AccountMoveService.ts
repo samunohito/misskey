@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import { IsNull, In, MoreThan, Not } from 'typeorm';
 
 import { bindThis } from '@/decorators.js';
@@ -27,28 +27,28 @@ import { SystemAccountService } from '@/core/SystemAccountService.js';
 import { RoleService } from '@/core/RoleService.js';
 import { AntennaService } from '@/core/AntennaService.js';
 
-@Injectable()
+@injectable()
 export class AccountMoveService {
 	constructor(
-		@Inject(DI.meta)
+		@inject(DI.meta)
 		private meta: MiMeta,
 
-		@Inject(DI.usersRepository)
+		@inject(DI.usersRepository)
 		private usersRepository: UsersRepository,
 
-		@Inject(DI.followingsRepository)
+		@inject(DI.followingsRepository)
 		private followingsRepository: FollowingsRepository,
 
-		@Inject(DI.blockingsRepository)
+		@inject(DI.blockingsRepository)
 		private blockingsRepository: BlockingsRepository,
 
-		@Inject(DI.mutingsRepository)
+		@inject(DI.mutingsRepository)
 		private mutingsRepository: MutingsRepository,
 
-		@Inject(DI.userListMembershipsRepository)
+		@inject(DI.userListMembershipsRepository)
 		private userListMembershipsRepository: UserListMembershipsRepository,
 
-		@Inject(DI.instancesRepository)
+		@inject(DI.instancesRepository)
 		private instancesRepository: InstancesRepository,
 
 		private userEntityService: UserEntityService,

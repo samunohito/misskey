@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import { In } from 'typeorm';
 import { DI } from '@/di-symbols.js';
 import type { MiNoteDraft, NoteDraftsRepository, MiNote, MiDriveFile, MiChannel, UsersRepository, DriveFilesRepository, NotesRepository, BlockingsRepository, ChannelsRepository } from '@/models/_.js';
@@ -18,25 +18,25 @@ import { QueueService } from '@/core/QueueService.js';
 
 export type NoteDraftOptions = Omit<MiNoteDraft, 'id' | 'userId' | 'user' | 'reply' | 'renote' | 'channel'>;
 
-@Injectable()
+@injectable()
 export class NoteDraftService {
 	constructor(
-		@Inject(DI.blockingsRepository)
+		@inject(DI.blockingsRepository)
 		private blockingsRepository: BlockingsRepository,
 
-		@Inject(DI.noteDraftsRepository)
+		@inject(DI.noteDraftsRepository)
 		private noteDraftsRepository: NoteDraftsRepository,
 
-		@Inject(DI.notesRepository)
+		@inject(DI.notesRepository)
 		private notesRepository: NotesRepository,
 
-		@Inject(DI.usersRepository)
+		@inject(DI.usersRepository)
 		private usersRepository: UsersRepository,
 
-		@Inject(DI.driveFilesRepository)
+		@inject(DI.driveFilesRepository)
 		private driveFilesRepository: DriveFilesRepository,
 
-		@Inject(DI.channelsRepository)
+		@inject(DI.channelsRepository)
 		private channelsRepository: ChannelsRepository,
 
 		private roleService: RoleService,

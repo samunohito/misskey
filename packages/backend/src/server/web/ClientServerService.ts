@@ -3,9 +3,10 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import { inject, injectable } from 'tsyringe';
+
 import { randomUUID } from 'node:crypto';
 import { resolve } from 'node:path';
-import { Inject, Injectable } from '@nestjs/common';
 import ms from 'ms';
 import sharp from 'sharp';
 import { In, IsNull } from 'typeorm';
@@ -65,7 +66,7 @@ import { ErrorPage } from './views/error.js';
 
 import type { FastifyError, FastifyInstance, FastifyPluginOptions, FastifyReply } from 'fastify';
 
-@Injectable()
+@injectable()
 export class ClientServerService {
 	private readonly staticAssets: string;
 	private readonly clientAssets: string;
@@ -78,40 +79,40 @@ export class ClientServerService {
 	private readonly tarball: string;
 
 	constructor(
-		@Inject(DI.config)
+		@inject(DI.config)
 		private config: Config,
 
-		@Inject(DI.meta)
+		@inject(DI.meta)
 		private meta: MiMeta,
 
-		@Inject(DI.usersRepository)
+		@inject(DI.usersRepository)
 		private usersRepository: UsersRepository,
 
-		@Inject(DI.userProfilesRepository)
+		@inject(DI.userProfilesRepository)
 		private userProfilesRepository: UserProfilesRepository,
 
-		@Inject(DI.notesRepository)
+		@inject(DI.notesRepository)
 		private notesRepository: NotesRepository,
 
-		@Inject(DI.galleryPostsRepository)
+		@inject(DI.galleryPostsRepository)
 		private galleryPostsRepository: GalleryPostsRepository,
 
-		@Inject(DI.channelsRepository)
+		@inject(DI.channelsRepository)
 		private channelsRepository: ChannelsRepository,
 
-		@Inject(DI.clipsRepository)
+		@inject(DI.clipsRepository)
 		private clipsRepository: ClipsRepository,
 
-		@Inject(DI.pagesRepository)
+		@inject(DI.pagesRepository)
 		private pagesRepository: PagesRepository,
 
-		@Inject(DI.flashsRepository)
+		@inject(DI.flashsRepository)
 		private flashsRepository: FlashsRepository,
 
-		@Inject(DI.reversiGamesRepository)
+		@inject(DI.reversiGamesRepository)
 		private reversiGamesRepository: ReversiGamesRepository,
 
-		@Inject(DI.announcementsRepository)
+		@inject(DI.announcementsRepository)
 		private announcementsRepository: AnnouncementsRepository,
 
 		private flashEntityService: FlashEntityService,

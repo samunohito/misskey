@@ -3,7 +3,8 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable, type OnApplicationShutdown } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
+import type { OnApplicationShutdown } from '@nestjs/common';
 import { Brackets, In, IsNull, Not } from 'typeorm';
 import * as Redis from 'ioredis';
 import sanitizeHtml from 'sanitize-html';
@@ -25,16 +26,16 @@ import { SystemWebhookService } from '@/core/SystemWebhookService.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
 import { IdService } from './IdService.js';
 
-@Injectable()
+@injectable()
 export class AbuseReportNotificationService implements OnApplicationShutdown {
 	constructor(
-		@Inject(DI.meta)
+		@inject(DI.meta)
 		private meta: MiMeta,
 
-		@Inject(DI.abuseReportNotificationRecipientRepository)
+		@inject(DI.abuseReportNotificationRecipientRepository)
 		private abuseReportNotificationRecipientRepository: AbuseReportNotificationRecipientRepository,
 
-		@Inject(DI.redisForSub)
+		@inject(DI.redisForSub)
 		private redisForSub: Redis.Redis,
 
 		private idService: IdService,

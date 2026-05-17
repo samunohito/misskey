@@ -3,7 +3,8 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Global, Inject, Module } from '@nestjs/common';
+import { inject } from 'tsyringe';
+import type { OnApplicationShutdown, Provider } from '@nestjs/common';
 import * as Redis from 'ioredis';
 import { DataSource } from 'typeorm';
 import { Meilisearch } from 'meilisearch';
@@ -14,8 +15,6 @@ import { createPostgresDataSource } from './postgres.js';
 import { RepositoryModule } from './models/RepositoryModule.js';
 import { allSettled } from './misc/promise-tracker.js';
 import { GlobalEvents } from './core/GlobalEventService.js';
-import type { Provider, OnApplicationShutdown } from '@nestjs/common';
-
 const $config: Provider = {
 	provide: DI.config,
 	useValue: loadConfig(),
@@ -162,12 +161,12 @@ const $meta: Provider = {
 })
 export class GlobalModule implements OnApplicationShutdown {
 	constructor(
-		@Inject(DI.db) private db: DataSource,
-		@Inject(DI.redis) private redisClient: Redis.Redis,
-		@Inject(DI.redisForPub) private redisForPub: Redis.Redis,
-		@Inject(DI.redisForSub) private redisForSub: Redis.Redis,
-		@Inject(DI.redisForTimelines) private redisForTimelines: Redis.Redis,
-		@Inject(DI.redisForReactions) private redisForReactions: Redis.Redis,
+		@inject(DI.db) private db: DataSource,
+		@inject(DI.redis) private redisClient: Redis.Redis,
+		@inject(DI.redisForPub) private redisForPub: Redis.Redis,
+		@inject(DI.redisForSub) private redisForSub: Redis.Redis,
+		@inject(DI.redisForTimelines) private redisForTimelines: Redis.Redis,
+		@inject(DI.redisForReactions) private redisForReactions: Redis.Redis,
 	) { }
 
 	public async dispose(): Promise<void> {

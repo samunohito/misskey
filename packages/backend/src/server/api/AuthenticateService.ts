@@ -3,7 +3,8 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
+import type { OnApplicationShutdown } from '@nestjs/common';
 import { DI } from '@/di-symbols.js';
 import type { AccessTokensRepository, AppsRepository, UsersRepository } from '@/models/_.js';
 import type { MiLocalUser } from '@/models/User.js';
@@ -21,18 +22,18 @@ export class AuthenticationError extends Error {
 	}
 }
 
-@Injectable()
+@injectable()
 export class AuthenticateService implements OnApplicationShutdown {
 	private appCache: MemoryKVCache<MiApp>;
 
 	constructor(
-		@Inject(DI.usersRepository)
+		@inject(DI.usersRepository)
 		private usersRepository: UsersRepository,
 
-		@Inject(DI.accessTokensRepository)
+		@inject(DI.accessTokensRepository)
 		private accessTokensRepository: AccessTokensRepository,
 
-		@Inject(DI.appsRepository)
+		@inject(DI.appsRepository)
 		private appsRepository: AppsRepository,
 
 		private cacheService: CacheService,

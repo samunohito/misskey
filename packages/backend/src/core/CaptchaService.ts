@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Injectable } from '@nestjs/common';
+import { injectable } from 'tsyringe';
 import { HttpRequestService } from '@/core/HttpRequestService.js';
 import { bindThis } from '@/decorators.js';
 import { MetaService } from '@/core/MetaService.js';
@@ -71,7 +71,7 @@ type CaptchaResponse = {
 	'error-codes'?: string[];
 };
 
-@Injectable()
+@injectable()
 export class CaptchaService {
 	private readonly logger: Logger;
 

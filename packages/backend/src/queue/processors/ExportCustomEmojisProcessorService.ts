@@ -3,8 +3,9 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import { inject, injectable } from 'tsyringe';
+
 import * as fs from 'node:fs';
-import { Inject, Injectable } from '@nestjs/common';
 import { IsNull } from 'typeorm';
 import { format as dateFormat } from 'date-fns';
 import mime from 'mime-types';
@@ -21,18 +22,18 @@ import { bindThis } from '@/decorators.js';
 import { QueueLoggerService } from '../QueueLoggerService.js';
 import type * as Bull from 'bullmq';
 
-@Injectable()
+@injectable()
 export class ExportCustomEmojisProcessorService {
 	private logger: Logger;
 
 	constructor(
-		@Inject(DI.config)
+		@inject(DI.config)
 		private config: Config,
 
-		@Inject(DI.usersRepository)
+		@inject(DI.usersRepository)
 		private usersRepository: UsersRepository,
 
-		@Inject(DI.emojisRepository)
+		@inject(DI.emojisRepository)
 		private emojisRepository: EmojisRepository,
 
 		private driveService: DriveService,

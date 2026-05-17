@@ -3,10 +3,12 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import { inject, injectable } from 'tsyringe';
+
+import type { OnApplicationShutdown } from '@nestjs/common';
 import cluster from 'node:cluster';
 import * as fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
 import Fastify, { type FastifyInstance } from 'fastify';
 import fastifyStatic from '@fastify/static';
 import fastifyRawBody from 'fastify-raw-body';
@@ -34,25 +36,25 @@ import { OAuth2ProviderService } from './oauth/OAuth2ProviderService.js';
 
 const _dirname = fileURLToPath(new URL('.', import.meta.url));
 
-@Injectable()
+@injectable()
 export class ServerService implements OnApplicationShutdown {
 	private logger: Logger;
 	#fastify: FastifyInstance;
 
 	constructor(
-		@Inject(DI.config)
+		@inject(DI.config)
 		private config: Config,
 
-		@Inject(DI.meta)
+		@inject(DI.meta)
 		private meta: MiMeta,
 
-		@Inject(DI.usersRepository)
+		@inject(DI.usersRepository)
 		private usersRepository: UsersRepository,
 
-		@Inject(DI.userProfilesRepository)
+		@inject(DI.userProfilesRepository)
 		private userProfilesRepository: UserProfilesRepository,
 
-		@Inject(DI.emojisRepository)
+		@inject(DI.emojisRepository)
 		private emojisRepository: EmojisRepository,
 
 		private userEntityService: UserEntityService,

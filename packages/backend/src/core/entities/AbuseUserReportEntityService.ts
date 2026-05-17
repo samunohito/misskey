@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import { DI } from '@/di-symbols.js';
 import type { AbuseUserReportsRepository } from '@/models/_.js';
 import { awaitAll } from '@/misc/prelude/await-all.js';
@@ -13,10 +13,10 @@ import { IdService } from '@/core/IdService.js';
 import type { Packed } from '@/misc/json-schema.js';
 import { UserEntityService } from './UserEntityService.js';
 
-@Injectable()
+@injectable()
 export class AbuseUserReportEntityService {
 	constructor(
-		@Inject(DI.abuseUserReportsRepository)
+		@inject(DI.abuseUserReportsRepository)
 		private abuseUserReportsRepository: AbuseUserReportsRepository,
 
 		private userEntityService: UserEntityService,

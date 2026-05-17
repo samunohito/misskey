@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import * as Misskey from 'misskey-js';
 import { DI } from '@/di-symbols.js';
 import type { SigninsRepository, UserProfilesRepository } from '@/models/_.js';
@@ -16,13 +16,13 @@ import { EmailService } from '@/core/EmailService.js';
 import { NotificationService } from '@/core/NotificationService.js';
 import type { FastifyRequest, FastifyReply } from 'fastify';
 
-@Injectable()
+@injectable()
 export class SigninService {
 	constructor(
-		@Inject(DI.signinsRepository)
+		@inject(DI.signinsRepository)
 		private signinsRepository: SigninsRepository,
 
-		@Inject(DI.userProfilesRepository)
+		@inject(DI.userProfilesRepository)
 		private userProfilesRepository: UserProfilesRepository,
 
 		private signinEntityService: SigninEntityService,

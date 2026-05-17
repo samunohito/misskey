@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import { DI } from '@/di-symbols.js';
 import type { ReversiGamesRepository } from '@/models/_.js';
 import { awaitAll } from '@/misc/prelude/await-all.js';
@@ -18,10 +18,10 @@ function assertBw(bw: string): bw is Packed<'ReversiGameDetailed'>['bw'] {
 	return ['random', '1', '2'].includes(bw);
 }
 
-@Injectable()
+@injectable()
 export class ReversiGameEntityService {
 	constructor(
-		@Inject(DI.reversiGamesRepository)
+		@inject(DI.reversiGamesRepository)
 		private reversiGamesRepository: ReversiGamesRepository,
 
 		private userEntityService: UserEntityService,

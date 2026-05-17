@@ -3,7 +3,8 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
+import type { OnModuleInit } from '@nestjs/common';
 import Redis from 'ioredis';
 import { DI } from '@/di-symbols.js';
 import type { ChannelFollowingsRepository, ChannelsRepository, MiUser } from '@/models/_.js';
@@ -14,18 +15,18 @@ import { bindThis } from '@/decorators.js';
 import type { MiLocalUser } from '@/models/User.js';
 import { RedisKVCache } from '@/misc/cache.js';
 
-@Injectable()
+@injectable()
 export class ChannelFollowingService implements OnModuleInit {
 	public userFollowingChannelsCache: RedisKVCache<Set<string>>;
 
 	constructor(
-		@Inject(DI.redis)
+		@inject(DI.redis)
 		private redisClient: Redis.Redis,
-		@Inject(DI.redisForSub)
+		@inject(DI.redisForSub)
 		private redisForSub: Redis.Redis,
-		@Inject(DI.channelsRepository)
+		@inject(DI.channelsRepository)
 		private channelsRepository: ChannelsRepository,
-		@Inject(DI.channelFollowingsRepository)
+		@inject(DI.channelFollowingsRepository)
 		private channelFollowingsRepository: ChannelFollowingsRepository,
 		private idService: IdService,
 		private globalEventService: GlobalEventService,

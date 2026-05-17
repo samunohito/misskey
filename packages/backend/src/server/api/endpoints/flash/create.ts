@@ -3,8 +3,9 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import { inject, injectable } from 'tsyringe';
+
 import ms from 'ms';
-import { Inject, Injectable } from '@nestjs/common';
 import type { FlashsRepository } from '@/models/_.js';
 import { IdService } from '@/core/IdService.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
@@ -49,10 +50,10 @@ export const paramDef = {
 	required: ['title', 'summary', 'script', 'permissions'],
 } as const;
 
-@Injectable()
+@injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
-		@Inject(DI.flashsRepository)
+		@inject(DI.flashsRepository)
 		private flashsRepository: FlashsRepository,
 
 		private flashEntityService: FlashEntityService,

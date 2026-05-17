@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import { Brackets } from 'typeorm';
 import { DI } from '@/di-symbols.js';
 import type { RoleAssignmentsRepository, RolesRepository } from '@/models/_.js';
@@ -15,13 +15,13 @@ import { DEFAULT_POLICIES } from '@/core/RoleService.js';
 import { IdService } from '@/core/IdService.js';
 import { Packed } from '@/misc/json-schema.js';
 
-@Injectable()
+@injectable()
 export class RoleEntityService {
 	constructor(
-		@Inject(DI.rolesRepository)
+		@inject(DI.rolesRepository)
 		private rolesRepository: RolesRepository,
 
-		@Inject(DI.roleAssignmentsRepository)
+		@inject(DI.roleAssignmentsRepository)
 		private roleAssignmentsRepository: RoleAssignmentsRepository,
 
 		private idService: IdService,

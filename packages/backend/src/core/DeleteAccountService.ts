@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import { Not, IsNull } from 'typeorm';
 import type { FollowingsRepository, MiMeta, MiUser, UsersRepository } from '@/models/_.js';
 import { QueueService } from '@/core/QueueService.js';
@@ -15,16 +15,16 @@ import { ApRendererService } from '@/core/activitypub/ApRendererService.js';
 import { ModerationLogService } from '@/core/ModerationLogService.js';
 import { SystemAccountService } from '@/core/SystemAccountService.js';
 
-@Injectable()
+@injectable()
 export class DeleteAccountService {
 	constructor(
-		@Inject(DI.meta)
+		@inject(DI.meta)
 		private meta: MiMeta,
 
-		@Inject(DI.usersRepository)
+		@inject(DI.usersRepository)
 		private usersRepository: UsersRepository,
 
-		@Inject(DI.followingsRepository)
+		@inject(DI.followingsRepository)
 		private followingsRepository: FollowingsRepository,
 
 		private userEntityService: UserEntityService,

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import { DI } from '@/di-symbols.js';
 import type { NotesRepository, UsersRepository, PollsRepository, PollVotesRepository, MiUser } from '@/models/_.js';
 import type { MiNote } from '@/models/Note.js';
@@ -16,19 +16,19 @@ import { ApDeliverManagerService } from '@/core/activitypub/ApDeliverManagerServ
 import { bindThis } from '@/decorators.js';
 import { UserBlockingService } from '@/core/UserBlockingService.js';
 
-@Injectable()
+@injectable()
 export class PollService {
 	constructor(
-		@Inject(DI.usersRepository)
+		@inject(DI.usersRepository)
 		private usersRepository: UsersRepository,
 
-		@Inject(DI.notesRepository)
+		@inject(DI.notesRepository)
 		private notesRepository: NotesRepository,
 
-		@Inject(DI.pollsRepository)
+		@inject(DI.pollsRepository)
 		private pollsRepository: PollsRepository,
 
-		@Inject(DI.pollVotesRepository)
+		@inject(DI.pollVotesRepository)
 		private pollVotesRepository: PollVotesRepository,
 
 		private userEntityService: UserEntityService,

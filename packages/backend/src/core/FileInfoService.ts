@@ -3,11 +3,12 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import { injectable } from 'tsyringe';
+
 import * as fs from 'node:fs';
 import * as crypto from 'node:crypto';
 import { join } from 'node:path';
 import * as stream from 'node:stream/promises';
-import { Injectable } from '@nestjs/common';
 import { FSWatcher } from 'chokidar';
 import * as fileType from 'file-type';
 import FFmpeg from 'fluent-ffmpeg';
@@ -49,7 +50,7 @@ const TYPE_SVG = {
 	ext: 'svg',
 };
 
-@Injectable()
+@injectable()
 export class FileInfoService {
 	private logger: Logger;
 

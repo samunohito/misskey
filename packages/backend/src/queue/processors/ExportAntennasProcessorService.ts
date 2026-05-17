@@ -3,8 +3,9 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import { inject, injectable } from 'tsyringe';
+
 import fs from 'node:fs';
-import { Inject, Injectable } from '@nestjs/common';
 import { format as DateFormat } from 'date-fns';
 import { In } from 'typeorm';
 import { DI } from '@/di-symbols.js';
@@ -20,18 +21,18 @@ import { QueueLoggerService } from '../QueueLoggerService.js';
 import type { DBExportAntennasData } from '../types.js';
 import type * as Bull from 'bullmq';
 
-@Injectable()
+@injectable()
 export class ExportAntennasProcessorService {
 	private logger: Logger;
 
 	constructor (
-		@Inject(DI.usersRepository)
+		@inject(DI.usersRepository)
 		private usersRepository: UsersRepository,
 
-		@Inject(DI.antennasRepository)
+		@inject(DI.antennasRepository)
 		private antennsRepository: AntennasRepository,
 
-		@Inject(DI.userListMembershipsRepository)
+		@inject(DI.userListMembershipsRepository)
 		private userListMembershipsRepository: UserListMembershipsRepository,
 
 		private driveService: DriveService,

@@ -3,9 +3,10 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import { injectable } from 'tsyringe';
+
 import { createHash } from 'crypto';
 import ms from 'ms';
-import { Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { HttpRequestService } from '@/core/HttpRequestService.js';
 import { ApiError } from '../error.js';
@@ -56,7 +57,7 @@ export const paramDef = {
 	required: ['url', 'hash'],
 } as const;
 
-@Injectable()
+@injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		private httpRequestService: HttpRequestService,

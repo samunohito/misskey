@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import * as Bull from 'bullmq';
 import { DI } from '@/di-symbols.js';
 import type { WebhooksRepository } from '@/models/_.js';
@@ -15,15 +15,15 @@ import { bindThis } from '@/decorators.js';
 import { QueueLoggerService } from '../QueueLoggerService.js';
 import { UserWebhookDeliverJobData } from '../types.js';
 
-@Injectable()
+@injectable()
 export class UserWebhookDeliverProcessorService {
 	private logger: Logger;
 
 	constructor(
-		@Inject(DI.config)
+		@inject(DI.config)
 		private config: Config,
 
-		@Inject(DI.webhooksRepository)
+		@inject(DI.webhooksRepository)
 		private webhooksRepository: WebhooksRepository,
 
 		private httpRequestService: HttpRequestService,

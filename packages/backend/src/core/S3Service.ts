@@ -3,10 +3,11 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import { injectable } from 'tsyringe';
+
 import { URL } from 'node:url';
 import * as http from 'node:http';
 import * as https from 'node:https';
-import { Injectable } from '@nestjs/common';
 import { DeleteObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { Upload } from '@aws-sdk/lib-storage';
 import { NodeHttpHandler, NodeHttpHandlerOptions } from '@smithy/node-http-handler';
@@ -15,7 +16,7 @@ import { HttpRequestService } from '@/core/HttpRequestService.js';
 import { bindThis } from '@/decorators.js';
 import type { DeleteObjectCommandInput, PutObjectCommandInput } from '@aws-sdk/client-s3';
 
-@Injectable()
+@injectable()
 export class S3Service {
 	constructor(
 		private httpRequestService: HttpRequestService,

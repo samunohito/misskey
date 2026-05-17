@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Injectable } from '@nestjs/common';
+import { injectable } from 'tsyringe';
 import { bindThis } from '@/decorators.js';
 import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
 import { deepClone } from '@/misc/clone.js';
@@ -12,7 +12,7 @@ import type { Packed } from '@/misc/json-schema.js';
 import type { MiUser } from '@/models/User.js';
 
 /** Streamにおいて、ノートを隠す（hideNote）を適用するためのService */
-@Injectable()
+@injectable()
 export class NoteStreamingHidingService {
 	constructor(
 		private noteEntityService: NoteEntityService,

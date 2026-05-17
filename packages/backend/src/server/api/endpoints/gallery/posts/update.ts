@@ -3,8 +3,9 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import { inject, injectable } from 'tsyringe';
+
 import ms from 'ms';
-import { Inject, Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { DriveFilesRepository, GalleryPostsRepository } from '@/models/_.js';
 import type { MiDriveFile } from '@/models/DriveFile.js';
@@ -50,13 +51,13 @@ export const paramDef = {
 	required: ['postId'],
 } as const;
 
-@Injectable()
+@injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
-		@Inject(DI.galleryPostsRepository)
+		@inject(DI.galleryPostsRepository)
 		private galleryPostsRepository: GalleryPostsRepository,
 
-		@Inject(DI.driveFilesRepository)
+		@inject(DI.driveFilesRepository)
 		private driveFilesRepository: DriveFilesRepository,
 
 		private galleryPostEntityService: GalleryPostEntityService,

@@ -3,7 +3,8 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
+import type { OnModuleInit } from '@nestjs/common';
 import { EntityNotFoundError, In } from 'typeorm';
 import { ModuleRef } from '@nestjs/core';
 import { DI } from '@/di-symbols.js';
@@ -18,7 +19,6 @@ import { IdService } from '@/core/IdService.js';
 import { shouldHideNoteByTime } from '@/misc/should-hide-note-by-time.js';
 import { ReactionsBufferingService } from '@/core/ReactionsBufferingService.js';
 import { CacheService } from '@/core/CacheService.js';
-import type { OnModuleInit } from '@nestjs/common';
 import type { CustomEmojiService } from '../CustomEmojiService.js';
 import type { ReactionService } from '../ReactionService.js';
 import type { UserEntityService } from './UserEntityService.js';
@@ -59,7 +59,7 @@ async function nullIfEntityNotFound<T>(promise: Promise<T>): Promise<T | null> {
 	}
 }
 
-@Injectable()
+@injectable()
 export class NoteEntityService implements OnModuleInit {
 	private userEntityService: UserEntityService;
 	private driveFileEntityService: DriveFileEntityService;
@@ -73,28 +73,28 @@ export class NoteEntityService implements OnModuleInit {
 	constructor(
 		private moduleRef: ModuleRef,
 
-		@Inject(DI.meta)
+		@inject(DI.meta)
 		private meta: MiMeta,
 
-		@Inject(DI.usersRepository)
+		@inject(DI.usersRepository)
 		private usersRepository: UsersRepository,
 
-		@Inject(DI.notesRepository)
+		@inject(DI.notesRepository)
 		private notesRepository: NotesRepository,
 
-		@Inject(DI.followingsRepository)
+		@inject(DI.followingsRepository)
 		private followingsRepository: FollowingsRepository,
 
-		@Inject(DI.pollsRepository)
+		@inject(DI.pollsRepository)
 		private pollsRepository: PollsRepository,
 
-		@Inject(DI.pollVotesRepository)
+		@inject(DI.pollVotesRepository)
 		private pollVotesRepository: PollVotesRepository,
 
-		@Inject(DI.noteReactionsRepository)
+		@inject(DI.noteReactionsRepository)
 		private noteReactionsRepository: NoteReactionsRepository,
 
-		@Inject(DI.channelsRepository)
+		@inject(DI.channelsRepository)
 		private channelsRepository: ChannelsRepository,
 
 		//private userEntityService: UserEntityService,

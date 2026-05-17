@@ -3,9 +3,10 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import { inject, injectable } from 'tsyringe';
+
 import * as WebSocket from 'ws';
 import { ContextIdFactory, ModuleRef, REQUEST } from '@nestjs/core';
-import { Inject, Injectable, Scope } from '@nestjs/common';
 import { isJsonObject } from '@/misc/json-value.js';
 import type { JsonObject, JsonValue } from '@/misc/json-value.js';
 import { ChannelMutingService } from '@/core/ChannelMutingService.js';
@@ -46,7 +47,7 @@ const MAX_CHANNELS_PER_CONNECTION = 32;
  * Main stream connection
  */
 
-@Injectable({ scope: Scope.TRANSIENT })
+@injectable()
 export default class Connection {
 	public user?: MiUser;
 	public token?: MiAccessToken;
@@ -70,7 +71,7 @@ export default class Connection {
 		private cacheService: CacheService,
 		private channelFollowingService: ChannelFollowingService,
 		private channelMutingService: ChannelMutingService,
-		@Inject(REQUEST)
+		@inject(REQUEST)
 		request: ConnectionRequest,
 	) {
 		if (request.user) this.user = request.user;

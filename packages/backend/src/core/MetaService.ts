@@ -3,7 +3,8 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
+import type { OnApplicationShutdown } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import * as Redis from 'ioredis';
 import { DI } from '@/di-symbols.js';
@@ -12,18 +13,16 @@ import { GlobalEventService } from '@/core/GlobalEventService.js';
 import { bindThis } from '@/decorators.js';
 import type { GlobalEvents } from '@/core/GlobalEventService.js';
 import { FeaturedService } from '@/core/FeaturedService.js';
-import type { OnApplicationShutdown } from '@nestjs/common';
-
-@Injectable()
+@injectable()
 export class MetaService implements OnApplicationShutdown {
 	private cache: MiMeta | undefined;
 	private intervalId: NodeJS.Timeout;
 
 	constructor(
-		@Inject(DI.redisForSub)
+		@inject(DI.redisForSub)
 		private redisForSub: Redis.Redis,
 
-		@Inject(DI.db)
+		@inject(DI.db)
 		private db: DataSource,
 
 		private featuredService: FeaturedService,

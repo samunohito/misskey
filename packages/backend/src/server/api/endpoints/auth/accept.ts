@@ -3,8 +3,9 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import { inject, injectable } from 'tsyringe';
+
 import * as crypto from 'node:crypto';
-import { Inject, Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { AuthSessionsRepository, AppsRepository, AccessTokensRepository } from '@/models/_.js';
 import { IdService } from '@/core/IdService.js';
@@ -36,16 +37,16 @@ export const paramDef = {
 	required: ['token'],
 } as const;
 
-@Injectable()
+@injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
-		@Inject(DI.appsRepository)
+		@inject(DI.appsRepository)
 		private appsRepository: AppsRepository,
 
-		@Inject(DI.authSessionsRepository)
+		@inject(DI.authSessionsRepository)
 		private authSessionsRepository: AuthSessionsRepository,
 
-		@Inject(DI.accessTokensRepository)
+		@inject(DI.accessTokensRepository)
 		private accessTokensRepository: AccessTokensRepository,
 
 		private idService: IdService,

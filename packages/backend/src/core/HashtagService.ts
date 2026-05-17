@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import * as Redis from 'ioredis';
 import { DI } from '@/di-symbols.js';
 import type { MiUser } from '@/models/User.js';
@@ -16,16 +16,16 @@ import { bindThis } from '@/decorators.js';
 import { FeaturedService } from '@/core/FeaturedService.js';
 import { UtilityService } from '@/core/UtilityService.js';
 
-@Injectable()
+@injectable()
 export class HashtagService {
 	constructor(
-		@Inject(DI.meta)
+		@inject(DI.meta)
 		private meta: MiMeta,
 
-		@Inject(DI.redis)
+		@inject(DI.redis)
 		private redisClient: Redis.Redis, // TODO: 専用のRedisサーバーを設定できるようにする
 
-		@Inject(DI.hashtagsRepository)
+		@inject(DI.hashtagsRepository)
 		private hashtagsRepository: HashtagsRepository,
 
 		private userEntityService: UserEntityService,

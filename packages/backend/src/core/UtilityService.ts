@@ -3,8 +3,9 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import { inject, injectable } from 'tsyringe';
+
 import { URL, domainToASCII } from 'node:url';
-import { Inject, Injectable } from '@nestjs/common';
 import RE2 from 're2';
 import semver from 'semver';
 import { DI } from '@/di-symbols.js';
@@ -13,13 +14,13 @@ import { bindThis } from '@/decorators.js';
 import { MiMeta, SoftwareSuspension } from '@/models/Meta.js';
 import { MiInstance } from '@/models/Instance.js';
 
-@Injectable()
+@injectable()
 export class UtilityService {
 	constructor(
-		@Inject(DI.config)
+		@inject(DI.config)
 		private config: Config,
 
-		@Inject(DI.meta)
+		@inject(DI.meta)
 		private meta: MiMeta,
 	) {
 	}

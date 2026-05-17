@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import { DI } from '@/di-symbols.js';
 import type { FlashLikesRepository, FlashsRepository } from '@/models/_.js';
 import type { Packed } from '@/misc/json-schema.js';
@@ -13,12 +13,12 @@ import { bindThis } from '@/decorators.js';
 import { IdService } from '@/core/IdService.js';
 import { UserEntityService } from './UserEntityService.js';
 
-@Injectable()
+@injectable()
 export class FlashEntityService {
 	constructor(
-		@Inject(DI.flashsRepository)
+		@inject(DI.flashsRepository)
 		private flashsRepository: FlashsRepository,
-		@Inject(DI.flashLikesRepository)
+		@inject(DI.flashLikesRepository)
 		private flashLikesRepository: FlashLikesRepository,
 		private userEntityService: UserEntityService,
 		private idService: IdService,

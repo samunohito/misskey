@@ -3,7 +3,8 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
+import type { OnApplicationShutdown } from '@nestjs/common';
 import * as Redis from 'ioredis';
 import { MiUser, type WebhooksRepository } from '@/models/_.js';
 import { MiWebhook, WebhookEventTypes } from '@/models/Webhook.js';
@@ -12,8 +13,6 @@ import { bindThis } from '@/decorators.js';
 import { GlobalEvents } from '@/core/GlobalEventService.js';
 import type { Packed } from '@/misc/json-schema.js';
 import { QueueService } from '@/core/QueueService.js';
-import type { OnApplicationShutdown } from '@nestjs/common';
-
 export type UserWebhookPayload<T extends WebhookEventTypes> =
 	T extends 'note' | 'reply' | 'renote' | 'mention' ? {
 		note: Packed<'Note'>,
@@ -25,15 +24,15 @@ export type UserWebhookPayload<T extends WebhookEventTypes> =
 		user: Packed<'UserLite'>,
 	} : never;
 
-@Injectable()
+@injectable()
 export class UserWebhookService implements OnApplicationShutdown {
 	private activeWebhooksFetched = false;
 	private activeWebhooks: MiWebhook[] = [];
 
 	constructor(
-		@Inject(DI.redisForSub)
+		@inject(DI.redisForSub)
 		private redisForSub: Redis.Redis,
-		@Inject(DI.webhooksRepository)
+		@inject(DI.webhooksRepository)
 		private webhooksRepository: WebhooksRepository,
 		private queueService: QueueService,
 	) {

@@ -3,14 +3,13 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
+import type { OnApplicationShutdown } from '@nestjs/common';
 import Xev from 'xev';
 import * as osUtils from 'os-utils';
 import { bindThis } from '@/decorators.js';
 import { MiMeta } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
-import type { OnApplicationShutdown } from '@nestjs/common';
-
 const ev = new Xev();
 
 const interval = 2000;
@@ -18,12 +17,12 @@ const interval = 2000;
 const roundCpu = (num: number) => Math.round(num * 1000) / 1000;
 const round = (num: number) => Math.round(num * 10) / 10;
 
-@Injectable()
+@injectable()
 export class ServerStatsService implements OnApplicationShutdown {
 	private intervalId: NodeJS.Timeout | null = null;
 
 	constructor(
-		@Inject(DI.meta)
+		@inject(DI.meta)
 		private meta: MiMeta,
 	) {
 	}

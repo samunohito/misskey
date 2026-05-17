@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Injectable } from '@nestjs/common';
+import { injectable } from 'tsyringe';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { CaptchaService, supportedCaptchaProviders } from '@/core/CaptchaService.js';
 
@@ -58,7 +58,7 @@ export const meta = {
 
 export const paramDef = {} as const;
 
-@Injectable()
+@injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		private captchaService: CaptchaService,

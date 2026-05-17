@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import FFmpeg from 'fluent-ffmpeg';
 import { DI } from '@/di-symbols.js';
 import type { Config } from '@/config.js';
@@ -13,10 +13,10 @@ import { createTempDir } from '@/misc/create-temp.js';
 import { bindThis } from '@/decorators.js';
 import { appendQuery, query } from '@/misc/prelude/url.js';
 
-@Injectable()
+@injectable()
 export class VideoProcessingService {
 	constructor(
-		@Inject(DI.config)
+		@inject(DI.config)
 		private config: Config,
 
 		private imageProcessingService: ImageProcessingService,

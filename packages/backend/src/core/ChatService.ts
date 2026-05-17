@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import * as Redis from 'ioredis';
 import { Brackets } from 'typeorm';
 import { DI } from '@/di-symbols.js';
@@ -47,34 +47,34 @@ function normalizeEmojiString(x: string) {
 	}
 }
 
-@Injectable()
+@injectable()
 export class ChatService {
 	constructor(
-		@Inject(DI.config)
+		@inject(DI.config)
 		private config: Config,
 
-		@Inject(DI.redis)
+		@inject(DI.redis)
 		private redisClient: Redis.Redis,
 
-		@Inject(DI.usersRepository)
+		@inject(DI.usersRepository)
 		private usersRepository: UsersRepository,
 
-		@Inject(DI.chatMessagesRepository)
+		@inject(DI.chatMessagesRepository)
 		private chatMessagesRepository: ChatMessagesRepository,
 
-		@Inject(DI.chatApprovalsRepository)
+		@inject(DI.chatApprovalsRepository)
 		private chatApprovalsRepository: ChatApprovalsRepository,
 
-		@Inject(DI.chatRoomsRepository)
+		@inject(DI.chatRoomsRepository)
 		private chatRoomsRepository: ChatRoomsRepository,
 
-		@Inject(DI.chatRoomInvitationsRepository)
+		@inject(DI.chatRoomInvitationsRepository)
 		private chatRoomInvitationsRepository: ChatRoomInvitationsRepository,
 
-		@Inject(DI.chatRoomMembershipsRepository)
+		@inject(DI.chatRoomMembershipsRepository)
 		private chatRoomMembershipsRepository: ChatRoomMembershipsRepository,
 
-		@Inject(DI.mutingsRepository)
+		@inject(DI.mutingsRepository)
 		private mutingsRepository: MutingsRepository,
 
 		private userEntityService: UserEntityService,

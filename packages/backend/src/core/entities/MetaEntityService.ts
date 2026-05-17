@@ -3,8 +3,9 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import { inject, injectable } from 'tsyringe';
+
 import { Brackets } from 'typeorm';
-import { Inject, Injectable } from '@nestjs/common';
 import JSON5 from 'json5';
 import type { Packed } from '@/misc/json-schema.js';
 import type { MiMeta } from '@/models/Meta.js';
@@ -16,16 +17,16 @@ import type { Config } from '@/config.js';
 import { DI } from '@/di-symbols.js';
 import { DEFAULT_POLICIES } from '@/core/RoleService.js';
 
-@Injectable()
+@injectable()
 export class MetaEntityService {
 	constructor(
-		@Inject(DI.config)
+		@inject(DI.config)
 		private config: Config,
 
-		@Inject(DI.meta)
+		@inject(DI.meta)
 		private meta: MiMeta,
 
-		@Inject(DI.adsRepository)
+		@inject(DI.adsRepository)
 		private adsRepository: AdsRepository,
 
 		private systemAccountService: SystemAccountService,

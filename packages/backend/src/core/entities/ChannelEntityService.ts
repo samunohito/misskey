@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import { In } from 'typeorm';
 import { DI } from '@/di-symbols.js';
 import type {
@@ -23,20 +23,20 @@ import { IdService } from '@/core/IdService.js';
 import { DriveFileEntityService } from './DriveFileEntityService.js';
 import { NoteEntityService } from './NoteEntityService.js';
 
-@Injectable()
+@injectable()
 export class ChannelEntityService {
 	constructor(
-		@Inject(DI.channelsRepository)
+		@inject(DI.channelsRepository)
 		private channelsRepository: ChannelsRepository,
-		@Inject(DI.channelFollowingsRepository)
+		@inject(DI.channelFollowingsRepository)
 		private channelFollowingsRepository: ChannelFollowingsRepository,
-		@Inject(DI.channelFavoritesRepository)
+		@inject(DI.channelFavoritesRepository)
 		private channelFavoritesRepository: ChannelFavoritesRepository,
-		@Inject(DI.channelMutingRepository)
+		@inject(DI.channelMutingRepository)
 		private channelMutingRepository: ChannelMutingRepository,
-		@Inject(DI.notesRepository)
+		@inject(DI.notesRepository)
 		private notesRepository: NotesRepository,
-		@Inject(DI.driveFilesRepository)
+		@inject(DI.driveFilesRepository)
 		private driveFilesRepository: DriveFilesRepository,
 		private noteEntityService: NoteEntityService,
 		private driveFileEntityService: DriveFileEntityService,

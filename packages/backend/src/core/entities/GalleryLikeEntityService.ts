@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import { DI } from '@/di-symbols.js';
 import type { GalleryLikesRepository } from '@/models/_.js';
 import type { } from '@/models/Blocking.js';
@@ -11,10 +11,10 @@ import type { MiGalleryLike } from '@/models/GalleryLike.js';
 import { bindThis } from '@/decorators.js';
 import { GalleryPostEntityService } from './GalleryPostEntityService.js';
 
-@Injectable()
+@injectable()
 export class GalleryLikeEntityService {
 	constructor(
-		@Inject(DI.galleryLikesRepository)
+		@inject(DI.galleryLikesRepository)
 		private galleryLikesRepository: GalleryLikesRepository,
 
 		private galleryPostEntityService: GalleryPostEntityService,

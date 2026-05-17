@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import { DI } from '@/di-symbols.js';
 import type { MiUser, ChatMessagesRepository, MiChatMessage, ChatRoomsRepository, MiChatRoom, MiChatRoomInvitation, ChatRoomInvitationsRepository, MiChatRoomMembership, ChatRoomMembershipsRepository } from '@/models/_.js';
 import { awaitAll } from '@/misc/prelude/await-all.js';
@@ -15,19 +15,19 @@ import { UserEntityService } from './UserEntityService.js';
 import { DriveFileEntityService } from './DriveFileEntityService.js';
 import { In } from 'typeorm';
 
-@Injectable()
+@injectable()
 export class ChatEntityService {
 	constructor(
-		@Inject(DI.chatMessagesRepository)
+		@inject(DI.chatMessagesRepository)
 		private chatMessagesRepository: ChatMessagesRepository,
 
-		@Inject(DI.chatRoomsRepository)
+		@inject(DI.chatRoomsRepository)
 		private chatRoomsRepository: ChatRoomsRepository,
 
-		@Inject(DI.chatRoomInvitationsRepository)
+		@inject(DI.chatRoomInvitationsRepository)
 		private chatRoomInvitationsRepository: ChatRoomInvitationsRepository,
 
-		@Inject(DI.chatRoomMembershipsRepository)
+		@inject(DI.chatRoomMembershipsRepository)
 		private chatRoomMembershipsRepository: ChatRoomMembershipsRepository,
 
 		private userEntityService: UserEntityService,

@@ -3,10 +3,11 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import { inject, injectable } from 'tsyringe';
+
 import { resolve } from 'node:path';
 import { promises as fsp } from 'node:fs';
 import { languages } from 'i18n/const';
-import { Injectable, Inject } from '@nestjs/common';
 import { DI } from '@/di-symbols.js';
 import { bindThis } from '@/decorators.js';
 import { htmlSafeJsonStringify } from '@/misc/json-stringify-html-safe.js';
@@ -17,7 +18,7 @@ import type { Config } from '@/config.js';
 import type { MiMeta } from '@/models/Meta.js';
 import type { CommonData, ViteFiles } from './views/_.js';
 
-@Injectable()
+@injectable()
 export class HtmlTemplateService {
 	private frontendAssetsFetched = false;
 	private readonly frontendViteBuilt: string;
@@ -30,10 +31,10 @@ export class HtmlTemplateService {
 	public frontendEmbedBootloaderCss: string | null = null;
 
 	constructor(
-		@Inject(DI.config)
+		@inject(DI.config)
 		private config: Config,
 
-		@Inject(DI.meta)
+		@inject(DI.meta)
 		private meta: MiMeta,
 
 		private metaEntityService: MetaEntityService,

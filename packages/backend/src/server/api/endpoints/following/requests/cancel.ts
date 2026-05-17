@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Injectable } from '@nestjs/common';
+import { injectable } from 'tsyringe';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
@@ -47,7 +47,7 @@ export const paramDef = {
 	required: ['userId'],
 } as const;
 
-@Injectable()
+@injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		private userEntityService: UserEntityService,

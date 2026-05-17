@@ -3,8 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
-
+import { inject, injectable } from 'tsyringe';
 import { UserFollowingService } from '@/core/UserFollowingService.js';
 import { UserBlockingService } from '@/core/UserBlockingService.js';
 import { bindThis } from '@/decorators.js';
@@ -17,12 +16,12 @@ import { RelationshipJobData } from '../types.js';
 import { QueueLoggerService } from '../QueueLoggerService.js';
 import type * as Bull from 'bullmq';
 
-@Injectable()
+@injectable()
 export class RelationshipProcessorService {
 	private logger: Logger;
 
 	constructor(
-		@Inject(DI.usersRepository)
+		@inject(DI.usersRepository)
 		private usersRepository: UsersRepository,
 
 		private queueLoggerService: QueueLoggerService,

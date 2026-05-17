@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Injectable } from '@nestjs/common';
+import { injectable } from 'tsyringe';
 import { MiAbuseUserReport, MiNote, MiUser, MiWebhook } from '@/models/_.js';
 import { bindThis } from '@/decorators.js';
 import { MiSystemWebhook, type SystemWebhookEventType } from '@/models/SystemWebhook.js';
@@ -137,7 +137,7 @@ const dummyUser3 = generateDummyUser({
 	notesCount: 15900,
 });
 
-@Injectable()
+@injectable()
 export class WebhookTestService {
 	public static NoSuchWebhookError = class extends Error {
 	};

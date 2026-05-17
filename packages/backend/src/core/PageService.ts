@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import { DataSource, In, Not } from 'typeorm';
 import { DI } from '@/di-symbols.js';
 import {
@@ -34,19 +34,19 @@ export interface PageBody {
 	hideTitleWhenPinned: boolean;
 }
 
-@Injectable()
+@injectable()
 export class PageService {
 	constructor(
-		@Inject(DI.db)
+		@inject(DI.db)
 		private db: DataSource,
 
-		@Inject(DI.pagesRepository)
+		@inject(DI.pagesRepository)
 		private pagesRepository: PagesRepository,
 
-		@Inject(DI.notesRepository)
+		@inject(DI.notesRepository)
 		private notesRepository: NotesRepository,
 
-		@Inject(DI.usersRepository)
+		@inject(DI.usersRepository)
 		private usersRepository: UsersRepository,
 
 		private roleService: RoleService,

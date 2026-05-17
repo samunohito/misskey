@@ -3,10 +3,12 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import { inject, injectable } from 'tsyringe';
+
+import type { OnApplicationShutdown } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import * as fs from 'node:fs';
 import * as stream from 'node:stream/promises';
-import { Inject, Injectable } from '@nestjs/common';
 import { DI } from '@/di-symbols.js';
 import { getIpHash } from '@/misc/get-ip-hash.js';
 import type { MiLocalUser, MiUser } from '@/models/User.js';
@@ -22,7 +24,6 @@ import { RateLimiterService } from './RateLimiterService.js';
 import { ApiLoggerService } from './ApiLoggerService.js';
 import { AuthenticateService, AuthenticationError } from './AuthenticateService.js';
 import type { FastifyRequest, FastifyReply } from 'fastify';
-import type { OnApplicationShutdown } from '@nestjs/common';
 import type { IEndpointMeta, IEndpoint } from './endpoints.js';
 
 const accessDenied = {
@@ -31,7 +32,7 @@ const accessDenied = {
 	id: '56f35758-7dd5-468b-8439-5d6fb8ec9b8e',
 };
 
-@Injectable()
+@injectable()
 export class ApiCallService implements OnApplicationShutdown {
 	private logger: Logger;
 	private userIpHistories: Map<MiUser['id'], Set<string>>;
@@ -39,13 +40,13 @@ export class ApiCallService implements OnApplicationShutdown {
 	private Sentry: typeof import('@sentry/node') | null = null;
 
 	constructor(
-		@Inject(DI.meta)
+		@inject(DI.meta)
 		private meta: MiMeta,
 
-		@Inject(DI.config)
+		@inject(DI.config)
 		private config: Config,
 
-		@Inject(DI.userIpsRepository)
+		@inject(DI.userIpsRepository)
 		private userIpsRepository: UserIpsRepository,
 
 		private authenticateService: AuthenticateService,

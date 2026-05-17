@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { DbQueue, DeliverQueue, EndedPollNotificationQueue, PostScheduledNoteQueue, InboxQueue, ObjectStorageQueue, SystemQueue, UserWebhookDeliverQueue, SystemWebhookDeliverQueue } from '@/core/QueueModule.js';
 
@@ -44,18 +44,18 @@ export const paramDef = {
 	required: [],
 } as const;
 
-@Injectable()
+@injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
-		@Inject('queue:system') public systemQueue: SystemQueue,
-		@Inject('queue:endedPollNotification') public endedPollNotificationQueue: EndedPollNotificationQueue,
-		@Inject('queue:postScheduledNote') public postScheduledNoteQueue: PostScheduledNoteQueue,
-		@Inject('queue:deliver') public deliverQueue: DeliverQueue,
-		@Inject('queue:inbox') public inboxQueue: InboxQueue,
-		@Inject('queue:db') public dbQueue: DbQueue,
-		@Inject('queue:objectStorage') public objectStorageQueue: ObjectStorageQueue,
-		@Inject('queue:userWebhookDeliver') public userWebhookDeliverQueue: UserWebhookDeliverQueue,
-		@Inject('queue:systemWebhookDeliver') public systemWebhookDeliverQueue: SystemWebhookDeliverQueue,
+		@inject('queue:system') public systemQueue: SystemQueue,
+		@inject('queue:endedPollNotification') public endedPollNotificationQueue: EndedPollNotificationQueue,
+		@inject('queue:postScheduledNote') public postScheduledNoteQueue: PostScheduledNoteQueue,
+		@inject('queue:deliver') public deliverQueue: DeliverQueue,
+		@inject('queue:inbox') public inboxQueue: InboxQueue,
+		@inject('queue:db') public dbQueue: DbQueue,
+		@inject('queue:objectStorage') public objectStorageQueue: ObjectStorageQueue,
+		@inject('queue:userWebhookDeliver') public userWebhookDeliverQueue: UserWebhookDeliverQueue,
+		@inject('queue:systemWebhookDeliver') public systemWebhookDeliverQueue: SystemWebhookDeliverQueue,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const deliverJobCounts = await this.deliverQueue.getJobCounts();

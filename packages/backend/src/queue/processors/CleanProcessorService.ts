@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import { In, LessThan } from 'typeorm';
 import { DI } from '@/di-symbols.js';
 import type { AntennasRepository, RoleAssignmentsRepository, UserIpsRepository } from '@/models/_.js';
@@ -15,21 +15,21 @@ import { ReversiService } from '@/core/ReversiService.js';
 import { QueueLoggerService } from '../QueueLoggerService.js';
 import type * as Bull from 'bullmq';
 
-@Injectable()
+@injectable()
 export class CleanProcessorService {
 	private logger: Logger;
 
 	constructor(
-		@Inject(DI.config)
+		@inject(DI.config)
 		private config: Config,
 
-		@Inject(DI.userIpsRepository)
+		@inject(DI.userIpsRepository)
 		private userIpsRepository: UserIpsRepository,
 
-		@Inject(DI.antennasRepository)
+		@inject(DI.antennasRepository)
 		private antennasRepository: AntennasRepository,
 
-		@Inject(DI.roleAssignmentsRepository)
+		@inject(DI.roleAssignmentsRepository)
 		private roleAssignmentsRepository: RoleAssignmentsRepository,
 
 		private queueLoggerService: QueueLoggerService,

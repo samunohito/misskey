@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import { In } from 'typeorm';
 import { DI } from '@/di-symbols.js';
 import type { EmojisRepository, MiRole, RolesRepository } from '@/models/_.js';
@@ -11,12 +11,12 @@ import type { Packed } from '@/misc/json-schema.js';
 import type { MiEmoji } from '@/models/Emoji.js';
 import { bindThis } from '@/decorators.js';
 
-@Injectable()
+@injectable()
 export class EmojiEntityService {
 	constructor(
-		@Inject(DI.emojisRepository)
+		@inject(DI.emojisRepository)
 		private emojisRepository: EmojisRepository,
-		@Inject(DI.rolesRepository)
+		@inject(DI.rolesRepository)
 		private rolesRepository: RolesRepository,
 	) {
 	}

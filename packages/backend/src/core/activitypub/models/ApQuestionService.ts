@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { inject, injectable } from 'tsyringe';
 import { DI } from '@/di-symbols.js';
 import type { UsersRepository, NotesRepository, PollsRepository } from '@/models/_.js';
 import type { Config } from '@/config.js';
@@ -18,21 +18,21 @@ import { ApResolverService } from '../ApResolverService.js';
 import type { Resolver } from '../ApResolverService.js';
 import type { IObject } from '../type.js';
 
-@Injectable()
+@injectable()
 export class ApQuestionService {
 	private logger: Logger;
 
 	constructor(
-		@Inject(DI.config)
+		@inject(DI.config)
 		private config: Config,
 
-		@Inject(DI.usersRepository)
+		@inject(DI.usersRepository)
 		private usersRepository: UsersRepository,
 
-		@Inject(DI.notesRepository)
+		@inject(DI.notesRepository)
 		private notesRepository: NotesRepository,
 
-		@Inject(DI.pollsRepository)
+		@inject(DI.pollsRepository)
 		private pollsRepository: PollsRepository,
 
 		private apResolverService: ApResolverService,

@@ -3,19 +3,20 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import { inject, injectable } from 'tsyringe';
+
 import * as fs from 'node:fs';
 import * as Path from 'node:path';
-import { Inject, Injectable } from '@nestjs/common';
 import { DI } from '@/di-symbols.js';
 import type { Config } from '@/config.js';
 import { bindThis } from '@/decorators.js';
 
-@Injectable()
+@injectable()
 export class InternalStorageService {
 	private readonly path: string;
 
 	constructor(
-		@Inject(DI.config)
+		@inject(DI.config)
 		private config: Config,
 	) {
 		this.path = Path.resolve(this.config.rootDir, 'files');

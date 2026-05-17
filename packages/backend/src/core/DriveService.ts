@@ -3,9 +3,10 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import { inject, injectable } from 'tsyringe';
+
 import { randomUUID } from 'node:crypto';
 import * as fs from 'node:fs';
-import { Inject, Injectable } from '@nestjs/common';
 import sharp from 'sharp';
 import { sharpBmp } from '@misskey-dev/sharp-read-bmp';
 import { In, IsNull } from 'typeorm';
@@ -85,7 +86,7 @@ type UploadFromUrlArgs = {
 	requestHeaders?: Record<string, string> | null;
 };
 
-@Injectable()
+@injectable()
 export class DriveService {
 	public static NoSuchFolderError = class extends Error {};
 	public static InvalidFileNameError = class extends Error {};
@@ -95,22 +96,22 @@ export class DriveService {
 	private deleteLogger: Logger;
 
 	constructor(
-		@Inject(DI.config)
+		@inject(DI.config)
 		private config: Config,
 
-		@Inject(DI.meta)
+		@inject(DI.meta)
 		private meta: MiMeta,
 
-		@Inject(DI.usersRepository)
+		@inject(DI.usersRepository)
 		private usersRepository: UsersRepository,
 
-		@Inject(DI.userProfilesRepository)
+		@inject(DI.userProfilesRepository)
 		private userProfilesRepository: UserProfilesRepository,
 
-		@Inject(DI.driveFilesRepository)
+		@inject(DI.driveFilesRepository)
 		private driveFilesRepository: DriveFilesRepository,
 
-		@Inject(DI.driveFoldersRepository)
+		@inject(DI.driveFoldersRepository)
 		private driveFoldersRepository: DriveFoldersRepository,
 
 		private fileInfoService: FileInfoService,
