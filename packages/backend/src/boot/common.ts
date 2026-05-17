@@ -15,30 +15,40 @@ import { disposeQueueClients } from '@/di/register-queue.js';
 const activeContainers: DependencyContainer[] = [];
 
 let shutdownHandlerRegistered = false;
+let shutdownPromise: Promise<void> | null = null;
 function ensureShutdownHandler(): void {
 	if (shutdownHandlerRegistered) return;
 	shutdownHandlerRegistered = true;
-	const handle = async (signal: NodeJS.Signals) => {
-		for (const c of [...activeContainers].reverse()) {
-			try {
-				await c.resolve(DisposableRegistry).disposeAll(signal);
-			} catch (e) {
-				console.error('[boot] disposeAll failed', e);
+
+	// SIGTERM と SIGINT が同時に飛んできたり Ctrl+C が連打されたりすると
+	// handler が並行実行され、片方が `disposeGlobalResources()` で DataSource を
+	// destroy している最中にもう一方の `chart.save()` が走って "Connection terminated"
+	// を起こす。最初の呼び出しで生成した Promise を再利用して直列化する。
+	const handle = (signal: NodeJS.Signals) => {
+		if (shutdownPromise !== null) return shutdownPromise;
+		shutdownPromise = (async () => {
+			for (const c of [...activeContainers].reverse()) {
+				try {
+					await c.resolve(DisposableRegistry).disposeAll(signal);
+				} catch (e) {
+					console.error('[boot] disposeAll failed', e);
+				}
 			}
-		}
-		// グローバル resource (DB / Redis / BullMQ Queue) は activeContainers の disposeAll では
-		// 破棄しないため、ここで明示的に解放する。
-		try {
-			await disposeQueueClients();
-		} catch (e) {
-			console.error('[boot] disposeQueueClients failed', e);
-		}
-		try {
-			await disposeGlobalResources();
-		} catch (e) {
-			console.error('[boot] disposeGlobalResources failed', e);
-		}
-		process.exit(0);
+			// グローバル resource (DB / Redis / BullMQ Queue) は activeContainers の disposeAll では
+			// 破棄しないため、ここで明示的に解放する。
+			try {
+				await disposeQueueClients();
+			} catch (e) {
+				console.error('[boot] disposeQueueClients failed', e);
+			}
+			try {
+				await disposeGlobalResources();
+			} catch (e) {
+				console.error('[boot] disposeGlobalResources failed', e);
+			}
+			process.exit(0);
+		})();
+		return shutdownPromise;
 	};
 	process.on('SIGTERM', handle);
 	process.on('SIGINT', handle);
