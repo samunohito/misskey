@@ -89,7 +89,11 @@ export default defineConfig((args) => {
 				cleanDir: true,
 				format: 'esm',
 			},
-			external: externalModules,
+			// `reflect-metadata` は副作用専用の CJS polyfill。E2E バンドルでは rolldown が
+			// 遅延 CJS factory (`require_Reflect`) にラップしたまま invoke コードを emit しない
+			// ケースがあり、tsyringe decorator 評価時に "requires a reflect polyfill" で落ちる。
+			// external にして Node の通常 import 経路で実行させる。
+			external: [...externalModules, 'reflect-metadata'],
 		};
 	} else {
 		return {
