@@ -103,13 +103,15 @@ describe('DriveFileEntityService', () => {
 	};
 
 	beforeAll(async () => {
-		const moduleBuilder = Test.createTestingModule({
-			imports: [GlobalModule, CoreModule],
+		app = await createTestContainer({
+			loadGlobals: true,
+			loadRepositories: true,
+			register: async (c) => {
+				const { registerCoreServices } = await import('@/di/register-core/index.js');
+				registerCoreServices(c);
+				c.register(UserEntityService, { useValue: userEntityServiceMock as any });
+			},
 		});
-		moduleBuilder.overrideProvider(UserEntityService).useValue(userEntityServiceMock as any);
-
-		app = await moduleBuilder.compile();
-		await app.init();
 		service = app.resolve<DriveFileEntityService>(DriveFileEntityService);
 		driveFolderEntityService = app.resolve<DriveFolderEntityService>(DriveFolderEntityService);
 		driveFilesRepository = app.resolve<DriveFilesRepository>(DI.driveFilesRepository);

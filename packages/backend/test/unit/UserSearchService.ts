@@ -100,7 +100,6 @@ describe('UserSearchService', () => {
 	],
 });
 
-		await app.init();
 
 		usersRepository = app.resolve(DI.usersRepository);
 		userProfilesRepository = app.resolve(DI.userProfilesRepository);

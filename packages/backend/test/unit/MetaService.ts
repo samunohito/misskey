@@ -20,9 +20,10 @@ describe('MetaService', () => {
 
 	beforeAll(async () => {
 		app = await createTestContainer({
-	loadGlobals: true,
-});
-		metaService = app.resolve<MetaService>(MetaService, { strict: false });
+			loadGlobals: true,
+			register: (c) => c.registerSingleton(MetaService),
+		});
+		metaService = app.resolve<MetaService>(MetaService);
 
 		// Make it cached
 		await metaService.fetch();

@@ -179,13 +179,14 @@ describe('UserEntityService', () => {
 			];
 
 			app = await createTestContainer({
-	loadGlobals: true,
-	register: (c) => {
-		c.registerSingleton(...services);
-		c.registerSingleton(...services.map(x => ({ provide: x.name, useExisting: x })));
-	},
-});
-			await app.init();
+				loadGlobals: true,
+				loadRepositories: true,
+				register: (c) => {
+					// services 配列はクラスの heterogeneous union 型なので、登録時は constructor を緩めに受ける
+					// eslint-disable-next-line @typescript-eslint/no-explicit-any
+					for (const s of services) c.registerSingleton(s as any);
+				},
+			});
 			service = app.resolve<UserEntityService>(UserEntityService);
 			usersRepository = app.resolve<UsersRepository>(DI.usersRepository);
 			userProfileRepository = app.resolve<UserProfilesRepository>(DI.userProfilesRepository);

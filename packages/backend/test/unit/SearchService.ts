@@ -67,18 +67,15 @@ describe('SearchService', () => {
 	};
 
 	async function buildContext(configOverride?: Config): Promise<TestContext> {
-		const builder = Test.createTestingModule({
-			imports: [
-				GlobalModule,
-				CoreModule,
-			],
+		const app = await createTestContainer({
+			loadGlobals: true,
+			loadRepositories: true,
+			register: async (c) => {
+				const { registerCoreServices } = await import('@/di/register-core/index.js');
+				registerCoreServices(c);
+				if (configOverride) c.register(DI.config, { useValue: configOverride });
+			},
 		});
-
-		if (configOverride) {
-			builder.overrideProvider(DI.config).useValue(configOverride);
-		}
-
-		const app = await builder.compile();
 		return {
 			app,
 			service: app.resolve(SearchService),
@@ -402,7 +399,7 @@ describe('SearchService', () => {
 		});
 
 		afterAll(async () => {
-			await ctx.app.close();
+			await ctx.app.resolve(DisposableRegistry).disposeAll();
 		});
 
 		afterEach(async () => {
@@ -467,7 +464,7 @@ describe('SearchService', () => {
 		});
 
 		afterAll(async () => {
-			await ctx.app.close();
+			await ctx.app.resolve(DisposableRegistry).disposeAll();
 		});
 
 		afterEach(async () => {

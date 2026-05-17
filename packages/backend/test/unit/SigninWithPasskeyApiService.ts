@@ -86,13 +86,18 @@ describe('SigninWithPasskeyApiService', () => {
 
 	beforeAll(async () => {
 		app = await createTestContainer({
-	loadGlobals: true,
-	register: (c) => {
-		c.registerSingleton(SigninWithPasskeyApiService);
-		c.register(RateLimiterService, { useClass: FakeLimiter });
-		c.register(SigninService, { useClass: FakeSigninService });
-	},
-});
+			loadGlobals: true,
+			loadRepositories: true,
+			register: (c) => {
+				c.registerSingleton(SigninWithPasskeyApiService);
+				// FakeLimiter / FakeSigninService は本物の型を満たさない test double。
+				// tsyringe の useClass は constructor<T> の型一致を要求するので cast する。
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+				c.register(RateLimiterService, { useClass: FakeLimiter as any });
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+				c.register(SigninService, { useClass: FakeSigninService as any });
+			},
+		});
 		passkeyApiService = app.resolve<SigninWithPasskeyApiService>(SigninWithPasskeyApiService);
 		usersRepository = app.resolve<UsersRepository>(DI.usersRepository);
 		userProfilesRepository = app.resolve<UserProfilesRepository>(DI.userProfilesRepository);

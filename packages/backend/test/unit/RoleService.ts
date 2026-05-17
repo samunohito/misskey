@@ -110,24 +110,21 @@ describe('RoleService', () => {
 		});
 
 		app = await createTestContainer({
-	loadGlobals: true,
-	register: (c) => {
-		c.registerSingleton(RoleService);
-		c.registerSingleton(CacheService);
-		c.registerSingleton(IdService);
-		c.registerSingleton(GlobalEventService);
-		c.registerSingleton(UserEntityService);
-		c.registerSingleton({
-					provide: NotificationService.name,
-					useExisting: NotificationService,
-				});
-	},
-	mocks: [
-		[NotificationService, (() => ({
-						createNotification: vi.fn(),
-					}))()],
-	],
-});
+			loadGlobals: true,
+			loadRepositories: true,
+			register: (c) => {
+				c.registerSingleton(RoleService);
+				c.registerSingleton(CacheService);
+				c.registerSingleton(IdService);
+				c.registerSingleton(GlobalEventService);
+				c.registerSingleton(UserEntityService);
+			},
+			mocks: [
+				[NotificationService, (() => ({
+					createNotification: vi.fn(),
+				}))()],
+			],
+		});
 		roleService = app.resolve<RoleService>(RoleService);
 		usersRepository = app.resolve<UsersRepository>(DI.usersRepository);
 		rolesRepository = app.resolve<RolesRepository>(DI.rolesRepository);
@@ -135,8 +132,6 @@ describe('RoleService', () => {
 
 		meta = app.resolve<MiMeta>(DI.meta) as Mocked<MiMeta>;
 		notificationService = app.resolve<NotificationService>(NotificationService) as Mocked<NotificationService>;
-
-		await roleService.onModuleInit();
 	});
 
 	afterEach(async () => {
@@ -146,7 +141,8 @@ describe('RoleService', () => {
 		 * Delete meta and roleAssignment first to avoid deadlock due to schema dependencies
 		 * https://github.com/misskey-dev/misskey/issues/16783
 		 */
-		await app.resolve(DI.metasRepository).createQueryBuilder().delete().execute();
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		await app.resolve<any>(DI.metasRepository).createQueryBuilder().delete().execute();
 		await roleAssignmentsRepository.createQueryBuilder().delete().execute();
 		await Promise.all([
 			usersRepository.createQueryBuilder().delete().execute(),

@@ -126,7 +126,6 @@ describe('ActivityPub', () => {
 	loadGlobals: true,
 });
 
-		await app.init();
 		userProfilesRepository = app.resolve(DI.userProfilesRepository);
 
 		noteService = app.resolve<ApNoteService>(ApNoteService);

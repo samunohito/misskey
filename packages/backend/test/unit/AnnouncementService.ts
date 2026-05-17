@@ -79,7 +79,7 @@ describe('AnnouncementService', () => {
 
 	afterEach(async () => {
 		await Promise.all([
-			app.resolve(DI.metasRepository).createQueryBuilder().delete().execute(),
+			app.resolve<UsersRepository>(DI.metasRepository).createQueryBuilder().delete().execute(),
 			usersRepository.createQueryBuilder().delete().execute(),
 			announcementsRepository.createQueryBuilder().delete().execute(),
 			announcementReadsRepository.createQueryBuilder().delete().execute(),

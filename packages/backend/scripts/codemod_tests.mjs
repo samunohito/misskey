@@ -157,8 +157,12 @@ function transform(filePath, source) {
 	out = out.replace(/^import\s+\{[^}]*\bGlobalModule\b[^}]*\}\s+from\s+'@\/GlobalModule\.js';?\s*\n/gm, '');
 	out = out.replace(/^import\s+\{[^}]*\bCoreModule\b[^}]*\}\s+from\s+'@\/core\/CoreModule\.js';?\s*\n/gm, '');
 
-	// 4. Test.createTestingModule(...).compile() を解析変換
-	out = transformTestingModuleCall(out);
+	// 4. Test.createTestingModule(...).compile() を解析変換 (複数回呼び出しに対応してループ)
+	let prev;
+	do {
+		prev = out;
+		out = transformTestingModuleCall(out);
+	} while (prev !== out);
 
 	// 5. `app.get(X)` -> `app.resolve(X)` (DI container 系の typical 識別子のみ)
 	out = out.replace(/(\b(?:app|module|c|container|testingModule)\b)\.get(<[^>]*>)?\(/g, (full, ident, generic) => {
@@ -174,6 +178,9 @@ function transform(filePath, source) {
 		if (!containerIdents.has(ident)) return full;
 		return `await ${ident}.resolve(DisposableRegistry).disposeAll()`;
 	});
+
+	// 8. `await app.init()` を削除 (tsyringe container は即座に ready)
+	out = out.replace(/^\s*await\s+(?:app|module|container|testingModule)\.init\(\);?\s*\n/gm, '\n');
 
 	return out;
 }
