@@ -6,6 +6,29 @@
 import { init } from 'slacc';
 import type { Config } from '@/config.js';
 import type { DependencyContainer } from 'tsyringe';
+import { DisposableRegistry } from '@/di/disposable-registry.js';
+
+// 同一プロセス内に server() と jobQueue() が共存する場合があるため、
+// container を集めて SIGTERM/SIGINT で一括 disposeAll する。
+const activeContainers: DependencyContainer[] = [];
+
+let shutdownHandlerRegistered = false;
+function ensureShutdownHandler(): void {
+	if (shutdownHandlerRegistered) return;
+	shutdownHandlerRegistered = true;
+	const handle = async (signal: NodeJS.Signals) => {
+		for (const c of [...activeContainers].reverse()) {
+			try {
+				await c.resolve(DisposableRegistry).disposeAll(signal);
+			} catch (e) {
+				console.error('[boot] disposeAll failed', e);
+			}
+		}
+		process.exit(0);
+	};
+	process.on('SIGTERM', handle);
+	process.on('SIGINT', handle);
+}
 
 let slaccInitialized = false;
 
@@ -24,6 +47,8 @@ export async function server(): Promise<DependencyContainer> {
 	const { ServerService } = await import('@/server/ServerService.js');
 
 	const container = await composeServerContainer();
+	activeContainers.push(container);
+	ensureShutdownHandler();
 
 	const serverService = container.resolve(ServerService);
 	await serverService.launch();
@@ -47,6 +72,8 @@ export async function jobQueue(): Promise<DependencyContainer> {
 	const { ChartManagementService } = await import('@/core/chart/ChartManagementService.js');
 
 	const container = await composeJobQueueContainer();
+	activeContainers.push(container);
+	ensureShutdownHandler();
 
 	container.resolve(QueueProcessorService).start();
 	container.resolve(ChartManagementService).start();
