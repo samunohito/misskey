@@ -34,7 +34,11 @@ export class ApiServerService {
 		private instancesRepository: InstancesRepository,
 
 		@inject(DI.accessTokensRepository)
-		private accessTokensRepository: AccessTokensRepository,@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService,@inject(delay(() => ApiCallService)) private apiCallService: ApiCallService,@inject(delay(() => SignupApiService)) private signupApiService: SignupApiService,@inject(delay(() => SigninApiService)) private signinApiService: SigninApiService,@inject(delay(() => SigninWithPasskeyApiService)) private signinWithPasskeyApiService: SigninWithPasskeyApiService) {
+		private accessTokensRepository: AccessTokensRepository,@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService,
+		@inject(ApiCallService) private apiCallService: ApiCallService,
+		@inject(SignupApiService) private signupApiService: SignupApiService,
+		@inject(SigninApiService) private signinApiService: SigninApiService,
+		@inject(SigninWithPasskeyApiService) private signinWithPasskeyApiService: SigninWithPasskeyApiService) {
 		//this.createServer = this.createServer.bind(this);
 	}
 
