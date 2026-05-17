@@ -3,6 +3,9 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+// gen-spec.js は tsyringe デコレータを含むモジュール (DisposableRegistry 等) を間接 import するため、
+// このスクリプト単体で実行するときは reflect-metadata polyfill を最初にロードする必要がある。
+import 'reflect-metadata';
 import { writeFileSync, existsSync } from 'node:fs';
 import { execa } from 'execa';
 

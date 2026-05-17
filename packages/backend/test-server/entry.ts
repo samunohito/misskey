@@ -1,19 +1,28 @@
+/*
+ * SPDX-FileCopyrightText: syuilo and misskey-project
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
+// tsyringe デコレータを含む src/ のモジュールを import する前に polyfill を読む。
+import 'reflect-metadata';
+
 import { portToPid } from 'pid-port';
 import fkill from 'fkill';
 import Fastify from 'fastify';
-import { NestFactory } from '@nestjs/core';
-import { MainModule } from '@/MainModule.js';
+import type { DependencyContainer } from 'tsyringe';
+import { composeServerContainer } from '@/di/compose.js';
 import { ServerService } from '@/server/ServerService.js';
 import { loadConfig } from '@/config.js';
-import { NestLogger } from '@/NestLogger.js';
-import { INestApplicationContext } from '@nestjs/common';
+import { DisposableRegistry } from '@/di/disposable-registry.js';
+import { disposeGlobalResources } from '@/di/register-globals.js';
+import { disposeQueueClients } from '@/di/register-queue.js';
 
 const config = loadConfig();
 const originEnv = JSON.stringify(process.env);
 
 process.env.NODE_ENV = 'test';
 
-let app: INestApplicationContext;
+let container: DependencyContainer;
 let serverService: ServerService;
 
 /**
@@ -24,10 +33,8 @@ export async function setup() {
 
 	console.log('starting application...');
 
-	app = await NestFactory.createApplicationContext(MainModule, {
-		logger: new NestLogger(),
-	});
-	serverService = app.get(ServerService);
+	container = await composeServerContainer();
+	serverService = container.resolve(ServerService);
 	await serverService.launch();
 
 	await startControllerEndpoints();
@@ -42,9 +49,33 @@ export async function setup() {
  * テスト用のサーバインスタンスを停止する
  */
 export async function teardown() {
-	await serverService.dispose();
-	await app.close();
+	await disposeContainer();
+	await disposeGlobalsSafe();
 	await killTestServer();
+}
+
+/**
+ * container と global リソースを破棄する。複数箇所から呼べるよう副作用を捕捉する。
+ */
+async function disposeContainer() {
+	try {
+		await container.resolve(DisposableRegistry).disposeAll();
+	} catch (e) {
+		console.error('[test-server] disposeAll failed', e);
+	}
+}
+
+async function disposeGlobalsSafe() {
+	try {
+		await disposeQueueClients();
+	} catch (e) {
+		console.error('[test-server] disposeQueueClients failed', e);
+	}
+	try {
+		await disposeGlobalResources();
+	} catch (e) {
+		console.error('[test-server] disposeGlobalResources failed', e);
+	}
 }
 
 /**
@@ -85,17 +116,15 @@ async function startControllerEndpoints(port = config.port + 1000) {
 	fastify.post<{ Body: { key?: string, value?: string } }>('/env-reset', async (req, res) => {
 		process.env = JSON.parse(originEnv);
 
-		await serverService.dispose();
-		await app.close();
+		await disposeContainer();
+		await disposeGlobalsSafe();
 
 		await killTestServer();
 
 		console.log('starting application...');
 
-		app = await NestFactory.createApplicationContext(MainModule, {
-			logger: new NestLogger(),
-		});
-		serverService = app.get(ServerService);
+		container = await composeServerContainer();
+		serverService = container.resolve(ServerService);
 		await serverService.launch();
 
 		res.code(200).send({ success: true });

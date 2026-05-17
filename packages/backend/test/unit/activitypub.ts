@@ -123,11 +123,27 @@ describe('ActivityPub', () => {
 
 	beforeAll(async () => {
 		const app = await createTestContainer({
-	loadGlobals: true,
-	loadRepositories: true,
-	loadQueueClients: true,
-	loadCore: true,
-});
+			loadGlobals: true,
+			loadRepositories: true,
+			loadQueueClients: true,
+			loadCore: true,
+			mocks: [
+				[DI.meta, meta],
+				[DownloadService, {
+					async downloadUrl(url: string, path: string): Promise<{ filename: string }> {
+						if (url.endsWith('.png')) {
+							fs.copyFileSync(
+								_dirname + '/../resources/hw.png',
+								path,
+							);
+						}
+						return {
+							filename: 'dummy.tmp',
+						};
+					},
+				}],
+			],
+		});
 
 		userProfilesRepository = app.resolve(DI.userProfilesRepository);
 

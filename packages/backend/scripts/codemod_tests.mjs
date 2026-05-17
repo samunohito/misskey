@@ -34,14 +34,109 @@ function walk(dir, out = []) {
 
 // `Test.createTestingModule({ imports: [...], providers: [...] }).compile()` を解析して
 // `createTestContainer({ loadGlobals, register, mocks })` 形に変換する。
-function transformTestingModuleCall(source) {
-	let out = source;
-	const callRe = /Test\s*\.\s*createTestingModule\(\s*\{([\s\S]*?)\}\s*\)\s*\.\s*compile\(\)/m;
-	const m = out.match(callRe);
-	if (!m) return out;
+// `source[idx]` が開き括弧 ('(' or '{' or '[') の前提で、対応する閉じ括弧の次の位置を返す。
+// 文字列リテラル内の括弧は無視する。
+function matchBalanced(source, idx) {
+	const open = source[idx];
+	const close = { '(': ')', '{': '}', '[': ']' }[open];
+	if (!close) return -1;
+	let depth = 1;
+	let i = idx + 1;
+	let inStr = null;
+	while (i < source.length && depth > 0) {
+		const ch = source[i];
+		if (inStr) {
+			if (ch === '\\') { i += 2; continue; }
+			if (ch === inStr) inStr = null;
+		} else if (ch === '"' || ch === "'" || ch === '`') {
+			inStr = ch;
+		} else if (ch === '(' || ch === '{' || ch === '[') depth++;
+		else if (ch === ')' || ch === '}' || ch === ']') {
+			depth--;
+			if (depth === 0) return i + 1;
+		}
+		i++;
+	}
+	return -1;
+}
 
-	const body = m[1];
-	// imports / providers の中身を抽出 (簡易なネスト括弧マッチ)
+// `Test.createTestingModule({...})` から `.compile()` までのチェーン全体を解析して
+// `createTestContainer({...})` に変換する。チェーンには
+//   .overrideProvider(X).useValue(Y) / .useFactory(fn) / .useClass(C)
+// が任意個入り得る。これらは mocks / register に振り分ける。
+function transformTestingModuleCall(source) {
+	const startMatch = source.match(/Test\s*\.\s*createTestingModule\(/);
+	if (!startMatch) return source;
+	const startIdx = startMatch.index;
+
+	const openParen = startIdx + startMatch[0].length - 1; // '(' の位置
+	const closeParen = matchBalanced(source, openParen);
+	if (closeParen < 0) return source;
+
+	// body は最初の {...} を期待
+	const bodyOpen = source.indexOf('{', openParen + 1);
+	if (bodyOpen < 0 || bodyOpen >= closeParen) return source;
+	const bodyClose = matchBalanced(source, bodyOpen);
+	if (bodyClose < 0 || bodyClose > closeParen) return source;
+	const body = source.slice(bodyOpen + 1, bodyClose - 1);
+
+	// チェーン解析
+	const overrideMocks = [];
+	const overrideRegisters = [];
+	let cursor = closeParen;
+	let endIdx = -1;
+	while (cursor < source.length) {
+		while (cursor < source.length && /\s/.test(source[cursor])) cursor++;
+		if (source[cursor] !== '.') return source;
+		cursor++;
+		while (cursor < source.length && /\s/.test(source[cursor])) cursor++;
+		const nameMatch = source.slice(cursor).match(/^(\w+)/);
+		if (!nameMatch) return source;
+		const name = nameMatch[1];
+		cursor += name.length;
+		while (cursor < source.length && /\s/.test(source[cursor])) cursor++;
+		if (source[cursor] !== '(') return source;
+		const argOpen = cursor;
+		const argClose = matchBalanced(source, argOpen);
+		if (argClose < 0) return source;
+		const argText = source.slice(argOpen + 1, argClose - 1);
+		cursor = argClose;
+
+		if (name === 'compile') {
+			endIdx = cursor;
+			break;
+		}
+		if (name === 'overrideProvider') {
+			const token = argText.trim();
+			while (cursor < source.length && /\s/.test(source[cursor])) cursor++;
+			if (source[cursor] !== '.') return source;
+			cursor++;
+			while (cursor < source.length && /\s/.test(source[cursor])) cursor++;
+			const useMatch = source.slice(cursor).match(/^(useValue|useFactory|useClass)/);
+			if (!useMatch) return source;
+			const useKind = useMatch[1];
+			cursor += useKind.length;
+			while (cursor < source.length && /\s/.test(source[cursor])) cursor++;
+			if (source[cursor] !== '(') return source;
+			const useArgOpen = cursor;
+			const useArgClose = matchBalanced(source, useArgOpen);
+			if (useArgClose < 0) return source;
+			const useArg = source.slice(useArgOpen + 1, useArgClose - 1).trim();
+			cursor = useArgClose;
+			if (useKind === 'useValue') {
+				overrideMocks.push(`[${token}, ${useArg}]`);
+			} else if (useKind === 'useFactory') {
+				// NestJS の `.useFactory({factory: () => v})` 等価: 登録時に factory を呼ぶ。
+				overrideMocks.push(`[${token}, (${useArg}).factory()]`);
+			} else if (useKind === 'useClass') {
+				overrideRegisters.push(`\t\tc.register(${token}, { useClass: ${useArg} });`);
+			}
+			continue;
+		}
+		return source;
+	}
+	if (endIdx < 0) return source;
+
 	const importsRange = findArrayRange(body, 'imports');
 	const providersRange = findArrayRange(body, 'providers');
 
@@ -60,7 +155,6 @@ function transformTestingModuleCall(source) {
 		const useFactory = t.match(/provide\s*:\s*([^,}]+?)\s*,\s*useFactory\s*:\s*([\s\S]*)/);
 		const useValue = t.match(/provide\s*:\s*([^,}]+?)\s*,\s*useValue\s*:\s*([\s\S]*)/);
 		const useClass = t.match(/provide\s*:\s*([^,}]+?)\s*,\s*useClass\s*:\s*([\s\S]*)/);
-		// 後段の trim helper: 末尾の '}' / ',' / 空白を反復除去
 		const cleanTail = (s) => {
 			let r = s.trim();
 			while (/[,}]\s*$/.test(r)) r = r.replace(/[,}]\s*$/, '').trim();
@@ -79,10 +173,13 @@ function transformTestingModuleCall(source) {
 			const cls = cleanTail(useClass[2]);
 			registerLines.push(`\t\tc.register(${provide}, { useClass: ${cls} });`);
 		} else {
-			// クラス名のみ
 			registerLines.push(`\t\tc.registerSingleton(${t});`);
 		}
 	}
+
+	// override 由来のものは providers 由来より後に積んで優先度を高くする
+	registerLines.push(...overrideRegisters);
+	mockLines.push(...overrideMocks);
 
 	const optsParts = [];
 	if (loadGlobals) optsParts.push('\tloadGlobals: true');
@@ -90,8 +187,7 @@ function transformTestingModuleCall(source) {
 	if (mockLines.length > 0) optsParts.push(`\tmocks: [\n\t\t${mockLines.join(',\n\t\t')},\n\t]`);
 
 	const replacement = `createTestContainer({\n${optsParts.join(',\n')},\n})`;
-	out = out.slice(0, m.index) + replacement + out.slice(m.index + m[0].length);
-	return out;
+	return source.slice(0, startIdx) + replacement + source.slice(endIdx);
 }
 
 function findArrayRange(source, key) {

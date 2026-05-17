@@ -86,26 +86,27 @@ describe('CleanRemoteNotesProcessorService', () => {
 
 	beforeAll(async () => {
 		app = await createTestContainer({
-	loadGlobals: true,
-	loadRepositories: true,
-	loadQueueClients: true,
-	loadCore: true,
-	register: (c) => {
-		c.registerSingleton(CleanRemoteNotesProcessorService);
-		c.registerSingleton(IdService);
-	},
-	mocks: [
-		[QueueLoggerService, (() => ({
-							logger: {
-								createSubLogger: () => ({
-									info: vi.fn(),
-									warn: vi.fn(),
-									succ: vi.fn(),
-								}),
-							},
-						}))()],
-	],
-});
+			loadGlobals: true,
+			loadRepositories: true,
+			loadQueueClients: true,
+			loadCore: true,
+			register: (c) => {
+				c.registerSingleton(CleanRemoteNotesProcessorService);
+				c.registerSingleton(IdService);
+			},
+			mocks: [
+				[QueueLoggerService, {
+					logger: {
+						createSubLogger: () => ({
+							info: vi.fn(),
+							warn: vi.fn(),
+							succ: vi.fn(),
+						}),
+					},
+				}],
+				[DI.meta, meta],
+			],
+		});
 
 		service = app.resolve(CleanRemoteNotesProcessorService);
 		idService = app.resolve(IdService);
