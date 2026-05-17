@@ -6,11 +6,11 @@
 process.env.NODE_ENV = 'test';
 
 import { afterAll, beforeAll, beforeEach, describe, expect, vi, test } from 'vitest';
-import { Test } from '@nestjs/testing';
-import type { TestingModule } from '@nestjs/testing';
+import 'reflect-metadata';
+import { createTestContainer } from '@/di/testing.js';
+import { DisposableRegistry } from '@/di/disposable-registry.js';
+import type { DependencyContainer } from 'tsyringe';
 import type { DriveFilesRepository, DriveFoldersRepository, UsersRepository } from '@/models/_.js';
-import { GlobalModule } from '@/GlobalModule.js';
-import { CoreModule } from '@/core/CoreModule.js';
 import { DriveFileEntityService } from '@/core/entities/DriveFileEntityService.js';
 import { DriveFolderEntityService } from '@/core/entities/DriveFolderEntityService.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
@@ -21,7 +21,7 @@ import { secureRndstr } from '@/misc/secure-rndstr.js';
 const describeBenchmark = process.env.RUN_BENCHMARKS === '1' ? describe : describe.skip;
 
 describe('DriveFileEntityService', () => {
-	let app: TestingModule;
+	let app: DependencyContainer;
 	let service: DriveFileEntityService;
 	let driveFolderEntityService: DriveFolderEntityService;
 	let driveFilesRepository: DriveFilesRepository;
@@ -110,13 +110,11 @@ describe('DriveFileEntityService', () => {
 
 		app = await moduleBuilder.compile();
 		await app.init();
-		app.enableShutdownHooks();
-
-		service = app.get<DriveFileEntityService>(DriveFileEntityService);
-		driveFolderEntityService = app.get<DriveFolderEntityService>(DriveFolderEntityService);
-		driveFilesRepository = app.get<DriveFilesRepository>(DI.driveFilesRepository);
-		driveFoldersRepository = app.get<DriveFoldersRepository>(DI.driveFoldersRepository);
-		usersRepository = app.get<UsersRepository>(DI.usersRepository);
+		service = app.resolve<DriveFileEntityService>(DriveFileEntityService);
+		driveFolderEntityService = app.resolve<DriveFolderEntityService>(DriveFolderEntityService);
+		driveFilesRepository = app.resolve<DriveFilesRepository>(DI.driveFilesRepository);
+		driveFoldersRepository = app.resolve<DriveFoldersRepository>(DI.driveFoldersRepository);
+		usersRepository = app.resolve<UsersRepository>(DI.usersRepository);
 	});
 
 	beforeEach(() => {
@@ -125,7 +123,7 @@ describe('DriveFileEntityService', () => {
 	});
 
 	afterAll(async () => {
-		await app.close();
+		await app.resolve(DisposableRegistry).disposeAll();
 	});
 
 	describe('pack', () => {

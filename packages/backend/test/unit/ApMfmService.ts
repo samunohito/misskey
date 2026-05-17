@@ -5,20 +5,19 @@
 
 import * as assert from 'assert';
 import { describe, test, beforeAll } from 'vitest';
-import { Test } from '@nestjs/testing';
-
-import { CoreModule } from '@/core/CoreModule.js';
+import 'reflect-metadata';
+import { createTestContainer } from '@/di/testing.js';
+import { DisposableRegistry } from '@/di/disposable-registry.js';
+import type { DependencyContainer } from 'tsyringe';
 import { ApMfmService } from '@/core/activitypub/ApMfmService.js';
-import { GlobalModule } from '@/GlobalModule.js';
-
 describe('ApMfmService', () => {
 	let apMfmService: ApMfmService;
 
 	beforeAll(async () => {
-		const app = await Test.createTestingModule({
-			imports: [GlobalModule, CoreModule],
-		}).compile();
-		apMfmService = app.get<ApMfmService>(ApMfmService);
+		const app = await createTestContainer({
+	loadGlobals: true,
+});
+		apMfmService = app.resolve<ApMfmService>(ApMfmService);
 	});
 
 	describe('getNoteHtml', () => {

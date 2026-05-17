@@ -6,16 +6,17 @@
 import { IncomingHttpHeaders } from 'node:http';
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { mockDeep } from 'vitest-mock-extended';
-import { Test, TestingModule } from '@nestjs/testing';
+import 'reflect-metadata';
+import { createTestContainer } from '@/di/testing.js';
+import { DisposableRegistry } from '@/di/disposable-registry.js';
+import type { DependencyContainer } from 'tsyringe';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import type { AuthenticationResponseJSON } from '@simplewebauthn/server';
 import { HttpHeader } from 'fastify/types/utils.js';
 import { MiUser } from '@/models/User.js';
 import { MiUserProfile, UserProfilesRepository, UsersRepository } from '@/models/_.js';
 import { IdService } from '@/core/IdService.js';
-import { GlobalModule } from '@/GlobalModule.js';
 import { DI } from '@/di-symbols.js';
-import { CoreModule } from '@/core/CoreModule.js';
 import { SigninWithPasskeyApiService } from '@/server/api/SigninWithPasskeyApiService.js';
 import { RateLimiterService } from '@/server/api/RateLimiterService.js';
 import { WebAuthnService } from '@/core/WebAuthnService.js';
@@ -60,7 +61,7 @@ type ApiFastifyRequestType = FastifyRequest<{
 }>;
 
 describe('SigninWithPasskeyApiService', () => {
-	let app: TestingModule;
+	let app: DependencyContainer;
 	let passkeyApiService: SigninWithPasskeyApiService;
 	let usersRepository: UsersRepository;
 	let userProfilesRepository: UserProfilesRepository;
@@ -84,23 +85,19 @@ describe('SigninWithPasskeyApiService', () => {
 	}
 
 	beforeAll(async () => {
-		app = await Test.createTestingModule({
-			imports: [GlobalModule, CoreModule],
-			providers: [
-				SigninWithPasskeyApiService,
-				{ provide: RateLimiterService, useClass: FakeLimiter },
-				{ provide: SigninService, useClass: FakeSigninService },
-			],
-		}).useMocker((token) => {
-			if (typeof token === 'function') {
-				return mockDeep<typeof token>();
-			}
-		}).compile();
-		passkeyApiService = app.get<SigninWithPasskeyApiService>(SigninWithPasskeyApiService);
-		usersRepository = app.get<UsersRepository>(DI.usersRepository);
-		userProfilesRepository = app.get<UserProfilesRepository>(DI.userProfilesRepository);
-		webAuthnService = app.get<WebAuthnService>(WebAuthnService);
-		idService = app.get<IdService>(IdService);
+		app = await createTestContainer({
+	loadGlobals: true,
+	register: (c) => {
+		c.registerSingleton(SigninWithPasskeyApiService);
+		c.register(RateLimiterService, { useClass: FakeLimiter });
+		c.register(SigninService, { useClass: FakeSigninService });
+	},
+});
+		passkeyApiService = app.resolve<SigninWithPasskeyApiService>(SigninWithPasskeyApiService);
+		usersRepository = app.resolve<UsersRepository>(DI.usersRepository);
+		userProfilesRepository = app.resolve<UserProfilesRepository>(DI.userProfilesRepository);
+		webAuthnService = app.resolve<WebAuthnService>(WebAuthnService);
+		idService = app.resolve<IdService>(IdService);
 	});
 
 	beforeEach(async () => {
@@ -123,7 +120,7 @@ describe('SigninWithPasskeyApiService', () => {
 	});
 
 	afterAll(async () => {
-		await app.close();
+		await app.resolve(DisposableRegistry).disposeAll();
 	});
 
 	describe('Get Passkey Options', () => {

@@ -6,9 +6,10 @@
 /* eslint-disable */
 
 import { afterEach, beforeEach, describe, expect, beforeAll, afterAll, test } from 'vitest';
-import { Test, TestingModule } from '@nestjs/testing';
-import { GlobalModule } from '@/GlobalModule.js';
-import { CoreModule } from '@/core/CoreModule.js';
+import 'reflect-metadata';
+import { createTestContainer } from '@/di/testing.js';
+import { DisposableRegistry } from '@/di/disposable-registry.js';
+import type { DependencyContainer } from 'tsyringe';
 import { GlobalEventService } from '@/core/GlobalEventService.js';
 import { IdService } from '@/core/IdService.js';
 import { ChannelMutingService } from '@/core/ChannelMutingService.js';
@@ -27,7 +28,7 @@ import { DI } from '@/di-symbols.js';
 import { setTimeout } from 'node:timers/promises';
 
 describe('ChannelMutingService', () => {
-	let app: TestingModule;
+	let app: DependencyContainer;
 	let service: ChannelMutingService;
 	let channelsRepository: ChannelsRepository;
 	let channelMutingRepository: ChannelMutingRepository;
@@ -99,31 +100,25 @@ describe('ChannelMutingService', () => {
 	}
 
 	beforeAll(async () => {
-		app = await Test.createTestingModule({
-			imports: [
-				GlobalModule,
-				CoreModule,
-			],
-			providers: [
-				GlobalEventService,
-				IdService,
-				ChannelMutingService,
-			],
-		}).compile();
-
-		app.enableShutdownHooks();
-
-		service = app.get<ChannelMutingService>(ChannelMutingService);
-		idService = app.get<IdService>(IdService);
-		channelsRepository = app.get<ChannelsRepository>(DI.channelsRepository);
-		channelMutingRepository = app.get<ChannelMutingRepository>(DI.channelMutingRepository);
-		usersRepository = app.get<UsersRepository>(DI.usersRepository);
-		userProfilesRepository = app.get<UserProfilesRepository>(DI.userProfilesRepository);
-		driveFilesRepository = app.get<DriveFilesRepository>(DI.driveFilesRepository);
+		app = await createTestContainer({
+	loadGlobals: true,
+	register: (c) => {
+		c.registerSingleton(GlobalEventService);
+		c.registerSingleton(IdService);
+		c.registerSingleton(ChannelMutingService);
+	},
+});
+		service = app.resolve<ChannelMutingService>(ChannelMutingService);
+		idService = app.resolve<IdService>(IdService);
+		channelsRepository = app.resolve<ChannelsRepository>(DI.channelsRepository);
+		channelMutingRepository = app.resolve<ChannelMutingRepository>(DI.channelMutingRepository);
+		usersRepository = app.resolve<UsersRepository>(DI.usersRepository);
+		userProfilesRepository = app.resolve<UserProfilesRepository>(DI.userProfilesRepository);
+		driveFilesRepository = app.resolve<DriveFilesRepository>(DI.driveFilesRepository);
 	});
 
 	afterAll(async () => {
-		await app.close();
+		await app.resolve(DisposableRegistry).disposeAll();
 	});
 
 	beforeEach(async () => {

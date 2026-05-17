@@ -2,9 +2,8 @@
  * SPDX-FileCopyrightText: syuilo and misskey-project
  * SPDX-License-Identifier: AGPL-3.0-only
  */
-
-import { INestApplicationContext } from '@nestjs/common';
-
+import type { DependencyContainer } from 'tsyringe';
+import { DisposableRegistry } from '@/di/disposable-registry.js';
 process.env.NODE_ENV = 'test';
 
 import { setTimeout } from 'node:timers/promises';
@@ -18,7 +17,7 @@ import { api, castAsError, initTestDb, signup, successfulApiCall, uploadFile } f
 import type * as misskey from 'misskey-js';
 
 describe('Account Move', () => {
-	let jq: INestApplicationContext;
+	let jq: DependencyContainer;
 	let url: URL;
 
 	let root: misskey.entities.SignupResponse;
@@ -48,7 +47,7 @@ describe('Account Move', () => {
 	}, 1000 * 60 * 2);
 
 	afterAll(async () => {
-		await jq.close();
+		await jq.resolve(DisposableRegistry).disposeAll();
 	});
 
 	describe('Create Alias', () => {

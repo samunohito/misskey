@@ -10,8 +10,10 @@ import * as fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname } from 'node:path';
 import { describe, beforeAll, beforeEach, test, vi } from 'vitest';
-import { Test } from '@nestjs/testing';
-
+import 'reflect-metadata';
+import { createTestContainer } from '@/di/testing.js';
+import { DisposableRegistry } from '@/di/disposable-registry.js';
+import type { DependencyContainer } from 'tsyringe';
 import { MockResolver } from '../misc/mock-resolver.js';
 import type { IActor, IApDocument, ICollection, IObject, IPost } from '@/core/activitypub/type.js';
 import type { MiRemoteUser } from '@/models/User.js';
@@ -21,8 +23,6 @@ import { ApPersonService } from '@/core/activitypub/models/ApPersonService.js';
 import { ApRendererService } from '@/core/activitypub/ApRendererService.js';
 import { JsonLdService } from '@/core/activitypub/JsonLdService.js';
 import { CONTEXT } from '@/core/activitypub/misc/contexts.js';
-import { GlobalModule } from '@/GlobalModule.js';
-import { CoreModule } from '@/core/CoreModule.js';
 import { FederatedInstanceService } from '@/core/FederatedInstanceService.js';
 import { LoggerService } from '@/core/LoggerService.js';
 import { MiMeta, MiNote, UserProfilesRepository } from '@/models/_.js';
@@ -122,39 +122,22 @@ describe('ActivityPub', () => {
 	}
 
 	beforeAll(async () => {
-		const app = await Test.createTestingModule({
-			imports: [GlobalModule, CoreModule],
-		})
-			.overrideProvider(DownloadService).useValue({
-				async downloadUrl(url: string, path: string): Promise<{ filename: string }> {
-					if (url.endsWith('.png')) {
-						fs.copyFileSync(
-							_dirname + '/../resources/hw.png',
-							path,
-						);
-					}
-					return {
-						filename: 'dummy.tmp',
-					};
-				},
-			})
-			.overrideProvider(DI.meta).useFactory({ factory: () => meta })
-			.compile();
+		const app = await createTestContainer({
+	loadGlobals: true,
+});
 
 		await app.init();
-		app.enableShutdownHooks();
+		userProfilesRepository = app.resolve(DI.userProfilesRepository);
 
-		userProfilesRepository = app.get(DI.userProfilesRepository);
-
-		noteService = app.get<ApNoteService>(ApNoteService);
-		personService = app.get<ApPersonService>(ApPersonService);
-		rendererService = app.get<ApRendererService>(ApRendererService);
-		imageService = app.get<ApImageService>(ApImageService);
-		jsonLdService = app.get<JsonLdService>(JsonLdService);
+		noteService = app.resolve<ApNoteService>(ApNoteService);
+		personService = app.resolve<ApPersonService>(ApPersonService);
+		rendererService = app.resolve<ApRendererService>(ApRendererService);
+		imageService = app.resolve<ApImageService>(ApImageService);
+		jsonLdService = app.resolve<JsonLdService>(JsonLdService);
 		resolver = new MockResolver(await app.resolve<LoggerService>(LoggerService));
 
 		// Prevent ApPersonService from fetching instance, as it causes Jest import-after-test error
-		const federatedInstanceService = app.get<FederatedInstanceService>(FederatedInstanceService);
+		const federatedInstanceService = app.resolve<FederatedInstanceService>(FederatedInstanceService);
 		vi.spyOn(federatedInstanceService, 'fetch').mockImplementation(() => new Promise(() => { }));
 	});
 

@@ -6,20 +6,19 @@
 import * as assert from 'assert';
 import * as mfm from 'mfm-js';
 import { beforeAll, describe, test } from 'vitest';
-import { Test } from '@nestjs/testing';
-
-import { CoreModule } from '@/core/CoreModule.js';
+import 'reflect-metadata';
+import { createTestContainer } from '@/di/testing.js';
+import { DisposableRegistry } from '@/di/disposable-registry.js';
+import type { DependencyContainer } from 'tsyringe';
 import { MfmService } from '@/core/MfmService.js';
-import { GlobalModule } from '@/GlobalModule.js';
-
 describe('MfmService', () => {
 	let mfmService: MfmService;
 
 	beforeAll(async () => {
-		const app = await Test.createTestingModule({
-			imports: [GlobalModule, CoreModule],
-		}).compile();
-		mfmService = app.get<MfmService>(MfmService);
+		const app = await createTestContainer({
+	loadGlobals: true,
+});
+		mfmService = app.resolve<MfmService>(MfmService);
 	});
 
 	describe('toHtml', () => {

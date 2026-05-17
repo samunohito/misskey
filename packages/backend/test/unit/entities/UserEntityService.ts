@@ -3,12 +3,13 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Test, TestingModule } from '@nestjs/testing';
+import 'reflect-metadata';
+import { createTestContainer } from '@/di/testing.js';
+import { DisposableRegistry } from '@/di/disposable-registry.js';
+import type { DependencyContainer } from 'tsyringe';
 import { describe, expect, beforeAll, afterAll, test } from 'vitest';
 import type { MiUser } from '@/models/User.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
-import { GlobalModule } from '@/GlobalModule.js';
-import { CoreModule } from '@/core/CoreModule.js';
 import { secureRndstr } from '@/misc/secure-rndstr.js';
 import { genAidx } from '@/misc/id/aidx.js';
 import {
@@ -57,7 +58,7 @@ process.env.NODE_ENV = 'test';
 
 describe('UserEntityService', () => {
 	describe('pack/packMany', () => {
-		let app: TestingModule;
+		let app: DependencyContainer;
 		let service: UserEntityService;
 		let usersRepository: UsersRepository;
 		let userProfileRepository: UserProfilesRepository;
@@ -177,29 +178,27 @@ describe('UserEntityService', () => {
 				ChatService,
 			];
 
-			app = await Test.createTestingModule({
-				imports: [GlobalModule, CoreModule],
-				providers: [
-					...services,
-					...services.map(x => ({ provide: x.name, useExisting: x })),
-				],
-			}).compile();
+			app = await createTestContainer({
+	loadGlobals: true,
+	register: (c) => {
+		c.registerSingleton(...services);
+		c.registerSingleton(...services.map(x => ({ provide: x.name, useExisting: x })));
+	},
+});
 			await app.init();
-			app.enableShutdownHooks();
-
-			service = app.get<UserEntityService>(UserEntityService);
-			usersRepository = app.get<UsersRepository>(DI.usersRepository);
-			userProfileRepository = app.get<UserProfilesRepository>(DI.userProfilesRepository);
-			userMemosRepository = app.get<UserMemoRepository>(DI.userMemosRepository);
-			followingRepository = app.get<FollowingsRepository>(DI.followingsRepository);
-			followingRequestRepository = app.get<FollowRequestsRepository>(DI.followRequestsRepository);
-			blockingRepository = app.get<BlockingsRepository>(DI.blockingsRepository);
-			mutingRepository = app.get<MutingsRepository>(DI.mutingsRepository);
-			renoteMutingsRepository = app.get<RenoteMutingsRepository>(DI.renoteMutingsRepository);
+			service = app.resolve<UserEntityService>(UserEntityService);
+			usersRepository = app.resolve<UsersRepository>(DI.usersRepository);
+			userProfileRepository = app.resolve<UserProfilesRepository>(DI.userProfilesRepository);
+			userMemosRepository = app.resolve<UserMemoRepository>(DI.userMemosRepository);
+			followingRepository = app.resolve<FollowingsRepository>(DI.followingsRepository);
+			followingRequestRepository = app.resolve<FollowRequestsRepository>(DI.followRequestsRepository);
+			blockingRepository = app.resolve<BlockingsRepository>(DI.blockingsRepository);
+			mutingRepository = app.resolve<MutingsRepository>(DI.mutingsRepository);
+			renoteMutingsRepository = app.resolve<RenoteMutingsRepository>(DI.renoteMutingsRepository);
 		});
 
 		afterAll(async () => {
-			await app.close();
+			await app.resolve(DisposableRegistry).disposeAll();
 		});
 
 		test('UserLite', async() => {

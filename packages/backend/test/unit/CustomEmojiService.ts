@@ -4,7 +4,10 @@
  */
 
 import { afterEach, beforeAll, describe, test, expect } from 'vitest';
-import { Test, TestingModule } from '@nestjs/testing';
+import 'reflect-metadata';
+import { createTestContainer } from '@/di/testing.js';
+import { DisposableRegistry } from '@/di/disposable-registry.js';
+import type { DependencyContainer } from 'tsyringe';
 import { CustomEmojiService } from '@/core/CustomEmojiService.js';
 import { EmojiEntityService } from '@/core/entities/EmojiEntityService.js';
 import { GlobalEventService } from '@/core/GlobalEventService.js';
@@ -12,38 +15,31 @@ import { IdService } from '@/core/IdService.js';
 import { ModerationLogService } from '@/core/ModerationLogService.js';
 import { UtilityService } from '@/core/UtilityService.js';
 import { DI } from '@/di-symbols.js';
-import { GlobalModule } from '@/GlobalModule.js';
 import { EmojisRepository } from '@/models/_.js';
 import { MiEmoji } from '@/models/Emoji.js';
 
 describe('CustomEmojiService', () => {
-	let app: TestingModule;
+	let app: DependencyContainer;
 	let service: CustomEmojiService;
 
 	let emojisRepository: EmojisRepository;
 	let idService: IdService;
 
 	beforeAll(async () => {
-		app = await Test
-			.createTestingModule({
-				imports: [
-					GlobalModule,
-				],
-				providers: [
-					CustomEmojiService,
-					UtilityService,
-					IdService,
-					EmojiEntityService,
-					ModerationLogService,
-					GlobalEventService,
-				],
-			})
-			.compile();
-		app.enableShutdownHooks();
-
-		service = app.get<CustomEmojiService>(CustomEmojiService);
-		emojisRepository = app.get<EmojisRepository>(DI.emojisRepository);
-		idService = app.get<IdService>(IdService);
+		app = await createTestContainer({
+	loadGlobals: true,
+	register: (c) => {
+		c.registerSingleton(CustomEmojiService);
+		c.registerSingleton(UtilityService);
+		c.registerSingleton(IdService);
+		c.registerSingleton(EmojiEntityService);
+		c.registerSingleton(ModerationLogService);
+		c.registerSingleton(GlobalEventService);
+	},
+});
+		service = app.resolve<CustomEmojiService>(CustomEmojiService);
+		emojisRepository = app.resolve<EmojisRepository>(DI.emojisRepository);
+		idService = app.resolve<IdService>(IdService);
 	});
 
 	describe('fetchEmojis', () => {

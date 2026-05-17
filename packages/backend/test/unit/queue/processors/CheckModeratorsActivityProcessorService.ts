@@ -5,14 +5,16 @@
 
 import { describe, expect, test, beforeAll, beforeEach, afterEach, afterAll, vi } from 'vitest';
 import type { Mocked } from 'vitest';
-import { Test, TestingModule } from '@nestjs/testing';
+import 'reflect-metadata';
+import { createTestContainer } from '@/di/testing.js';
+import { DisposableRegistry } from '@/di/disposable-registry.js';
+import type { DependencyContainer } from 'tsyringe';
 import * as lolex from '@sinonjs/fake-timers';
 import { addHours, addSeconds, subDays, subHours, subSeconds } from 'date-fns';
 import { CheckModeratorsActivityProcessorService } from '@/queue/processors/CheckModeratorsActivityProcessorService.js';
 import { MiSystemWebhook, MiUser, MiUserProfile, UserProfilesRepository, UsersRepository } from '@/models/_.js';
 import { IdService } from '@/core/IdService.js';
 import { RoleService } from '@/core/RoleService.js';
-import { GlobalModule } from '@/GlobalModule.js';
 import { MetaService } from '@/core/MetaService.js';
 import { DI } from '@/di-symbols.js';
 import { QueueLoggerService } from '@/queue/QueueLoggerService.js';
@@ -24,7 +26,7 @@ import { SystemWebhookEventType } from '@/models/SystemWebhook.js';
 const baseDate = new Date(Date.UTC(2000, 11, 15, 12, 0, 0));
 
 describe('CheckModeratorsActivityProcessorService', () => {
-	let app: TestingModule;
+	let app: DependencyContainer;
 	let clock: lolex.Clock;
 	let service: CheckModeratorsActivityProcessorService;
 
@@ -86,34 +88,22 @@ describe('CheckModeratorsActivityProcessorService', () => {
 	// --------------------------------------------------------------------------------------
 
 	beforeAll(async () => {
-		app = await Test
-			.createTestingModule({
-				imports: [
-					GlobalModule,
-				],
-				providers: [
-					CheckModeratorsActivityProcessorService,
-					IdService,
-					{
-						provide: RoleService, useFactory: () => ({ getModerators: vi.fn() }),
-					},
-					{
-						provide: MetaService, useFactory: () => ({ fetch: vi.fn() }),
-					},
-					{
-						provide: AnnouncementService, useFactory: () => ({ create: vi.fn() }),
-					},
-					{
-						provide: EmailService, useFactory: () => ({ sendEmail: vi.fn() }),
-					},
-					{
-						provide: SystemWebhookService, useFactory: () => ({
+		app = await createTestContainer({
+	loadGlobals: true,
+	register: (c) => {
+		c.registerSingleton(CheckModeratorsActivityProcessorService);
+		c.registerSingleton(IdService);
+	},
+	mocks: [
+		[RoleService, (() => ({ getModerators: vi.fn() }))()],
+		[MetaService, (() => ({ fetch: vi.fn() }))()],
+		[AnnouncementService, (() => ({ create: vi.fn() }))()],
+		[EmailService, (() => ({ sendEmail: vi.fn() }))()],
+		[SystemWebhookService, (() => ({
 							fetchActiveSystemWebhooks: vi.fn(),
 							enqueueSystemWebhook: vi.fn(),
-						}),
-					},
-					{
-						provide: QueueLoggerService, useFactory: () => ({
+						}))()],
+		[QueueLoggerService, (() => ({
 							logger: ({
 								createSubLogger: () => ({
 									info: vi.fn(),
@@ -121,23 +111,19 @@ describe('CheckModeratorsActivityProcessorService', () => {
 									succ: vi.fn(),
 								}),
 							}),
-						}),
-					},
-				],
-			})
-			.compile();
+						}))()],
+	],
+});
 
-		usersRepository = app.get(DI.usersRepository);
-		userProfilesRepository = app.get(DI.userProfilesRepository);
+		usersRepository = app.resolve(DI.usersRepository);
+		userProfilesRepository = app.resolve(DI.userProfilesRepository);
 
-		service = app.get(CheckModeratorsActivityProcessorService);
-		idService = app.get(IdService);
-		roleService = app.get(RoleService) as Mocked<RoleService>;
-		announcementService = app.get(AnnouncementService) as Mocked<AnnouncementService>;
-		emailService = app.get(EmailService) as Mocked<EmailService>;
-		systemWebhookService = app.get(SystemWebhookService) as Mocked<SystemWebhookService>;
-
-		app.enableShutdownHooks();
+		service = app.resolve(CheckModeratorsActivityProcessorService);
+		idService = app.resolve(IdService);
+		roleService = app.resolve(RoleService) as Mocked<RoleService>;
+		announcementService = app.resolve(AnnouncementService) as Mocked<AnnouncementService>;
+		emailService = app.resolve(EmailService) as Mocked<EmailService>;
+		systemWebhookService = app.resolve(SystemWebhookService) as Mocked<SystemWebhookService>;
 	});
 
 	beforeEach(async () => {
@@ -169,7 +155,7 @@ describe('CheckModeratorsActivityProcessorService', () => {
 	});
 
 	afterAll(async () => {
-		await app.close();
+		await app.resolve(DisposableRegistry).disposeAll();
 	});
 
 	// --------------------------------------------------------------------------------------

@@ -8,11 +8,12 @@ process.env.NODE_ENV = 'test';
 import * as assert from 'assert';
 import { afterAll, beforeAll, beforeEach, describe, test } from 'vitest';
 import { api, port, post, signup, startJobQueue } from '../utils.js';
-import type { INestApplicationContext } from '@nestjs/common';
+import type { DependencyContainer } from 'tsyringe';
+import { DisposableRegistry } from '@/di/disposable-registry.js';
 import type * as misskey from 'misskey-js';
 
 describe('export-clips', () => {
-	let queue: INestApplicationContext;
+	let queue: DependencyContainer;
 	let alice: misskey.entities.SignupResponse;
 	let bob: misskey.entities.SignupResponse;
 
@@ -40,7 +41,7 @@ describe('export-clips', () => {
 	}, 1000 * 60 * 2);
 
 	afterAll(async () => {
-		await queue.close();
+		await queue.resolve(DisposableRegistry).disposeAll();
 	});
 
 	beforeEach(async () => {

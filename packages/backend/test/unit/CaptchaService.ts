@@ -5,7 +5,10 @@
 
 import { afterAll, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
 import type { Mocked } from 'vitest';
-import { Test, TestingModule } from '@nestjs/testing';
+import 'reflect-metadata';
+import { createTestContainer } from '@/di/testing.js';
+import { DisposableRegistry } from '@/di/disposable-registry.js';
+import type { DependencyContainer } from 'tsyringe';
 import { Response } from 'node-fetch';
 import {
 	CaptchaError,
@@ -14,43 +17,35 @@ import {
 	CaptchaSaveResult,
 	CaptchaService,
 } from '@/core/CaptchaService.js';
-import { GlobalModule } from '@/GlobalModule.js';
 import { HttpRequestService } from '@/core/HttpRequestService.js';
 import { MetaService } from '@/core/MetaService.js';
 import { MiMeta } from '@/models/Meta.js';
 import { LoggerService } from '@/core/LoggerService.js';
 
 describe('CaptchaService', () => {
-	let app: TestingModule;
+	let app: DependencyContainer;
 	let service: CaptchaService;
 	let httpRequestService: Mocked<HttpRequestService>;
 	let metaService: Mocked<MetaService>;
 
 	beforeAll(async () => {
-		app = await Test.createTestingModule({
-			imports: [
-				GlobalModule,
-			],
-			providers: [
-				CaptchaService,
-				LoggerService,
-				{
-					provide: HttpRequestService, useFactory: () => ({ send: vi.fn() }),
-				},
-				{
-					provide: MetaService, useFactory: () => ({
+		app = await createTestContainer({
+	loadGlobals: true,
+	register: (c) => {
+		c.registerSingleton(CaptchaService);
+		c.registerSingleton(LoggerService);
+	},
+	mocks: [
+		[HttpRequestService, (() => ({ send: vi.fn() }))()],
+		[MetaService, (() => ({
 						fetch: vi.fn(),
 						update: vi.fn(),
-					}),
-				},
-			],
-		}).compile();
-
-		app.enableShutdownHooks();
-
-		service = app.get(CaptchaService);
-		httpRequestService = app.get(HttpRequestService) as Mocked<HttpRequestService>;
-		metaService = app.get(MetaService) as Mocked<MetaService>;
+					}))()],
+	],
+});
+		service = app.resolve(CaptchaService);
+		httpRequestService = app.resolve(HttpRequestService) as Mocked<HttpRequestService>;
+		metaService = app.resolve(MetaService) as Mocked<MetaService>;
 	});
 
 	beforeEach(() => {
@@ -60,7 +55,7 @@ describe('CaptchaService', () => {
 	});
 
 	afterAll(async () => {
-		await app.close();
+		await app.resolve(DisposableRegistry).disposeAll();
 	});
 
 	function successMock(result: object) {

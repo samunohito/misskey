@@ -22,10 +22,10 @@ import {
 	UserToken,
 	WEBHOOK_HOST,
 } from '../../utils.js';
-import type { INestApplicationContext } from '@nestjs/common';
-
+import type { DependencyContainer } from 'tsyringe';
+import { DisposableRegistry } from '@/di/disposable-registry.js';
 describe('[シナリオ] ユーザ通報', () => {
-	let queue: INestApplicationContext;
+	let queue: DependencyContainer;
 	let admin: entities.SignupResponse;
 	let alice: entities.SignupResponse;
 	let bob: entities.SignupResponse;
@@ -97,7 +97,7 @@ describe('[シナリオ] ユーザ通報', () => {
 	}, 1000 * 60 * 2);
 
 	afterAll(async () => {
-		await queue.close();
+		await queue.resolve(DisposableRegistry).disposeAll();
 	});
 
 	// -------------------------------------------------------------------------------------------

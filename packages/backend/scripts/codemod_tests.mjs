@@ -4,8 +4,15 @@
  *
  * @nestjs/testing -> createTestContainer codemod.
  *
- * 機械的な置換のみ。各テストの providers の中身 (useFactory mock 等) は手動で
- * `mocks: [[X, ...]]` 形式に整理し直す必要がある。本 codemod は枠組みだけ整える。
+ * 機械的な置換:
+ *  - import の整形
+ *  - `Test.createTestingModule({...}).compile()` -> `createTestContainer({...})`
+ *  - `imports: [GlobalModule]` -> `loadGlobals: true`
+ *  - `imports: [GlobalModule, X, Y]` (GlobalModule + 何か) -> `loadGlobals: true` (他の Module は捨てる、コメントで残す)
+ *  - `providers: [Service1, { provide: X, useFactory: ... }, ...]` -> register + mocks の組合せ
+ *  - `app.get(X)` -> `app.resolve(X)`
+ *  - `app.enableShutdownHooks()` -> 削除
+ *  - `await app.close()` -> `await app.resolve(DisposableRegistry).disposeAll()`
  */
 
 import fs from 'node:fs';
@@ -25,49 +32,148 @@ function walk(dir, out = []) {
 	return out;
 }
 
+// `Test.createTestingModule({ imports: [...], providers: [...] }).compile()` を解析して
+// `createTestContainer({ loadGlobals, register, mocks })` 形に変換する。
+function transformTestingModuleCall(source) {
+	let out = source;
+	const callRe = /Test\s*\.\s*createTestingModule\(\s*\{([\s\S]*?)\}\s*\)\s*\.\s*compile\(\)/m;
+	const m = out.match(callRe);
+	if (!m) return out;
+
+	const body = m[1];
+	// imports / providers の中身を抽出 (簡易なネスト括弧マッチ)
+	const importsRange = findArrayRange(body, 'imports');
+	const providersRange = findArrayRange(body, 'providers');
+
+	const imports = importsRange ? body.slice(importsRange.openIdx + 1, importsRange.closeIdx) : '';
+	const providers = providersRange ? body.slice(providersRange.openIdx + 1, providersRange.closeIdx) : '';
+
+	const loadGlobals = /\bGlobalModule\b/.test(imports);
+
+	const providerItems = splitTopLevel(providers);
+	const registerLines = [];
+	const mockLines = [];
+
+	for (const item of providerItems) {
+		const t = item.trim();
+		if (!t) continue;
+		const useFactory = t.match(/provide\s*:\s*([^,}]+?)\s*,\s*useFactory\s*:\s*([\s\S]*)/);
+		const useValue = t.match(/provide\s*:\s*([^,}]+?)\s*,\s*useValue\s*:\s*([\s\S]*)/);
+		const useClass = t.match(/provide\s*:\s*([^,}]+?)\s*,\s*useClass\s*:\s*([\s\S]*)/);
+		// 後段の trim helper: 末尾の '}' / ',' / 空白を反復除去
+		const cleanTail = (s) => {
+			let r = s.trim();
+			while (/[,}]\s*$/.test(r)) r = r.replace(/[,}]\s*$/, '').trim();
+			return r;
+		};
+		if (useFactory) {
+			const provide = useFactory[1].trim();
+			const factory = cleanTail(useFactory[2]);
+			mockLines.push(`[${provide}, (${factory})()]`);
+		} else if (useValue) {
+			const provide = useValue[1].trim();
+			const value = cleanTail(useValue[2]);
+			mockLines.push(`[${provide}, ${value}]`);
+		} else if (useClass) {
+			const provide = useClass[1].trim();
+			const cls = cleanTail(useClass[2]);
+			registerLines.push(`\t\tc.register(${provide}, { useClass: ${cls} });`);
+		} else {
+			// クラス名のみ
+			registerLines.push(`\t\tc.registerSingleton(${t});`);
+		}
+	}
+
+	const optsParts = [];
+	if (loadGlobals) optsParts.push('\tloadGlobals: true');
+	if (registerLines.length > 0) optsParts.push(`\tregister: (c) => {\n${registerLines.join('\n')}\n\t}`);
+	if (mockLines.length > 0) optsParts.push(`\tmocks: [\n\t\t${mockLines.join(',\n\t\t')},\n\t]`);
+
+	const replacement = `createTestContainer({\n${optsParts.join(',\n')},\n})`;
+	out = out.slice(0, m.index) + replacement + out.slice(m.index + m[0].length);
+	return out;
+}
+
+function findArrayRange(source, key) {
+	const re = new RegExp(`${key}\\s*:\\s*\\[`);
+	const m = source.match(re);
+	if (!m) return null;
+	const openIdx = m.index + m[0].length - 1;
+	let depth = 1;
+	let i = openIdx + 1;
+	while (i < source.length && depth > 0) {
+		const ch = source[i];
+		if (ch === '[') depth++;
+		else if (ch === ']') depth--;
+		if (depth === 0) break;
+		i++;
+	}
+	return depth === 0 ? { openIdx, closeIdx: i } : null;
+}
+
+// トップレベルのカンマで配列の要素を分割
+function splitTopLevel(s) {
+	const items = [];
+	let depth = 0;
+	let buf = '';
+	for (const ch of s) {
+		if ('([{'.includes(ch)) depth++;
+		else if (')]}'.includes(ch)) depth--;
+		if (depth === 0 && ch === ',') {
+			items.push(buf);
+			buf = '';
+		} else {
+			buf += ch;
+		}
+	}
+	if (buf.trim()) items.push(buf);
+	return items;
+}
+
 function transform(filePath, source) {
-	if (!source.includes('@nestjs/testing') && !source.includes('TestingModule')) return null;
+	if (!source.includes('@nestjs/testing') && !/\bTestingModule\b/.test(source)) return null;
 
 	let out = source;
 
-	// 1. `import { Test, TestingModule } from '@nestjs/testing';` -> tsyringe + createTestContainer
-	out = out.replace(/^import\s+\{[^}]*\bTest\b[^}]*\}\s+from\s+'@nestjs\/testing';?\s*\n/gm, () => {
-		return "import 'reflect-metadata';\nimport { createTestContainer } from '@/di/testing.js';\nimport type { DependencyContainer } from 'tsyringe';\n";
+	// 1. `import { Test, TestingModule } from '@nestjs/testing'` を置換
+	let injectedHeader = false;
+	out = out.replace(/^import\s+(?:type\s+)?\{[^}]*\bTest\b[^}]*\}\s+from\s+'@nestjs\/testing';?\s*\n/gm, () => {
+		injectedHeader = true;
+		return "import 'reflect-metadata';\nimport { createTestContainer } from '@/di/testing.js';\nimport { DisposableRegistry } from '@/di/disposable-registry.js';\nimport type { DependencyContainer } from 'tsyringe';\n";
 	});
 
-	// 2. `TestingModule` 型を `DependencyContainer` に置換
+	// 2. 残った `import ... from '@nestjs/testing'` (TestingModule のみの行など) を削除。
+	// ヘッダ行を 1 回だけ挿入する。
+	out = out.replace(/^import\s+(?:type\s+)?\{[^}]+\}\s+from\s+'@nestjs\/testing';?\s*\n/gm, () => {
+		if (injectedHeader) return '';
+		injectedHeader = true;
+		return "import 'reflect-metadata';\nimport { createTestContainer } from '@/di/testing.js';\nimport { DisposableRegistry } from '@/di/disposable-registry.js';\nimport type { DependencyContainer } from 'tsyringe';\n";
+	});
+
+	// 3. `TestingModule` 型 -> `DependencyContainer`
 	out = out.replace(/\bTestingModule\b/g, 'DependencyContainer');
 
-	// 3. `import { GlobalModule } from '@/GlobalModule.js';` を削除
+	// 3. 旧 GlobalModule / CoreModule の import 行を削除
 	out = out.replace(/^import\s+\{[^}]*\bGlobalModule\b[^}]*\}\s+from\s+'@\/GlobalModule\.js';?\s*\n/gm, '');
+	out = out.replace(/^import\s+\{[^}]*\bCoreModule\b[^}]*\}\s+from\s+'@\/core\/CoreModule\.js';?\s*\n/gm, '');
 
-	// 4. `Test.createTestingModule(...).compile()` -> `createTestContainer({ ... })`
-	// 注意: providers/imports 配列の中身は手動移植が必要。ここでは枠だけ作る。
-	out = out.replace(/Test\s*\.\s*createTestingModule\(/g, 'createTestContainer(');
-	out = out.replace(/\)\s*\.compile\(\)/g, ')');
+	// 4. Test.createTestingModule(...).compile() を解析変換
+	out = transformTestingModuleCall(out);
 
-	// 5. `app.get(X)` -> `app.resolve(X)`
-	out = out.replace(/(\w+)\.get(<[^>]*>)?\(/g, (full, ident, generic) => {
-		// `app.get(` のような典型形だけを対象に置換 (DI container 系)
-		if (/^(app|module|c|container|testingModule)$/.test(ident)) {
-			return `${ident}.resolve${generic ?? ''}(`;
-		}
-		return full;
+	// 5. `app.get(X)` -> `app.resolve(X)` (DI container 系の typical 識別子のみ)
+	out = out.replace(/(\b(?:app|module|c|container|testingModule)\b)\.get(<[^>]*>)?\(/g, (full, ident, generic) => {
+		return `${ident}.resolve${generic ?? ''}(`;
 	});
 
-	// 6. `app.enableShutdownHooks()` を `await app.resolve(DisposableRegistry).disposeAll()` 呼び出しのコメントに
-	out = out.replace(/(\w+)\.enableShutdownHooks\(\);?/g, '// TODO(nest->tsyringe): wire shutdown via DisposableRegistry');
+	// 6. `app.enableShutdownHooks()` を削除
+	out = out.replace(/\s*\w+\.enableShutdownHooks\(\);?\s*\n/g, '\n');
 
-	// 7. `await app.close();` を disposeAll に
-	out = out.replace(/await\s+(\w+)\.close\(\);?/g, (full, ident) => {
-		return `await ${ident}.resolve(DisposableRegistry).disposeAll();`;
+	// 7. `await app.close()` -> disposeAll
+	const containerIdents = new Set(['app', 'module', 'c', 'container', 'testingModule']);
+	out = out.replace(/await\s+(\w+)\.close\(\)/g, (full, ident) => {
+		if (!containerIdents.has(ident)) return full;
+		return `await ${ident}.resolve(DisposableRegistry).disposeAll()`;
 	});
-
-	// 8. DisposableRegistry を使う場合は import
-	if (/DisposableRegistry/.test(out) && !/from\s+'@\/di\/disposable-registry\.js'/.test(out)) {
-		out = out.replace(/^(import\s+\{ createTestContainer \}\s+from\s+'@\/di\/testing\.js';\s*\n)/m,
-			`$1import { DisposableRegistry } from '@/di/disposable-registry.js';\n`);
-	}
 
 	return out;
 }

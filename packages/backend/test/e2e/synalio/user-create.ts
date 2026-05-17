@@ -16,10 +16,10 @@ import {
 	UserToken,
 	WEBHOOK_HOST,
 } from '../../utils.js';
-import type { INestApplicationContext } from '@nestjs/common';
-
+import type { DependencyContainer } from 'tsyringe';
+import { DisposableRegistry } from '@/di/disposable-registry.js';
 describe('[シナリオ] ユーザ作成', () => {
-	let queue: INestApplicationContext;
+	let queue: DependencyContainer;
 	let admin: entities.SignupResponse;
 
 	async function createSystemWebhook(args?: Partial<entities.AdminSystemWebhookCreateRequest>, credential?: UserToken): Promise<entities.AdminSystemWebhookCreateResponse> {
@@ -48,7 +48,7 @@ describe('[シナリオ] ユーザ作成', () => {
 	}, 1000 * 60 * 2);
 
 	afterAll(async () => {
-		await queue.close();
+		await queue.resolve(DisposableRegistry).disposeAll();
 	});
 
 	// -------------------------------------------------------------------------------------------

@@ -7,13 +7,15 @@
 import { setTimeout } from 'node:timers/promises';
 import { afterEach, beforeEach, afterAll, beforeAll, describe, test, expect, vi } from 'vitest';
 import type { Mocked } from 'vitest';
-import { Test, TestingModule } from '@nestjs/testing';
+import 'reflect-metadata';
+import { createTestContainer } from '@/di/testing.js';
+import { DisposableRegistry } from '@/di/disposable-registry.js';
+import type { DependencyContainer } from 'tsyringe';
 import { randomString } from '../utils.js';
 import { MiUser } from '@/models/User.js';
 import { MiSystemWebhook, SystemWebhookEventType } from '@/models/SystemWebhook.js';
 import { SystemWebhooksRepository, UsersRepository } from '@/models/_.js';
 import { IdService } from '@/core/IdService.js';
-import { GlobalModule } from '@/GlobalModule.js';
 import { ModerationLogService } from '@/core/ModerationLogService.js';
 import { GlobalEventService } from '@/core/GlobalEventService.js';
 import { DI } from '@/di-symbols.js';
@@ -22,7 +24,7 @@ import { LoggerService } from '@/core/LoggerService.js';
 import { SystemWebhookService } from '@/core/SystemWebhookService.js';
 
 describe('SystemWebhookService', () => {
-	let app: TestingModule;
+	let app: DependencyContainer;
 	let service: SystemWebhookService;
 
 	// --------------------------------------------------------------------------------------
@@ -63,38 +65,30 @@ describe('SystemWebhookService', () => {
 	// --------------------------------------------------------------------------------------
 
 	async function beforeAllImpl() {
-		app = await Test
-			.createTestingModule({
-				imports: [
-					GlobalModule,
-				],
-				providers: [
-					SystemWebhookService,
-					IdService,
-					LoggerService,
-					GlobalEventService,
-					{
-						provide: QueueService, useFactory: () => ({ systemWebhookDeliver: vi.fn() }),
-					},
-					{
-						provide: ModerationLogService, useFactory: () => ({ log: () => Promise.resolve() }),
-					},
-				],
-			})
-			.compile();
+		app = await createTestContainer({
+	loadGlobals: true,
+	register: (c) => {
+		c.registerSingleton(SystemWebhookService);
+		c.registerSingleton(IdService);
+		c.registerSingleton(LoggerService);
+		c.registerSingleton(GlobalEventService);
+	},
+	mocks: [
+		[QueueService, (() => ({ systemWebhookDeliver: vi.fn() }))()],
+		[ModerationLogService, (() => ({ log: () => Promise.resolve() }))()],
+	],
+});
 
-		usersRepository = app.get(DI.usersRepository);
-		systemWebhooksRepository = app.get(DI.systemWebhooksRepository);
+		usersRepository = app.resolve(DI.usersRepository);
+		systemWebhooksRepository = app.resolve(DI.systemWebhooksRepository);
 
-		service = app.get(SystemWebhookService);
-		idService = app.get(IdService);
-		queueService = app.get(QueueService) as Mocked<QueueService>;
-
-		app.enableShutdownHooks();
+		service = app.resolve(SystemWebhookService);
+		idService = app.resolve(IdService);
+		queueService = app.resolve(QueueService) as Mocked<QueueService>;
 	}
 
 	async function afterAllImpl() {
-		await app.close();
+		await app.resolve(DisposableRegistry).disposeAll();
 	}
 
 	async function beforeEachImpl() {

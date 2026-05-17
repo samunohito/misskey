@@ -4,7 +4,10 @@
  */
 
 import { describe, expect, test, beforeAll, afterAll, beforeEach, afterEach, vi } from 'vitest';
-import { Test, TestingModule } from '@nestjs/testing';
+import 'reflect-metadata';
+import { createTestContainer } from '@/di/testing.js';
+import { DisposableRegistry } from '@/di/disposable-registry.js';
+import type { DependencyContainer } from 'tsyringe';
 import ms from 'ms';
 import {
 	type MiNote,
@@ -20,11 +23,10 @@ import { CleanRemoteNotesProcessorService } from '@/queue/processors/CleanRemote
 import { DI } from '@/di-symbols.js';
 import { IdService } from '@/core/IdService.js';
 import { QueueLoggerService } from '@/queue/QueueLoggerService.js';
-import { GlobalModule } from '@/GlobalModule.js';
 import { secureRndstr } from '@/misc/secure-rndstr.js';
 
 describe('CleanRemoteNotesProcessorService', () => {
-	let app: TestingModule;
+	let app: DependencyContainer;
 	let service: CleanRemoteNotesProcessorService;
 	let idService: IdService;
 	let notesRepository: NotesRepository;
@@ -83,17 +85,14 @@ describe('CleanRemoteNotesProcessorService', () => {
 	}
 
 	beforeAll(async () => {
-		app = await Test
-			.createTestingModule({
-				imports: [
-					GlobalModule,
-				],
-				providers: [
-					CleanRemoteNotesProcessorService,
-					IdService,
-					{
-						provide: QueueLoggerService,
-						useFactory: () => ({
+		app = await createTestContainer({
+	loadGlobals: true,
+	register: (c) => {
+		c.registerSingleton(CleanRemoteNotesProcessorService);
+		c.registerSingleton(IdService);
+	},
+	mocks: [
+		[QueueLoggerService, (() => ({
 							logger: {
 								createSubLogger: () => ({
 									info: vi.fn(),
@@ -101,26 +100,21 @@ describe('CleanRemoteNotesProcessorService', () => {
 									succ: vi.fn(),
 								}),
 							},
-						}),
-					},
-				],
-			})
-			.overrideProvider(DI.meta).useFactory({ factory: () => meta })
-			.compile();
+						}))()],
+	],
+});
 
-		service = app.get(CleanRemoteNotesProcessorService);
-		idService = app.get(IdService);
-		notesRepository = app.get(DI.notesRepository);
-		noteFavoritesRepository = app.get(DI.noteFavoritesRepository);
-		userNotePiningsRepository = app.get(DI.userNotePiningsRepository);
-		usersRepository = app.get(DI.usersRepository);
-		userProfilesRepository = app.get(DI.userProfilesRepository);
+		service = app.resolve(CleanRemoteNotesProcessorService);
+		idService = app.resolve(IdService);
+		notesRepository = app.resolve(DI.notesRepository);
+		noteFavoritesRepository = app.resolve(DI.noteFavoritesRepository);
+		userNotePiningsRepository = app.resolve(DI.userNotePiningsRepository);
+		usersRepository = app.resolve(DI.usersRepository);
+		userProfilesRepository = app.resolve(DI.userProfilesRepository);
 
 		alice = await createUser({ username: 'alice', host: null });
 		bob = await createUser({ username: 'bob', host: 'remote1.example.com' });
 		carol = await createUser({ username: 'carol', host: 'remote2.example.com' });
-
-		app.enableShutdownHooks();
 	});
 
 	beforeEach(() => {
@@ -143,7 +137,7 @@ describe('CleanRemoteNotesProcessorService', () => {
 	}, 60 * 1000);
 
 	afterAll(async () => {
-		await app.close();
+		await app.resolve(DisposableRegistry).disposeAll();
 	});
 
 	describe('basic', () => {

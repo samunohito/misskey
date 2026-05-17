@@ -5,12 +5,14 @@
 
 import { afterEach, beforeEach, describe, expect, test, beforeAll, afterAll, vi } from 'vitest';
 import type { Mocked } from 'vitest';
-import { Test, TestingModule } from '@nestjs/testing';
+import 'reflect-metadata';
+import { createTestContainer } from '@/di/testing.js';
+import { DisposableRegistry } from '@/di/disposable-registry.js';
+import type { DependencyContainer } from 'tsyringe';
 import { randomString } from '../utils.js';
 import { MiUser } from '@/models/User.js';
 import { MiWebhook, UsersRepository, WebhooksRepository } from '@/models/_.js';
 import { IdService } from '@/core/IdService.js';
-import { GlobalModule } from '@/GlobalModule.js';
 import { GlobalEventService } from '@/core/GlobalEventService.js';
 import { DI } from '@/di-symbols.js';
 import { QueueService } from '@/core/QueueService.js';
@@ -18,7 +20,7 @@ import { LoggerService } from '@/core/LoggerService.js';
 import { UserWebhookService } from '@/core/UserWebhookService.js';
 
 describe('UserWebhookService', () => {
-	let app: TestingModule;
+	let app: DependencyContainer;
 	let service: UserWebhookService;
 
 	// --------------------------------------------------------------------------------------
@@ -60,35 +62,29 @@ describe('UserWebhookService', () => {
 	// --------------------------------------------------------------------------------------
 
 	async function beforeAllImpl() {
-		app = await Test
-			.createTestingModule({
-				imports: [
-					GlobalModule,
-				],
-				providers: [
-					UserWebhookService,
-					IdService,
-					LoggerService,
-					GlobalEventService,
-					{
-						provide: QueueService, useFactory: () => ({ userWebhookDeliver: vi.fn() }),
-					},
-				],
-			})
-			.compile();
+		app = await createTestContainer({
+	loadGlobals: true,
+	register: (c) => {
+		c.registerSingleton(UserWebhookService);
+		c.registerSingleton(IdService);
+		c.registerSingleton(LoggerService);
+		c.registerSingleton(GlobalEventService);
+	},
+	mocks: [
+		[QueueService, (() => ({ userWebhookDeliver: vi.fn() }))()],
+	],
+});
 
-		usersRepository = app.get(DI.usersRepository);
-		userWebhooksRepository = app.get(DI.webhooksRepository);
+		usersRepository = app.resolve(DI.usersRepository);
+		userWebhooksRepository = app.resolve(DI.webhooksRepository);
 
-		service = app.get(UserWebhookService);
-		idService = app.get(IdService);
-		queueService = app.get(QueueService) as Mocked<QueueService>;
-
-		app.enableShutdownHooks();
+		service = app.resolve(UserWebhookService);
+		idService = app.resolve(IdService);
+		queueService = app.resolve(QueueService) as Mocked<QueueService>;
 	}
 
 	async function afterAllImpl() {
-		await app.close();
+		await app.resolve(DisposableRegistry).disposeAll();
 	}
 
 	async function beforeEachImpl() {

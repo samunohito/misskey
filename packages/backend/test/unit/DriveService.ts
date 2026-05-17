@@ -6,7 +6,10 @@
 process.env.NODE_ENV = 'test';
 
 import { afterAll, beforeAll, beforeEach, describe, test, expect } from 'vitest';
-import { Test } from '@nestjs/testing';
+import 'reflect-metadata';
+import { createTestContainer } from '@/di/testing.js';
+import { DisposableRegistry } from '@/di/disposable-registry.js';
+import type { DependencyContainer } from 'tsyringe';
 import {
 	DeleteObjectCommand,
 	DeleteObjectCommandOutput,
@@ -15,23 +18,20 @@ import {
 	S3Client,
 } from '@aws-sdk/client-s3';
 import { mockClient } from 'aws-sdk-client-mock';
-import { GlobalModule } from '@/GlobalModule.js';
 import { DriveService } from '@/core/DriveService.js';
-import { CoreModule } from '@/core/CoreModule.js';
-import type { TestingModule } from '@nestjs/testing';
-
 describe('DriveService', () => {
-	let app: TestingModule;
+	let app: DependencyContainer;
 	let driveService: DriveService;
 	const s3Mock = mockClient(S3Client);
 
 	beforeAll(async () => {
-		app = await Test.createTestingModule({
-			imports: [GlobalModule, CoreModule],
-			providers: [DriveService],
-		}).compile();
-		app.enableShutdownHooks();
-		driveService = app.get<DriveService>(DriveService);
+		app = await createTestContainer({
+	loadGlobals: true,
+	register: (c) => {
+		c.registerSingleton(DriveService);
+	},
+});
+		driveService = app.resolve<DriveService>(DriveService);
 	});
 
 	beforeEach(async () => {
@@ -39,7 +39,7 @@ describe('DriveService', () => {
 	});
 
 	afterAll(async () => {
-		await app.close();
+		await app.resolve(DisposableRegistry).disposeAll();
 	});
 
 	describe('Object storage', () => {

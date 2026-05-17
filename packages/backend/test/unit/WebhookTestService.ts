@@ -4,13 +4,15 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Test, TestingModule } from '@nestjs/testing';
+import 'reflect-metadata';
+import { createTestContainer } from '@/di/testing.js';
+import { DisposableRegistry } from '@/di/disposable-registry.js';
+import type { DependencyContainer } from 'tsyringe';
 import { beforeAll, afterAll, beforeEach, afterEach, test, expect, describe, vi } from 'vitest';
 import type { Mocked } from 'vitest';
 import { WebhookTestService } from '@/core/WebhookTestService.js';
 import { UserWebhookPayload, UserWebhookService } from '@/core/UserWebhookService.js';
 import { SystemWebhookService } from '@/core/SystemWebhookService.js';
-import { GlobalModule } from '@/GlobalModule.js';
 import { MiSystemWebhook, MiUser, MiWebhook, UserProfilesRepository, UsersRepository } from '@/models/_.js';
 import { IdService } from '@/core/IdService.js';
 import { DI } from '@/di-symbols.js';
@@ -18,7 +20,7 @@ import { QueueService } from '@/core/QueueService.js';
 import { CustomEmojiService } from '@/core/CustomEmojiService.js';
 
 describe('WebhookTestService', () => {
-	let app: TestingModule;
+	let app: DependencyContainer;
 	let service: WebhookTestService;
 
 	// --------------------------------------------------------------------------------------
@@ -51,47 +53,37 @@ describe('WebhookTestService', () => {
 	// --------------------------------------------------------------------------------------
 
 	beforeAll(async () => {
-		app = await Test.createTestingModule({
-			imports: [
-				GlobalModule,
-			],
-			providers: [
-				WebhookTestService,
-				IdService,
-				{
-					provide: CustomEmojiService, useFactory: () => ({
+		app = await createTestContainer({
+	loadGlobals: true,
+	register: (c) => {
+		c.registerSingleton(WebhookTestService);
+		c.registerSingleton(IdService);
+	},
+	mocks: [
+		[CustomEmojiService, (() => ({
 						populateEmojis: vi.fn(),
-					}),
-				},
-				{
-					provide: QueueService, useFactory: () => ({
+					}))()],
+		[QueueService, (() => ({
 						systemWebhookDeliver: vi.fn(),
 						userWebhookDeliver: vi.fn(),
-					}),
-				},
-				{
-					provide: UserWebhookService, useFactory: () => ({
+					}))()],
+		[UserWebhookService, (() => ({
 						fetchWebhooks: vi.fn(),
-					}),
-				},
-				{
-					provide: SystemWebhookService, useFactory: () => ({
+					}))()],
+		[SystemWebhookService, (() => ({
 						fetchSystemWebhooks: vi.fn(),
-					}),
-				},
-			],
-		}).compile();
+					}))()],
+	],
+});
 
-		usersRepository = app.get(DI.usersRepository);
-		userProfilesRepository = app.get(DI.userProfilesRepository);
+		usersRepository = app.resolve(DI.usersRepository);
+		userProfilesRepository = app.resolve(DI.userProfilesRepository);
 
-		service = app.get(WebhookTestService);
-		idService = app.get(IdService);
-		queueService = app.get(QueueService) as Mocked<QueueService>;
-		userWebhookService = app.get(UserWebhookService) as Mocked<UserWebhookService>;
-		systemWebhookService = app.get(SystemWebhookService) as Mocked<SystemWebhookService>;
-
-		app.enableShutdownHooks();
+		service = app.resolve(WebhookTestService);
+		idService = app.resolve(IdService);
+		queueService = app.resolve(QueueService) as Mocked<QueueService>;
+		userWebhookService = app.resolve(UserWebhookService) as Mocked<UserWebhookService>;
+		systemWebhookService = app.resolve(SystemWebhookService) as Mocked<SystemWebhookService>;
 	});
 
 	beforeEach(async () => {
@@ -117,7 +109,7 @@ describe('WebhookTestService', () => {
 	});
 
 	afterAll(async () => {
-		await app.close();
+		await app.resolve(DisposableRegistry).disposeAll();
 	});
 
 	// --------------------------------------------------------------------------------------

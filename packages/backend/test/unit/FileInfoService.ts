@@ -8,22 +8,22 @@ process.env.NODE_ENV = 'test';
 import * as assert from 'assert';
 import { fileURLToPath } from 'node:url';
 import { dirname } from 'node:path';
-import { Test } from '@nestjs/testing';
+import 'reflect-metadata';
+import { createTestContainer } from '@/di/testing.js';
+import { DisposableRegistry } from '@/di/disposable-registry.js';
+import type { DependencyContainer } from 'tsyringe';
 import { afterAll, beforeAll, describe, test } from 'vitest';
 import { mockDeep } from 'vitest-mock-extended';
-import { GlobalModule } from '@/GlobalModule.js';
 import { FileInfo, FileInfoService } from '@/core/FileInfoService.js';
 //import { DI } from '@/di-symbols.js';
 import { AiService } from '@/core/AiService.js';
 import { LoggerService } from '@/core/LoggerService.js';
-import type { TestingModule } from '@nestjs/testing';
-
 const _filename = fileURLToPath(import.meta.url);
 const _dirname = dirname(_filename);
 const resources = `${_dirname}/../resources`;
 
 describe('FileInfoService', () => {
-	let app: TestingModule;
+	let app: DependencyContainer;
 	let fileInfoService: FileInfoService;
 	const strip = (fileInfo: FileInfo): Omit<Partial<FileInfo>, 'warnings' | 'blurhash' | 'sensitive' | 'porn'> => {
 		const fi: Partial<FileInfo> = fileInfo;
@@ -36,33 +36,19 @@ describe('FileInfoService', () => {
 	}
 
 	beforeAll(async () => {
-		app = await Test.createTestingModule({
-			imports: [
-				GlobalModule,
-			],
-			providers: [
-				AiService,
-				LoggerService,
-				FileInfoService,
-			],
-		})
-			.useMocker((token) => {
-				//if (token === AiService) {
-				//	return {  };
-				//}
-				if (typeof token === 'function') {
-					return mockDeep<typeof token>();
-				}
-			})
-			.compile();
-
-		app.enableShutdownHooks();
-
-		fileInfoService = app.get<FileInfoService>(FileInfoService);
+		app = await createTestContainer({
+	loadGlobals: true,
+	register: (c) => {
+		c.registerSingleton(AiService);
+		c.registerSingleton(LoggerService);
+		c.registerSingleton(FileInfoService);
+	},
+});
+		fileInfoService = app.resolve<FileInfoService>(FileInfoService);
 	});
 
 	afterAll(async () => {
-		await app.close();
+		await app.resolve(DisposableRegistry).disposeAll();
 	});
 
 	test('Empty file', async () => {

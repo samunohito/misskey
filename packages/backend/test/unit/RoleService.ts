@@ -9,10 +9,11 @@ import { setTimeout } from 'node:timers/promises';
 import { describe, beforeEach, afterEach, test, expect, vi } from 'vitest';
 import type { Mocked } from 'vitest';
 import { mockDeep } from 'vitest-mock-extended';
-import { Test } from '@nestjs/testing';
+import 'reflect-metadata';
+import { createTestContainer } from '@/di/testing.js';
+import { DisposableRegistry } from '@/di/disposable-registry.js';
+import type { DependencyContainer } from 'tsyringe';
 import * as lolex from '@sinonjs/fake-timers';
-import type { TestingModule } from '@nestjs/testing';
-import { GlobalModule } from '@/GlobalModule.js';
 import { RoleService } from '@/core/RoleService.js';
 import {
 	MiMeta,
@@ -35,7 +36,7 @@ import { RoleCondFormulaValue } from '@/models/Role.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
 
 describe('RoleService', () => {
-	let app: TestingModule;
+	let app: DependencyContainer;
 	let roleService: RoleService;
 	let usersRepository: UsersRepository;
 	let rolesRepository: RolesRepository;
@@ -108,47 +109,32 @@ describe('RoleService', () => {
 			shouldClearNativeTimers: true,
 		});
 
-		app = await Test.createTestingModule({
-			imports: [
-				GlobalModule,
-			],
-			providers: [
-				RoleService,
-				CacheService,
-				IdService,
-				GlobalEventService,
-				UserEntityService,
-				{
-					provide: NotificationService,
-					useFactory: () => ({
-						createNotification: vi.fn(),
-					}),
-				},
-				{
+		app = await createTestContainer({
+	loadGlobals: true,
+	register: (c) => {
+		c.registerSingleton(RoleService);
+		c.registerSingleton(CacheService);
+		c.registerSingleton(IdService);
+		c.registerSingleton(GlobalEventService);
+		c.registerSingleton(UserEntityService);
+		c.registerSingleton({
 					provide: NotificationService.name,
 					useExisting: NotificationService,
-				},
-			],
-		})
-			.useMocker((token) => {
-				if (token === MetaService) {
-					return { fetch: vi.fn() };
-				}
-				if (typeof token === 'function') {
-					return mockDeep<typeof token>();
-				}
-			})
-			.compile();
+				});
+	},
+	mocks: [
+		[NotificationService, (() => ({
+						createNotification: vi.fn(),
+					}))()],
+	],
+});
+		roleService = app.resolve<RoleService>(RoleService);
+		usersRepository = app.resolve<UsersRepository>(DI.usersRepository);
+		rolesRepository = app.resolve<RolesRepository>(DI.rolesRepository);
+		roleAssignmentsRepository = app.resolve<RoleAssignmentsRepository>(DI.roleAssignmentsRepository);
 
-		app.enableShutdownHooks();
-
-		roleService = app.get<RoleService>(RoleService);
-		usersRepository = app.get<UsersRepository>(DI.usersRepository);
-		rolesRepository = app.get<RolesRepository>(DI.rolesRepository);
-		roleAssignmentsRepository = app.get<RoleAssignmentsRepository>(DI.roleAssignmentsRepository);
-
-		meta = app.get<MiMeta>(DI.meta) as Mocked<MiMeta>;
-		notificationService = app.get<NotificationService>(NotificationService) as Mocked<NotificationService>;
+		meta = app.resolve<MiMeta>(DI.meta) as Mocked<MiMeta>;
+		notificationService = app.resolve<NotificationService>(NotificationService) as Mocked<NotificationService>;
 
 		await roleService.onModuleInit();
 	});
@@ -160,14 +146,14 @@ describe('RoleService', () => {
 		 * Delete meta and roleAssignment first to avoid deadlock due to schema dependencies
 		 * https://github.com/misskey-dev/misskey/issues/16783
 		 */
-		await app.get(DI.metasRepository).createQueryBuilder().delete().execute();
+		await app.resolve(DI.metasRepository).createQueryBuilder().delete().execute();
 		await roleAssignmentsRepository.createQueryBuilder().delete().execute();
 		await Promise.all([
 			usersRepository.createQueryBuilder().delete().execute(),
 			rolesRepository.createQueryBuilder().delete().execute(),
 		]);
 
-		await app.close();
+		await app.resolve(DisposableRegistry).disposeAll();
 	});
 
 	describe('getUserAssigns', () => {

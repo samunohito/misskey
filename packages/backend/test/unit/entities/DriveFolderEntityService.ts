@@ -6,11 +6,11 @@
 process.env.NODE_ENV = 'test';
 
 import { afterAll, beforeAll, describe, expect, test } from 'vitest';
-import { Test } from '@nestjs/testing';
-import type { TestingModule } from '@nestjs/testing';
+import 'reflect-metadata';
+import { createTestContainer } from '@/di/testing.js';
+import { DisposableRegistry } from '@/di/disposable-registry.js';
+import type { DependencyContainer } from 'tsyringe';
 import type { DriveFilesRepository, DriveFoldersRepository } from '@/models/_.js';
-import { GlobalModule } from '@/GlobalModule.js';
-import { CoreModule } from '@/core/CoreModule.js';
 import { DriveFolderEntityService } from '@/core/entities/DriveFolderEntityService.js';
 import { DI } from '@/di-symbols.js';
 import { genAidx } from '@/misc/id/aidx.js';
@@ -19,7 +19,7 @@ import { secureRndstr } from '@/misc/secure-rndstr.js';
 const describeBenchmark = process.env.RUN_BENCHMARKS === '1' ? describe : describe.skip;
 
 describe('DriveFolderEntityService', () => {
-	let app: TestingModule;
+	let app: DependencyContainer;
 	let service: DriveFolderEntityService;
 	let driveFoldersRepository: DriveFoldersRepository;
 	let driveFilesRepository: DriveFilesRepository;
@@ -72,19 +72,17 @@ describe('DriveFolderEntityService', () => {
 	};
 
 	beforeAll(async () => {
-		app = await Test.createTestingModule({
-			imports: [GlobalModule, CoreModule],
-		}).compile();
+		app = await createTestContainer({
+	loadGlobals: true,
+});
 		await app.init();
-		app.enableShutdownHooks();
-
-		service = app.get<DriveFolderEntityService>(DriveFolderEntityService);
-		driveFoldersRepository = app.get<DriveFoldersRepository>(DI.driveFoldersRepository);
-		driveFilesRepository = app.get<DriveFilesRepository>(DI.driveFilesRepository);
+		service = app.resolve<DriveFolderEntityService>(DriveFolderEntityService);
+		driveFoldersRepository = app.resolve<DriveFoldersRepository>(DI.driveFoldersRepository);
+		driveFilesRepository = app.resolve<DriveFilesRepository>(DI.driveFilesRepository);
 	});
 
 	afterAll(async () => {
-		await app.close();
+		await app.resolve(DisposableRegistry).disposeAll();
 	});
 
 	describe('pack', () => {

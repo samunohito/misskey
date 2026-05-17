@@ -6,7 +6,10 @@
 process.env.NODE_ENV = 'test';
 
 import { afterAll, beforeAll, beforeEach, describe, test, expect } from 'vitest';
-import { Test } from '@nestjs/testing';
+import 'reflect-metadata';
+import { createTestContainer } from '@/di/testing.js';
+import { DisposableRegistry } from '@/di/disposable-registry.js';
+import type { DependencyContainer } from 'tsyringe';
 import {
 	CompleteMultipartUploadCommand,
 	CreateMultipartUploadCommand,
@@ -15,24 +18,21 @@ import {
 	UploadPartCommand,
 } from '@aws-sdk/client-s3';
 import { mockClient } from 'aws-sdk-client-mock';
-import { GlobalModule } from '@/GlobalModule.js';
-import { CoreModule } from '@/core/CoreModule.js';
 import { S3Service } from '@/core/S3Service.js';
 import { MiMeta } from '@/models/_.js';
-import type { TestingModule } from '@nestjs/testing';
-
 describe('S3Service', () => {
-	let app: TestingModule;
+	let app: DependencyContainer;
 	let s3Service: S3Service;
 	const s3Mock = mockClient(S3Client);
 
 	beforeAll(async () => {
-		app = await Test.createTestingModule({
-			imports: [GlobalModule, CoreModule],
-			providers: [S3Service],
-		}).compile();
-		app.enableShutdownHooks();
-		s3Service = app.get<S3Service>(S3Service);
+		app = await createTestContainer({
+	loadGlobals: true,
+	register: (c) => {
+		c.registerSingleton(S3Service);
+	},
+});
+		s3Service = app.resolve<S3Service>(S3Service);
 	});
 
 	beforeEach(async () => {
@@ -40,7 +40,7 @@ describe('S3Service', () => {
 	});
 
 	afterAll(async () => {
-		await app.close();
+		await app.resolve(DisposableRegistry).disposeAll();
 	});
 
 	describe('upload', () => {

@@ -4,11 +4,11 @@
  */
 
 import { beforeAll, describe, test, expect } from 'vitest';
-import { Test } from '@nestjs/testing';
-
-import { CoreModule } from '@/core/CoreModule.js';
+import 'reflect-metadata';
+import { createTestContainer } from '@/di/testing.js';
+import { DisposableRegistry } from '@/di/disposable-registry.js';
+import type { DependencyContainer } from 'tsyringe';
 import { NoteCreateService } from '@/core/NoteCreateService.js';
-import { GlobalModule } from '@/GlobalModule.js';
 import { MiNote } from '@/models/Note.js';
 import { IPoll } from '@/models/Poll.js';
 import { MiDriveFile } from '@/models/DriveFile.js';
@@ -17,10 +17,10 @@ describe('NoteCreateService', () => {
 	let noteCreateService: NoteCreateService;
 
 	beforeAll(async () => {
-		const app = await Test.createTestingModule({
-			imports: [GlobalModule, CoreModule],
-		}).compile();
-		noteCreateService = app.get<NoteCreateService>(NoteCreateService);
+		const app = await createTestContainer({
+	loadGlobals: true,
+});
+		noteCreateService = app.resolve<NoteCreateService>(NoteCreateService);
 	});
 
 	describe('is-renote', () => {

@@ -4,11 +4,12 @@
  */
 
 import { afterAll, afterEach, beforeAll, describe, expect, test } from 'vitest';
-import { Test, TestingModule } from '@nestjs/testing';
+import 'reflect-metadata';
+import { createTestContainer } from '@/di/testing.js';
+import { DisposableRegistry } from '@/di/disposable-registry.js';
+import type { DependencyContainer } from 'tsyringe';
 import type { Index, Meilisearch } from 'meilisearch';
 import { type Config, loadConfig } from '@/config.js';
-import { GlobalModule } from '@/GlobalModule.js';
-import { CoreModule } from '@/core/CoreModule.js';
 import { SearchService } from '@/core/SearchService.js';
 import { CacheService } from '@/core/CacheService.js';
 import { IdService } from '@/core/IdService.js';
@@ -28,7 +29,7 @@ import {
 
 describe('SearchService', () => {
 	type TestContext = {
-		app: TestingModule;
+		app: DependencyContainer;
 		service: SearchService;
 		cacheService: CacheService;
 		idService: IdService;
@@ -78,21 +79,18 @@ describe('SearchService', () => {
 		}
 
 		const app = await builder.compile();
-
-		app.enableShutdownHooks();
-
 		return {
 			app,
-			service: app.get(SearchService),
-			cacheService: app.get(CacheService),
-			idService: app.get(IdService),
-			mutingsRepository: app.get(DI.mutingsRepository),
-			blockingsRepository: app.get(DI.blockingsRepository),
-			usersRepository: app.get(DI.usersRepository),
-			userProfilesRepository: app.get(DI.userProfilesRepository),
-			notesRepository: app.get(DI.notesRepository),
-			channelsRepository: app.get(DI.channelsRepository),
-			followingsRepository: app.get(DI.followingsRepository),
+			service: app.resolve(SearchService),
+			cacheService: app.resolve(CacheService),
+			idService: app.resolve(IdService),
+			mutingsRepository: app.resolve(DI.mutingsRepository),
+			blockingsRepository: app.resolve(DI.blockingsRepository),
+			usersRepository: app.resolve(DI.usersRepository),
+			userProfilesRepository: app.resolve(DI.userProfilesRepository),
+			notesRepository: app.resolve(DI.notesRepository),
+			channelsRepository: app.resolve(DI.channelsRepository),
+			followingsRepository: app.resolve(DI.followingsRepository),
 		};
 	}
 
@@ -438,7 +436,7 @@ describe('SearchService', () => {
 			};
 
 			ctx = await buildContext(meiliConfig);
-			meilisearch = ctx.app.get(DI.meilisearch) as Meilisearch;
+			meilisearch = ctx.app.resolve(DI.meilisearch) as Meilisearch;
 			meilisearchIndex = meilisearch.index(`${meiliConfig.meilisearch!.index}---notes`);
 
 			const settingsTask = await meilisearchIndex.updateSettings(meilisearchSettings);

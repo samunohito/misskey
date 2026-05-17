@@ -4,17 +4,17 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Test, TestingModule } from '@nestjs/testing';
+import 'reflect-metadata';
+import { createTestContainer } from '@/di/testing.js';
+import { DisposableRegistry } from '@/di/disposable-registry.js';
+import type { DependencyContainer } from 'tsyringe';
 import { afterAll, afterEach, beforeEach, describe, expect, test } from 'vitest';
 import { FlashService } from '@/core/FlashService.js';
 import { IdService } from '@/core/IdService.js';
 import { FlashLikesRepository, FlashsRepository, MiFlash, MiUser, UserProfilesRepository, UsersRepository } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
-import { GlobalModule } from '@/GlobalModule.js';
-import { CoreModule } from '@/core/CoreModule.js';
-
 describe('FlashService', () => {
-	let app: TestingModule;
+	let app: DependencyContainer;
 	let service: FlashService;
 
 	// --------------------------------------------------------------------------------------
@@ -65,24 +65,21 @@ describe('FlashService', () => {
 	// --------------------------------------------------------------------------------------
 
 	beforeEach(async () => {
-		app = await Test.createTestingModule({
-			imports: [
-				GlobalModule,
-				CoreModule,
-			],
-			providers: [
-				FlashService,
-				IdService,
-			],
-		}).compile();
+		app = await createTestContainer({
+	loadGlobals: true,
+	register: (c) => {
+		c.registerSingleton(FlashService);
+		c.registerSingleton(IdService);
+	},
+});
 
-		service = app.get(FlashService);
+		service = app.resolve(FlashService);
 
-		flashsRepository = app.get(DI.flashsRepository);
-		flashLikesRepository = app.get(DI.flashLikesRepository);
-		usersRepository = app.get(DI.usersRepository);
-		userProfilesRepository = app.get(DI.userProfilesRepository);
-		idService = app.get(IdService);
+		flashsRepository = app.resolve(DI.flashsRepository);
+		flashLikesRepository = app.resolve(DI.flashLikesRepository);
+		usersRepository = app.resolve(DI.usersRepository);
+		userProfilesRepository = app.resolve(DI.userProfilesRepository);
+		idService = app.resolve(IdService);
 
 		root = await createUser({ username: 'root', usernameLower: 'root' });
 		alice = await createUser({ username: 'alice', usernameLower: 'alice' });
@@ -97,7 +94,7 @@ describe('FlashService', () => {
 	});
 
 	afterAll(async () => {
-		await app.close();
+		await app.resolve(DisposableRegistry).disposeAll();
 	});
 
 	// --------------------------------------------------------------------------------------

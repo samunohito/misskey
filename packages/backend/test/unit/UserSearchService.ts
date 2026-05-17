@@ -3,18 +3,20 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Test, TestingModule } from '@nestjs/testing';
+import 'reflect-metadata';
+import { createTestContainer } from '@/di/testing.js';
+import { DisposableRegistry } from '@/di/disposable-registry.js';
+import type { DependencyContainer } from 'tsyringe';
 import { describe, beforeEach, beforeAll, afterEach, afterAll, vi, test, expect } from 'vitest';
 import { In } from 'typeorm';
 import { UserSearchService } from '@/core/UserSearchService.js';
 import { FollowingsRepository, MiUser, UserProfilesRepository, UsersRepository } from '@/models/_.js';
 import { IdService } from '@/core/IdService.js';
-import { GlobalModule } from '@/GlobalModule.js';
 import { DI } from '@/di-symbols.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
 
 describe('UserSearchService', () => {
-	let app: TestingModule;
+	let app: DependencyContainer;
 	let service: UserSearchService;
 
 	let usersRepository: UsersRepository;
@@ -84,32 +86,28 @@ describe('UserSearchService', () => {
 	}
 
 	beforeAll(async () => {
-		app = await Test
-			.createTestingModule({
-				imports: [
-					GlobalModule,
-				],
-				providers: [
-					UserSearchService,
-					{
-						provide: UserEntityService, useFactory: vi.fn(() => ({
+		app = await createTestContainer({
+	loadGlobals: true,
+	register: (c) => {
+		c.registerSingleton(UserSearchService);
+		c.registerSingleton(IdService);
+	},
+	mocks: [
+		[UserEntityService, (vi.fn(() => ({
 							// とりあえずIDが返れば確認が出来るので
 							packMany: (value: any) => value,
-						})),
-					},
-					IdService,
-				],
-			})
-			.compile();
+						})))()],
+	],
+});
 
 		await app.init();
 
-		usersRepository = app.get(DI.usersRepository);
-		userProfilesRepository = app.get(DI.userProfilesRepository);
-		followingsRepository = app.get(DI.followingsRepository);
+		usersRepository = app.resolve(DI.usersRepository);
+		userProfilesRepository = app.resolve(DI.userProfilesRepository);
+		followingsRepository = app.resolve(DI.followingsRepository);
 
-		service = app.get(UserSearchService);
-		idService = app.get(IdService);
+		service = app.resolve(UserSearchService);
+		idService = app.resolve(IdService);
 	});
 
 	beforeEach(async () => {
@@ -131,7 +129,7 @@ describe('UserSearchService', () => {
 	});
 
 	afterAll(async () => {
-		await app.close();
+		await app.resolve(DisposableRegistry).disposeAll();
 	});
 
 	describe('searchByUsernameAndHost', () => {

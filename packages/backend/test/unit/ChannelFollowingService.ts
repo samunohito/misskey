@@ -6,9 +6,10 @@
 /* eslint-disable */
 
 import { afterEach, beforeEach, describe, expect, beforeAll, afterAll, test } from 'vitest';
-import { Test, TestingModule } from '@nestjs/testing';
-import { GlobalModule } from '@/GlobalModule.js';
-import { CoreModule } from '@/core/CoreModule.js';
+import 'reflect-metadata';
+import { createTestContainer } from '@/di/testing.js';
+import { DisposableRegistry } from '@/di/disposable-registry.js';
+import type { DependencyContainer } from 'tsyringe';
 import { GlobalEventService } from '@/core/GlobalEventService.js';
 import { IdService } from '@/core/IdService.js';
 import {
@@ -27,7 +28,7 @@ import { ChannelFollowingService } from "@/core/ChannelFollowingService.js";
 import { MiLocalUser } from "@/models/User.js";
 
 describe('ChannelFollowingService', () => {
-	let app: TestingModule;
+	let app: DependencyContainer;
 	let service: ChannelFollowingService;
 	let channelsRepository: ChannelsRepository;
 	let channelFollowingsRepository: ChannelFollowingsRepository;
@@ -99,31 +100,25 @@ describe('ChannelFollowingService', () => {
 	}
 
 	beforeAll(async () => {
-		app = await Test.createTestingModule({
-			imports: [
-				GlobalModule,
-				CoreModule,
-			],
-			providers: [
-				GlobalEventService,
-				IdService,
-				ChannelFollowingService,
-			],
-		}).compile();
-
-		app.enableShutdownHooks();
-
-		service = app.get<ChannelFollowingService>(ChannelFollowingService);
-		idService = app.get<IdService>(IdService);
-		channelsRepository = app.get<ChannelsRepository>(DI.channelsRepository);
-		channelFollowingsRepository = app.get<ChannelFollowingsRepository>(DI.channelFollowingsRepository);
-		usersRepository = app.get<UsersRepository>(DI.usersRepository);
-		userProfilesRepository = app.get<UserProfilesRepository>(DI.userProfilesRepository);
-		driveFilesRepository = app.get<DriveFilesRepository>(DI.driveFilesRepository);
+		app = await createTestContainer({
+	loadGlobals: true,
+	register: (c) => {
+		c.registerSingleton(GlobalEventService);
+		c.registerSingleton(IdService);
+		c.registerSingleton(ChannelFollowingService);
+	},
+});
+		service = app.resolve<ChannelFollowingService>(ChannelFollowingService);
+		idService = app.resolve<IdService>(IdService);
+		channelsRepository = app.resolve<ChannelsRepository>(DI.channelsRepository);
+		channelFollowingsRepository = app.resolve<ChannelFollowingsRepository>(DI.channelFollowingsRepository);
+		usersRepository = app.resolve<UsersRepository>(DI.usersRepository);
+		userProfilesRepository = app.resolve<UserProfilesRepository>(DI.userProfilesRepository);
+		driveFilesRepository = app.resolve<DriveFilesRepository>(DI.driveFilesRepository);
 	});
 
 	afterAll(async () => {
-		await app.close();
+		await app.resolve(DisposableRegistry).disposeAll();
 	});
 
 	beforeEach(async () => {

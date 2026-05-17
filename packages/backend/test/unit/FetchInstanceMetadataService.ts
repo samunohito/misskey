@@ -7,10 +7,11 @@ process.env.NODE_ENV = 'test';
 
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import type { Mocked } from 'vitest';
-import { Test } from '@nestjs/testing';
+import 'reflect-metadata';
+import { createTestContainer } from '@/di/testing.js';
+import { DisposableRegistry } from '@/di/disposable-registry.js';
+import type { DependencyContainer } from 'tsyringe';
 import { Redis } from 'ioredis';
-import type { TestingModule } from '@nestjs/testing';
-import { GlobalModule } from '@/GlobalModule.js';
 import { FetchInstanceMetadataService } from '@/core/FetchInstanceMetadataService.js';
 import { FederatedInstanceService } from '@/core/FederatedInstanceService.js';
 import { HttpRequestService } from '@/core/HttpRequestService.js';
@@ -40,47 +41,30 @@ function createMockRedis() {
 }
 
 describe('FetchInstanceMetadataService', () => {
-	let app: TestingModule;
+	let app: DependencyContainer;
 	let fetchInstanceMetadataService: Mocked<FetchInstanceMetadataService>;
 	let federatedInstanceService: Mocked<FederatedInstanceService>;
 	let httpRequestService: Mocked<HttpRequestService>;
 	let redisClient: Mocked<Redis>;
 
 	beforeEach(async () => {
-		app = await Test
-			.createTestingModule({
-				imports: [
-					GlobalModule,
-				],
-				providers: [
-					FetchInstanceMetadataService,
-					LoggerService,
-					UtilityService,
-					IdService,
-				],
-			})
-			.useMocker((token) => {
-				if (token === HttpRequestService) {
-					return { getJson: vi.fn(), getHtml: vi.fn(), send: vi.fn() };
-				} else if (token === FederatedInstanceService) {
-					return { fetchOrRegister: vi.fn() };
-				} else if (token === DI.redis) {
-					return createMockRedis();
-				}
-				return null;
-			})
-			.compile();
-
-		app.enableShutdownHooks();
-
-		fetchInstanceMetadataService = app.get<FetchInstanceMetadataService>(FetchInstanceMetadataService) as Mocked<FetchInstanceMetadataService>;
-		federatedInstanceService = app.get<FederatedInstanceService>(FederatedInstanceService) as Mocked<FederatedInstanceService>;
-		redisClient = app.get<Redis>(DI.redis) as Mocked<Redis>;
-		httpRequestService = app.get<HttpRequestService>(HttpRequestService) as Mocked<HttpRequestService>;
+		app = await createTestContainer({
+	loadGlobals: true,
+	register: (c) => {
+		c.registerSingleton(FetchInstanceMetadataService);
+		c.registerSingleton(LoggerService);
+		c.registerSingleton(UtilityService);
+		c.registerSingleton(IdService);
+	},
+});
+		fetchInstanceMetadataService = app.resolve<FetchInstanceMetadataService>(FetchInstanceMetadataService) as Mocked<FetchInstanceMetadataService>;
+		federatedInstanceService = app.resolve<FederatedInstanceService>(FederatedInstanceService) as Mocked<FederatedInstanceService>;
+		redisClient = app.resolve<Redis>(DI.redis) as Mocked<Redis>;
+		httpRequestService = app.resolve<HttpRequestService>(HttpRequestService) as Mocked<HttpRequestService>;
 	});
 
 	afterEach(async () => {
-		await app.close();
+		await app.resolve(DisposableRegistry).disposeAll();
 		vi.resetAllMocks();
 		vi.clearAllMocks();
 	});

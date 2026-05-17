@@ -7,55 +7,42 @@ process.env.NODE_ENV = 'test';
 
 import { afterAll, beforeAll, describe, test, expect, vi } from 'vitest';
 import type { Mocked } from 'vitest';
-import { Test } from '@nestjs/testing';
+import 'reflect-metadata';
+import { createTestContainer } from '@/di/testing.js';
+import { DisposableRegistry } from '@/di/disposable-registry.js';
+import type { DependencyContainer } from 'tsyringe';
 import { mockDeep } from 'vitest-mock-extended';
-import type { TestingModule } from '@nestjs/testing';
 import { ApRendererService } from '@/core/activitypub/ApRendererService.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
 import { IdService } from '@/core/IdService.js';
 import { QueueService } from '@/core/QueueService.js';
 import { RelayService } from '@/core/RelayService.js';
 import { SystemAccountService } from '@/core/SystemAccountService.js';
-import { GlobalModule } from '@/GlobalModule.js';
 import { UtilityService } from '@/core/UtilityService.js';
 
 describe('RelayService', () => {
-	let app: TestingModule;
+	let app: DependencyContainer;
 	let relayService: RelayService;
 	let queueService: Mocked<QueueService>;
 
 	beforeAll(async () => {
-		app = await Test.createTestingModule({
-			imports: [
-				GlobalModule,
-			],
-			providers: [
-				IdService,
-				ApRendererService,
-				RelayService,
-				UserEntityService,
-				SystemAccountService,
-				UtilityService,
-			],
-		})
-			.useMocker((token) => {
-				if (token === QueueService) {
-					return { deliver: vi.fn() };
-				}
-				if (typeof token === 'function') {
-					return mockDeep<typeof token>();
-				}
-			})
-			.compile();
-
-		app.enableShutdownHooks();
-
-		relayService = app.get<RelayService>(RelayService);
-		queueService = app.get<QueueService>(QueueService) as Mocked<QueueService>;
+		app = await createTestContainer({
+	loadGlobals: true,
+	register: (c) => {
+		c.registerSingleton(IdService);
+		c.registerSingleton(ApRendererService);
+		c.registerSingleton(RelayService);
+		c.registerSingleton(UserEntityService);
+		c.registerSingleton(SystemAccountService);
+		c.registerSingleton(UtilityService);
+	},
+});
+		relayService = app.resolve<RelayService>(RelayService);
+		queueService = app.resolve<QueueService>(QueueService) as Mocked<QueueService>;
 	});
 
 	afterAll(async () => {
-		await app.close();
+		await app.resolve(DisposableRegistry).disposeAll();
 	});
 
 	test('addRelay', async () => {

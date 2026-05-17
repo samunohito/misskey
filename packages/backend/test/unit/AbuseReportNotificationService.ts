@@ -5,7 +5,10 @@
 
 import { describe, expect, beforeAll, afterAll, beforeEach, afterEach, test, vi } from 'vitest';
 import type { Mocked } from 'vitest';
-import { Test, TestingModule } from '@nestjs/testing';
+import 'reflect-metadata';
+import { createTestContainer } from '@/di/testing.js';
+import { DisposableRegistry } from '@/di/disposable-registry.js';
+import type { DependencyContainer } from 'tsyringe';
 import { randomString } from '../utils.js';
 import { AbuseReportNotificationService } from '@/core/AbuseReportNotificationService.js';
 import {
@@ -19,7 +22,6 @@ import {
 	UsersRepository,
 } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
-import { GlobalModule } from '@/GlobalModule.js';
 import { IdService } from '@/core/IdService.js';
 import { EmailService } from '@/core/EmailService.js';
 import { RoleService } from '@/core/RoleService.js';
@@ -33,7 +35,7 @@ import { UserEntityService } from '@/core/entities/UserEntityService.js';
 process.env.NODE_ENV = 'test';
 
 describe('AbuseReportNotificationService', () => {
-	let app: TestingModule;
+	let app: DependencyContainer;
 	let service: AbuseReportNotificationService;
 
 	// --------------------------------------------------------------------------------------
@@ -99,54 +101,36 @@ describe('AbuseReportNotificationService', () => {
 	// --------------------------------------------------------------------------------------
 
 	beforeAll(async () => {
-		app = await Test
-			.createTestingModule({
-				imports: [
-					GlobalModule,
-				],
-				providers: [
-					AbuseReportNotificationService,
-					IdService,
-					{
-						provide: RoleService, useFactory: () => ({ getModeratorIds: vi.fn() }),
-					},
-					{
-						provide: SystemWebhookService, useFactory: () => ({ enqueueSystemWebhook: vi.fn() }),
-					},
-					{
-						provide: UserEntityService, useFactory: () => ({
+		app = await createTestContainer({
+	loadGlobals: true,
+	register: (c) => {
+		c.registerSingleton(AbuseReportNotificationService);
+		c.registerSingleton(IdService);
+	},
+	mocks: [
+		[RoleService, (() => ({ getModeratorIds: vi.fn() }))()],
+		[SystemWebhookService, (() => ({ enqueueSystemWebhook: vi.fn() }))()],
+		[UserEntityService, (() => ({
 							pack: (v: any) => Promise.resolve(v),
 							packMany: (v: any) => Promise.resolve(v),
-						}),
-					},
-					{
-						provide: EmailService, useFactory: () => ({ sendEmail: vi.fn() }),
-					},
-					{
-						provide: MetaService, useFactory: () => ({ fetch: vi.fn() }),
-					},
-					{
-						provide: ModerationLogService, useFactory: () => ({ log: () => Promise.resolve() }),
-					},
-					{
-						provide: GlobalEventService, useFactory: () => ({ publishAdminStream: vi.fn() }),
-					},
-				],
-			})
-			.compile();
+						}))()],
+		[EmailService, (() => ({ sendEmail: vi.fn() }))()],
+		[MetaService, (() => ({ fetch: vi.fn() }))()],
+		[ModerationLogService, (() => ({ log: () => Promise.resolve() }))()],
+		[GlobalEventService, (() => ({ publishAdminStream: vi.fn() }))()],
+	],
+});
 
-		usersRepository = app.get(DI.usersRepository);
-		userProfilesRepository = app.get(DI.userProfilesRepository);
-		systemWebhooksRepository = app.get(DI.systemWebhooksRepository);
-		abuseReportNotificationRecipientRepository = app.get(DI.abuseReportNotificationRecipientRepository);
+		usersRepository = app.resolve(DI.usersRepository);
+		userProfilesRepository = app.resolve(DI.userProfilesRepository);
+		systemWebhooksRepository = app.resolve(DI.systemWebhooksRepository);
+		abuseReportNotificationRecipientRepository = app.resolve(DI.abuseReportNotificationRecipientRepository);
 
-		service = app.get(AbuseReportNotificationService);
-		idService = app.get(IdService);
-		roleService = app.get(RoleService) as Mocked<RoleService>;
-		emailService = app.get<EmailService>(EmailService) as Mocked<EmailService>;
-		webhookService = app.get<SystemWebhookService>(SystemWebhookService) as Mocked<SystemWebhookService>;
-
-		app.enableShutdownHooks();
+		service = app.resolve(AbuseReportNotificationService);
+		idService = app.resolve(IdService);
+		roleService = app.resolve(RoleService) as Mocked<RoleService>;
+		emailService = app.resolve<EmailService>(EmailService) as Mocked<EmailService>;
+		webhookService = app.resolve<SystemWebhookService>(SystemWebhookService) as Mocked<SystemWebhookService>;
 	});
 
 	beforeEach(async () => {
@@ -170,7 +154,7 @@ describe('AbuseReportNotificationService', () => {
 	});
 
 	afterAll(async () => {
-		await app.close();
+		await app.resolve(DisposableRegistry).disposeAll();
 	});
 
 	// --------------------------------------------------------------------------------------

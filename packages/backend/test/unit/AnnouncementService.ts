@@ -8,8 +8,10 @@ process.env.NODE_ENV = 'test';
 import { describe, expect, beforeEach, afterEach, test, vi } from 'vitest';
 import type { Mocked } from 'vitest';
 import { mockDeep } from 'vitest-mock-extended';
-import { Test } from '@nestjs/testing';
-import { GlobalModule } from '@/GlobalModule.js';
+import 'reflect-metadata';
+import { createTestContainer } from '@/di/testing.js';
+import { DisposableRegistry } from '@/di/disposable-registry.js';
+import type { DependencyContainer } from 'tsyringe';
 import { AnnouncementService } from '@/core/AnnouncementService.js';
 import { AnnouncementEntityService } from '@/core/entities/AnnouncementEntityService.js';
 import type {
@@ -26,10 +28,8 @@ import { IdService } from '@/core/IdService.js';
 import { GlobalEventService } from '@/core/GlobalEventService.js';
 import { ModerationLogService } from '@/core/ModerationLogService.js';
 import { secureRndstr } from '@/misc/secure-rndstr.js';
-import type { TestingModule } from '@nestjs/testing';
-
 describe('AnnouncementService', () => {
-	let app: TestingModule;
+	let app: DependencyContainer;
 	let announcementService: AnnouncementService;
 	let usersRepository: UsersRepository;
 	let announcementsRepository: AnnouncementsRepository;
@@ -60,52 +60,32 @@ describe('AnnouncementService', () => {
 	}
 
 	beforeEach(async () => {
-		app = await Test.createTestingModule({
-			imports: [
-				GlobalModule,
-			],
-			providers: [
-				AnnouncementService,
-				AnnouncementEntityService,
-				CacheService,
-				IdService,
-			],
-		})
-			.useMocker((token) => {
-				if (token === GlobalEventService) {
-					return {
-						publishMainStream: vi.fn(),
-						publishBroadcastStream: vi.fn(),
-					};
-				} else if (token === ModerationLogService) {
-					return {
-						log: vi.fn(),
-					};
-				} else if (typeof token === 'function') {
-					return mockDeep<typeof token>();
-				}
-			})
-			.compile();
-
-		app.enableShutdownHooks();
-
-		announcementService = app.get<AnnouncementService>(AnnouncementService);
-		usersRepository = app.get<UsersRepository>(DI.usersRepository);
-		announcementsRepository = app.get<AnnouncementsRepository>(DI.announcementsRepository);
-		announcementReadsRepository = app.get<AnnouncementReadsRepository>(DI.announcementReadsRepository);
-		globalEventService = app.get<GlobalEventService>(GlobalEventService) as Mocked<GlobalEventService>;
-		moderationLogService = app.get<ModerationLogService>(ModerationLogService) as Mocked<ModerationLogService>;
+		app = await createTestContainer({
+	loadGlobals: true,
+	register: (c) => {
+		c.registerSingleton(AnnouncementService);
+		c.registerSingleton(AnnouncementEntityService);
+		c.registerSingleton(CacheService);
+		c.registerSingleton(IdService);
+	},
+});
+		announcementService = app.resolve<AnnouncementService>(AnnouncementService);
+		usersRepository = app.resolve<UsersRepository>(DI.usersRepository);
+		announcementsRepository = app.resolve<AnnouncementsRepository>(DI.announcementsRepository);
+		announcementReadsRepository = app.resolve<AnnouncementReadsRepository>(DI.announcementReadsRepository);
+		globalEventService = app.resolve<GlobalEventService>(GlobalEventService) as Mocked<GlobalEventService>;
+		moderationLogService = app.resolve<ModerationLogService>(ModerationLogService) as Mocked<ModerationLogService>;
 	});
 
 	afterEach(async () => {
 		await Promise.all([
-			app.get(DI.metasRepository).createQueryBuilder().delete().execute(),
+			app.resolve(DI.metasRepository).createQueryBuilder().delete().execute(),
 			usersRepository.createQueryBuilder().delete().execute(),
 			announcementsRepository.createQueryBuilder().delete().execute(),
 			announcementReadsRepository.createQueryBuilder().delete().execute(),
 		]);
 
-		await app.close();
+		await app.resolve(DisposableRegistry).disposeAll();
 	});
 
 	describe('getUnreadAnnouncements', () => {
