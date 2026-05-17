@@ -4,7 +4,7 @@
  */
 
 import { delay, inject, injectable } from 'tsyringe';
-import type { OnApplicationShutdown } from '@nestjs/common';
+import { Disposable, DisposableRegistry } from '@/di/disposable-registry.js';
 import * as Redis from 'ioredis';
 import { In } from 'typeorm';
 import type {
@@ -121,7 +121,7 @@ export const DEFAULT_POLICIES: RolePolicies = {
 };
 
 @injectable()
-export class RoleService implements OnApplicationShutdown {
+export class RoleService implements Disposable {
 	private rolesCache: MemorySingleCache<MiRole[]>;
 	private roleAssignmentByUserIdCache: MemoryKVCache<MiRoleAssignment[]>;
 	public static AlreadyAssignedError = class extends Error {};
@@ -152,7 +152,9 @@ export class RoleService implements OnApplicationShutdown {
 		private moderationLogService: ModerationLogService,
 		private fanoutTimelineService: FanoutTimelineService,
 		@inject(delay(() => NotificationService)) private notificationService: NotificationService,
+		registry: DisposableRegistry,
 	) {
+		registry.register(this);
 		this.rolesCache = new MemorySingleCache<MiRole[]>(1000 * 60 * 60); // 1h
 		this.roleAssignmentByUserIdCache = new MemoryKVCache<MiRoleAssignment[]>(1000 * 60 * 5); // 5m
 
@@ -720,10 +722,5 @@ export class RoleService implements OnApplicationShutdown {
 	public dispose(): void {
 		this.redisForSub.off('message', this.onMessage);
 		this.roleAssignmentByUserIdCache.dispose();
-	}
-
-	@bindThis
-	public onApplicationShutdown(signal?: string | undefined): void {
-		this.dispose();
 	}
 }

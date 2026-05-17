@@ -4,7 +4,7 @@
  */
 
 import { inject, injectable } from 'tsyringe';
-import type { OnApplicationShutdown } from '@nestjs/common';
+import { Disposable, DisposableRegistry } from '@/di/disposable-registry.js';
 import { DI } from '@/di-symbols.js';
 import type { NotesRepository, UserPublickeysRepository, UsersRepository } from '@/models/_.js';
 import type { Config } from '@/config.js';
@@ -36,7 +36,7 @@ export type UriParseResult = {
 };
 
 @injectable()
-export class ApDbResolverService implements OnApplicationShutdown {
+export class ApDbResolverService implements Disposable {
 	private publicKeyCache: MemoryKVCache<MiUserPublickey | null>;
 	private publicKeyByUserIdCache: MemoryKVCache<MiUserPublickey | null>;
 
@@ -56,7 +56,9 @@ export class ApDbResolverService implements OnApplicationShutdown {
 		private cacheService: CacheService,
 		private apPersonService: ApPersonService,
 		private utilityService: UtilityService,
+		registry: DisposableRegistry,
 	) {
+		registry.register(this);
 		this.publicKeyCache = new MemoryKVCache<MiUserPublickey | null>(1000 * 60 * 60 * 12); // 12h
 		this.publicKeyByUserIdCache = new MemoryKVCache<MiUserPublickey | null>(1000 * 60 * 60 * 12); // 12h
 	}
@@ -178,10 +180,5 @@ export class ApDbResolverService implements OnApplicationShutdown {
 	public dispose(): void {
 		this.publicKeyCache.dispose();
 		this.publicKeyByUserIdCache.dispose();
-	}
-
-	@bindThis
-	public onApplicationShutdown(signal?: string | undefined): void {
-		this.dispose();
 	}
 }

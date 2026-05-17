@@ -4,7 +4,7 @@
  */
 
 import { inject, injectable } from 'tsyringe';
-import type { OnApplicationShutdown } from '@nestjs/common';
+import { Disposable, DisposableRegistry } from '@/di/disposable-registry.js';
 import { Brackets, In, IsNull, Not } from 'typeorm';
 import * as Redis from 'ioredis';
 import sanitizeHtml from 'sanitize-html';
@@ -27,7 +27,7 @@ import { UserEntityService } from '@/core/entities/UserEntityService.js';
 import { IdService } from './IdService.js';
 
 @injectable()
-export class AbuseReportNotificationService implements OnApplicationShutdown {
+export class AbuseReportNotificationService implements Disposable {
 	constructor(
 		@inject(DI.meta)
 		private meta: MiMeta,
@@ -45,7 +45,9 @@ export class AbuseReportNotificationService implements OnApplicationShutdown {
 		private moderationLogService: ModerationLogService,
 		private globalEventService: GlobalEventService,
 		private userEntityService: UserEntityService,
+		registry: DisposableRegistry,
 	) {
+		registry.register(this);
 		this.redisForSub.on('message', this.onMessage);
 	}
 
@@ -424,10 +426,5 @@ export class AbuseReportNotificationService implements OnApplicationShutdown {
 	@bindThis
 	public dispose(): void {
 		this.redisForSub.off('message', this.onMessage);
-	}
-
-	@bindThis
-	public onApplicationShutdown(signal?: string | undefined): void {
-		this.dispose();
 	}
 }

@@ -4,8 +4,7 @@
  */
 
 import { inject, injectable } from 'tsyringe';
-
-import type { OnApplicationShutdown } from '@nestjs/common';
+import { Disposable, DisposableRegistry } from '@/di/disposable-registry.js';
 import { setTimeout } from 'node:timers/promises';
 import * as Redis from 'ioredis';
 import { In } from 'typeorm';
@@ -26,7 +25,7 @@ import { FilterUnionByProperty, groupedNotificationTypes, obsoleteNotificationTy
 import { trackPromise } from '@/misc/promise-tracker.js';
 
 @injectable()
-export class NotificationService implements OnApplicationShutdown {
+export class NotificationService implements Disposable {
 	#shutdownController = new AbortController();
 
 	constructor(
@@ -45,7 +44,9 @@ export class NotificationService implements OnApplicationShutdown {
 		private pushNotificationService: PushNotificationService,
 		private cacheService: CacheService,
 		private userListService: UserListService,
+		registry: DisposableRegistry,
 	) {
+		registry.register(this);
 	}
 
 	@bindThis
@@ -318,10 +319,5 @@ export class NotificationService implements OnApplicationShutdown {
 		}
 
 		return notifications;
-	}
-
-	@bindThis
-	public onApplicationShutdown(signal?: string | undefined): void {
-		this.dispose();
 	}
 }

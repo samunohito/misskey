@@ -4,7 +4,7 @@
  */
 
 import { inject, injectable } from 'tsyringe';
-import type { OnApplicationShutdown } from '@nestjs/common';
+import { Disposable, DisposableRegistry } from '@/di/disposable-registry.js';
 import * as Redis from 'ioredis';
 import type { MiUser } from '@/models/User.js';
 import type { UserKeypairsRepository } from '@/models/_.js';
@@ -14,7 +14,7 @@ import { DI } from '@/di-symbols.js';
 import { bindThis } from '@/decorators.js';
 
 @injectable()
-export class UserKeypairService implements OnApplicationShutdown {
+export class UserKeypairService implements Disposable {
 	private cache: RedisKVCache<MiUserKeypair>;
 
 	constructor(
@@ -23,7 +23,9 @@ export class UserKeypairService implements OnApplicationShutdown {
 
 		@inject(DI.userKeypairsRepository)
 		private userKeypairsRepository: UserKeypairsRepository,
+		registry: DisposableRegistry,
 	) {
+		registry.register(this);
 		this.cache = new RedisKVCache<MiUserKeypair>(this.redisClient, 'userKeypair', {
 			lifetime: 1000 * 60 * 60 * 24, // 24h
 			memoryCacheLifetime: 1000 * 60 * 60, // 1h
@@ -41,10 +43,5 @@ export class UserKeypairService implements OnApplicationShutdown {
 	@bindThis
 	public dispose(): void {
 		this.cache.dispose();
-	}
-
-	@bindThis
-	public onApplicationShutdown(signal?: string | undefined): void {
-		this.dispose();
 	}
 }

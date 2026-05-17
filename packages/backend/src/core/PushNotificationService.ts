@@ -4,7 +4,7 @@
  */
 
 import { inject, injectable } from 'tsyringe';
-import type { OnApplicationShutdown } from '@nestjs/common';
+import { Disposable, DisposableRegistry } from '@/di/disposable-registry.js';
 import push from 'web-push';
 import * as Redis from 'ioredis';
 import { DI } from '@/di-symbols.js';
@@ -48,7 +48,7 @@ function truncateBody<T extends keyof PushNotificationsTypes>(type: T, body: Pus
 }
 
 @injectable()
-export class PushNotificationService implements OnApplicationShutdown {
+export class PushNotificationService implements Disposable {
 	private subscriptionsCache: RedisKVCache<MiSwSubscription[]>;
 
 	constructor(
@@ -63,7 +63,9 @@ export class PushNotificationService implements OnApplicationShutdown {
 
 		@inject(DI.swSubscriptionsRepository)
 		private swSubscriptionsRepository: SwSubscriptionsRepository,
+		registry: DisposableRegistry,
 	) {
+		registry.register(this);
 		this.subscriptionsCache = new RedisKVCache<MiSwSubscription[]>(this.redisClient, 'userSwSubscriptions', {
 			lifetime: 1000 * 60 * 60 * 1, // 1h
 			memoryCacheLifetime: 1000 * 60 * 3, // 3m
@@ -131,10 +133,5 @@ export class PushNotificationService implements OnApplicationShutdown {
 	@bindThis
 	public dispose(): void {
 		this.subscriptionsCache.dispose();
-	}
-
-	@bindThis
-	public onApplicationShutdown(signal?: string | undefined): void {
-		this.dispose();
 	}
 }

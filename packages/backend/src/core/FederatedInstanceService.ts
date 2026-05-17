@@ -4,7 +4,7 @@
  */
 
 import { inject, injectable } from 'tsyringe';
-import type { OnApplicationShutdown } from '@nestjs/common';
+import { Disposable, DisposableRegistry } from '@/di/disposable-registry.js';
 import * as Redis from 'ioredis';
 import type { InstancesRepository } from '@/models/_.js';
 import type { MiInstance } from '@/models/Instance.js';
@@ -15,7 +15,7 @@ import { UtilityService } from '@/core/UtilityService.js';
 import { bindThis } from '@/decorators.js';
 
 @injectable()
-export class FederatedInstanceService implements OnApplicationShutdown {
+export class FederatedInstanceService implements Disposable {
 	public federatedInstanceCache: RedisKVCache<MiInstance | null>;
 
 	constructor(
@@ -27,7 +27,9 @@ export class FederatedInstanceService implements OnApplicationShutdown {
 
 		private utilityService: UtilityService,
 		private idService: IdService,
+		registry: DisposableRegistry,
 	) {
+		registry.register(this);
 		this.federatedInstanceCache = new RedisKVCache<MiInstance | null>(this.redisClient, 'federatedInstance', {
 			lifetime: 1000 * 60 * 30, // 30m
 			memoryCacheLifetime: 1000 * 60 * 3, // 3m
@@ -106,10 +108,5 @@ export class FederatedInstanceService implements OnApplicationShutdown {
 	@bindThis
 	public dispose(): void {
 		this.federatedInstanceCache.dispose();
-	}
-
-	@bindThis
-	public onApplicationShutdown(signal?: string | undefined): void {
-		this.dispose();
 	}
 }

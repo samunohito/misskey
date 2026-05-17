@@ -4,7 +4,7 @@
  */
 
 import { inject, injectable } from 'tsyringe';
-import type { OnApplicationShutdown } from '@nestjs/common';
+import { Disposable, DisposableRegistry } from '@/di/disposable-registry.js';
 import * as Redis from 'ioredis';
 import type { MiUser, SystemWebhooksRepository } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
@@ -48,7 +48,7 @@ export type SystemWebhookPayload<T extends SystemWebhookEventType> =
 		never;
 
 @injectable()
-export class SystemWebhookService implements OnApplicationShutdown {
+export class SystemWebhookService implements Disposable {
 	private activeSystemWebhooksFetched = false;
 	private activeSystemWebhooks: MiSystemWebhook[] = [];
 
@@ -61,7 +61,9 @@ export class SystemWebhookService implements OnApplicationShutdown {
 		private queueService: QueueService,
 		private moderationLogService: ModerationLogService,
 		private globalEventService: GlobalEventService,
+		registry: DisposableRegistry,
 	) {
+		registry.register(this);
 		this.redisForSub.on('message', this.onMessage);
 	}
 
@@ -249,10 +251,5 @@ export class SystemWebhookService implements OnApplicationShutdown {
 	@bindThis
 	public dispose(): void {
 		this.redisForSub.off('message', this.onMessage);
-	}
-
-	@bindThis
-	public onApplicationShutdown(signal?: string | undefined): void {
-		this.dispose();
 	}
 }

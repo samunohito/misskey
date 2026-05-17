@@ -4,8 +4,7 @@
  */
 
 import { inject, injectable } from 'tsyringe';
-
-import type { OnApplicationShutdown } from '@nestjs/common';
+import { Disposable, DisposableRegistry } from '@/di/disposable-registry.js';
 import { setImmediate } from 'node:timers/promises';
 import * as mfm from 'mfm-js';
 import { In, DataSource, IsNull, LessThan } from 'typeorm';
@@ -192,7 +191,7 @@ type Option = {
 };
 
 @injectable()
-export class NoteCreateService implements OnApplicationShutdown {
+export class NoteCreateService implements Disposable {
 	#shutdownController = new AbortController();
 	private updateNotesCountQueue: CollapsedQueue<MiNote['id'], number>;
 
@@ -270,7 +269,9 @@ export class NoteCreateService implements OnApplicationShutdown {
 		private utilityService: UtilityService,
 		private userBlockingService: UserBlockingService,
 		private cacheService: CacheService,
+		registry: DisposableRegistry,
 	) {
+		registry.register(this);
 		this.updateNotesCountQueue = new CollapsedQueue(process.env.NODE_ENV !== 'test' ? 60 * 1000 * 5 : 0, this.collapseNotesCount, this.performUpdateNotesCount);
 	}
 
@@ -1234,10 +1235,5 @@ export class NoteCreateService implements OnApplicationShutdown {
 	public async dispose(): Promise<void> {
 		this.#shutdownController.abort();
 		await this.updateNotesCountQueue.performAllNow();
-	}
-
-	@bindThis
-	public async onApplicationShutdown(signal?: string | undefined): Promise<void> {
-		await this.dispose();
 	}
 }

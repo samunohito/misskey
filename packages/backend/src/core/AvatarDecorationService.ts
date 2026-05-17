@@ -4,7 +4,7 @@
  */
 
 import { inject, injectable } from 'tsyringe';
-import type { OnApplicationShutdown } from '@nestjs/common';
+import { Disposable, DisposableRegistry } from '@/di/disposable-registry.js';
 import * as Redis from 'ioredis';
 import type { AvatarDecorationsRepository, MiAvatarDecoration, MiUser } from '@/models/_.js';
 import { IdService } from '@/core/IdService.js';
@@ -16,7 +16,7 @@ import type { GlobalEvents } from '@/core/GlobalEventService.js';
 import { ModerationLogService } from '@/core/ModerationLogService.js';
 
 @injectable()
-export class AvatarDecorationService implements OnApplicationShutdown {
+export class AvatarDecorationService implements Disposable {
 	public cache: MemorySingleCache<MiAvatarDecoration[]>;
 
 	constructor(
@@ -29,7 +29,9 @@ export class AvatarDecorationService implements OnApplicationShutdown {
 		private idService: IdService,
 		private moderationLogService: ModerationLogService,
 		private globalEventService: GlobalEventService,
+		registry: DisposableRegistry,
 	) {
+		registry.register(this);
 		this.cache = new MemorySingleCache<MiAvatarDecoration[]>(1000 * 60 * 30); // 30s
 
 		this.redisForSub.on('message', this.onMessage);
@@ -121,10 +123,5 @@ export class AvatarDecorationService implements OnApplicationShutdown {
 	@bindThis
 	public dispose(): void {
 		this.redisForSub.off('message', this.onMessage);
-	}
-
-	@bindThis
-	public onApplicationShutdown(signal?: string | undefined): void {
-		this.dispose();
 	}
 }

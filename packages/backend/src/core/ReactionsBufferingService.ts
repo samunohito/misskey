@@ -4,7 +4,7 @@
  */
 
 import { inject, injectable } from 'tsyringe';
-import type { OnApplicationShutdown } from '@nestjs/common';
+import { Disposable, DisposableRegistry } from '@/di/disposable-registry.js';
 import * as Redis from 'ioredis';
 import { DI } from '@/di-symbols.js';
 import type { MiNote } from '@/models/Note.js';
@@ -17,7 +17,7 @@ const REDIS_DELTA_PREFIX = 'reactionsBufferDeltas';
 const REDIS_PAIR_PREFIX = 'reactionsBufferPairs';
 
 @injectable()
-export class ReactionsBufferingService implements OnApplicationShutdown {
+export class ReactionsBufferingService implements Disposable {
 	constructor(
 		@inject(DI.config)
 		private config: Config,
@@ -30,7 +30,9 @@ export class ReactionsBufferingService implements OnApplicationShutdown {
 
 		@inject(DI.notesRepository)
 		private notesRepository: NotesRepository,
+		registry: DisposableRegistry,
 	) {
+		registry.register(this);
 		this.redisForSub.on('message', this.onMessage);
 	}
 
@@ -201,10 +203,5 @@ export class ReactionsBufferingService implements OnApplicationShutdown {
 	@bindThis
 	public dispose(): void {
 		this.redisForSub.off('message', this.onMessage);
-	}
-
-	@bindThis
-	public onApplicationShutdown(signal?: string | undefined): void {
-		this.dispose();
 	}
 }

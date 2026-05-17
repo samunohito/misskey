@@ -4,8 +4,7 @@
  */
 
 import { inject, injectable } from 'tsyringe';
-
-import type { OnApplicationShutdown } from '@nestjs/common';
+import { Disposable, DisposableRegistry } from '@/di/disposable-registry.js';
 import { URL } from 'node:url';
 import httpSignature from '@peertube/http-signature';
 import * as Bull from 'bullmq';
@@ -40,7 +39,7 @@ type UpdateInstanceJob = {
 };
 
 @injectable()
-export class InboxProcessorService implements OnApplicationShutdown {
+export class InboxProcessorService implements Disposable {
 	private logger: Logger;
 	private updateInstanceQueue: CollapsedQueue<MiNote['id'], UpdateInstanceJob>;
 
@@ -59,7 +58,9 @@ export class InboxProcessorService implements OnApplicationShutdown {
 		private apRequestChart: ApRequestChart,
 		private federationChart: FederationChart,
 		private queueLoggerService: QueueLoggerService,
+		registry: DisposableRegistry,
 	) {
+		registry.register(this);
 		this.logger = this.queueLoggerService.logger.createSubLogger('inbox');
 		this.updateInstanceQueue = new CollapsedQueue(process.env.NODE_ENV !== 'test' ? 60 * 1000 * 5 : 0, this.collapseUpdateInstanceJobs, this.performUpdateInstance);
 	}
@@ -288,10 +289,5 @@ export class InboxProcessorService implements OnApplicationShutdown {
 	@bindThis
 	public async dispose(): Promise<void> {
 		await this.updateInstanceQueue.performAllNow();
-	}
-
-	@bindThis
-	async onApplicationShutdown(signal?: string) {
-		await this.dispose();
 	}
 }

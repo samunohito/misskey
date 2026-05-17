@@ -4,7 +4,7 @@
  */
 
 import { inject, injectable } from 'tsyringe';
-import type { OnApplicationShutdown } from '@nestjs/common';
+import { Disposable, DisposableRegistry } from '@/di/disposable-registry.js';
 import * as Redis from 'ioredis';
 import type { BlockingsRepository, FollowingsRepository, MutingsRepository, RenoteMutingsRepository, MiUserProfile, UserProfilesRepository, UsersRepository, MiFollowing } from '@/models/_.js';
 import { MemoryKVCache, RedisKVCache } from '@/misc/cache.js';
@@ -14,7 +14,7 @@ import { UserEntityService } from '@/core/entities/UserEntityService.js';
 import { bindThis } from '@/decorators.js';
 import type { GlobalEvents } from '@/core/GlobalEventService.js';
 @injectable()
-export class CacheService implements OnApplicationShutdown {
+export class CacheService implements Disposable {
 	public userByIdCache: MemoryKVCache<MiUser>;
 	public localUserByNativeTokenCache: MemoryKVCache<MiLocalUser | null>;
 	public localUserByIdCache: MemoryKVCache<MiLocalUser>;
@@ -52,7 +52,9 @@ export class CacheService implements OnApplicationShutdown {
 		private followingsRepository: FollowingsRepository,
 
 		private userEntityService: UserEntityService,
+		registry: DisposableRegistry,
 	) {
+		registry.register(this);
 		//this.onMessage = this.onMessage.bind(this);
 
 		this.userByIdCache = new MemoryKVCache<MiUser>(1000 * 60 * 5); // 5m
@@ -191,10 +193,5 @@ export class CacheService implements OnApplicationShutdown {
 		this.userBlockedCache.dispose();
 		this.renoteMutingsCache.dispose();
 		this.userFollowingsCache.dispose();
-	}
-
-	@bindThis
-	public onApplicationShutdown(signal?: string | undefined): void {
-		this.dispose();
 	}
 }

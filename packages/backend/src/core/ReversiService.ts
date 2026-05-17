@@ -4,7 +4,7 @@
  */
 
 import { delay, inject, injectable } from 'tsyringe';
-import type { OnApplicationShutdown } from '@nestjs/common';
+import { Disposable, DisposableRegistry } from '@/di/disposable-registry.js';
 import * as Redis from 'ioredis';
 import { reversiUpdateKeys } from 'misskey-js';
 import * as Reversi from 'misskey-reversi';
@@ -26,7 +26,7 @@ import { ReversiGameEntityService } from './entities/ReversiGameEntityService.js
 const INVITATION_TIMEOUT_MS = 1000 * 20; // 20sec
 
 @injectable()
-export class ReversiService implements OnApplicationShutdown {
+export class ReversiService implements Disposable {
 	constructor(@inject(DI.redis)
 		private redisClient: Redis.Redis,
 
@@ -39,7 +39,9 @@ export class ReversiService implements OnApplicationShutdown {
 		private reversiGameEntityService: ReversiGameEntityService,
 		private idService: IdService,
 		@inject(delay(() => NotificationService)) private notificationService: NotificationService,
+		registry: DisposableRegistry,
 	) {
+		registry.register(this);
 	}
 
 
@@ -615,10 +617,5 @@ export class ReversiService implements OnApplicationShutdown {
 
 	@bindThis
 	public dispose(): void {
-	}
-
-	@bindThis
-	public onApplicationShutdown(signal?: string | undefined): void {
-		this.dispose();
 	}
 }

@@ -4,7 +4,7 @@
  */
 
 import { inject, injectable } from 'tsyringe';
-import type { OnApplicationShutdown } from '@nestjs/common';
+import { Disposable, DisposableRegistry } from '@/di/disposable-registry.js';
 import { DI } from '@/di-symbols.js';
 import type { AccessTokensRepository, AppsRepository, UsersRepository } from '@/models/_.js';
 import type { MiLocalUser } from '@/models/User.js';
@@ -23,7 +23,7 @@ export class AuthenticationError extends Error {
 }
 
 @injectable()
-export class AuthenticateService implements OnApplicationShutdown {
+export class AuthenticateService implements Disposable {
 	private appCache: MemoryKVCache<MiApp>;
 
 	constructor(
@@ -37,7 +37,9 @@ export class AuthenticateService implements OnApplicationShutdown {
 		private appsRepository: AppsRepository,
 
 		private cacheService: CacheService,
+		registry: DisposableRegistry,
 	) {
+		registry.register(this);
 		this.appCache = new MemoryKVCache<MiApp>(1000 * 60 * 60 * 24 * 7); // 1w
 	}
 
@@ -95,10 +97,5 @@ export class AuthenticateService implements OnApplicationShutdown {
 	@bindThis
 	public dispose(): void {
 		this.appCache.dispose();
-	}
-
-	@bindThis
-	public onApplicationShutdown(signal?: string | undefined): void {
-		this.dispose();
 	}
 }

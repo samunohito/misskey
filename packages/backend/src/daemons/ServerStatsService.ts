@@ -4,7 +4,7 @@
  */
 
 import { inject, injectable } from 'tsyringe';
-import type { OnApplicationShutdown } from '@nestjs/common';
+import { Disposable, DisposableRegistry } from '@/di/disposable-registry.js';
 import Xev from 'xev';
 import * as osUtils from 'os-utils';
 import { bindThis } from '@/decorators.js';
@@ -18,13 +18,15 @@ const roundCpu = (num: number) => Math.round(num * 1000) / 1000;
 const round = (num: number) => Math.round(num * 10) / 10;
 
 @injectable()
-export class ServerStatsService implements OnApplicationShutdown {
+export class ServerStatsService implements Disposable {
 	private intervalId: NodeJS.Timeout | null = null;
 
 	constructor(
 		@inject(DI.meta)
 		private meta: MiMeta,
+		registry: DisposableRegistry,
 	) {
+		registry.register(this);
 	}
 
 	/**
@@ -76,11 +78,6 @@ export class ServerStatsService implements OnApplicationShutdown {
 		if (this.intervalId) {
 			clearInterval(this.intervalId);
 		}
-	}
-
-	@bindThis
-	public onApplicationShutdown(signal?: string | undefined): void {
-		this.dispose();
 	}
 }
 

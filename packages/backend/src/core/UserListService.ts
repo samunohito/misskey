@@ -4,7 +4,7 @@
  */
 
 import { delay, inject, injectable } from 'tsyringe';
-import type { OnApplicationShutdown } from '@nestjs/common';
+import { Disposable, DisposableRegistry } from '@/di/disposable-registry.js';
 import * as Redis from 'ioredis';
 import type { UserListMembershipsRepository } from '@/models/_.js';
 import type { MiUser } from '@/models/User.js';
@@ -22,7 +22,7 @@ import { RoleService } from '@/core/RoleService.js';
 import { SystemAccountService } from '@/core/SystemAccountService.js';
 
 @injectable()
-export class UserListService implements OnApplicationShutdown {
+export class UserListService implements Disposable {
 	public static TooManyUsersError = class extends Error {};
 
 	public membersCache: RedisKVCache<Set<string>>;
@@ -41,7 +41,9 @@ export class UserListService implements OnApplicationShutdown {
 		private queueService: QueueService,
 		private systemAccountService: SystemAccountService,
 		@inject(delay(() => RoleService)) private roleService: RoleService,
+		registry: DisposableRegistry,
 	) {
+		registry.register(this);
 		this.membersCache = new RedisKVCache<Set<string>>(this.redisClient, 'userListMembers', {
 			lifetime: 1000 * 60 * 30, // 30m
 			memoryCacheLifetime: 1000 * 60, // 1m
@@ -143,10 +145,5 @@ export class UserListService implements OnApplicationShutdown {
 	public dispose(): void {
 		this.redisForSub.off('message', this.onMessage);
 		this.membersCache.dispose();
-	}
-
-	@bindThis
-	public onApplicationShutdown(signal?: string | undefined): void {
-		this.dispose();
 	}
 }

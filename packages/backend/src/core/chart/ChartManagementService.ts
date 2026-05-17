@@ -4,7 +4,7 @@
  */
 
 import { injectable } from 'tsyringe';
-import type { OnApplicationShutdown } from '@nestjs/common';
+import { Disposable, DisposableRegistry } from '@/di/disposable-registry.js';
 import { bindThis } from '@/decorators.js';
 import FederationChart from './charts/federation.js';
 import NotesChart from './charts/notes.js';
@@ -19,7 +19,7 @@ import PerUserFollowingChart from './charts/per-user-following.js';
 import PerUserDriveChart from './charts/per-user-drive.js';
 import ApRequestChart from './charts/ap-request.js';
 @injectable()
-export class ChartManagementService implements OnApplicationShutdown {
+export class ChartManagementService implements Disposable {
 	private charts;
 	private saveIntervalId: NodeJS.Timeout;
 
@@ -36,7 +36,9 @@ export class ChartManagementService implements OnApplicationShutdown {
 		private perUserFollowingChart: PerUserFollowingChart,
 		private perUserDriveChart: PerUserDriveChart,
 		private apRequestChart: ApRequestChart,
+		registry: DisposableRegistry,
 	) {
+		registry.register(this);
 		this.charts = [
 			this.federationChart,
 			this.notesChart,
@@ -71,10 +73,5 @@ export class ChartManagementService implements OnApplicationShutdown {
 				await chart.save();
 			}
 		}
-	}
-
-	@bindThis
-	async onApplicationShutdown(signal: string): Promise<void> {
-		await this.dispose();
 	}
 }

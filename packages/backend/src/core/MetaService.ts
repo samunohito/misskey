@@ -4,7 +4,7 @@
  */
 
 import { inject, injectable } from 'tsyringe';
-import type { OnApplicationShutdown } from '@nestjs/common';
+import { Disposable, DisposableRegistry } from '@/di/disposable-registry.js';
 import { DataSource } from 'typeorm';
 import * as Redis from 'ioredis';
 import { DI } from '@/di-symbols.js';
@@ -14,7 +14,7 @@ import { bindThis } from '@/decorators.js';
 import type { GlobalEvents } from '@/core/GlobalEventService.js';
 import { FeaturedService } from '@/core/FeaturedService.js';
 @injectable()
-export class MetaService implements OnApplicationShutdown {
+export class MetaService implements Disposable {
 	private cache: MiMeta | undefined;
 	private intervalId: NodeJS.Timeout;
 
@@ -27,7 +27,9 @@ export class MetaService implements OnApplicationShutdown {
 
 		private featuredService: FeaturedService,
 		private globalEventService: GlobalEventService,
+		registry: DisposableRegistry,
 	) {
+		registry.register(this);
 		//this.onMessage = this.onMessage.bind(this);
 
 		if (process.env.NODE_ENV !== 'test') {
@@ -152,10 +154,5 @@ export class MetaService implements OnApplicationShutdown {
 	public dispose(): void {
 		clearInterval(this.intervalId);
 		this.redisForSub.off('message', this.onMessage);
-	}
-
-	@bindThis
-	public onApplicationShutdown(signal?: string | undefined): void {
-		this.dispose();
 	}
 }

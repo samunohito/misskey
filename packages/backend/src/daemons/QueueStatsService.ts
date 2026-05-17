@@ -4,7 +4,7 @@
  */
 
 import { inject, injectable } from 'tsyringe';
-import type { OnApplicationShutdown } from '@nestjs/common';
+import { Disposable, DisposableRegistry } from '@/di/disposable-registry.js';
 import Xev from 'xev';
 import * as Bull from 'bullmq';
 import { QueueService } from '@/core/QueueService.js';
@@ -17,7 +17,7 @@ const ev = new Xev();
 const interval = 10000;
 
 @injectable()
-export class QueueStatsService implements OnApplicationShutdown {
+export class QueueStatsService implements Disposable {
 	private intervalId: NodeJS.Timeout;
 
 	constructor(
@@ -25,7 +25,9 @@ export class QueueStatsService implements OnApplicationShutdown {
 		private config: Config,
 
 		private queueService: QueueService,
+		registry: DisposableRegistry,
 	) {
+		registry.register(this);
 	}
 
 	/**
@@ -89,10 +91,5 @@ export class QueueStatsService implements OnApplicationShutdown {
 	@bindThis
 	public dispose(): void {
 		clearInterval(this.intervalId);
-	}
-
-	@bindThis
-	public onApplicationShutdown(signal?: string | undefined): void {
-		this.dispose();
 	}
 }

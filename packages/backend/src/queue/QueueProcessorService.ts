@@ -4,7 +4,7 @@
  */
 
 import { inject, injectable } from 'tsyringe';
-import type { OnApplicationShutdown } from '@nestjs/common';
+import { Disposable, DisposableRegistry } from '@/di/disposable-registry.js';
 import * as Bull from 'bullmq';
 import type { Config } from '@/config.js';
 import { DI } from '@/di-symbols.js';
@@ -75,7 +75,7 @@ function getJobInfo(job: Bull.Job | undefined, increment = false): string {
 }
 
 @injectable()
-export class QueueProcessorService implements OnApplicationShutdown {
+export class QueueProcessorService implements Disposable {
 	private logger: Logger;
 	private systemQueueWorker: Bull.Worker;
 	private dbQueueWorker: Bull.Worker;
@@ -128,7 +128,9 @@ export class QueueProcessorService implements OnApplicationShutdown {
 		private checkModeratorsActivityProcessorService: CheckModeratorsActivityProcessorService,
 		private cleanProcessorService: CleanProcessorService,
 		private cleanRemoteNotesProcessorService: CleanRemoteNotesProcessorService,
+		registry: DisposableRegistry,
 	) {
+		registry.register(this);
 		this.logger = this.queueLoggerService.logger;
 
 		function renderError(e?: Error) {
@@ -580,7 +582,7 @@ export class QueueProcessorService implements OnApplicationShutdown {
 	}
 
 	@bindThis
-	public async onApplicationShutdown(signal?: string | undefined): Promise<void> {
+	public async dispose(signal?: string | undefined): Promise<void> {
 		await this.stop();
 	}
 }

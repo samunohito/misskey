@@ -4,8 +4,7 @@
  */
 
 import { inject, injectable } from 'tsyringe';
-
-import type { OnApplicationShutdown } from '@nestjs/common';
+import { Disposable, DisposableRegistry } from '@/di/disposable-registry.js';
 import cluster from 'node:cluster';
 import * as fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -37,7 +36,7 @@ import { OAuth2ProviderService } from './oauth/OAuth2ProviderService.js';
 const _dirname = fileURLToPath(new URL('.', import.meta.url));
 
 @injectable()
-export class ServerService implements OnApplicationShutdown {
+export class ServerService implements Disposable {
 	private logger: Logger;
 	#fastify: FastifyInstance;
 
@@ -70,7 +69,9 @@ export class ServerService implements OnApplicationShutdown {
 		private globalEventService: GlobalEventService,
 		private loggerService: LoggerService,
 		private oauth2ProviderService: OAuth2ProviderService,
+		registry: DisposableRegistry,
 	) {
+		registry.register(this);
 		this.logger = this.loggerService.getLogger('server', 'gray');
 	}
 
@@ -292,10 +293,5 @@ export class ServerService implements OnApplicationShutdown {
 	 */
 	public get fastify(): FastifyInstance {
 		return this.#fastify;
-	}
-
-	@bindThis
-	async onApplicationShutdown(signal: string): Promise<void> {
-		await this.dispose();
 	}
 }

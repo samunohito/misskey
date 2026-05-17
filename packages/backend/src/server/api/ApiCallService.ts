@@ -4,8 +4,7 @@
  */
 
 import { inject, injectable } from 'tsyringe';
-
-import type { OnApplicationShutdown } from '@nestjs/common';
+import { Disposable, DisposableRegistry } from '@/di/disposable-registry.js';
 import { randomUUID } from 'node:crypto';
 import * as fs from 'node:fs';
 import * as stream from 'node:stream/promises';
@@ -33,7 +32,7 @@ const accessDenied = {
 };
 
 @injectable()
-export class ApiCallService implements OnApplicationShutdown {
+export class ApiCallService implements Disposable {
 	private logger: Logger;
 	private userIpHistories: Map<MiUser['id'], Set<string>>;
 	private userIpHistoriesClearIntervalId: NodeJS.Timeout;
@@ -53,7 +52,9 @@ export class ApiCallService implements OnApplicationShutdown {
 		private rateLimiterService: RateLimiterService,
 		private roleService: RoleService,
 		private apiLoggerService: ApiLoggerService,
+		registry: DisposableRegistry,
 	) {
+		registry.register(this);
 		this.logger = this.apiLoggerService.logger;
 		this.userIpHistories = new Map<MiUser['id'], Set<string>>();
 
@@ -456,10 +457,5 @@ export class ApiCallService implements OnApplicationShutdown {
 	@bindThis
 	public dispose(): void {
 		clearInterval(this.userIpHistoriesClearIntervalId);
-	}
-
-	@bindThis
-	public onApplicationShutdown(signal?: string | undefined): void {
-		this.dispose();
 	}
 }

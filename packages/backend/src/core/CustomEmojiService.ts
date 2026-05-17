@@ -4,7 +4,7 @@
  */
 
 import { inject, injectable } from 'tsyringe';
-import type { OnApplicationShutdown } from '@nestjs/common';
+import { Disposable, DisposableRegistry } from '@/di/disposable-registry.js';
 import * as Redis from 'ioredis';
 import { In, IsNull } from 'typeorm';
 import { EmojiEntityService } from '@/core/entities/EmojiEntityService.js';
@@ -59,7 +59,7 @@ export const fetchEmojisSortKeys = [
 export type FetchEmojisSortKeys = typeof fetchEmojisSortKeys[number];
 
 @injectable()
-export class CustomEmojiService implements OnApplicationShutdown {
+export class CustomEmojiService implements Disposable {
 	private emojisCache: MemoryKVCache<MiEmoji | null>;
 	public localEmojisCache: RedisSingleCache<Map<string, MiEmoji>>;
 
@@ -73,7 +73,9 @@ export class CustomEmojiService implements OnApplicationShutdown {
 		private emojiEntityService: EmojiEntityService,
 		private moderationLogService: ModerationLogService,
 		private globalEventService: GlobalEventService,
+		registry: DisposableRegistry,
 	) {
+		registry.register(this);
 		this.emojisCache = new MemoryKVCache<MiEmoji | null>(1000 * 60 * 60 * 12); // 12h
 
 		this.localEmojisCache = new RedisSingleCache<Map<string, MiEmoji>>(this.redisClient, 'localEmojis', {
@@ -600,10 +602,5 @@ export class CustomEmojiService implements OnApplicationShutdown {
 	@bindThis
 	public dispose(): void {
 		this.emojisCache.dispose();
-	}
-
-	@bindThis
-	public onApplicationShutdown(signal?: string | undefined): void {
-		this.dispose();
 	}
 }

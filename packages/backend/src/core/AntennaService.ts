@@ -4,7 +4,7 @@
  */
 
 import { inject, injectable } from 'tsyringe';
-import type { OnApplicationShutdown } from '@nestjs/common';
+import { Disposable, DisposableRegistry } from '@/di/disposable-registry.js';
 import * as Redis from 'ioredis';
 import { In } from 'typeorm';
 import { FanoutTimelineService } from '@/core/FanoutTimelineService.js';
@@ -21,7 +21,7 @@ import type { MiNote } from '@/models/Note.js';
 import type { MiUser } from '@/models/User.js';
 import { CacheService } from './CacheService.js';
 @injectable()
-export class AntennaService implements OnApplicationShutdown {
+export class AntennaService implements Disposable {
 	private antennasFetched: boolean;
 	private antennas: MiAntenna[];
 
@@ -42,7 +42,9 @@ export class AntennaService implements OnApplicationShutdown {
 		private utilityService: UtilityService,
 		private globalEventService: GlobalEventService,
 		private fanoutTimelineService: FanoutTimelineService,
+		registry: DisposableRegistry,
 	) {
+		registry.register(this);
 		this.antennasFetched = false;
 		this.antennas = [];
 
@@ -257,10 +259,5 @@ export class AntennaService implements OnApplicationShutdown {
 	@bindThis
 	public dispose(): void {
 		this.redisForSub.off('message', this.onRedisMessage);
-	}
-
-	@bindThis
-	public onApplicationShutdown(signal?: string | undefined): void {
-		this.dispose();
 	}
 }

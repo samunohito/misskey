@@ -4,8 +4,7 @@
  */
 
 import { inject, injectable } from 'tsyringe';
-
-import type { OnApplicationShutdown } from '@nestjs/common';
+import { Disposable, DisposableRegistry } from '@/di/disposable-registry.js';
 import { randomUUID } from 'node:crypto';
 import { DataSource, IsNull } from 'typeorm';
 import * as Redis from 'ioredis';
@@ -24,7 +23,7 @@ import { genRsaKeyPair } from '@/misc/gen-key-pair.js';
 export const SYSTEM_ACCOUNT_TYPES = ['actor', 'relay', 'proxy'] as const;
 
 @injectable()
-export class SystemAccountService implements OnApplicationShutdown {
+export class SystemAccountService implements Disposable {
 	private cache: MemoryKVCache<MiLocalUser>;
 
 	constructor(
@@ -47,7 +46,9 @@ export class SystemAccountService implements OnApplicationShutdown {
 		private userProfilesRepository: UserProfilesRepository,
 
 		private idService: IdService,
+		registry: DisposableRegistry,
 	) {
+		registry.register(this);
 		this.cache = new MemoryKVCache<MiLocalUser>(1000 * 60 * 10); // 10m
 
 		this.redisForSub.on('message', this.onMessage);
@@ -206,10 +207,5 @@ export class SystemAccountService implements OnApplicationShutdown {
 	public dispose(): void {
 		this.redisForSub.off('message', this.onMessage);
 		this.cache.dispose();
-	}
-
-	@bindThis
-	public onApplicationShutdown(signal?: string): void {
-		this.dispose();
 	}
 }
