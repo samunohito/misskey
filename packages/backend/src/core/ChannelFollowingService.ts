@@ -4,7 +4,6 @@
  */
 
 import { inject, injectable } from 'tsyringe';
-import type { OnModuleInit } from '@nestjs/common';
 import Redis from 'ioredis';
 import { DI } from '@/di-symbols.js';
 import type { ChannelFollowingsRepository, ChannelsRepository, MiUser } from '@/models/_.js';
@@ -16,7 +15,7 @@ import type { MiLocalUser } from '@/models/User.js';
 import { RedisKVCache } from '@/misc/cache.js';
 
 @injectable()
-export class ChannelFollowingService implements OnModuleInit {
+export class ChannelFollowingService {
 	public userFollowingChannelsCache: RedisKVCache<Set<string>>;
 
 	constructor(
@@ -43,9 +42,6 @@ export class ChannelFollowingService implements OnModuleInit {
 		});
 
 		this.redisForSub.on('message', this.onMessage);
-	}
-
-	onModuleInit() {
 	}
 
 	/**
