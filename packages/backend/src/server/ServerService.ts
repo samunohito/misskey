@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Disposable, DisposableRegistry } from '@/di/disposable-registry.js';
 import cluster from 'node:cluster';
 import * as fs from 'node:fs';
@@ -54,23 +54,7 @@ export class ServerService implements Disposable {
 		private userProfilesRepository: UserProfilesRepository,
 
 		@inject(DI.emojisRepository)
-		private emojisRepository: EmojisRepository,
-
-		private userEntityService: UserEntityService,
-		private apiServerService: ApiServerService,
-		private openApiServerService: OpenApiServerService,
-		private streamingApiServerService: StreamingApiServerService,
-		private activityPubServerService: ActivityPubServerService,
-		private wellKnownServerService: WellKnownServerService,
-		private nodeinfoServerService: NodeinfoServerService,
-		private fileServerService: FileServerService,
-		private healthServerService: HealthServerService,
-		private clientServerService: ClientServerService,
-		private globalEventService: GlobalEventService,
-		private loggerService: LoggerService,
-		private oauth2ProviderService: OAuth2ProviderService,
-		registry: DisposableRegistry,
-	) {
+		private emojisRepository: EmojisRepository,@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService,@inject(delay(() => ApiServerService)) private apiServerService: ApiServerService,@inject(delay(() => OpenApiServerService)) private openApiServerService: OpenApiServerService,@inject(delay(() => StreamingApiServerService)) private streamingApiServerService: StreamingApiServerService,@inject(delay(() => ActivityPubServerService)) private activityPubServerService: ActivityPubServerService,@inject(delay(() => WellKnownServerService)) private wellKnownServerService: WellKnownServerService,@inject(delay(() => NodeinfoServerService)) private nodeinfoServerService: NodeinfoServerService,@inject(delay(() => FileServerService)) private fileServerService: FileServerService,@inject(delay(() => HealthServerService)) private healthServerService: HealthServerService,@inject(delay(() => ClientServerService)) private clientServerService: ClientServerService,@inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService,@inject(delay(() => LoggerService)) private loggerService: LoggerService,@inject(delay(() => OAuth2ProviderService)) private oauth2ProviderService: OAuth2ProviderService,@inject(delay(() => DisposableRegistry)) registry: DisposableRegistry) {
 		registry.register(this);
 		this.logger = this.loggerService.getLogger('server', 'gray');
 	}

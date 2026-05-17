@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import * as Redis from 'ioredis';
 import { Brackets } from 'typeorm';
 import { DI } from '@/di-symbols.js';
@@ -75,23 +75,7 @@ export class ChatService {
 		private chatRoomMembershipsRepository: ChatRoomMembershipsRepository,
 
 		@inject(DI.mutingsRepository)
-		private mutingsRepository: MutingsRepository,
-
-		private userEntityService: UserEntityService,
-		private chatEntityService: ChatEntityService,
-		private idService: IdService,
-		private globalEventService: GlobalEventService,
-		private apRendererService: ApRendererService,
-		private queueService: QueueService,
-		private pushNotificationService: PushNotificationService,
-		private notificationService: NotificationService,
-		private userBlockingService: UserBlockingService,
-		private queryService: QueryService,
-		private roleService: RoleService,
-		private userFollowingService: UserFollowingService,
-		private customEmojiService: CustomEmojiService,
-		private moderationLogService: ModerationLogService,
-	) {
+		private mutingsRepository: MutingsRepository,@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService,@inject(delay(() => ChatEntityService)) private chatEntityService: ChatEntityService,@inject(delay(() => IdService)) private idService: IdService,@inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService,@inject(delay(() => ApRendererService)) private apRendererService: ApRendererService,@inject(delay(() => QueueService)) private queueService: QueueService,@inject(delay(() => PushNotificationService)) private pushNotificationService: PushNotificationService,@inject(delay(() => NotificationService)) private notificationService: NotificationService,@inject(delay(() => UserBlockingService)) private userBlockingService: UserBlockingService,@inject(delay(() => QueryService)) private queryService: QueryService,@inject(delay(() => RoleService)) private roleService: RoleService,@inject(delay(() => UserFollowingService)) private userFollowingService: UserFollowingService,@inject(delay(() => CustomEmojiService)) private customEmojiService: CustomEmojiService,@inject(delay(() => ModerationLogService)) private moderationLogService: ModerationLogService) {
 	}
 
 	@bindThis

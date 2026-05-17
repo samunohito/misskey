@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { AuthSessionsRepository } from '@/models/_.js';
 import { AuthSessionEntityService } from '@/core/entities/AuthSessionEntityService.js';
@@ -57,10 +57,7 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.authSessionsRepository)
-		private authSessionsRepository: AuthSessionsRepository,
-
-		private authSessionEntityService: AuthSessionEntityService,
-	) {
+		private authSessionsRepository: AuthSessionsRepository,@inject(delay(() => AuthSessionEntityService)) private authSessionEntityService: AuthSessionEntityService) {
 		super(meta, paramDef, async (ps, me) => {
 			// Lookup session
 			const session = await this.authSessionsRepository.findOneBy({

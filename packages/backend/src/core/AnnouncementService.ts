@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Brackets, EntityNotFoundError } from 'typeorm';
 import { DI } from '@/di-symbols.js';
 import type { MiUser } from '@/models/User.js';
@@ -25,13 +25,7 @@ export class AnnouncementService {
 		private announcementReadsRepository: AnnouncementReadsRepository,
 
 		@inject(DI.usersRepository)
-		private usersRepository: UsersRepository,
-
-		private idService: IdService,
-		private globalEventService: GlobalEventService,
-		private moderationLogService: ModerationLogService,
-		private announcementEntityService: AnnouncementEntityService,
-	) {
+		private usersRepository: UsersRepository,@inject(delay(() => IdService)) private idService: IdService,@inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService,@inject(delay(() => ModerationLogService)) private moderationLogService: ModerationLogService,@inject(delay(() => AnnouncementEntityService)) private announcementEntityService: AnnouncementEntityService) {
 	}
 
 	@bindThis

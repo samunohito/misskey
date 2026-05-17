@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import type { MiDriveFile, PagesRepository, UsersRepository } from '@/models/_.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { DI } from '@/di-symbols.js';
@@ -45,9 +45,7 @@ export const paramDef = {
 
 @injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
-	constructor(
-		private pageService: PageService,
-	) {
+	constructor(@inject(delay(() => PageService)) private pageService: PageService) {
 		super(meta, paramDef, async (ps, me) => {
 			try {
 				await this.pageService.delete(me, ps.pageId);

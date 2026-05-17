@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { RequestToken } from '@/di/container.js';
 import { isInstanceMuted, isUserFromMutedInstance } from '@/misc/is-instance-muted.js';
 import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
@@ -19,10 +19,7 @@ export class MainChannel extends Channel {
 
 	constructor(
 		@inject(RequestToken)
-		request: ChannelRequest,
-
-		private noteEntityService: NoteEntityService,
-	) {
+		request: ChannelRequest,@inject(delay(() => NoteEntityService)) private noteEntityService: NoteEntityService) {
 		super(request);
 	}
 

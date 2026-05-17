@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 
 import { Brackets } from 'typeorm';
 import type { NotesRepository, ChannelFollowingsRepository, MiMeta } from '@/models/_.js';
@@ -80,19 +80,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private serverSettings: MiMeta,
 
 		@inject(DI.notesRepository)
-		private notesRepository: NotesRepository,
-
-		private noteEntityService: NoteEntityService,
-		private roleService: RoleService,
-		private activeUsersChart: ActiveUsersChart,
-		private idService: IdService,
-		private cacheService: CacheService,
-		private queryService: QueryService,
-		private userFollowingService: UserFollowingService,
-		private channelMutingService: ChannelMutingService,
-		private channelFollowingService: ChannelFollowingService,
-		private fanoutTimelineEndpointService: FanoutTimelineEndpointService,
-	) {
+		private notesRepository: NotesRepository,@inject(delay(() => NoteEntityService)) private noteEntityService: NoteEntityService,@inject(delay(() => RoleService)) private roleService: RoleService,@inject(delay(() => ActiveUsersChart)) private activeUsersChart: ActiveUsersChart,@inject(delay(() => IdService)) private idService: IdService,@inject(delay(() => CacheService)) private cacheService: CacheService,@inject(delay(() => QueryService)) private queryService: QueryService,@inject(delay(() => UserFollowingService)) private userFollowingService: UserFollowingService,@inject(delay(() => ChannelMutingService)) private channelMutingService: ChannelMutingService,@inject(delay(() => ChannelFollowingService)) private channelFollowingService: ChannelFollowingService,@inject(delay(() => FanoutTimelineEndpointService)) private fanoutTimelineEndpointService: FanoutTimelineEndpointService) {
 		super(meta, paramDef, async (ps, me) => {
 			const untilId = ps.untilId ?? (ps.untilDate ? this.idService.gen(ps.untilDate!) : null);
 			const sinceId = ps.sinceId ?? (ps.sinceDate ? this.idService.gen(ps.sinceDate!) : null);

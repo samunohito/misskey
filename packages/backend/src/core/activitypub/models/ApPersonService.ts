@@ -78,9 +78,7 @@ export class ApPersonService {
 		private instancesRepository: InstancesRepository,
 
 		@inject(DI.followingsRepository)
-		private followingsRepository: FollowingsRepository,
-
-		private roleService: RoleService,
+		private followingsRepository: FollowingsRepository,@inject(delay(() => RoleService)) private roleService: RoleService,
 		@inject(delay(() => UtilityService)) private utilityService: UtilityService,
 		@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService,
 		@inject(delay(() => DriveFileEntityService)) private driveFileEntityService: DriveFileEntityService,

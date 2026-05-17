@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 
 import { IsNull } from 'typeorm';
 import type { UsersRepository, PagesRepository } from '@/models/_.js';
@@ -60,10 +60,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private usersRepository: UsersRepository,
 
 		@inject(DI.pagesRepository)
-		private pagesRepository: PagesRepository,
-
-		private pageEntityService: PageEntityService,
-	) {
+		private pagesRepository: PagesRepository,@inject(delay(() => PageEntityService)) private pageEntityService: PageEntityService) {
 		super(meta, paramDef, async (ps, me) => {
 			let page: MiPage | null = null;
 

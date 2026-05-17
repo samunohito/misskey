@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Disposable, DisposableRegistry } from '@/di/disposable-registry.js';
 import * as Redis from 'ioredis';
 import { DI } from '@/di-symbols.js';
@@ -29,9 +29,7 @@ export class ReactionsBufferingService implements Disposable {
 		private redisForReactions: Redis.Redis, // TODO: 専用のRedisインスタンスにする
 
 		@inject(DI.notesRepository)
-		private notesRepository: NotesRepository,
-		registry: DisposableRegistry,
-	) {
+		private notesRepository: NotesRepository,@inject(delay(() => DisposableRegistry)) registry: DisposableRegistry) {
 		registry.register(this);
 		this.redisForSub.on('message', this.onMessage);
 	}

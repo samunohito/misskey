@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { DI } from '@/di-symbols.js';
 import type { MiRegistryItem, RegistryItemsRepository } from '@/models/_.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
@@ -16,11 +16,7 @@ import { bindThis } from '@/decorators.js';
 export class RegistryApiService {
 	constructor(
 		@inject(DI.registryItemsRepository)
-		private registryItemsRepository: RegistryItemsRepository,
-
-		private idService: IdService,
-		private globalEventService: GlobalEventService,
-	) {
+		private registryItemsRepository: RegistryItemsRepository,@inject(delay(() => IdService)) private idService: IdService,@inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService) {
 	}
 
 	@bindThis

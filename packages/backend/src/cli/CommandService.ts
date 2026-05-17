@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import type { Config } from '@/config.js';
 import { DI } from '@/di-symbols.js';
 import type Logger from '@/logger.js';
@@ -16,10 +16,7 @@ export class CommandService {
 
 	constructor(
 		@inject(DI.config)
-		private config: Config,
-
-		private metaService: MetaService,
-	) {
+		private config: Config,@inject(delay(() => MetaService)) private metaService: MetaService) {
 	}
 
 	@bindThis

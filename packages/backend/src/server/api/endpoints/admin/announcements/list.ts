@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import type { AnnouncementsRepository, AnnouncementReadsRepository } from '@/models/_.js';
 import type { MiAnnouncement } from '@/models/Announcement.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
@@ -113,11 +113,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private announcementsRepository: AnnouncementsRepository,
 
 		@inject(DI.announcementReadsRepository)
-		private announcementReadsRepository: AnnouncementReadsRepository,
-
-		private queryService: QueryService,
-		private idService: IdService,
-	) {
+		private announcementReadsRepository: AnnouncementReadsRepository,@inject(delay(() => QueryService)) private queryService: QueryService,@inject(delay(() => IdService)) private idService: IdService) {
 		super(meta, paramDef, async (ps, me) => {
 			const query = this.queryService.makePaginationQuery(this.announcementsRepository.createQueryBuilder('announcement'), ps.sinceId, ps.untilId, ps.sinceDate, ps.untilDate);
 

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { EmojisRepository } from '@/models/_.js';
 import { QueryService } from '@/core/QueryService.js';
@@ -52,12 +52,7 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.emojisRepository)
-		private emojisRepository: EmojisRepository,
-
-		private utilityService: UtilityService,
-		private queryService: QueryService,
-		private emojiEntityService: EmojiEntityService,
-	) {
+		private emojisRepository: EmojisRepository,@inject(delay(() => UtilityService)) private utilityService: UtilityService,@inject(delay(() => QueryService)) private queryService: QueryService,@inject(delay(() => EmojiEntityService)) private emojiEntityService: EmojiEntityService) {
 		super(meta, paramDef, async (ps, me) => {
 			const q = this.queryService.makePaginationQuery(this.emojisRepository.createQueryBuilder('emoji'), ps.sinceId, ps.untilId, ps.sinceDate, ps.untilDate);
 

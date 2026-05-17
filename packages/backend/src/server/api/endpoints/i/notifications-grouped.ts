@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 
 import { In } from 'typeorm';
 import * as Redis from 'ioredis';
@@ -66,11 +66,7 @@ export const paramDef = {
 
 @injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
-	constructor(
-		private idService: IdService,
-		private notificationEntityService: NotificationEntityService,
-		private notificationService: NotificationService,
-	) {
+	constructor(@inject(delay(() => IdService)) private idService: IdService,@inject(delay(() => NotificationEntityService)) private notificationEntityService: NotificationEntityService,@inject(delay(() => NotificationService)) private notificationService: NotificationService) {
 		super(meta, paramDef, async (ps, me) => {
 			const untilId = ps.untilId ?? (ps.untilDate ? this.idService.gen(ps.untilDate!) : undefined);
 			const sinceId = ps.sinceId ?? (ps.sinceDate ? this.idService.gen(ps.sinceDate!) : undefined);

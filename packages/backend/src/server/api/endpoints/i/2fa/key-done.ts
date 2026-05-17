@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 
 import bcrypt from 'bcryptjs';
 import { Endpoint } from '@/server/api/endpoint-base.js';
@@ -64,13 +64,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 		private userProfilesRepository: UserProfilesRepository,
 
 		@inject(DI.userSecurityKeysRepository)
-		private userSecurityKeysRepository: UserSecurityKeysRepository,
-
-		private webAuthnService: WebAuthnService,
-		private userAuthService: UserAuthService,
-		private userEntityService: UserEntityService,
-		private globalEventService: GlobalEventService,
-	) {
+		private userSecurityKeysRepository: UserSecurityKeysRepository,@inject(delay(() => WebAuthnService)) private webAuthnService: WebAuthnService,@inject(delay(() => UserAuthService)) private userAuthService: UserAuthService,@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService,@inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService) {
 		super(meta, paramDef, async (ps, me) => {
 			const token = ps.token;
 			const profile = await this.userProfilesRepository.findOneByOrFail({ userId: me.id });

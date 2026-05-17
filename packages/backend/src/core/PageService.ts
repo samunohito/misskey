@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { DataSource, In, Not } from 'typeorm';
 import { DI } from '@/di-symbols.js';
 import {
@@ -47,12 +47,7 @@ export class PageService {
 		private notesRepository: NotesRepository,
 
 		@inject(DI.usersRepository)
-		private usersRepository: UsersRepository,
-
-		private roleService: RoleService,
-		private moderationLogService: ModerationLogService,
-		private idService: IdService,
-	) {
+		private usersRepository: UsersRepository,@inject(delay(() => RoleService)) private roleService: RoleService,@inject(delay(() => ModerationLogService)) private moderationLogService: ModerationLogService,@inject(delay(() => IdService)) private idService: IdService) {
 	}
 
 	@bindThis

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 
 import { randomUUID } from 'node:crypto';
 import { Endpoint } from '@/server/api/endpoint-base.js';
@@ -61,10 +61,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private appsRepository: AppsRepository,
 
 		@inject(DI.authSessionsRepository)
-		private authSessionsRepository: AuthSessionsRepository,
-
-		private idService: IdService,
-	) {
+		private authSessionsRepository: AuthSessionsRepository,@inject(delay(() => IdService)) private idService: IdService) {
 		super(meta, paramDef, async (ps, me) => {
 			// Lookup app
 			const app = await this.appsRepository.findOneBy({

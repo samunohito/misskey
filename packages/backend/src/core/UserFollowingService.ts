@@ -65,21 +65,7 @@ export class UserFollowingService {
 		private followRequestsRepository: FollowRequestsRepository,
 
 		@inject(DI.instancesRepository)
-		private instancesRepository: InstancesRepository,
-
-		private cacheService: CacheService,
-		private utilityService: UtilityService,
-		private userEntityService: UserEntityService,
-		private idService: IdService,
-		private queueService: QueueService,
-		private globalEventService: GlobalEventService,
-		private notificationService: NotificationService,
-		private federatedInstanceService: FederatedInstanceService,
-		private webhookService: UserWebhookService,
-		private apRendererService: ApRendererService,
-		private accountMoveService: AccountMoveService,
-		private perUserFollowingChart: PerUserFollowingChart,
-		private instanceChart: InstanceChart,
+		private instancesRepository: InstancesRepository,@inject(delay(() => CacheService)) private cacheService: CacheService,@inject(delay(() => UtilityService)) private utilityService: UtilityService,@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService,@inject(delay(() => IdService)) private idService: IdService,@inject(delay(() => QueueService)) private queueService: QueueService,@inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService,@inject(delay(() => NotificationService)) private notificationService: NotificationService,@inject(delay(() => FederatedInstanceService)) private federatedInstanceService: FederatedInstanceService,@inject(delay(() => UserWebhookService)) private webhookService: UserWebhookService,@inject(delay(() => ApRendererService)) private apRendererService: ApRendererService,@inject(delay(() => AccountMoveService)) private accountMoveService: AccountMoveService,@inject(delay(() => PerUserFollowingChart)) private perUserFollowingChart: PerUserFollowingChart,@inject(delay(() => InstanceChart)) private instanceChart: InstanceChart,
 		@inject(delay(() => UserBlockingService)) private userBlockingService: UserBlockingService,
 	) {
 	}

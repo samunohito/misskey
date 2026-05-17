@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 
 import { IsNull, MoreThan, Not } from 'typeorm';
 import type { FollowingsRepository, InstancesRepository } from '@/models/_.js';
@@ -68,10 +68,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private instancesRepository: InstancesRepository,
 
 		@inject(DI.followingsRepository)
-		private followingsRepository: FollowingsRepository,
-
-		private instanceEntityService: InstanceEntityService,
-	) {
+		private followingsRepository: FollowingsRepository,@inject(delay(() => InstanceEntityService)) private instanceEntityService: InstanceEntityService) {
 		super(meta, paramDef, async (ps, me) => {
 			const [topSubInstances, topPubInstances, allSubCount, allPubCount] = await Promise.all([
 				this.instancesRepository.find({

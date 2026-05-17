@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { GalleryPostsRepository } from '@/models/_.js';
 import { GalleryPostEntityService } from '@/core/entities/GalleryPostEntityService.js';
@@ -42,11 +42,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 	constructor(
 		@inject(DI.galleryPostsRepository)
-		private galleryPostsRepository: GalleryPostsRepository,
-
-		private galleryPostEntityService: GalleryPostEntityService,
-		private featuredService: FeaturedService,
-	) {
+		private galleryPostsRepository: GalleryPostsRepository,@inject(delay(() => GalleryPostEntityService)) private galleryPostEntityService: GalleryPostEntityService,@inject(delay(() => FeaturedService)) private featuredService: FeaturedService) {
 		super(meta, paramDef, async (ps, me) => {
 			let postIds: string[];
 			if (this.galleryPostsRankingCacheLastFetchedAt !== 0 && (Date.now() - this.galleryPostsRankingCacheLastFetchedAt < 1000 * 60 * 30)) {

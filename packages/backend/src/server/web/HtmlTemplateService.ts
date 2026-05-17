@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 
 import { resolve } from 'node:path';
 import { promises as fsp } from 'node:fs';
@@ -35,10 +35,7 @@ export class HtmlTemplateService {
 		private config: Config,
 
 		@inject(DI.meta)
-		private meta: MiMeta,
-
-		private metaEntityService: MetaEntityService,
-	) {
+		private meta: MiMeta,@inject(delay(() => MetaEntityService)) private metaEntityService: MetaEntityService) {
 		this.frontendViteBuilt = resolve(this.config.rootDir, 'built/_frontend_vite_');
 		this.frontendEmbedViteBuilt = resolve(this.config.rootDir, 'built/_frontend_embed_vite_');
 	}

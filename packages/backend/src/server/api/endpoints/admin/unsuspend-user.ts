@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { UsersRepository } from '@/models/_.js';
 import { UserSuspendService } from '@/core/UserSuspendService.js';
@@ -29,10 +29,7 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.usersRepository)
-		private usersRepository: UsersRepository,
-
-		private userSuspendService: UserSuspendService,
-	) {
+		private usersRepository: UsersRepository,@inject(delay(() => UserSuspendService)) private userSuspendService: UserSuspendService) {
 		super(meta, paramDef, async (ps, me) => {
 			const user = await this.usersRepository.findOneBy({ id: ps.userId });
 

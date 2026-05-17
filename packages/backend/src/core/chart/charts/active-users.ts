@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { DataSource } from 'typeorm';
 import * as Redis from 'ioredis';
 import type { MiUser } from '@/models/User.js';
@@ -30,11 +30,7 @@ export default class ActiveUsersChart extends Chart<typeof schema> { // eslint-d
 		private db: DataSource,
 
 		@inject(DI.redis)
-		private redisClient: Redis.Redis,
-
-		private chartLoggerService: ChartLoggerService,
-		private idService: IdService,
-	) {
+		private redisClient: Redis.Redis,@inject(delay(() => ChartLoggerService)) private chartLoggerService: ChartLoggerService,@inject(delay(() => IdService)) private idService: IdService) {
 		super(db, (k) => acquireChartInsertLock(redisClient, k), chartLoggerService.logger, name, schema);
 	}
 

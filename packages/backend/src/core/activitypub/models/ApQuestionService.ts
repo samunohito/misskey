@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { DI } from '@/di-symbols.js';
 import type { UsersRepository, NotesRepository, PollsRepository } from '@/models/_.js';
 import type { Config } from '@/config.js';
@@ -33,12 +33,7 @@ export class ApQuestionService {
 		private notesRepository: NotesRepository,
 
 		@inject(DI.pollsRepository)
-		private pollsRepository: PollsRepository,
-
-		private apResolverService: ApResolverService,
-		private apLoggerService: ApLoggerService,
-		private utilityService: UtilityService,
-	) {
+		private pollsRepository: PollsRepository,@inject(delay(() => ApResolverService)) private apResolverService: ApResolverService,@inject(delay(() => ApLoggerService)) private apLoggerService: ApLoggerService,@inject(delay(() => UtilityService)) private utilityService: UtilityService) {
 		this.logger = this.apLoggerService.logger;
 	}
 

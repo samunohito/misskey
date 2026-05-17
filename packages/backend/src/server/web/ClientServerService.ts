@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 
 import { randomUUID } from 'node:crypto';
 import { resolve } from 'node:path';
@@ -113,22 +113,7 @@ export class ClientServerService {
 		private reversiGamesRepository: ReversiGamesRepository,
 
 		@inject(DI.announcementsRepository)
-		private announcementsRepository: AnnouncementsRepository,
-
-		private flashEntityService: FlashEntityService,
-		private userEntityService: UserEntityService,
-		private noteEntityService: NoteEntityService,
-		private pageEntityService: PageEntityService,
-		private galleryPostEntityService: GalleryPostEntityService,
-		private clipEntityService: ClipEntityService,
-		private channelEntityService: ChannelEntityService,
-		private reversiGameEntityService: ReversiGameEntityService,
-		private announcementEntityService: AnnouncementEntityService,
-		private urlPreviewService: UrlPreviewService,
-		private feedService: FeedService,
-		private htmlTemplateService: HtmlTemplateService,
-		private clientLoggerService: ClientLoggerService,
-	) {
+		private announcementsRepository: AnnouncementsRepository,@inject(delay(() => FlashEntityService)) private flashEntityService: FlashEntityService,@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService,@inject(delay(() => NoteEntityService)) private noteEntityService: NoteEntityService,@inject(delay(() => PageEntityService)) private pageEntityService: PageEntityService,@inject(delay(() => GalleryPostEntityService)) private galleryPostEntityService: GalleryPostEntityService,@inject(delay(() => ClipEntityService)) private clipEntityService: ClipEntityService,@inject(delay(() => ChannelEntityService)) private channelEntityService: ChannelEntityService,@inject(delay(() => ReversiGameEntityService)) private reversiGameEntityService: ReversiGameEntityService,@inject(delay(() => AnnouncementEntityService)) private announcementEntityService: AnnouncementEntityService,@inject(delay(() => UrlPreviewService)) private urlPreviewService: UrlPreviewService,@inject(delay(() => FeedService)) private feedService: FeedService,@inject(delay(() => HtmlTemplateService)) private htmlTemplateService: HtmlTemplateService,@inject(delay(() => ClientLoggerService)) private clientLoggerService: ClientLoggerService) {
 		//this.createServer = this.createServer.bind(this);
 		const backendRootdir = resolve(this.config.rootDir, 'packages/backend');
 		const frontendRootdir = resolve(this.config.rootDir, 'packages/frontend');

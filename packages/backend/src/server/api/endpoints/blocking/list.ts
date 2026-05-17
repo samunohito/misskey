@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { BlockingsRepository } from '@/models/_.js';
 import { QueryService } from '@/core/QueryService.js';
@@ -44,11 +44,7 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.blockingsRepository)
-		private blockingsRepository: BlockingsRepository,
-
-		private blockingEntityService: BlockingEntityService,
-		private queryService: QueryService,
-	) {
+		private blockingsRepository: BlockingsRepository,@inject(delay(() => BlockingEntityService)) private blockingEntityService: BlockingEntityService,@inject(delay(() => QueryService)) private queryService: QueryService) {
 		super(meta, paramDef, async (ps, me) => {
 			const query = this.queryService.makePaginationQuery(this.blockingsRepository.createQueryBuilder('blocking'), ps.sinceId, ps.untilId, ps.sinceDate, ps.untilDate)
 				.andWhere('blocking.blockerId = :meId', { meId: me.id });

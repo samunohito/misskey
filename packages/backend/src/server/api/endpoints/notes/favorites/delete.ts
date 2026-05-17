@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { GetterService } from '@/server/api/GetterService.js';
 import { DI } from '@/di-symbols.js';
@@ -44,10 +44,7 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.noteFavoritesRepository)
-		private noteFavoritesRepository: NoteFavoritesRepository,
-
-		private getterService: GetterService,
-	) {
+		private noteFavoritesRepository: NoteFavoritesRepository,@inject(delay(() => GetterService)) private getterService: GetterService) {
 		super(meta, paramDef, async (ps, me) => {
 			// Get favoritee
 			const note = await this.getterService.getNote(ps.noteId).catch(err => {

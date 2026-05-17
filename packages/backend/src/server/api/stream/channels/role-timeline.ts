@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { RequestToken } from '@/di/container.js';
 import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
 import { bindThis } from '@/decorators.js';
@@ -22,12 +22,7 @@ export class RoleTimelineChannel extends Channel {
 
 	constructor(
 		@inject(RequestToken)
-		request: ChannelRequest,
-
-		private noteEntityService: NoteEntityService,
-		private roleservice: RoleService,
-		private noteStreamingHidingService: NoteStreamingHidingService,
-	) {
+		request: ChannelRequest,@inject(delay(() => NoteEntityService)) private noteEntityService: NoteEntityService,@inject(delay(() => RoleService)) private roleservice: RoleService,@inject(delay(() => NoteStreamingHidingService)) private noteStreamingHidingService: NoteStreamingHidingService) {
 		super(request);
 		//this.onNote = this.onNote.bind(this);
 	}

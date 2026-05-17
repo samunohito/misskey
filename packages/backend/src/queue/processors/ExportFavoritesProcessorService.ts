@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 
 import * as fs from 'node:fs';
 import { format as dateFormat } from 'date-fns';
@@ -35,14 +35,7 @@ export class ExportFavoritesProcessorService {
 		private pollsRepository: PollsRepository,
 
 		@inject(DI.noteFavoritesRepository)
-		private noteFavoritesRepository: NoteFavoritesRepository,
-
-		private driveService: DriveService,
-		private queueLoggerService: QueueLoggerService,
-		private queryService: QueryService,
-		private idService: IdService,
-		private notificationService: NotificationService,
-	) {
+		private noteFavoritesRepository: NoteFavoritesRepository,@inject(delay(() => DriveService)) private driveService: DriveService,@inject(delay(() => QueueLoggerService)) private queueLoggerService: QueueLoggerService,@inject(delay(() => QueryService)) private queryService: QueryService,@inject(delay(() => IdService)) private idService: IdService,@inject(delay(() => NotificationService)) private notificationService: NotificationService) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('export-favorites');
 	}
 

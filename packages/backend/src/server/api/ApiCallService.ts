@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Disposable, DisposableRegistry } from '@/di/disposable-registry.js';
 import { randomUUID } from 'node:crypto';
 import * as fs from 'node:fs';
@@ -46,14 +46,7 @@ export class ApiCallService implements Disposable {
 		private config: Config,
 
 		@inject(DI.userIpsRepository)
-		private userIpsRepository: UserIpsRepository,
-
-		private authenticateService: AuthenticateService,
-		private rateLimiterService: RateLimiterService,
-		private roleService: RoleService,
-		private apiLoggerService: ApiLoggerService,
-		registry: DisposableRegistry,
-	) {
+		private userIpsRepository: UserIpsRepository,@inject(delay(() => AuthenticateService)) private authenticateService: AuthenticateService,@inject(delay(() => RateLimiterService)) private rateLimiterService: RateLimiterService,@inject(delay(() => RoleService)) private roleService: RoleService,@inject(delay(() => ApiLoggerService)) private apiLoggerService: ApiLoggerService,@inject(delay(() => DisposableRegistry)) registry: DisposableRegistry) {
 		registry.register(this);
 		this.logger = this.apiLoggerService.logger;
 		this.userIpHistories = new Map<MiUser['id'], Set<string>>();

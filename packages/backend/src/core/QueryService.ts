@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Brackets, ObjectLiteral } from 'typeorm';
 import { DI } from '@/di-symbols.js';
 import type { MiUser } from '@/models/User.js';
@@ -37,10 +37,7 @@ export class QueryService {
 		private renoteMutingsRepository: RenoteMutingsRepository,
 
 		@inject(DI.meta)
-		private meta: MiMeta,
-
-		private idService: IdService,
-	) {
+		private meta: MiMeta,@inject(delay(() => IdService)) private idService: IdService) {
 	}
 
 	public makePaginationQuery<T extends ObjectLiteral>(

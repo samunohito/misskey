@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Brackets } from 'typeorm';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { ReversiGameEntityService } from '@/core/entities/ReversiGameEntityService.js';
@@ -38,11 +38,7 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.reversiGamesRepository)
-		private reversiGamesRepository: ReversiGamesRepository,
-
-		private reversiGameEntityService: ReversiGameEntityService,
-		private queryService: QueryService,
-	) {
+		private reversiGamesRepository: ReversiGamesRepository,@inject(delay(() => ReversiGameEntityService)) private reversiGameEntityService: ReversiGameEntityService,@inject(delay(() => QueryService)) private queryService: QueryService) {
 		super(meta, paramDef, async (ps, me) => {
 			const query = this.queryService.makePaginationQuery(this.reversiGamesRepository.createQueryBuilder('game'), ps.sinceId, ps.untilId, ps.sinceDate, ps.untilDate)
 				.innerJoinAndSelect('game.user1', 'user1')

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 
 import ms from 'ms';
 import { DB_MAX_IMAGE_COMMENT_LENGTH } from '@/const.js';
@@ -89,11 +89,7 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.meta)
-		private serverSettings: MiMeta,
-
-		private driveFileEntityService: DriveFileEntityService,
-		private driveService: DriveService,
-	) {
+		private serverSettings: MiMeta,@inject(delay(() => DriveFileEntityService)) private driveFileEntityService: DriveFileEntityService,@inject(delay(() => DriveService)) private driveService: DriveService) {
 		super(meta, paramDef, async (ps, me, _, file, cleanup, ip, headers) => {
 			// Get 'name' parameter
 			let name = ps.name ?? file!.name ?? null;

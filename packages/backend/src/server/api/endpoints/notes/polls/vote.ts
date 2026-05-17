@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import type { UsersRepository, PollsRepository, PollVotesRepository } from '@/models/_.js';
 import type { MiRemoteUser } from '@/models/User.js';
 import { IdService } from '@/core/IdService.js';
@@ -86,16 +86,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private pollsRepository: PollsRepository,
 
 		@inject(DI.pollVotesRepository)
-		private pollVotesRepository: PollVotesRepository,
-
-		private idService: IdService,
-		private getterService: GetterService,
-		private queueService: QueueService,
-		private pollService: PollService,
-		private apRendererService: ApRendererService,
-		private globalEventService: GlobalEventService,
-		private userBlockingService: UserBlockingService,
-	) {
+		private pollVotesRepository: PollVotesRepository,@inject(delay(() => IdService)) private idService: IdService,@inject(delay(() => GetterService)) private getterService: GetterService,@inject(delay(() => QueueService)) private queueService: QueueService,@inject(delay(() => PollService)) private pollService: PollService,@inject(delay(() => ApRendererService)) private apRendererService: ApRendererService,@inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService,@inject(delay(() => UserBlockingService)) private userBlockingService: UserBlockingService) {
 		super(meta, paramDef, async (ps, me) => {
 			const createdAt = new Date();
 

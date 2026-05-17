@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 
 import { Brackets } from 'typeorm';
 import JSON5 from 'json5';
@@ -27,10 +27,7 @@ export class MetaEntityService {
 		private meta: MiMeta,
 
 		@inject(DI.adsRepository)
-		private adsRepository: AdsRepository,
-
-		private systemAccountService: SystemAccountService,
-	) { }
+		private adsRepository: AdsRepository,@inject(delay(() => SystemAccountService)) private systemAccountService: SystemAccountService) { }
 
 	@bindThis
 	public async pack(meta?: MiMeta): Promise<Packed<'MetaLite'>> {

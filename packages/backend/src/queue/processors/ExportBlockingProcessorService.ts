@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 
 import * as fs from 'node:fs';
 import { MoreThan } from 'typeorm';
@@ -29,13 +29,7 @@ export class ExportBlockingProcessorService {
 		private usersRepository: UsersRepository,
 
 		@inject(DI.blockingsRepository)
-		private blockingsRepository: BlockingsRepository,
-
-		private utilityService: UtilityService,
-		private notificationService: NotificationService,
-		private driveService: DriveService,
-		private queueLoggerService: QueueLoggerService,
-	) {
+		private blockingsRepository: BlockingsRepository,@inject(delay(() => UtilityService)) private utilityService: UtilityService,@inject(delay(() => NotificationService)) private notificationService: NotificationService,@inject(delay(() => DriveService)) private driveService: DriveService,@inject(delay(() => QueueLoggerService)) private queueLoggerService: QueueLoggerService) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('export-blocking');
 	}
 

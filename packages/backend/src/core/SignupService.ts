@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 
 import { generateKeyPair } from 'node:crypto';
 import bcrypt from 'bcryptjs';
@@ -37,16 +37,7 @@ export class SignupService {
 		private usersRepository: UsersRepository,
 
 		@inject(DI.usedUsernamesRepository)
-		private usedUsernamesRepository: UsedUsernamesRepository,
-
-		private utilityService: UtilityService,
-		private userService: UserService,
-		private userEntityService: UserEntityService,
-		private idService: IdService,
-		private systemAccountService: SystemAccountService,
-		private metaService: MetaService,
-		private usersChart: UsersChart,
-	) {
+		private usedUsernamesRepository: UsedUsernamesRepository,@inject(delay(() => UtilityService)) private utilityService: UtilityService,@inject(delay(() => UserService)) private userService: UserService,@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService,@inject(delay(() => IdService)) private idService: IdService,@inject(delay(() => SystemAccountService)) private systemAccountService: SystemAccountService,@inject(delay(() => MetaService)) private metaService: MetaService,@inject(delay(() => UsersChart)) private usersChart: UsersChart) {
 	}
 
 	@bindThis

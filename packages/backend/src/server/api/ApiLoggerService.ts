@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import type Logger from '@/logger.js';
 import { LoggerService } from '@/core/LoggerService.js';
 
@@ -11,9 +11,7 @@ import { LoggerService } from '@/core/LoggerService.js';
 export class ApiLoggerService {
 	public logger: Logger;
 
-	constructor(
-		private loggerService: LoggerService,
-	) {
+	constructor(@inject(delay(() => LoggerService)) private loggerService: LoggerService) {
 		this.logger = this.loggerService.getLogger('api');
 	}
 }

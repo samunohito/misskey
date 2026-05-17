@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { DataSource } from 'typeorm';
 import * as Redis from 'ioredis';
 import type { FollowingsRepository, InstancesRepository, MiMeta } from '@/models/_.js';
@@ -34,10 +34,7 @@ export default class FederationChart extends Chart<typeof schema> { // eslint-di
 		private followingsRepository: FollowingsRepository,
 
 		@inject(DI.instancesRepository)
-		private instancesRepository: InstancesRepository,
-
-		private chartLoggerService: ChartLoggerService,
-	) {
+		private instancesRepository: InstancesRepository,@inject(delay(() => ChartLoggerService)) private chartLoggerService: ChartLoggerService) {
 		super(db, (k) => acquireChartInsertLock(redisClient, k), chartLoggerService.logger, name, schema);
 	}
 

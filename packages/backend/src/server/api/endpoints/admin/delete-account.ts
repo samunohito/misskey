@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import type { UsersRepository } from '@/models/_.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { DeleteAccountService } from '@/core/DeleteAccountService.js';
@@ -29,10 +29,7 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.usersRepository)
-		private usersRepository: UsersRepository,
-
-		private deleteAccountService: DeleteAccountService,
-	) {
+		private usersRepository: UsersRepository,@inject(delay(() => DeleteAccountService)) private deleteAccountService: DeleteAccountService) {
 		super(meta, paramDef, async (ps, me) => {
 			const user = await this.usersRepository.findOneByOrFail({ id: ps.userId });
 			if (user.isDeleted) {

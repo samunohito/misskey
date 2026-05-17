@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 
 import { Not, In, IsNull } from 'typeorm';
 import { maximum } from '@/misc/prelude/array.js';
@@ -63,11 +63,7 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.notesRepository)
-		private notesRepository: NotesRepository,
-
-		private userEntityService: UserEntityService,
-		private getterService: GetterService,
-	) {
+		private notesRepository: NotesRepository,@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService,@inject(delay(() => GetterService)) private getterService: GetterService) {
 		super(meta, paramDef, async (ps, me) => {
 			// Lookup user
 			const user = await this.getterService.getUser(ps.userId).catch(err => {

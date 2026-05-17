@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { QueryFailedError } from 'typeorm';
 import { DI } from '@/di-symbols.js';
 import type { ClipsRepository, MiNote, MiClip, ClipNotesRepository, NotesRepository } from '@/models/_.js';
@@ -29,11 +29,7 @@ export class ClipService {
 		private clipNotesRepository: ClipNotesRepository,
 
 		@inject(DI.notesRepository)
-		private notesRepository: NotesRepository,
-
-		private roleService: RoleService,
-		private idService: IdService,
-	) {
+		private notesRepository: NotesRepository,@inject(delay(() => RoleService)) private roleService: RoleService,@inject(delay(() => IdService)) private idService: IdService) {
 	}
 
 	@bindThis

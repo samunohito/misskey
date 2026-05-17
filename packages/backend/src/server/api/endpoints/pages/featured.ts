@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import type { PagesRepository } from '@/models/_.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { PageEntityService } from '@/core/entities/PageEntityService.js';
@@ -35,10 +35,7 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.pagesRepository)
-		private pagesRepository: PagesRepository,
-
-		private pageEntityService: PageEntityService,
-	) {
+		private pagesRepository: PagesRepository,@inject(delay(() => PageEntityService)) private pageEntityService: PageEntityService) {
 		super(meta, paramDef, async (ps, me) => {
 			const query = this.pagesRepository.createQueryBuilder('page')
 				.where('page.visibility = \'public\'')

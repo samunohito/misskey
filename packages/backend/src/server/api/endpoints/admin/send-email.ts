@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { EmailService } from '@/core/EmailService.js';
 
@@ -27,9 +27,7 @@ export const paramDef = {
 
 @injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
-	constructor(
-		private emailService: EmailService,
-	) {
+	constructor(@inject(delay(() => EmailService)) private emailService: EmailService) {
 		super(meta, paramDef, async (ps, me) => {
 			await this.emailService.sendEmail(ps.to, ps.subject, ps.text, ps.text);
 		});

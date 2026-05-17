@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { AdsRepository } from '@/models/_.js';
 import { IdService } from '@/core/IdService.js';
@@ -45,11 +45,7 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.adsRepository)
-		private adsRepository: AdsRepository,
-
-		private idService: IdService,
-		private moderationLogService: ModerationLogService,
-	) {
+		private adsRepository: AdsRepository,@inject(delay(() => IdService)) private idService: IdService,@inject(delay(() => ModerationLogService)) private moderationLogService: ModerationLogService) {
 		super(meta, paramDef, async (ps, me) => {
 			const ad = await this.adsRepository.insertOne({
 				id: this.idService.gen(),

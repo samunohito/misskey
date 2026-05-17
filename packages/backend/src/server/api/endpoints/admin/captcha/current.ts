@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { CaptchaService, supportedCaptchaProviders } from '@/core/CaptchaService.js';
 
@@ -60,9 +60,7 @@ export const paramDef = {} as const;
 
 @injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
-	constructor(
-		private captchaService: CaptchaService,
-	) {
+	constructor(@inject(delay(() => CaptchaService)) private captchaService: CaptchaService) {
 		super(meta, paramDef, async () => {
 			return this.captchaService.get();
 		});

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import type Logger from '@/logger.js';
 import { DriveService } from '@/core/DriveService.js';
 import { bindThis } from '@/decorators.js';
@@ -15,10 +15,7 @@ import type { ObjectStorageFileJobData } from '../types.js';
 export class DeleteFileProcessorService {
 	private logger: Logger;
 
-	constructor(
-		private driveService: DriveService,
-		private queueLoggerService: QueueLoggerService,
-	) {
+	constructor(@inject(delay(() => DriveService)) private driveService: DriveService,@inject(delay(() => QueueLoggerService)) private queueLoggerService: QueueLoggerService) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('delete-file');
 	}
 

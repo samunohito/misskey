@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 
 import * as fs from 'node:fs';
 import * as crypto from 'node:crypto';
@@ -54,10 +54,7 @@ const TYPE_SVG = {
 export class FileInfoService {
 	private logger: Logger;
 
-	constructor(
-		private aiService: AiService,
-		private loggerService: LoggerService,
-	) {
+	constructor(@inject(delay(() => AiService)) private aiService: AiService,@inject(delay(() => LoggerService)) private loggerService: LoggerService) {
 		this.logger = this.loggerService.getLogger('file-info');
 	}
 

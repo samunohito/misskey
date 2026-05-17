@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { DI } from '@/di-symbols.js';
 import type { NoteFavoritesRepository } from '@/models/_.js';
 import type { } from '@/models/Blocking.js';
@@ -17,11 +17,7 @@ import { NoteEntityService } from './NoteEntityService.js';
 export class NoteFavoriteEntityService {
 	constructor(
 		@inject(DI.noteFavoritesRepository)
-		private noteFavoritesRepository: NoteFavoritesRepository,
-
-		private noteEntityService: NoteEntityService,
-		private idService: IdService,
-	) {
+		private noteFavoritesRepository: NoteFavoritesRepository,@inject(delay(() => NoteEntityService)) private noteEntityService: NoteEntityService,@inject(delay(() => IdService)) private idService: IdService) {
 	}
 
 	@bindThis

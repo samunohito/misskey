@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 
 import { ReadableStream, TextEncoderStream } from 'node:stream/web';
 import { MoreThan } from 'typeorm';
@@ -110,14 +110,7 @@ export class ExportNotesProcessorService {
 		private pollsRepository: PollsRepository,
 
 		@inject(DI.notesRepository)
-		private notesRepository: NotesRepository,
-
-		private driveService: DriveService,
-		private queueLoggerService: QueueLoggerService,
-		private driveFileEntityService: DriveFileEntityService,
-		private idService: IdService,
-		private notificationService: NotificationService,
-	) {
+		private notesRepository: NotesRepository,@inject(delay(() => DriveService)) private driveService: DriveService,@inject(delay(() => QueueLoggerService)) private queueLoggerService: QueueLoggerService,@inject(delay(() => DriveFileEntityService)) private driveFileEntityService: DriveFileEntityService,@inject(delay(() => IdService)) private idService: IdService,@inject(delay(() => NotificationService)) private notificationService: NotificationService) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('export-notes');
 	}
 

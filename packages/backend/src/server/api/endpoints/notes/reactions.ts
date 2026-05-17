@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Brackets, type FindOptionsWhere } from 'typeorm';
 import type { NoteReactionsRepository } from '@/models/_.js';
 import type { MiNoteReaction } from '@/models/NoteReaction.js';
@@ -57,11 +57,7 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.noteReactionsRepository)
-		private noteReactionsRepository: NoteReactionsRepository,
-
-		private noteReactionEntityService: NoteReactionEntityService,
-		private queryService: QueryService,
-	) {
+		private noteReactionsRepository: NoteReactionsRepository,@inject(delay(() => NoteReactionEntityService)) private noteReactionEntityService: NoteReactionEntityService,@inject(delay(() => QueryService)) private queryService: QueryService) {
 		super(meta, paramDef, async (ps, me) => {
 			const query = this.queryService.makePaginationQuery(this.noteReactionsRepository.createQueryBuilder('reaction'), ps.sinceId, ps.untilId, ps.sinceDate, ps.untilDate)
 				.andWhere('reaction.noteId = :noteId', { noteId: ps.noteId })

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { NotesRepository, DriveFilesRepository } from '@/models/_.js';
 import { QueryService } from '@/core/QueryService.js';
@@ -60,12 +60,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private driveFilesRepository: DriveFilesRepository,
 
 		@inject(DI.notesRepository)
-		private notesRepository: NotesRepository,
-
-		private noteEntityService: NoteEntityService,
-		private queryService: QueryService,
-		private roleService: RoleService,
-	) {
+		private notesRepository: NotesRepository,@inject(delay(() => NoteEntityService)) private noteEntityService: NoteEntityService,@inject(delay(() => QueryService)) private queryService: QueryService,@inject(delay(() => RoleService)) private roleService: RoleService) {
 		super(meta, paramDef, async (ps, me) => {
 			// Fetch file
 			const file = await this.driveFilesRepository.findOneBy({

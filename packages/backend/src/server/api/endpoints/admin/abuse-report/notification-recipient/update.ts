@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { ApiError } from '@/server/api/error.js';
 import {
@@ -88,10 +88,7 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.userProfilesRepository)
-		private userProfilesRepository: UserProfilesRepository,
-		private abuseReportNotificationService: AbuseReportNotificationService,
-		private abuseReportNotificationRecipientEntityService: AbuseReportNotificationRecipientEntityService,
-	) {
+		private userProfilesRepository: UserProfilesRepository,@inject(delay(() => AbuseReportNotificationService)) private abuseReportNotificationService: AbuseReportNotificationService,@inject(delay(() => AbuseReportNotificationRecipientEntityService)) private abuseReportNotificationRecipientEntityService: AbuseReportNotificationRecipientEntityService) {
 		super(meta, paramDef, async (ps, me) => {
 			if (ps.method === 'email') {
 				const userProfile = await this.userProfilesRepository.findOneBy({ userId: ps.userId });

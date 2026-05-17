@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { In } from 'typeorm';
 import { DI } from '@/di-symbols.js';
 import { bindThis } from '@/decorators.js';
@@ -22,15 +22,7 @@ export class AbuseReportService {
 		private abuseUserReportsRepository: AbuseUserReportsRepository,
 
 		@inject(DI.usersRepository)
-		private usersRepository: UsersRepository,
-
-		private idService: IdService,
-		private abuseReportNotificationService: AbuseReportNotificationService,
-		private queueService: QueueService,
-		private systemAccountService: SystemAccountService,
-		private apRendererService: ApRendererService,
-		private moderationLogService: ModerationLogService,
-	) {
+		private usersRepository: UsersRepository,@inject(delay(() => IdService)) private idService: IdService,@inject(delay(() => AbuseReportNotificationService)) private abuseReportNotificationService: AbuseReportNotificationService,@inject(delay(() => QueueService)) private queueService: QueueService,@inject(delay(() => SystemAccountService)) private systemAccountService: SystemAccountService,@inject(delay(() => ApRendererService)) private apRendererService: ApRendererService,@inject(delay(() => ModerationLogService)) private moderationLogService: ModerationLogService) {
 	}
 
 	/**

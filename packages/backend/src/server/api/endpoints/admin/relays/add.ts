@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 
 import { URL } from 'node:url';
 import { Endpoint } from '@/server/api/endpoint-base.js';
@@ -63,9 +63,7 @@ export const paramDef = {
 
 @injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
-	constructor(
-		private relayService: RelayService,
-	) {
+	constructor(@inject(delay(() => RelayService)) private relayService: RelayService) {
 		super(meta, paramDef, async (ps, me) => {
 			try {
 				if (new URL(ps.inbox).protocol !== 'https:') throw new Error('https only');

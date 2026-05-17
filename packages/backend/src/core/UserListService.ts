@@ -33,13 +33,7 @@ export class UserListService implements Disposable {
 		private redisForSub: Redis.Redis,
 
 		@inject(DI.userListMembershipsRepository)
-		private userListMembershipsRepository: UserListMembershipsRepository,
-
-		private userEntityService: UserEntityService,
-		private idService: IdService,
-		private globalEventService: GlobalEventService,
-		private queueService: QueueService,
-		private systemAccountService: SystemAccountService,
+		private userListMembershipsRepository: UserListMembershipsRepository,@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService,@inject(delay(() => IdService)) private idService: IdService,@inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService,@inject(delay(() => QueueService)) private queueService: QueueService,@inject(delay(() => SystemAccountService)) private systemAccountService: SystemAccountService,
 		@inject(delay(() => RoleService)) private roleService: RoleService,
 		registry: DisposableRegistry,
 	) {

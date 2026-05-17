@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { MutingsRepository } from '@/models/_.js';
 import { QueryService } from '@/core/QueryService.js';
@@ -44,11 +44,7 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.mutingsRepository)
-		private mutingsRepository: MutingsRepository,
-
-		private mutingEntityService: MutingEntityService,
-		private queryService: QueryService,
-	) {
+		private mutingsRepository: MutingsRepository,@inject(delay(() => MutingEntityService)) private mutingEntityService: MutingEntityService,@inject(delay(() => QueryService)) private queryService: QueryService) {
 		super(meta, paramDef, async (ps, me) => {
 			const query = this.queryService.makePaginationQuery(this.mutingsRepository.createQueryBuilder('muting'), ps.sinceId, ps.untilId, ps.sinceDate, ps.untilDate)
 				.andWhere('muting.muterId = :meId', { meId: me.id });

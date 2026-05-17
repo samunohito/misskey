@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import ms from 'ms';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { webhookEventTypes } from '@/models/Webhook.js';
@@ -55,9 +55,7 @@ export const paramDef = {
 
 @injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
-	constructor(
-		private webhookTestService: WebhookTestService,
-	) {
+	constructor(@inject(delay(() => WebhookTestService)) private webhookTestService: WebhookTestService) {
 		super(meta, paramDef, async (ps, me) => {
 			try {
 				await this.webhookTestService.testUserWebhook({

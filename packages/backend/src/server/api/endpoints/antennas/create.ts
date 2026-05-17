@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { IdService } from '@/core/IdService.js';
 import type { UserListsRepository, AntennasRepository } from '@/models/_.js';
@@ -85,13 +85,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private antennasRepository: AntennasRepository,
 
 		@inject(DI.userListsRepository)
-		private userListsRepository: UserListsRepository,
-
-		private antennaEntityService: AntennaEntityService,
-		private roleService: RoleService,
-		private idService: IdService,
-		private globalEventService: GlobalEventService,
-	) {
+		private userListsRepository: UserListsRepository,@inject(delay(() => AntennaEntityService)) private antennaEntityService: AntennaEntityService,@inject(delay(() => RoleService)) private roleService: RoleService,@inject(delay(() => IdService)) private idService: IdService,@inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService) {
 		super(meta, paramDef, async (ps, me) => {
 			if (ps.keywords.flat().every(x => x === '') && ps.excludeKeywords.flat().every(x => x === '')) {
 				throw new ApiError(meta.errors.emptyKeyword);

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { RequestToken } from '@/di/container.js';
 import type { MiReversiGame } from '@/models/_.js';
 import { bindThis } from '@/decorators.js';
@@ -22,11 +22,7 @@ export class ReversiGameChannel extends Channel {
 
 	constructor(
 		@inject(RequestToken)
-		request: ChannelRequest,
-
-		private reversiService: ReversiService,
-		private reversiGameEntityService: ReversiGameEntityService,
-	) {
+		request: ChannelRequest,@inject(delay(() => ReversiService)) private reversiService: ReversiService,@inject(delay(() => ReversiGameEntityService)) private reversiGameEntityService: ReversiGameEntityService) {
 		super(request);
 	}
 

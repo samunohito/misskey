@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { In } from 'typeorm';
 import { DI } from '@/di-symbols.js';
 import type {
@@ -37,11 +37,7 @@ export class ChannelEntityService {
 		@inject(DI.notesRepository)
 		private notesRepository: NotesRepository,
 		@inject(DI.driveFilesRepository)
-		private driveFilesRepository: DriveFilesRepository,
-		private noteEntityService: NoteEntityService,
-		private driveFileEntityService: DriveFileEntityService,
-		private idService: IdService,
-	) {
+		private driveFilesRepository: DriveFilesRepository,@inject(delay(() => NoteEntityService)) private noteEntityService: NoteEntityService,@inject(delay(() => DriveFileEntityService)) private driveFileEntityService: DriveFileEntityService,@inject(delay(() => IdService)) private idService: IdService) {
 	}
 
 	@bindThis

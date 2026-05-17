@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { IdService } from '@/core/IdService.js';
 import type { MiMeta, SwSubscriptionsRepository } from '@/models/_.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
@@ -65,11 +65,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private serverSettings: MiMeta,
 
 		@inject(DI.swSubscriptionsRepository)
-		private swSubscriptionsRepository: SwSubscriptionsRepository,
-
-		private idService: IdService,
-		private pushNotificationService: PushNotificationService,
-	) {
+		private swSubscriptionsRepository: SwSubscriptionsRepository,@inject(delay(() => IdService)) private idService: IdService,@inject(delay(() => PushNotificationService)) private pushNotificationService: PushNotificationService) {
 		super(meta, paramDef, async (ps, me) => {
 			// if already subscribed
 			const exist = await this.swSubscriptionsRepository.findOneBy({

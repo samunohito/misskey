@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 
 import bcrypt from 'bcryptjs';
 import * as OTPAuth from 'otpauth';
@@ -58,10 +58,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private config: Config,
 
 		@inject(DI.userProfilesRepository)
-		private userProfilesRepository: UserProfilesRepository,
-
-		private userAuthService: UserAuthService,
-	) {
+		private userProfilesRepository: UserProfilesRepository,@inject(delay(() => UserAuthService)) private userAuthService: UserAuthService) {
 		super(meta, paramDef, async (ps, me) => {
 			const token = ps.token;
 			const profile = await this.userProfilesRepository.findOneByOrFail({ userId: me.id });

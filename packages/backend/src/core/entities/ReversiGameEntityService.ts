@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { DI } from '@/di-symbols.js';
 import type { ReversiGamesRepository } from '@/models/_.js';
 import { awaitAll } from '@/misc/prelude/await-all.js';
@@ -22,11 +22,7 @@ function assertBw(bw: string): bw is Packed<'ReversiGameDetailed'>['bw'] {
 export class ReversiGameEntityService {
 	constructor(
 		@inject(DI.reversiGamesRepository)
-		private reversiGamesRepository: ReversiGamesRepository,
-
-		private userEntityService: UserEntityService,
-		private idService: IdService,
-	) {
+		private reversiGamesRepository: ReversiGamesRepository,@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService,@inject(delay(() => IdService)) private idService: IdService) {
 	}
 
 	@bindThis

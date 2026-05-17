@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 
 import dns from 'node:dns/promises';
 import { fileURLToPath } from 'node:url';
@@ -312,17 +312,11 @@ export class OAuth2ProviderService {
 
 	constructor(
 		@inject(DI.config)
-		private config: Config,
-		private httpRequestService: HttpRequestService,
+		private config: Config,@inject(delay(() => HttpRequestService)) private httpRequestService: HttpRequestService,
 		@inject(DI.accessTokensRepository)
-		accessTokensRepository: AccessTokensRepository,
-		idService: IdService,
+		accessTokensRepository: AccessTokensRepository,@inject(delay(() => IdService)) idService: IdService,
 		@inject(DI.usersRepository)
-		private usersRepository: UsersRepository,
-		private cacheService: CacheService,
-		loggerService: LoggerService,
-		private htmlTemplateService: HtmlTemplateService,
-	) {
+		private usersRepository: UsersRepository,@inject(delay(() => CacheService)) private cacheService: CacheService,@inject(delay(() => LoggerService)) loggerService: LoggerService,@inject(delay(() => HtmlTemplateService)) private htmlTemplateService: HtmlTemplateService) {
 		this.#logger = loggerService.getLogger('oauth');
 
 		const grantCodeCache = new MemoryKVCache<{

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 
 import { URLSearchParams } from 'node:url';
 import { Endpoint } from '@/server/api/endpoint-base.js';
@@ -62,13 +62,7 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.meta)
-		private serverSettings: MiMeta,
-
-		private noteEntityService: NoteEntityService,
-		private getterService: GetterService,
-		private httpRequestService: HttpRequestService,
-		private roleService: RoleService,
-	) {
+		private serverSettings: MiMeta,@inject(delay(() => NoteEntityService)) private noteEntityService: NoteEntityService,@inject(delay(() => GetterService)) private getterService: GetterService,@inject(delay(() => HttpRequestService)) private httpRequestService: HttpRequestService,@inject(delay(() => RoleService)) private roleService: RoleService) {
 		super(meta, paramDef, async (ps, me) => {
 			const policies = await this.roleService.getUserPolicies(me.id);
 			if (!policies.canUseTranslator) {

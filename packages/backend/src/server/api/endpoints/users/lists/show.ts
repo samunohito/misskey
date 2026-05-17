@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import type { UserListsRepository, UserListFavoritesRepository } from '@/models/_.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { UserListEntityService } from '@/core/entities/UserListEntityService.js';
@@ -69,10 +69,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 		private userListsRepository: UserListsRepository,
 
 		@inject(DI.userListFavoritesRepository)
-		private userListFavoritesRepository: UserListFavoritesRepository,
-
-		private userListEntityService: UserListEntityService,
-	) {
+		private userListFavoritesRepository: UserListFavoritesRepository,@inject(delay(() => UserListEntityService)) private userListEntityService: UserListEntityService) {
 		super(meta, paramDef, async (ps, me) => {
 			const additionalProperties: Partial<{ likedCount: number, isLiked: boolean }> = {};
 			// Fetch the list

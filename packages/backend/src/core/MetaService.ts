@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Disposable, DisposableRegistry } from '@/di/disposable-registry.js';
 import { DataSource } from 'typeorm';
 import * as Redis from 'ioredis';
@@ -23,12 +23,7 @@ export class MetaService implements Disposable {
 		private redisForSub: Redis.Redis,
 
 		@inject(DI.db)
-		private db: DataSource,
-
-		private featuredService: FeaturedService,
-		private globalEventService: GlobalEventService,
-		registry: DisposableRegistry,
-	) {
+		private db: DataSource,@inject(delay(() => FeaturedService)) private featuredService: FeaturedService,@inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService,@inject(delay(() => DisposableRegistry)) registry: DisposableRegistry) {
 		registry.register(this);
 		//this.onMessage = this.onMessage.bind(this);
 

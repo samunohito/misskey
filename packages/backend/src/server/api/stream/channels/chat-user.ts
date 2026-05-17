@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { RequestToken } from '@/di/container.js';
 import { bindThis } from '@/decorators.js';
 import type { GlobalEvents } from '@/core/GlobalEventService.js';
@@ -20,10 +20,7 @@ export class ChatUserChannel extends Channel {
 
 	constructor(
 		@inject(RequestToken)
-		request: ChannelRequest,
-
-		private chatService: ChatService,
-	) {
+		request: ChannelRequest,@inject(delay(() => ChatService)) private chatService: ChatService) {
 		super(request);
 	}
 

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Not, IsNull } from 'typeorm';
 import type { FollowingsRepository, MiMeta, MiUser, UsersRepository } from '@/models/_.js';
 import { QueueService } from '@/core/QueueService.js';
@@ -25,15 +25,7 @@ export class DeleteAccountService {
 		private usersRepository: UsersRepository,
 
 		@inject(DI.followingsRepository)
-		private followingsRepository: FollowingsRepository,
-
-		private userEntityService: UserEntityService,
-		private apRendererService: ApRendererService,
-		private queueService: QueueService,
-		private globalEventService: GlobalEventService,
-		private moderationLogService: ModerationLogService,
-		private systemAccountService: SystemAccountService,
-	) {
+		private followingsRepository: FollowingsRepository,@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService,@inject(delay(() => ApRendererService)) private apRendererService: ApRendererService,@inject(delay(() => QueueService)) private queueService: QueueService,@inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService,@inject(delay(() => ModerationLogService)) private moderationLogService: ModerationLogService,@inject(delay(() => SystemAccountService)) private systemAccountService: SystemAccountService) {
 	}
 
 	@bindThis

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import type { } from '@/models/Blocking.js';
 import type { MiSignin } from '@/models/Signin.js';
 import { bindThis } from '@/decorators.js';
@@ -11,9 +11,7 @@ import { IdService } from '@/core/IdService.js';
 
 @injectable()
 export class SigninEntityService {
-	constructor(
-		private idService: IdService,
-	) {
+	constructor(@inject(delay(() => IdService)) private idService: IdService) {
 	}
 
 	@bindThis

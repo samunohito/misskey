@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import type { FlashsRepository, FlashLikesRepository } from '@/models/_.js';
 import { IdService } from '@/core/IdService.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
@@ -55,10 +55,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private flashsRepository: FlashsRepository,
 
 		@inject(DI.flashLikesRepository)
-		private flashLikesRepository: FlashLikesRepository,
-
-		private idService: IdService,
-	) {
+		private flashLikesRepository: FlashLikesRepository,@inject(delay(() => IdService)) private idService: IdService) {
 		super(meta, paramDef, async (ps, me) => {
 			const flash = await this.flashsRepository.findOneBy({ id: ps.flashId });
 			if (flash == null) {

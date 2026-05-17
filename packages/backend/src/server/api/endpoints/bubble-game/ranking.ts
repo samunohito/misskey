@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { MoreThan } from 'typeorm';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { BubbleGameRecordsRepository } from '@/models/_.js';
@@ -54,10 +54,7 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.bubbleGameRecordsRepository)
-		private bubbleGameRecordsRepository: BubbleGameRecordsRepository,
-
-		private userEntityService: UserEntityService,
-	) {
+		private bubbleGameRecordsRepository: BubbleGameRecordsRepository,@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService) {
 		super(meta, paramDef, async (ps) => {
 			const records = await this.bubbleGameRecordsRepository.find({
 				where: {

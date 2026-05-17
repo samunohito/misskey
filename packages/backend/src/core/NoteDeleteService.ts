@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 
 import { Brackets, In, IsNull, Not } from 'typeorm';
 import type { MiUser, MiLocalUser, MiRemoteUser } from '@/models/User.js';
@@ -41,20 +41,7 @@ export class NoteDeleteService {
 		private notesRepository: NotesRepository,
 
 		@inject(DI.instancesRepository)
-		private instancesRepository: InstancesRepository,
-
-		private userEntityService: UserEntityService,
-		private globalEventService: GlobalEventService,
-		private relayService: RelayService,
-		private federatedInstanceService: FederatedInstanceService,
-		private apRendererService: ApRendererService,
-		private apDeliverManagerService: ApDeliverManagerService,
-		private searchService: SearchService,
-		private moderationLogService: ModerationLogService,
-		private notesChart: NotesChart,
-		private perUserNotesChart: PerUserNotesChart,
-		private instanceChart: InstanceChart,
-	) {}
+		private instancesRepository: InstancesRepository,@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService,@inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService,@inject(delay(() => RelayService)) private relayService: RelayService,@inject(delay(() => FederatedInstanceService)) private federatedInstanceService: FederatedInstanceService,@inject(delay(() => ApRendererService)) private apRendererService: ApRendererService,@inject(delay(() => ApDeliverManagerService)) private apDeliverManagerService: ApDeliverManagerService,@inject(delay(() => SearchService)) private searchService: SearchService,@inject(delay(() => ModerationLogService)) private moderationLogService: ModerationLogService,@inject(delay(() => NotesChart)) private notesChart: NotesChart,@inject(delay(() => PerUserNotesChart)) private perUserNotesChart: PerUserNotesChart,@inject(delay(() => InstanceChart)) private instanceChart: InstanceChart) {}
 
 	/**
 	 * 投稿を削除します。

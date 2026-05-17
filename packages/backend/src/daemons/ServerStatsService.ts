@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Disposable, DisposableRegistry } from '@/di/disposable-registry.js';
 import Xev from 'xev';
 import * as osUtils from 'os-utils';
@@ -23,9 +23,7 @@ export class ServerStatsService implements Disposable {
 
 	constructor(
 		@inject(DI.meta)
-		private meta: MiMeta,
-		registry: DisposableRegistry,
-	) {
+		private meta: MiMeta,@inject(delay(() => DisposableRegistry)) registry: DisposableRegistry) {
 		registry.register(this);
 	}
 

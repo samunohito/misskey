@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Disposable, DisposableRegistry } from '@/di/disposable-registry.js';
 import * as Bull from 'bullmq';
 import type { Config } from '@/config.js';
@@ -90,46 +90,7 @@ export class QueueProcessorService implements Disposable {
 
 	constructor(
 		@inject(DI.config)
-		private config: Config,
-
-		private queueLoggerService: QueueLoggerService,
-		private userWebhookDeliverProcessorService: UserWebhookDeliverProcessorService,
-		private systemWebhookDeliverProcessorService: SystemWebhookDeliverProcessorService,
-		private endedPollNotificationProcessorService: EndedPollNotificationProcessorService,
-		private postScheduledNoteProcessorService: PostScheduledNoteProcessorService,
-		private deliverProcessorService: DeliverProcessorService,
-		private inboxProcessorService: InboxProcessorService,
-		private deleteDriveFilesProcessorService: DeleteDriveFilesProcessorService,
-		private exportCustomEmojisProcessorService: ExportCustomEmojisProcessorService,
-		private exportNotesProcessorService: ExportNotesProcessorService,
-		private exportClipsProcessorService: ExportClipsProcessorService,
-		private exportFavoritesProcessorService: ExportFavoritesProcessorService,
-		private exportFollowingProcessorService: ExportFollowingProcessorService,
-		private exportMutingProcessorService: ExportMutingProcessorService,
-		private exportBlockingProcessorService: ExportBlockingProcessorService,
-		private exportUserListsProcessorService: ExportUserListsProcessorService,
-		private exportAntennasProcessorService: ExportAntennasProcessorService,
-		private importFollowingProcessorService: ImportFollowingProcessorService,
-		private importMutingProcessorService: ImportMutingProcessorService,
-		private importBlockingProcessorService: ImportBlockingProcessorService,
-		private importUserListsProcessorService: ImportUserListsProcessorService,
-		private importCustomEmojisProcessorService: ImportCustomEmojisProcessorService,
-		private importAntennasProcessorService: ImportAntennasProcessorService,
-		private deleteAccountProcessorService: DeleteAccountProcessorService,
-		private deleteFileProcessorService: DeleteFileProcessorService,
-		private cleanRemoteFilesProcessorService: CleanRemoteFilesProcessorService,
-		private relationshipProcessorService: RelationshipProcessorService,
-		private tickChartsProcessorService: TickChartsProcessorService,
-		private resyncChartsProcessorService: ResyncChartsProcessorService,
-		private cleanChartsProcessorService: CleanChartsProcessorService,
-		private aggregateRetentionProcessorService: AggregateRetentionProcessorService,
-		private checkExpiredMutingsProcessorService: CheckExpiredMutingsProcessorService,
-		private bakeBufferedReactionsProcessorService: BakeBufferedReactionsProcessorService,
-		private checkModeratorsActivityProcessorService: CheckModeratorsActivityProcessorService,
-		private cleanProcessorService: CleanProcessorService,
-		private cleanRemoteNotesProcessorService: CleanRemoteNotesProcessorService,
-		registry: DisposableRegistry,
-	) {
+		private config: Config,@inject(delay(() => QueueLoggerService)) private queueLoggerService: QueueLoggerService,@inject(delay(() => UserWebhookDeliverProcessorService)) private userWebhookDeliverProcessorService: UserWebhookDeliverProcessorService,@inject(delay(() => SystemWebhookDeliverProcessorService)) private systemWebhookDeliverProcessorService: SystemWebhookDeliverProcessorService,@inject(delay(() => EndedPollNotificationProcessorService)) private endedPollNotificationProcessorService: EndedPollNotificationProcessorService,@inject(delay(() => PostScheduledNoteProcessorService)) private postScheduledNoteProcessorService: PostScheduledNoteProcessorService,@inject(delay(() => DeliverProcessorService)) private deliverProcessorService: DeliverProcessorService,@inject(delay(() => InboxProcessorService)) private inboxProcessorService: InboxProcessorService,@inject(delay(() => DeleteDriveFilesProcessorService)) private deleteDriveFilesProcessorService: DeleteDriveFilesProcessorService,@inject(delay(() => ExportCustomEmojisProcessorService)) private exportCustomEmojisProcessorService: ExportCustomEmojisProcessorService,@inject(delay(() => ExportNotesProcessorService)) private exportNotesProcessorService: ExportNotesProcessorService,@inject(delay(() => ExportClipsProcessorService)) private exportClipsProcessorService: ExportClipsProcessorService,@inject(delay(() => ExportFavoritesProcessorService)) private exportFavoritesProcessorService: ExportFavoritesProcessorService,@inject(delay(() => ExportFollowingProcessorService)) private exportFollowingProcessorService: ExportFollowingProcessorService,@inject(delay(() => ExportMutingProcessorService)) private exportMutingProcessorService: ExportMutingProcessorService,@inject(delay(() => ExportBlockingProcessorService)) private exportBlockingProcessorService: ExportBlockingProcessorService,@inject(delay(() => ExportUserListsProcessorService)) private exportUserListsProcessorService: ExportUserListsProcessorService,@inject(delay(() => ExportAntennasProcessorService)) private exportAntennasProcessorService: ExportAntennasProcessorService,@inject(delay(() => ImportFollowingProcessorService)) private importFollowingProcessorService: ImportFollowingProcessorService,@inject(delay(() => ImportMutingProcessorService)) private importMutingProcessorService: ImportMutingProcessorService,@inject(delay(() => ImportBlockingProcessorService)) private importBlockingProcessorService: ImportBlockingProcessorService,@inject(delay(() => ImportUserListsProcessorService)) private importUserListsProcessorService: ImportUserListsProcessorService,@inject(delay(() => ImportCustomEmojisProcessorService)) private importCustomEmojisProcessorService: ImportCustomEmojisProcessorService,@inject(delay(() => ImportAntennasProcessorService)) private importAntennasProcessorService: ImportAntennasProcessorService,@inject(delay(() => DeleteAccountProcessorService)) private deleteAccountProcessorService: DeleteAccountProcessorService,@inject(delay(() => DeleteFileProcessorService)) private deleteFileProcessorService: DeleteFileProcessorService,@inject(delay(() => CleanRemoteFilesProcessorService)) private cleanRemoteFilesProcessorService: CleanRemoteFilesProcessorService,@inject(delay(() => RelationshipProcessorService)) private relationshipProcessorService: RelationshipProcessorService,@inject(delay(() => TickChartsProcessorService)) private tickChartsProcessorService: TickChartsProcessorService,@inject(delay(() => ResyncChartsProcessorService)) private resyncChartsProcessorService: ResyncChartsProcessorService,@inject(delay(() => CleanChartsProcessorService)) private cleanChartsProcessorService: CleanChartsProcessorService,@inject(delay(() => AggregateRetentionProcessorService)) private aggregateRetentionProcessorService: AggregateRetentionProcessorService,@inject(delay(() => CheckExpiredMutingsProcessorService)) private checkExpiredMutingsProcessorService: CheckExpiredMutingsProcessorService,@inject(delay(() => BakeBufferedReactionsProcessorService)) private bakeBufferedReactionsProcessorService: BakeBufferedReactionsProcessorService,@inject(delay(() => CheckModeratorsActivityProcessorService)) private checkModeratorsActivityProcessorService: CheckModeratorsActivityProcessorService,@inject(delay(() => CleanProcessorService)) private cleanProcessorService: CleanProcessorService,@inject(delay(() => CleanRemoteNotesProcessorService)) private cleanRemoteNotesProcessorService: CleanRemoteNotesProcessorService,@inject(delay(() => DisposableRegistry)) registry: DisposableRegistry) {
 		registry.register(this);
 		this.logger = this.queueLoggerService.logger;
 

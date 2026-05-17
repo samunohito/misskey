@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { UserListFavoritesRepository, UserListsRepository } from '@/models/_.js';
 import { IdService } from '@/core/IdService.js';
@@ -43,9 +43,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 		private userListsRepository: UserListsRepository,
 
 		@inject(DI.userListFavoritesRepository)
-		private userListFavoritesRepository: UserListFavoritesRepository,
-		private idService: IdService,
-	) {
+		private userListFavoritesRepository: UserListFavoritesRepository,@inject(delay(() => IdService)) private idService: IdService) {
 		super(meta, paramDef, async (ps, me) => {
 			const userListExist = await this.userListsRepository.exists({
 				where: {

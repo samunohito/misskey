@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { In } from 'typeorm';
 import type Logger from '@/logger.js';
 import { bindThis } from '@/decorators.js';
@@ -101,14 +101,7 @@ export class CheckModeratorsActivityProcessorService {
 
 	constructor(
 		@inject(DI.userProfilesRepository)
-		private userProfilesRepository: UserProfilesRepository,
-		private metaService: MetaService,
-		private roleService: RoleService,
-		private emailService: EmailService,
-		private announcementService: AnnouncementService,
-		private systemWebhookService: SystemWebhookService,
-		private queueLoggerService: QueueLoggerService,
-	) {
+		private userProfilesRepository: UserProfilesRepository,@inject(delay(() => MetaService)) private metaService: MetaService,@inject(delay(() => RoleService)) private roleService: RoleService,@inject(delay(() => EmailService)) private emailService: EmailService,@inject(delay(() => AnnouncementService)) private announcementService: AnnouncementService,@inject(delay(() => SystemWebhookService)) private systemWebhookService: SystemWebhookService,@inject(delay(() => QueueLoggerService)) private queueLoggerService: QueueLoggerService) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('check-moderators-activity');
 	}
 

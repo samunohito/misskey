@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import type { UserProfilesRepository, NoteReactionsRepository } from '@/models/_.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { QueryService } from '@/core/QueryService.js';
@@ -66,14 +66,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private userProfilesRepository: UserProfilesRepository,
 
 		@inject(DI.noteReactionsRepository)
-		private noteReactionsRepository: NoteReactionsRepository,
-
-		private cacheService: CacheService,
-		private userEntityService: UserEntityService,
-		private noteReactionEntityService: NoteReactionEntityService,
-		private queryService: QueryService,
-		private roleService: RoleService,
-	) {
+		private noteReactionsRepository: NoteReactionsRepository,@inject(delay(() => CacheService)) private cacheService: CacheService,@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService,@inject(delay(() => NoteReactionEntityService)) private noteReactionEntityService: NoteReactionEntityService,@inject(delay(() => QueryService)) private queryService: QueryService,@inject(delay(() => RoleService)) private roleService: RoleService) {
 		super(meta, paramDef, async (ps, me) => {
 			const userIdsWhoBlockingMe = me ? await this.cacheService.userBlockedCache.fetch(me.id) : new Set<string>();
 			const iAmModerator = me ? await this.roleService.isModerator(me) : false; // Moderators can see reactions of all users

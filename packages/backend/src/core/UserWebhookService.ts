@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Disposable, DisposableRegistry } from '@/di/disposable-registry.js';
 import * as Redis from 'ioredis';
 import { MiUser, type WebhooksRepository } from '@/models/_.js';
@@ -33,10 +33,7 @@ export class UserWebhookService implements Disposable {
 		@inject(DI.redisForSub)
 		private redisForSub: Redis.Redis,
 		@inject(DI.webhooksRepository)
-		private webhooksRepository: WebhooksRepository,
-		private queueService: QueueService,
-		registry: DisposableRegistry,
-	) {
+		private webhooksRepository: WebhooksRepository,@inject(delay(() => QueueService)) private queueService: QueueService,@inject(delay(() => DisposableRegistry)) registry: DisposableRegistry) {
 		registry.register(this);
 		this.redisForSub.on('message', this.onMessage);
 	}

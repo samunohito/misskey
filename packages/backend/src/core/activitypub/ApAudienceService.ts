@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import promiseLimit from 'promise-limit';
 import type { MiRemoteUser, MiUser } from '@/models/User.js';
 import { concat, unique } from '@/misc/prelude/array.js';
@@ -25,9 +25,7 @@ type GroupedAudience = Record<'public' | 'followers' | 'other', string[]>;
 
 @injectable()
 export class ApAudienceService {
-	constructor(
-		private apPersonService: ApPersonService,
-	) {
+	constructor(@inject(delay(() => ApPersonService)) private apPersonService: ApPersonService) {
 	}
 
 	@bindThis

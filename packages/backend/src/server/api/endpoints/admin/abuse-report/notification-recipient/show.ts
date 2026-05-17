@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import {
 	AbuseReportNotificationRecipientEntityService,
@@ -48,10 +48,7 @@ export const paramDef = {
 
 @injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
-	constructor(
-		private abuseReportNotificationService: AbuseReportNotificationService,
-		private abuseReportNotificationRecipientEntityService: AbuseReportNotificationRecipientEntityService,
-	) {
+	constructor(@inject(delay(() => AbuseReportNotificationService)) private abuseReportNotificationService: AbuseReportNotificationService,@inject(delay(() => AbuseReportNotificationRecipientEntityService)) private abuseReportNotificationRecipientEntityService: AbuseReportNotificationRecipientEntityService) {
 		super(meta, paramDef, async (ps) => {
 			const recipients = await this.abuseReportNotificationService.fetchRecipients({ ids: [ps.id] });
 			if (recipients.length === 0) {

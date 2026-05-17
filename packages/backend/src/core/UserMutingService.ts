@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { In } from 'typeorm';
 import type { MutingsRepository, MiMuting } from '@/models/_.js';
 import { IdService } from '@/core/IdService.js';
@@ -16,11 +16,7 @@ import { CacheService } from '@/core/CacheService.js';
 export class UserMutingService {
 	constructor(
 		@inject(DI.mutingsRepository)
-		private mutingsRepository: MutingsRepository,
-
-		private idService: IdService,
-		private cacheService: CacheService,
-	) {
+		private mutingsRepository: MutingsRepository,@inject(delay(() => IdService)) private idService: IdService,@inject(delay(() => CacheService)) private cacheService: CacheService) {
 	}
 
 	@bindThis

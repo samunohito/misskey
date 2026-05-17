@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { bindThis } from '@/decorators.js';
 import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
 import { deepClone } from '@/misc/clone.js';
@@ -14,9 +14,7 @@ import type { MiUser } from '@/models/User.js';
 /** Streamにおいて、ノートを隠す（hideNote）を適用するためのService */
 @injectable()
 export class NoteStreamingHidingService {
-	constructor(
-		private noteEntityService: NoteEntityService,
-	) {}
+	constructor(@inject(delay(() => NoteEntityService)) private noteEntityService: NoteEntityService) {}
 
 	private collectRenoteChain(note: Packed<'Note'>): Packed<'Note'>[] {
 		const renoteChain: Packed<'Note'>[] = [];

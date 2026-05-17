@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { IsNull, MoreThan } from 'typeorm';
 import { DI } from '@/di-symbols.js';
 import type Logger from '@/logger.js';
@@ -24,11 +24,7 @@ export class AggregateRetentionProcessorService {
 		private usersRepository: UsersRepository,
 
 		@inject(DI.retentionAggregationsRepository)
-		private retentionAggregationsRepository: RetentionAggregationsRepository,
-
-		private idService: IdService,
-		private queueLoggerService: QueueLoggerService,
-	) {
+		private retentionAggregationsRepository: RetentionAggregationsRepository,@inject(delay(() => IdService)) private idService: IdService,@inject(delay(() => QueueLoggerService)) private queueLoggerService: QueueLoggerService) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('aggregate-retention');
 	}
 

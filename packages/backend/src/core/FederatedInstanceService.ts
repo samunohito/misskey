@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Disposable, DisposableRegistry } from '@/di/disposable-registry.js';
 import * as Redis from 'ioredis';
 import type { InstancesRepository } from '@/models/_.js';
@@ -23,12 +23,7 @@ export class FederatedInstanceService implements Disposable {
 		private redisClient: Redis.Redis,
 
 		@inject(DI.instancesRepository)
-		private instancesRepository: InstancesRepository,
-
-		private utilityService: UtilityService,
-		private idService: IdService,
-		registry: DisposableRegistry,
-	) {
+		private instancesRepository: InstancesRepository,@inject(delay(() => UtilityService)) private utilityService: UtilityService,@inject(delay(() => IdService)) private idService: IdService,@inject(delay(() => DisposableRegistry)) registry: DisposableRegistry) {
 		registry.register(this);
 		this.federatedInstanceCache = new RedisKVCache<MiInstance | null>(this.redisClient, 'federatedInstance', {
 			lifetime: 1000 * 60 * 30, // 30m

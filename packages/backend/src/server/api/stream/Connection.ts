@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable, Lifecycle } from 'tsyringe';
+import { Lifecycle, delay, inject, injectable } from 'tsyringe';
 
 import * as WebSocket from 'ws';
 import type { DependencyContainer } from 'tsyringe';
@@ -68,14 +68,9 @@ export default class Connection {
 	private fetchIntervalId: NodeJS.Timeout | null = null;
 
 	constructor(
-		@inject(DependencyContainerToken) private container: DependencyContainer,
-		private notificationService: NotificationService,
-		private cacheService: CacheService,
-		private channelFollowingService: ChannelFollowingService,
-		private channelMutingService: ChannelMutingService,
+		@inject(DependencyContainerToken) private container: DependencyContainer,@inject(delay(() => NotificationService)) private notificationService: NotificationService,@inject(delay(() => CacheService)) private cacheService: CacheService,@inject(delay(() => ChannelFollowingService)) private channelFollowingService: ChannelFollowingService,@inject(delay(() => ChannelMutingService)) private channelMutingService: ChannelMutingService,
 		@inject(RequestToken)
-		request: ConnectionRequest,
-	) {
+		request: ConnectionRequest) {
 		if (request.user) this.user = request.user;
 		if (request.token) this.token = request.token;
 	}

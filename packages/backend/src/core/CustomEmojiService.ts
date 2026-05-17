@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Disposable, DisposableRegistry } from '@/di/disposable-registry.js';
 import * as Redis from 'ioredis';
 import { In, IsNull } from 'typeorm';
@@ -67,14 +67,7 @@ export class CustomEmojiService implements Disposable {
 		@inject(DI.redis)
 		private redisClient: Redis.Redis,
 		@inject(DI.emojisRepository)
-		private emojisRepository: EmojisRepository,
-		private utilityService: UtilityService,
-		private idService: IdService,
-		private emojiEntityService: EmojiEntityService,
-		private moderationLogService: ModerationLogService,
-		private globalEventService: GlobalEventService,
-		registry: DisposableRegistry,
-	) {
+		private emojisRepository: EmojisRepository,@inject(delay(() => UtilityService)) private utilityService: UtilityService,@inject(delay(() => IdService)) private idService: IdService,@inject(delay(() => EmojiEntityService)) private emojiEntityService: EmojiEntityService,@inject(delay(() => ModerationLogService)) private moderationLogService: ModerationLogService,@inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService,@inject(delay(() => DisposableRegistry)) registry: DisposableRegistry) {
 		registry.register(this);
 		this.emojisCache = new MemoryKVCache<MiEmoji | null>(1000 * 60 * 60 * 12); // 12h
 

@@ -56,11 +56,7 @@ export class ApNoteService {
 		private pollsRepository: PollsRepository,
 
 		@inject(DI.emojisRepository)
-		private emojisRepository: EmojisRepository,
-
-		private idService: IdService,
-		private apMfmService: ApMfmService,
-		private apResolverService: ApResolverService,
+		private emojisRepository: EmojisRepository,@inject(delay(() => IdService)) private idService: IdService,@inject(delay(() => ApMfmService)) private apMfmService: ApMfmService,@inject(delay(() => ApResolverService)) private apResolverService: ApResolverService,
 
 		// 循環参照のため / for circular dependency
 		@inject(delay(() => ApPersonService))

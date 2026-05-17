@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { DI } from '@/di-symbols.js';
 import type { NotesRepository, UsersRepository } from '@/models/_.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
@@ -19,10 +19,7 @@ export class GetterService {
 		private usersRepository: UsersRepository,
 
 		@inject(DI.notesRepository)
-		private notesRepository: NotesRepository,
-
-		private userEntityService: UserEntityService,
-	) {
+		private notesRepository: NotesRepository,@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService) {
 	}
 
 	/**

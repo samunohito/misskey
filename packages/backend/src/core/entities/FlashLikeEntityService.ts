@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { DI } from '@/di-symbols.js';
 import type { FlashLikesRepository } from '@/models/_.js';
 import type { } from '@/models/Blocking.js';
@@ -16,10 +16,7 @@ import { FlashEntityService } from './FlashEntityService.js';
 export class FlashLikeEntityService {
 	constructor(
 		@inject(DI.flashLikesRepository)
-		private flashLikesRepository: FlashLikesRepository,
-
-		private flashEntityService: FlashEntityService,
-	) {
+		private flashLikesRepository: FlashLikesRepository,@inject(delay(() => FlashEntityService)) private flashEntityService: FlashEntityService) {
 	}
 
 	@bindThis

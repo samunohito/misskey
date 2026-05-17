@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import Limiter from 'ratelimiter';
 import * as Redis from 'ioredis';
 import { DI } from '@/di-symbols.js';
@@ -27,10 +27,7 @@ export class RateLimiterService {
 
 	constructor(
 		@inject(DI.redis)
-		private redisClient: Redis.Redis,
-
-		private loggerService: LoggerService,
-	) {
+		private redisClient: Redis.Redis,@inject(delay(() => LoggerService)) private loggerService: LoggerService) {
 		this.logger = this.loggerService.getLogger('limiter');
 
 		if (process.env.NODE_ENV !== 'production') {

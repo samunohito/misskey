@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { IsNull, In, MoreThan, Not } from 'typeorm';
 
 import { bindThis } from '@/decorators.js';
@@ -49,23 +49,7 @@ export class AccountMoveService {
 		private userListMembershipsRepository: UserListMembershipsRepository,
 
 		@inject(DI.instancesRepository)
-		private instancesRepository: InstancesRepository,
-
-		private userEntityService: UserEntityService,
-		private idService: IdService,
-		private apPersonService: ApPersonService,
-		private apRendererService: ApRendererService,
-		private apDeliverManagerService: ApDeliverManagerService,
-		private globalEventService: GlobalEventService,
-		private perUserFollowingChart: PerUserFollowingChart,
-		private federatedInstanceService: FederatedInstanceService,
-		private instanceChart: InstanceChart,
-		private relayService: RelayService,
-		private queueService: QueueService,
-		private systemAccountService: SystemAccountService,
-		private roleService: RoleService,
-		private antennaService: AntennaService,
-	) {
+		private instancesRepository: InstancesRepository,@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService,@inject(delay(() => IdService)) private idService: IdService,@inject(delay(() => ApPersonService)) private apPersonService: ApPersonService,@inject(delay(() => ApRendererService)) private apRendererService: ApRendererService,@inject(delay(() => ApDeliverManagerService)) private apDeliverManagerService: ApDeliverManagerService,@inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService,@inject(delay(() => PerUserFollowingChart)) private perUserFollowingChart: PerUserFollowingChart,@inject(delay(() => FederatedInstanceService)) private federatedInstanceService: FederatedInstanceService,@inject(delay(() => InstanceChart)) private instanceChart: InstanceChart,@inject(delay(() => RelayService)) private relayService: RelayService,@inject(delay(() => QueueService)) private queueService: QueueService,@inject(delay(() => SystemAccountService)) private systemAccountService: SystemAccountService,@inject(delay(() => RoleService)) private roleService: RoleService,@inject(delay(() => AntennaService)) private antennaService: AntennaService) {
 	}
 
 	/**

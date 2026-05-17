@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import type { UsersRepository, SigninsRepository, UserProfilesRepository } from '@/models/_.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { DI } from '@/di-symbols.js';
@@ -201,12 +201,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private userProfilesRepository: UserProfilesRepository,
 
 		@inject(DI.signinsRepository)
-		private signinsRepository: SigninsRepository,
-
-		private roleService: RoleService,
-		private roleEntityService: RoleEntityService,
-		private idService: IdService,
-	) {
+		private signinsRepository: SigninsRepository,@inject(delay(() => RoleService)) private roleService: RoleService,@inject(delay(() => RoleEntityService)) private roleEntityService: RoleEntityService,@inject(delay(() => IdService)) private idService: IdService) {
 		super(meta, paramDef, async (ps, me) => {
 			const [user, profile] = await Promise.all([
 				this.usersRepository.findOneBy({ id: ps.userId }),

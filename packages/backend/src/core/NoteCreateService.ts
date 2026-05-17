@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Disposable, DisposableRegistry } from '@/di/disposable-registry.js';
 import { setImmediate } from 'node:timers/promises';
 import * as mfm from 'mfm-js';
@@ -242,35 +242,7 @@ export class NoteCreateService implements Disposable {
 		private blockingsRepository: BlockingsRepository,
 
 		@inject(DI.driveFilesRepository)
-		private driveFilesRepository: DriveFilesRepository,
-
-		private userEntityService: UserEntityService,
-		private noteEntityService: NoteEntityService,
-		private idService: IdService,
-		private globalEventService: GlobalEventService,
-		private queueService: QueueService,
-		private fanoutTimelineService: FanoutTimelineService,
-		private notificationService: NotificationService,
-		private relayService: RelayService,
-		private federatedInstanceService: FederatedInstanceService,
-		private hashtagService: HashtagService,
-		private antennaService: AntennaService,
-		private webhookService: UserWebhookService,
-		private featuredService: FeaturedService,
-		private remoteUserResolveService: RemoteUserResolveService,
-		private apDeliverManagerService: ApDeliverManagerService,
-		private apRendererService: ApRendererService,
-		private roleService: RoleService,
-		private searchService: SearchService,
-		private notesChart: NotesChart,
-		private perUserNotesChart: PerUserNotesChart,
-		private activeUsersChart: ActiveUsersChart,
-		private instanceChart: InstanceChart,
-		private utilityService: UtilityService,
-		private userBlockingService: UserBlockingService,
-		private cacheService: CacheService,
-		registry: DisposableRegistry,
-	) {
+		private driveFilesRepository: DriveFilesRepository,@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService,@inject(delay(() => NoteEntityService)) private noteEntityService: NoteEntityService,@inject(delay(() => IdService)) private idService: IdService,@inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService,@inject(delay(() => QueueService)) private queueService: QueueService,@inject(delay(() => FanoutTimelineService)) private fanoutTimelineService: FanoutTimelineService,@inject(delay(() => NotificationService)) private notificationService: NotificationService,@inject(delay(() => RelayService)) private relayService: RelayService,@inject(delay(() => FederatedInstanceService)) private federatedInstanceService: FederatedInstanceService,@inject(delay(() => HashtagService)) private hashtagService: HashtagService,@inject(delay(() => AntennaService)) private antennaService: AntennaService,@inject(delay(() => UserWebhookService)) private webhookService: UserWebhookService,@inject(delay(() => FeaturedService)) private featuredService: FeaturedService,@inject(delay(() => RemoteUserResolveService)) private remoteUserResolveService: RemoteUserResolveService,@inject(delay(() => ApDeliverManagerService)) private apDeliverManagerService: ApDeliverManagerService,@inject(delay(() => ApRendererService)) private apRendererService: ApRendererService,@inject(delay(() => RoleService)) private roleService: RoleService,@inject(delay(() => SearchService)) private searchService: SearchService,@inject(delay(() => NotesChart)) private notesChart: NotesChart,@inject(delay(() => PerUserNotesChart)) private perUserNotesChart: PerUserNotesChart,@inject(delay(() => ActiveUsersChart)) private activeUsersChart: ActiveUsersChart,@inject(delay(() => InstanceChart)) private instanceChart: InstanceChart,@inject(delay(() => UtilityService)) private utilityService: UtilityService,@inject(delay(() => UserBlockingService)) private userBlockingService: UserBlockingService,@inject(delay(() => CacheService)) private cacheService: CacheService,@inject(delay(() => DisposableRegistry)) registry: DisposableRegistry) {
 		registry.register(this);
 		this.updateNotesCountQueue = new CollapsedQueue(process.env.NODE_ENV !== 'test' ? 60 * 1000 * 5 : 0, this.collapseNotesCount, this.performUpdateNotesCount);
 	}

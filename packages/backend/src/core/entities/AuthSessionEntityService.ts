@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { DI } from '@/di-symbols.js';
 import type { AuthSessionsRepository } from '@/models/_.js';
 import { awaitAll } from '@/misc/prelude/await-all.js';
@@ -16,10 +16,7 @@ import { AppEntityService } from './AppEntityService.js';
 export class AuthSessionEntityService {
 	constructor(
 		@inject(DI.authSessionsRepository)
-		private authSessionsRepository: AuthSessionsRepository,
-
-		private appEntityService: AppEntityService,
-	) {
+		private authSessionsRepository: AuthSessionsRepository,@inject(delay(() => AppEntityService)) private appEntityService: AppEntityService) {
 	}
 
 	@bindThis

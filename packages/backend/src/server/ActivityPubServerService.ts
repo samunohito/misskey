@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 
 import * as crypto from 'node:crypto';
 import { IncomingMessage } from 'node:http';
@@ -69,16 +69,7 @@ export class ActivityPubServerService {
 		private followingsRepository: FollowingsRepository,
 
 		@inject(DI.followRequestsRepository)
-		private followRequestsRepository: FollowRequestsRepository,
-
-		private utilityService: UtilityService,
-		private userEntityService: UserEntityService,
-		private apRendererService: ApRendererService,
-		private queueService: QueueService,
-		private userKeypairService: UserKeypairService,
-		private queryService: QueryService,
-		private fanoutTimelineEndpointService: FanoutTimelineEndpointService,
-	) {
+		private followRequestsRepository: FollowRequestsRepository,@inject(delay(() => UtilityService)) private utilityService: UtilityService,@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService,@inject(delay(() => ApRendererService)) private apRendererService: ApRendererService,@inject(delay(() => QueueService)) private queueService: QueueService,@inject(delay(() => UserKeypairService)) private userKeypairService: UserKeypairService,@inject(delay(() => QueryService)) private queryService: QueryService,@inject(delay(() => FanoutTimelineEndpointService)) private fanoutTimelineEndpointService: FanoutTimelineEndpointService) {
 		//this.createServer = this.createServer.bind(this);
 	}
 

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { GetterService } from '@/server/api/GetterService.js';
 import { UserFollowingService } from '@/core/UserFollowingService.js';
@@ -35,10 +35,7 @@ export const paramDef = {
 
 @injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
-	constructor(
-		private getterService: GetterService,
-		private userFollowingService: UserFollowingService,
-	) {
+	constructor(@inject(delay(() => GetterService)) private getterService: GetterService,@inject(delay(() => UserFollowingService)) private userFollowingService: UserFollowingService) {
 		super(meta, paramDef, async (ps, me) => {
 			// Fetch follower
 			const follower = await this.getterService.getUser(ps.userId).catch(err => {

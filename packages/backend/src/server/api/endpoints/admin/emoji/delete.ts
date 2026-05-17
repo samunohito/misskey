@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { CustomEmojiService } from '@/core/CustomEmojiService.js';
 
@@ -33,9 +33,7 @@ export const paramDef = {
 
 @injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
-	constructor(
-		private customEmojiService: CustomEmojiService,
-	) {
+	constructor(@inject(delay(() => CustomEmojiService)) private customEmojiService: CustomEmojiService) {
 		super(meta, paramDef, async (ps, me) => {
 			await this.customEmojiService.delete(ps.id, me);
 		});

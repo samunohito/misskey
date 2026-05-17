@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 
 import * as crypto from 'node:crypto';
 import { promisify } from 'node:util';
@@ -168,9 +168,7 @@ class JsonLd {
 
 @injectable()
 export class JsonLdService {
-	constructor(
-		private httpRequestService: HttpRequestService,
-	) {
+	constructor(@inject(delay(() => HttpRequestService)) private httpRequestService: HttpRequestService) {
 	}
 
 	@bindThis

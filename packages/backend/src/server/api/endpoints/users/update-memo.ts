@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { IdService } from '@/core/IdService.js';
 import type { UserMemoRepository } from '@/models/_.js';
@@ -44,10 +44,7 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.userMemosRepository)
-		private userMemosRepository: UserMemoRepository,
-		private getterService: GetterService,
-		private idService: IdService,
-	) {
+		private userMemosRepository: UserMemoRepository,@inject(delay(() => GetterService)) private getterService: GetterService,@inject(delay(() => IdService)) private idService: IdService) {
 		super(meta, paramDef, async (ps, me) => {
 			// Get target
 			const target = await this.getterService.getUser(ps.userId).catch(err => {

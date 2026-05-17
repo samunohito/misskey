@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Disposable, DisposableRegistry } from '@/di/disposable-registry.js';
 import { randomUUID } from 'node:crypto';
 import { DataSource, IsNull } from 'typeorm';
@@ -43,11 +43,7 @@ export class SystemAccountService implements Disposable {
 		private usersRepository: UsersRepository,
 
 		@inject(DI.userProfilesRepository)
-		private userProfilesRepository: UserProfilesRepository,
-
-		private idService: IdService,
-		registry: DisposableRegistry,
-	) {
+		private userProfilesRepository: UserProfilesRepository,@inject(delay(() => IdService)) private idService: IdService,@inject(delay(() => DisposableRegistry)) registry: DisposableRegistry) {
 		registry.register(this);
 		this.cache = new MemoryKVCache<MiLocalUser>(1000 * 60 * 10); // 10m
 

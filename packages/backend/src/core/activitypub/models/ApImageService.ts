@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { DI } from '@/di-symbols.js';
 import type { DriveFilesRepository, MiMeta } from '@/models/_.js';
 import type { MiRemoteUser } from '@/models/User.js';
@@ -27,12 +27,7 @@ export class ApImageService {
 		private meta: MiMeta,
 
 		@inject(DI.driveFilesRepository)
-		private driveFilesRepository: DriveFilesRepository,
-
-		private apResolverService: ApResolverService,
-		private driveService: DriveService,
-		private apLoggerService: ApLoggerService,
-	) {
+		private driveFilesRepository: DriveFilesRepository,@inject(delay(() => ApResolverService)) private apResolverService: ApResolverService,@inject(delay(() => DriveService)) private driveService: DriveService,@inject(delay(() => ApLoggerService)) private apLoggerService: ApLoggerService) {
 		this.logger = this.apLoggerService.logger;
 	}
 

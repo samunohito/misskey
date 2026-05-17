@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { ReversiService } from '@/core/ReversiService.js';
 import { ApiError } from '../../error.js';
@@ -44,9 +44,7 @@ export const paramDef = {
 
 @injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
-	constructor(
-		private reversiService: ReversiService,
-	) {
+	constructor(@inject(delay(() => ReversiService)) private reversiService: ReversiService) {
 		super(meta, paramDef, async (ps, me) => {
 			const game = await this.reversiService.get(ps.gameId);
 

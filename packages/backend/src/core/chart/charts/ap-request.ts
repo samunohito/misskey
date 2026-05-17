@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { DataSource } from 'typeorm';
 import * as Redis from 'ioredis';
 import { DI } from '@/di-symbols.js';
@@ -24,10 +24,7 @@ export default class ApRequestChart extends Chart<typeof schema> { // eslint-dis
 		private db: DataSource,
 
 		@inject(DI.redis)
-		private redisClient: Redis.Redis,
-
-		private chartLoggerService: ChartLoggerService,
-	) {
+		private redisClient: Redis.Redis,@inject(delay(() => ChartLoggerService)) private chartLoggerService: ChartLoggerService) {
 		super(db, (k) => acquireChartInsertLock(redisClient, k), chartLoggerService.logger, name, schema);
 	}
 

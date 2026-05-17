@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import ms from 'ms';
 import type { NoteFavoritesRepository } from '@/models/_.js';
 import { IdService } from '@/core/IdService.js';
@@ -53,12 +53,7 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.noteFavoritesRepository)
-		private noteFavoritesRepository: NoteFavoritesRepository,
-
-		private idService: IdService,
-		private getterService: GetterService,
-		private achievementService: AchievementService,
-	) {
+		private noteFavoritesRepository: NoteFavoritesRepository,@inject(delay(() => IdService)) private idService: IdService,@inject(delay(() => GetterService)) private getterService: GetterService,@inject(delay(() => AchievementService)) private achievementService: AchievementService) {
 		super(meta, paramDef, async (ps, me) => {
 			// Get favoritee
 			const note = await this.getterService.getNote(ps.noteId).catch(err => {

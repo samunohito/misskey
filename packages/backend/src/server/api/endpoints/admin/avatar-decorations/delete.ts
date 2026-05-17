@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { DI } from '@/di-symbols.js';
 import { AvatarDecorationService } from '@/core/AvatarDecorationService.js';
@@ -29,9 +29,7 @@ export const paramDef = {
 
 @injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
-	constructor(
-		private avatarDecorationService: AvatarDecorationService,
-	) {
+	constructor(@inject(delay(() => AvatarDecorationService)) private avatarDecorationService: AvatarDecorationService) {
 		super(meta, paramDef, async (ps, me) => {
 			await this.avatarDecorationService.delete(ps.id, me);
 		});

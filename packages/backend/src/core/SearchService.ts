@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { In } from 'typeorm';
 import { DI } from '@/di-symbols.js';
 import { type Config, FulltextSearchProvider } from '@/config.js';
@@ -89,13 +89,7 @@ export class SearchService {
 		private meilisearch: Meilisearch | null,
 
 		@inject(DI.notesRepository)
-		private notesRepository: NotesRepository,
-
-		private cacheService: CacheService,
-		private queryService: QueryService,
-		private idService: IdService,
-		private loggerService: LoggerService,
-	) {
+		private notesRepository: NotesRepository,@inject(delay(() => CacheService)) private cacheService: CacheService,@inject(delay(() => QueryService)) private queryService: QueryService,@inject(delay(() => IdService)) private idService: IdService,@inject(delay(() => LoggerService)) private loggerService: LoggerService) {
 		if (meilisearch) {
 			this.meilisearchNoteIndex = meilisearch.index(`${config.meilisearch!.index}---notes`);
 			this.meilisearchNoteIndex.updateSettings({

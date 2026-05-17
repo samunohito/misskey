@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { PageLikesRepository } from '@/models/_.js';
 import { QueryService } from '@/core/QueryService.js';
@@ -54,11 +54,7 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.pageLikesRepository)
-		private pageLikesRepository: PageLikesRepository,
-
-		private pageLikeEntityService: PageLikeEntityService,
-		private queryService: QueryService,
-	) {
+		private pageLikesRepository: PageLikesRepository,@inject(delay(() => PageLikeEntityService)) private pageLikeEntityService: PageLikeEntityService,@inject(delay(() => QueryService)) private queryService: QueryService) {
 		super(meta, paramDef, async (ps, me) => {
 			const query = this.queryService.makePaginationQuery(this.pageLikesRepository.createQueryBuilder('like'), ps.sinceId, ps.untilId, ps.sinceDate, ps.untilDate)
 				.andWhere('like.userId = :meId', { meId: me.id })

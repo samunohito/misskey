@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 
 import { setTimeout } from 'node:timers/promises';
 import { DataSource, IsNull, LessThan, QueryFailedError, Not } from 'typeorm';
@@ -27,11 +27,7 @@ export class CleanRemoteNotesProcessorService {
 		private notesRepository: NotesRepository,
 
 		@inject(DI.db)
-		private db: DataSource,
-
-		private idService: IdService,
-		private queueLoggerService: QueueLoggerService,
-	) {
+		private db: DataSource,@inject(delay(() => IdService)) private idService: IdService,@inject(delay(() => QueueLoggerService)) private queueLoggerService: QueueLoggerService) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('clean-remote-notes');
 	}
 

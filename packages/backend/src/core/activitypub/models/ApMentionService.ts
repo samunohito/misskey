@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import promiseLimit from 'promise-limit';
 import type { MiUser } from '@/models/_.js';
 import { toArray, unique } from '@/misc/prelude/array.js';
@@ -15,9 +15,7 @@ import type { IObject, IApMention } from '../type.js';
 
 @injectable()
 export class ApMentionService {
-	constructor(
-		private apPersonService: ApPersonService,
-	) {
+	constructor(@inject(delay(() => ApPersonService)) private apPersonService: ApPersonService) {
 	}
 
 	@bindThis

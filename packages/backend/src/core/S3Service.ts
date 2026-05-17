@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 
 import { URL } from 'node:url';
 import * as http from 'node:http';
@@ -18,9 +18,7 @@ import type { DeleteObjectCommandInput, PutObjectCommandInput } from '@aws-sdk/c
 
 @injectable()
 export class S3Service {
-	constructor(
-		private httpRequestService: HttpRequestService,
-	) {
+	constructor(@inject(delay(() => HttpRequestService)) private httpRequestService: HttpRequestService) {
 	}
 
 	@bindThis

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { DataSource } from 'typeorm';
 import * as Redis from 'ioredis';
 import { DI } from '@/di-symbols.js';
@@ -24,10 +24,7 @@ export default class TestIntersectionChart extends Chart<typeof schema> { // esl
 		private db: DataSource,
 
 		@inject(DI.redis)
-		private redisClient: Redis.Redis,
-
-		logger: Logger,
-	) {
+		private redisClient: Redis.Redis,@inject(delay(() => Logger)) logger: Logger) {
 		super(db, (k) => acquireChartInsertLock(redisClient, k), logger, name, schema);
 	}
 

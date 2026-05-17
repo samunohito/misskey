@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Disposable, DisposableRegistry } from '@/di/disposable-registry.js';
 import { DI } from '@/di-symbols.js';
 import type { AccessTokensRepository, AppsRepository, UsersRepository } from '@/models/_.js';
@@ -34,11 +34,7 @@ export class AuthenticateService implements Disposable {
 		private accessTokensRepository: AccessTokensRepository,
 
 		@inject(DI.appsRepository)
-		private appsRepository: AppsRepository,
-
-		private cacheService: CacheService,
-		registry: DisposableRegistry,
-	) {
+		private appsRepository: AppsRepository,@inject(delay(() => CacheService)) private cacheService: CacheService,@inject(delay(() => DisposableRegistry)) registry: DisposableRegistry) {
 		registry.register(this);
 		this.appCache = new MemoryKVCache<MiApp>(1000 * 60 * 60 * 24 * 7); // 1w
 	}

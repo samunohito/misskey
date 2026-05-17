@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { DI } from '@/di-symbols.js';
 import { bindThis } from '@/decorators.js';
 import type { MiUser } from '@/models/User.js';
@@ -52,14 +52,7 @@ export class FanoutTimelineEndpointService {
 		private notesRepository: NotesRepository,
 
 		@inject(DI.meta)
-		private meta: MiMeta,
-
-		private noteEntityService: NoteEntityService,
-		private cacheService: CacheService,
-		private fanoutTimelineService: FanoutTimelineService,
-		private utilityService: UtilityService,
-		private channelMutingService: ChannelMutingService,
-	) {
+		private meta: MiMeta,@inject(delay(() => NoteEntityService)) private noteEntityService: NoteEntityService,@inject(delay(() => CacheService)) private cacheService: CacheService,@inject(delay(() => FanoutTimelineService)) private fanoutTimelineService: FanoutTimelineService,@inject(delay(() => UtilityService)) private utilityService: UtilityService,@inject(delay(() => ChannelMutingService)) private channelMutingService: ChannelMutingService) {
 	}
 
 	@bindThis

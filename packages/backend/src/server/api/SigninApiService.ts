@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import bcrypt from 'bcryptjs';
 import { IsNull } from 'typeorm';
 import * as Misskey from 'misskey-js';
@@ -52,16 +52,7 @@ export class SigninApiService {
 		private userSecurityKeysRepository: UserSecurityKeysRepository,
 
 		@inject(DI.signinsRepository)
-		private signinsRepository: SigninsRepository,
-
-		private loggerService: LoggerService,
-		private idService: IdService,
-		private rateLimiterService: RateLimiterService,
-		private signinService: SigninService,
-		private userAuthService: UserAuthService,
-		private webAuthnService: WebAuthnService,
-		private captchaService: CaptchaService,
-	) {
+		private signinsRepository: SigninsRepository,@inject(delay(() => LoggerService)) private loggerService: LoggerService,@inject(delay(() => IdService)) private idService: IdService,@inject(delay(() => RateLimiterService)) private rateLimiterService: RateLimiterService,@inject(delay(() => SigninService)) private signinService: SigninService,@inject(delay(() => UserAuthService)) private userAuthService: UserAuthService,@inject(delay(() => WebAuthnService)) private webAuthnService: WebAuthnService,@inject(delay(() => CaptchaService)) private captchaService: CaptchaService) {
 		this.logger = this.loggerService.getLogger('Signin');
 	}
 

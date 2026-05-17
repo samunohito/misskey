@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { HashtagsRepository } from '@/models/_.js';
 import { HashtagEntityService } from '@/core/entities/HashtagEntityService.js';
@@ -41,10 +41,7 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.hashtagsRepository)
-		private hashtagsRepository: HashtagsRepository,
-
-		private hashtagEntityService: HashtagEntityService,
-	) {
+		private hashtagsRepository: HashtagsRepository,@inject(delay(() => HashtagEntityService)) private hashtagEntityService: HashtagEntityService) {
 		super(meta, paramDef, async (ps, me) => {
 			const query = this.hashtagsRepository.createQueryBuilder('tag');
 

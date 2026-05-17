@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 
 import { Brackets } from 'typeorm';
 import type { NotesRepository, MiMeta } from '@/models/_.js';
@@ -62,18 +62,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private serverSettings: MiMeta,
 
 		@inject(DI.notesRepository)
-		private notesRepository: NotesRepository,
-
-		private noteEntityService: NoteEntityService,
-		private activeUsersChart: ActiveUsersChart,
-		private idService: IdService,
-		private cacheService: CacheService,
-		private fanoutTimelineEndpointService: FanoutTimelineEndpointService,
-		private userFollowingService: UserFollowingService,
-		private channelMutingService: ChannelMutingService,
-		private channelFollowingService: ChannelFollowingService,
-		private queryService: QueryService,
-	) {
+		private notesRepository: NotesRepository,@inject(delay(() => NoteEntityService)) private noteEntityService: NoteEntityService,@inject(delay(() => ActiveUsersChart)) private activeUsersChart: ActiveUsersChart,@inject(delay(() => IdService)) private idService: IdService,@inject(delay(() => CacheService)) private cacheService: CacheService,@inject(delay(() => FanoutTimelineEndpointService)) private fanoutTimelineEndpointService: FanoutTimelineEndpointService,@inject(delay(() => UserFollowingService)) private userFollowingService: UserFollowingService,@inject(delay(() => ChannelMutingService)) private channelMutingService: ChannelMutingService,@inject(delay(() => ChannelFollowingService)) private channelFollowingService: ChannelFollowingService,@inject(delay(() => QueryService)) private queryService: QueryService) {
 		super(meta, paramDef, async (ps, me) => {
 			const untilId = ps.untilId ?? (ps.untilDate ? this.idService.gen(ps.untilDate!) : null);
 			const sinceId = ps.sinceId ?? (ps.sinceDate ? this.idService.gen(ps.sinceDate!) : null);

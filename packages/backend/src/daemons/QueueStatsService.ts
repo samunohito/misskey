@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Disposable, DisposableRegistry } from '@/di/disposable-registry.js';
 import Xev from 'xev';
 import * as Bull from 'bullmq';
@@ -22,11 +22,7 @@ export class QueueStatsService implements Disposable {
 
 	constructor(
 		@inject(DI.config)
-		private config: Config,
-
-		private queueService: QueueService,
-		registry: DisposableRegistry,
-	) {
+		private config: Config,@inject(delay(() => QueueService)) private queueService: QueueService,@inject(delay(() => DisposableRegistry)) registry: DisposableRegistry) {
 		registry.register(this);
 	}
 

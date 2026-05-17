@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { getJsonSchema } from '@/core/chart/core.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import PerUserPvChart from '@/core/chart/charts/per-user-pv.js';
@@ -31,9 +31,7 @@ export const paramDef = {
 
 @injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
-	constructor(
-		private perUserPvChart: PerUserPvChart,
-	) {
+	constructor(@inject(delay(() => PerUserPvChart)) private perUserPvChart: PerUserPvChart) {
 		super(meta, paramDef, async (ps, me) => {
 			return await this.perUserPvChart.getChart(ps.span, ps.limit, ps.offset ? new Date(ps.offset) : null, ps.userId);
 		});

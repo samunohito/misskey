@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { DI } from '@/di-symbols.js';
 import type { DriveFilesRepository, DriveFoldersRepository } from '@/models/_.js';
 import { awaitAll } from '@/misc/prelude/await-all.js';
@@ -23,10 +23,7 @@ export class DriveFolderEntityService {
 		private driveFoldersRepository: DriveFoldersRepository,
 
 		@inject(DI.driveFilesRepository)
-		private driveFilesRepository: DriveFilesRepository,
-
-		private idService: IdService,
-	) {
+		private driveFilesRepository: DriveFilesRepository,@inject(delay(() => IdService)) private idService: IdService) {
 	}
 
 	@bindThis

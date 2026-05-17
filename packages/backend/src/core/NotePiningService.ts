@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { DI } from '@/di-symbols.js';
 import type { NotesRepository, UserNotePiningsRepository, UsersRepository } from '@/models/_.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
@@ -32,15 +32,7 @@ export class NotePiningService {
 		private notesRepository: NotesRepository,
 
 		@inject(DI.userNotePiningsRepository)
-		private userNotePiningsRepository: UserNotePiningsRepository,
-
-		private userEntityService: UserEntityService,
-		private idService: IdService,
-		private roleService: RoleService,
-		private relayService: RelayService,
-		private apDeliverManagerService: ApDeliverManagerService,
-		private apRendererService: ApRendererService,
-	) {
+		private userNotePiningsRepository: UserNotePiningsRepository,@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService,@inject(delay(() => IdService)) private idService: IdService,@inject(delay(() => RoleService)) private roleService: RoleService,@inject(delay(() => RelayService)) private relayService: RelayService,@inject(delay(() => ApDeliverManagerService)) private apDeliverManagerService: ApDeliverManagerService,@inject(delay(() => ApRendererService)) private apRendererService: ApRendererService) {
 	}
 
 	/**

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { ChannelsRepository, MiMeta, NotesRepository } from '@/models/_.js';
 import { QueryService } from '@/core/QueryService.js';
@@ -65,15 +65,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private notesRepository: NotesRepository,
 
 		@inject(DI.channelsRepository)
-		private channelsRepository: ChannelsRepository,
-
-		private idService: IdService,
-		private noteEntityService: NoteEntityService,
-		private queryService: QueryService,
-		private fanoutTimelineEndpointService: FanoutTimelineEndpointService,
-		private activeUsersChart: ActiveUsersChart,
-		private channelMutingService: ChannelMutingService,
-	) {
+		private channelsRepository: ChannelsRepository,@inject(delay(() => IdService)) private idService: IdService,@inject(delay(() => NoteEntityService)) private noteEntityService: NoteEntityService,@inject(delay(() => QueryService)) private queryService: QueryService,@inject(delay(() => FanoutTimelineEndpointService)) private fanoutTimelineEndpointService: FanoutTimelineEndpointService,@inject(delay(() => ActiveUsersChart)) private activeUsersChart: ActiveUsersChart,@inject(delay(() => ChannelMutingService)) private channelMutingService: ChannelMutingService) {
 		super(meta, paramDef, async (ps, me) => {
 			const untilId = ps.untilId ?? (ps.untilDate ? this.idService.gen(ps.untilDate!) : null);
 			const sinceId = ps.sinceId ?? (ps.sinceDate ? this.idService.gen(ps.sinceDate!) : null);

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { IsNull } from 'typeorm';
 import vary from 'vary';
 import fastifyAccepts from '@fastify/accepts';
@@ -30,12 +30,7 @@ export class WellKnownServerService {
 		private meta: MiMeta,
 
 		@inject(DI.usersRepository)
-		private usersRepository: UsersRepository,
-
-		private nodeinfoServerService: NodeinfoServerService,
-		private userEntityService: UserEntityService,
-		private oauth2ProviderService: OAuth2ProviderService,
-	) {
+		private usersRepository: UsersRepository,@inject(delay(() => NodeinfoServerService)) private nodeinfoServerService: NodeinfoServerService,@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService,@inject(delay(() => OAuth2ProviderService)) private oauth2ProviderService: OAuth2ProviderService) {
 		//this.createServer = this.createServer.bind(this);
 	}
 

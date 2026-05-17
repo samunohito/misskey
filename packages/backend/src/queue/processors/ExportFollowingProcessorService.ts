@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 
 import * as fs from 'node:fs';
 import { In, MoreThan, Not } from 'typeorm';
@@ -33,13 +33,7 @@ export class ExportFollowingProcessorService {
 		private followingsRepository: FollowingsRepository,
 
 		@inject(DI.mutingsRepository)
-		private mutingsRepository: MutingsRepository,
-
-		private utilityService: UtilityService,
-		private driveService: DriveService,
-		private queueLoggerService: QueueLoggerService,
-		private notificationService: NotificationService,
-	) {
+		private mutingsRepository: MutingsRepository,@inject(delay(() => UtilityService)) private utilityService: UtilityService,@inject(delay(() => DriveService)) private driveService: DriveService,@inject(delay(() => QueueLoggerService)) private queueLoggerService: QueueLoggerService,@inject(delay(() => NotificationService)) private notificationService: NotificationService) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('export-following');
 	}
 

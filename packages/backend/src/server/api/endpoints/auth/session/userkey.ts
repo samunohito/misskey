@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { AppsRepository, AccessTokensRepository, AuthSessionsRepository } from '@/models/_.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
@@ -72,10 +72,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private authSessionsRepository: AuthSessionsRepository,
 
 		@inject(DI.accessTokensRepository)
-		private accessTokensRepository: AccessTokensRepository,
-
-		private userEntityService: UserEntityService,
-	) {
+		private accessTokensRepository: AccessTokensRepository,@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService) {
 		super(meta, paramDef, async (ps, me) => {
 			// Lookup app
 			const app = await this.appsRepository.findOneBy({

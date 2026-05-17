@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 
 import { Brackets } from 'typeorm';
 import type { NotesRepository, FollowingsRepository } from '@/models/_.js';
@@ -50,11 +50,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private notesRepository: NotesRepository,
 
 		@inject(DI.followingsRepository)
-		private followingsRepository: FollowingsRepository,
-
-		private noteEntityService: NoteEntityService,
-		private queryService: QueryService,
-	) {
+		private followingsRepository: FollowingsRepository,@inject(delay(() => NoteEntityService)) private noteEntityService: NoteEntityService,@inject(delay(() => QueryService)) private queryService: QueryService) {
 		super(meta, paramDef, async (ps, me) => {
 			const followingQuery = this.followingsRepository.createQueryBuilder('following')
 				.select('following.followeeId')

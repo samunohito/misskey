@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { ClipEntityService } from '@/core/entities/ClipEntityService.js';
 import { ClipService } from '@/core/ClipService.js';
@@ -46,11 +46,7 @@ export const paramDef = {
 
 @injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
-	constructor(
-		private clipService: ClipService,
-
-		private clipEntityService: ClipEntityService,
-	) {
+	constructor(@inject(delay(() => ClipService)) private clipService: ClipService,@inject(delay(() => ClipEntityService)) private clipEntityService: ClipEntityService) {
 		super(meta, paramDef, async (ps, me) => {
 			try {
 				// 空文字列をnullにしたいので??は使わない

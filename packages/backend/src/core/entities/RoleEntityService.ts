@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Brackets } from 'typeorm';
 import { DI } from '@/di-symbols.js';
 import type { RoleAssignmentsRepository, RolesRepository } from '@/models/_.js';
@@ -22,10 +22,7 @@ export class RoleEntityService {
 		private rolesRepository: RolesRepository,
 
 		@inject(DI.roleAssignmentsRepository)
-		private roleAssignmentsRepository: RoleAssignmentsRepository,
-
-		private idService: IdService,
-	) {
+		private roleAssignmentsRepository: RoleAssignmentsRepository,@inject(delay(() => IdService)) private idService: IdService) {
 	}
 
 	@bindThis

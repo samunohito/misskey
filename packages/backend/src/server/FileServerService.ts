@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 
 import * as fs from 'node:fs';
 import { resolve } from 'node:path';
@@ -39,15 +39,7 @@ export class FileServerService {
 		private config: Config,
 
 		@inject(DI.driveFilesRepository)
-		private driveFilesRepository: DriveFilesRepository,
-
-		private fileInfoService: FileInfoService,
-		private downloadService: DownloadService,
-		private imageProcessingService: ImageProcessingService,
-		private videoProcessingService: VideoProcessingService,
-		private internalStorageService: InternalStorageService,
-		private loggerService: LoggerService,
-	) {
+		private driveFilesRepository: DriveFilesRepository,@inject(delay(() => FileInfoService)) private fileInfoService: FileInfoService,@inject(delay(() => DownloadService)) private downloadService: DownloadService,@inject(delay(() => ImageProcessingService)) private imageProcessingService: ImageProcessingService,@inject(delay(() => VideoProcessingService)) private videoProcessingService: VideoProcessingService,@inject(delay(() => InternalStorageService)) private internalStorageService: InternalStorageService,@inject(delay(() => LoggerService)) private loggerService: LoggerService) {
 		this.logger = this.loggerService.getLogger('server', 'gray');
 		this.assets = resolve(this.config.rootDir, 'packages/backend/src/server/file/assets');
 		this.fileResolver = new FileServerFileResolver(

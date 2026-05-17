@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { AntennasRepository } from '@/models/_.js';
 import { AntennaEntityService } from '@/core/entities/AntennaEntityService.js';
@@ -44,10 +44,7 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.antennasRepository)
-		private antennasRepository: AntennasRepository,
-
-		private antennaEntityService: AntennaEntityService,
-	) {
+		private antennasRepository: AntennasRepository,@inject(delay(() => AntennaEntityService)) private antennaEntityService: AntennaEntityService) {
 		super(meta, paramDef, async (ps, me) => {
 			// Fetch the antenna
 			const antenna = await this.antennasRepository.findOneBy({

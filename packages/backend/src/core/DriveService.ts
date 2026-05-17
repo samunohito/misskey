@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 
 import { randomUUID } from 'node:crypto';
 import * as fs from 'node:fs';
@@ -112,26 +112,7 @@ export class DriveService {
 		private driveFilesRepository: DriveFilesRepository,
 
 		@inject(DI.driveFoldersRepository)
-		private driveFoldersRepository: DriveFoldersRepository,
-
-		private fileInfoService: FileInfoService,
-		private userEntityService: UserEntityService,
-		private driveFileEntityService: DriveFileEntityService,
-		private idService: IdService,
-		private downloadService: DownloadService,
-		private internalStorageService: InternalStorageService,
-		private s3Service: S3Service,
-		private imageProcessingService: ImageProcessingService,
-		private videoProcessingService: VideoProcessingService,
-		private globalEventService: GlobalEventService,
-		private queueService: QueueService,
-		private roleService: RoleService,
-		private moderationLogService: ModerationLogService,
-		private driveChart: DriveChart,
-		private perUserDriveChart: PerUserDriveChart,
-		private instanceChart: InstanceChart,
-		private utilityService: UtilityService,
-	) {
+		private driveFoldersRepository: DriveFoldersRepository,@inject(delay(() => FileInfoService)) private fileInfoService: FileInfoService,@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService,@inject(delay(() => DriveFileEntityService)) private driveFileEntityService: DriveFileEntityService,@inject(delay(() => IdService)) private idService: IdService,@inject(delay(() => DownloadService)) private downloadService: DownloadService,@inject(delay(() => InternalStorageService)) private internalStorageService: InternalStorageService,@inject(delay(() => S3Service)) private s3Service: S3Service,@inject(delay(() => ImageProcessingService)) private imageProcessingService: ImageProcessingService,@inject(delay(() => VideoProcessingService)) private videoProcessingService: VideoProcessingService,@inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService,@inject(delay(() => QueueService)) private queueService: QueueService,@inject(delay(() => RoleService)) private roleService: RoleService,@inject(delay(() => ModerationLogService)) private moderationLogService: ModerationLogService,@inject(delay(() => DriveChart)) private driveChart: DriveChart,@inject(delay(() => PerUserDriveChart)) private perUserDriveChart: PerUserDriveChart,@inject(delay(() => InstanceChart)) private instanceChart: InstanceChart,@inject(delay(() => UtilityService)) private utilityService: UtilityService) {
 		const logger = new Logger('drive', 'blue');
 		this.registerLogger = logger.createSubLogger('register', 'yellow');
 		this.downloaderLogger = logger.createSubLogger('downloader');

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { DI } from '@/di-symbols.js';
 import type { EmojisRepository, NoteReactionsRepository, UsersRepository, NotesRepository, MiMeta } from '@/models/_.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
@@ -83,23 +83,7 @@ export class ReactionService {
 		private noteReactionsRepository: NoteReactionsRepository,
 
 		@inject(DI.emojisRepository)
-		private emojisRepository: EmojisRepository,
-
-		private utilityService: UtilityService,
-		private customEmojiService: CustomEmojiService,
-		private roleService: RoleService,
-		private userEntityService: UserEntityService,
-		private noteEntityService: NoteEntityService,
-		private userBlockingService: UserBlockingService,
-		private reactionsBufferingService: ReactionsBufferingService,
-		private idService: IdService,
-		private featuredService: FeaturedService,
-		private globalEventService: GlobalEventService,
-		private apRendererService: ApRendererService,
-		private apDeliverManagerService: ApDeliverManagerService,
-		private notificationService: NotificationService,
-		private perUserReactionsChart: PerUserReactionsChart,
-	) {
+		private emojisRepository: EmojisRepository,@inject(delay(() => UtilityService)) private utilityService: UtilityService,@inject(delay(() => CustomEmojiService)) private customEmojiService: CustomEmojiService,@inject(delay(() => RoleService)) private roleService: RoleService,@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService,@inject(delay(() => NoteEntityService)) private noteEntityService: NoteEntityService,@inject(delay(() => UserBlockingService)) private userBlockingService: UserBlockingService,@inject(delay(() => ReactionsBufferingService)) private reactionsBufferingService: ReactionsBufferingService,@inject(delay(() => IdService)) private idService: IdService,@inject(delay(() => FeaturedService)) private featuredService: FeaturedService,@inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService,@inject(delay(() => ApRendererService)) private apRendererService: ApRendererService,@inject(delay(() => ApDeliverManagerService)) private apDeliverManagerService: ApDeliverManagerService,@inject(delay(() => NotificationService)) private notificationService: NotificationService,@inject(delay(() => PerUserReactionsChart)) private perUserReactionsChart: PerUserReactionsChart) {
 	}
 
 	@bindThis

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import ms from 'ms';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { NoteDraftService } from '@/core/NoteDraftService.js';
@@ -241,10 +241,7 @@ export const paramDef = {
 
 @injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
-	constructor(
-		private noteDraftService: NoteDraftService,
-		private noteDraftEntityService: NoteDraftEntityService,
-	) {
+	constructor(@inject(delay(() => NoteDraftService)) private noteDraftService: NoteDraftService,@inject(delay(() => NoteDraftEntityService)) private noteDraftEntityService: NoteDraftEntityService) {
 		super(meta, paramDef, async (ps, me) => {
 			const draft = await this.noteDraftService.update(me, ps.draftId, {
 				fileIds: ps.fileIds,

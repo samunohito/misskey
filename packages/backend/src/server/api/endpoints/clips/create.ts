@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { MiClip } from '@/models/_.js';
 import { ClipEntityService } from '@/core/entities/ClipEntityService.js';
@@ -46,10 +46,7 @@ export const paramDef = {
 
 @injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
-	constructor(
-		private clipEntityService: ClipEntityService,
-		private clipService: ClipService,
-	) {
+	constructor(@inject(delay(() => ClipEntityService)) private clipEntityService: ClipEntityService,@inject(delay(() => ClipService)) private clipService: ClipService) {
 		super(meta, paramDef, async (ps, me) => {
 			let clip: MiClip;
 			try {

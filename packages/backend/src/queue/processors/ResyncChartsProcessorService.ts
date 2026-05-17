@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import type Logger from '@/logger.js';
 import NotesChart from '@/core/chart/charts/notes.js';
 import UsersChart from '@/core/chart/charts/users.js';
@@ -16,12 +16,7 @@ import type * as Bull from 'bullmq';
 export class ResyncChartsProcessorService {
 	private logger: Logger;
 
-	constructor(
-		private notesChart: NotesChart,
-		private usersChart: UsersChart,
-		private driveChart: DriveChart,
-		private queueLoggerService: QueueLoggerService,
-	) {
+	constructor(@inject(delay(() => NotesChart)) private notesChart: NotesChart,@inject(delay(() => UsersChart)) private usersChart: UsersChart,@inject(delay(() => DriveChart)) private driveChart: DriveChart,@inject(delay(() => QueueLoggerService)) private queueLoggerService: QueueLoggerService) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('resync-charts');
 	}
 

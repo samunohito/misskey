@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 
 import ms from 'ms';
 import type { UsersRepository } from '@/models/_.js';
@@ -54,12 +54,7 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.usersRepository)
-		private usersRepository: UsersRepository,
-
-		private getterService: GetterService,
-		private roleService: RoleService,
-		private noteDeleteService: NoteDeleteService,
-	) {
+		private usersRepository: UsersRepository,@inject(delay(() => GetterService)) private getterService: GetterService,@inject(delay(() => RoleService)) private roleService: RoleService,@inject(delay(() => NoteDeleteService)) private noteDeleteService: NoteDeleteService) {
 		super(meta, paramDef, async (ps, me) => {
 			const note = await this.getterService.getNote(ps.noteId).catch(err => {
 				if (err.id === '9725d0ce-ba28-4dde-95a7-2cbb2c15de24') throw new ApiError(meta.errors.noSuchNote);

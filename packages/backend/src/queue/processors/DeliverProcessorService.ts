@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import * as Bull from 'bullmq';
 import { Not } from 'typeorm';
 import { DI } from '@/di-symbols.js';
@@ -34,17 +34,7 @@ export class DeliverProcessorService {
 		private meta: MiMeta,
 
 		@inject(DI.instancesRepository)
-		private instancesRepository: InstancesRepository,
-
-		private utilityService: UtilityService,
-		private federatedInstanceService: FederatedInstanceService,
-		private fetchInstanceMetadataService: FetchInstanceMetadataService,
-		private apRequestService: ApRequestService,
-		private instanceChart: InstanceChart,
-		private apRequestChart: ApRequestChart,
-		private federationChart: FederationChart,
-		private queueLoggerService: QueueLoggerService,
-	) {
+		private instancesRepository: InstancesRepository,@inject(delay(() => UtilityService)) private utilityService: UtilityService,@inject(delay(() => FederatedInstanceService)) private federatedInstanceService: FederatedInstanceService,@inject(delay(() => FetchInstanceMetadataService)) private fetchInstanceMetadataService: FetchInstanceMetadataService,@inject(delay(() => ApRequestService)) private apRequestService: ApRequestService,@inject(delay(() => InstanceChart)) private instanceChart: InstanceChart,@inject(delay(() => ApRequestChart)) private apRequestChart: ApRequestChart,@inject(delay(() => FederationChart)) private federationChart: FederationChart,@inject(delay(() => QueueLoggerService)) private queueLoggerService: QueueLoggerService) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('deliver');
 		this.suspendedHostsCache = new MemorySingleCache<MiInstance[]>(1000 * 60 * 60); // 1h
 	}

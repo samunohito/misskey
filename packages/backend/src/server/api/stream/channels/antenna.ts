@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { RequestToken } from '@/di/container.js';
 import { DI } from '@/di-symbols.js';
 import type { AntennasRepository } from '@/models/_.js';
@@ -27,11 +27,7 @@ export class AntennaChannel extends Channel {
 		request: ChannelRequest,
 
 		@inject(DI.antennasRepository)
-		private antennasReposiotry: AntennasRepository,
-
-		private noteEntityService: NoteEntityService,
-		private noteStreamingHidingService: NoteStreamingHidingService,
-	) {
+		private antennasReposiotry: AntennasRepository,@inject(delay(() => NoteEntityService)) private noteEntityService: NoteEntityService,@inject(delay(() => NoteStreamingHidingService)) private noteStreamingHidingService: NoteStreamingHidingService) {
 		super(request);
 		//this.onEvent = this.onEvent.bind(this);
 	}

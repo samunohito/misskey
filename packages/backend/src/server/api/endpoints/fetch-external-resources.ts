@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 
 import { createHash } from 'crypto';
 import ms from 'ms';
@@ -59,9 +59,7 @@ export const paramDef = {
 
 @injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
-	constructor(
-		private httpRequestService: HttpRequestService,
-	) {
+	constructor(@inject(delay(() => HttpRequestService)) private httpRequestService: HttpRequestService) {
 		super(meta, paramDef, async (ps) => {
 			const res = await this.httpRequestService.getJson<{
 				type: string;

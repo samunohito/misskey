@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { In, LessThan } from 'typeorm';
 import { DI } from '@/di-symbols.js';
 import type { AntennasRepository, RoleAssignmentsRepository, UserIpsRepository } from '@/models/_.js';
@@ -30,12 +30,7 @@ export class CleanProcessorService {
 		private antennasRepository: AntennasRepository,
 
 		@inject(DI.roleAssignmentsRepository)
-		private roleAssignmentsRepository: RoleAssignmentsRepository,
-
-		private queueLoggerService: QueueLoggerService,
-		private reversiService: ReversiService,
-		private idService: IdService,
-	) {
+		private roleAssignmentsRepository: RoleAssignmentsRepository,@inject(delay(() => QueueLoggerService)) private queueLoggerService: QueueLoggerService,@inject(delay(() => ReversiService)) private reversiService: ReversiService,@inject(delay(() => IdService)) private idService: IdService) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('clean');
 	}
 

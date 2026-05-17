@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 
 import bcrypt from 'bcryptjs';
 import type { UserProfilesRepository, PasswordResetRequestsRepository } from '@/models/_.js';
@@ -39,10 +39,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private passwordResetRequestsRepository: PasswordResetRequestsRepository,
 
 		@inject(DI.userProfilesRepository)
-		private userProfilesRepository: UserProfilesRepository,
-
-		private idService: IdService,
-	) {
+		private userProfilesRepository: UserProfilesRepository,@inject(delay(() => IdService)) private idService: IdService) {
 		super(meta, paramDef, async (ps, me) => {
 			const req = await this.passwordResetRequestsRepository.findOneByOrFail({
 				token: ps.token,

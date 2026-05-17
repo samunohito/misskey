@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 
 import { Brackets, In } from 'typeorm';
 import type { NotesRepository, MutingsRepository, PollsRepository, PollVotesRepository } from '@/models/_.js';
@@ -51,10 +51,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private pollVotesRepository: PollVotesRepository,
 
 		@inject(DI.mutingsRepository)
-		private mutingsRepository: MutingsRepository,
-
-		private noteEntityService: NoteEntityService,
-	) {
+		private mutingsRepository: MutingsRepository,@inject(delay(() => NoteEntityService)) private noteEntityService: NoteEntityService) {
 		super(meta, paramDef, async (ps, me) => {
 			const query = this.pollsRepository.createQueryBuilder('poll')
 				.where('poll.userHost IS NULL')

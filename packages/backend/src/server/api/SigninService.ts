@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import * as Misskey from 'misskey-js';
 import { DI } from '@/di-symbols.js';
 import type { SigninsRepository, UserProfilesRepository } from '@/models/_.js';
@@ -23,14 +23,7 @@ export class SigninService {
 		private signinsRepository: SigninsRepository,
 
 		@inject(DI.userProfilesRepository)
-		private userProfilesRepository: UserProfilesRepository,
-
-		private signinEntityService: SigninEntityService,
-		private emailService: EmailService,
-		private notificationService: NotificationService,
-		private idService: IdService,
-		private globalEventService: GlobalEventService,
-	) {
+		private userProfilesRepository: UserProfilesRepository,@inject(delay(() => SigninEntityService)) private signinEntityService: SigninEntityService,@inject(delay(() => EmailService)) private emailService: EmailService,@inject(delay(() => NotificationService)) private notificationService: NotificationService,@inject(delay(() => IdService)) private idService: IdService,@inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService) {
 	}
 
 	@bindThis

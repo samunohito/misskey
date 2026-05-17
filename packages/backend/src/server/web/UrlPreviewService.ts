@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import type { SummalyResult } from '@misskey-dev/summaly';
 import { DI } from '@/di-symbols.js';
 import type { Config } from '@/config.js';
@@ -25,11 +25,7 @@ export class UrlPreviewService {
 		private config: Config,
 
 		@inject(DI.meta)
-		private meta: MiMeta,
-
-		private httpRequestService: HttpRequestService,
-		private loggerService: LoggerService,
-	) {
+		private meta: MiMeta,@inject(delay(() => HttpRequestService)) private httpRequestService: HttpRequestService,@inject(delay(() => LoggerService)) private loggerService: LoggerService) {
 		this.logger = this.loggerService.getLogger('url-preview');
 	}
 

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import cors from '@fastify/cors';
 import multipart from '@fastify/multipart';
 import type { DependencyContainer } from 'tsyringe';
@@ -34,14 +34,7 @@ export class ApiServerService {
 		private instancesRepository: InstancesRepository,
 
 		@inject(DI.accessTokensRepository)
-		private accessTokensRepository: AccessTokensRepository,
-
-		private userEntityService: UserEntityService,
-		private apiCallService: ApiCallService,
-		private signupApiService: SignupApiService,
-		private signinApiService: SigninApiService,
-		private signinWithPasskeyApiService: SigninWithPasskeyApiService,
-	) {
+		private accessTokensRepository: AccessTokensRepository,@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService,@inject(delay(() => ApiCallService)) private apiCallService: ApiCallService,@inject(delay(() => SignupApiService)) private signupApiService: SignupApiService,@inject(delay(() => SigninApiService)) private signinApiService: SigninApiService,@inject(delay(() => SigninWithPasskeyApiService)) private signinWithPasskeyApiService: SigninWithPasskeyApiService) {
 		//this.createServer = this.createServer.bind(this);
 	}
 

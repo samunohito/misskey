@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { DI } from '@/di-symbols.js';
 import type { AntennasRepository } from '@/models/_.js';
 import type { Packed } from '@/misc/json-schema.js';
@@ -15,10 +15,7 @@ import { IdService } from '@/core/IdService.js';
 export class AntennaEntityService {
 	constructor(
 		@inject(DI.antennasRepository)
-		private antennasRepository: AntennasRepository,
-
-		private idService: IdService,
-	) {
+		private antennasRepository: AntennasRepository,@inject(delay(() => IdService)) private idService: IdService) {
 	}
 
 	@bindThis

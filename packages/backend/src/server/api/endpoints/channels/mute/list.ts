@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { ChannelMutingService } from '@/core/ChannelMutingService.js';
 import { ChannelEntityService } from '@/core/entities/ChannelEntityService.js';
@@ -35,10 +35,7 @@ export const paramDef = {
 
 @injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
-	constructor(
-		private channelMutingService: ChannelMutingService,
-		private channelEntityService: ChannelEntityService,
-	) {
+	constructor(@inject(delay(() => ChannelMutingService)) private channelMutingService: ChannelMutingService,@inject(delay(() => ChannelEntityService)) private channelEntityService: ChannelEntityService) {
 		super(meta, paramDef, async (ps, me) => {
 			const mutings = await this.channelMutingService.list({
 				requestUserId: me.id,

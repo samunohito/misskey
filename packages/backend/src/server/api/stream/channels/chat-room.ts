@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { RequestToken } from '@/di/container.js';
 import { DI } from '@/di-symbols.js';
 import { bindThis } from '@/decorators.js';
@@ -26,10 +26,7 @@ export class ChatRoomChannel extends Channel {
 		request: ChannelRequest,
 
 		@inject(DI.chatRoomsRepository)
-		private chatRoomsRepository: ChatRoomsRepository,
-
-		private chatService: ChatService,
-	) {
+		private chatRoomsRepository: ChatRoomsRepository,@inject(delay(() => ChatService)) private chatService: ChatService) {
 		super(request);
 	}
 

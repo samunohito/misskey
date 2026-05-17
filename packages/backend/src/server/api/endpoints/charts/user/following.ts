@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { getJsonSchema } from '@/core/chart/core.js';
 import PerUserFollowingChart from '@/core/chart/charts/per-user-following.js';
@@ -31,9 +31,7 @@ export const paramDef = {
 
 @injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
-	constructor(
-		private perUserFollowingChart: PerUserFollowingChart,
-	) {
+	constructor(@inject(delay(() => PerUserFollowingChart)) private perUserFollowingChart: PerUserFollowingChart) {
 		super(meta, paramDef, async (ps, me) => {
 			return await this.perUserFollowingChart.getChart(ps.span, ps.limit, ps.offset ? new Date(ps.offset) : null, ps.userId);
 		});

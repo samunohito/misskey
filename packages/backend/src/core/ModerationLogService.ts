@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { DI } from '@/di-symbols.js';
 import type { ModerationLogsRepository } from '@/models/_.js';
 import type { MiUser } from '@/models/User.js';
@@ -16,10 +16,7 @@ import { moderationLogTypes } from '@/types.js';
 export class ModerationLogService {
 	constructor(
 		@inject(DI.moderationLogsRepository)
-		private moderationLogsRepository: ModerationLogsRepository,
-
-		private idService: IdService,
-	) {
+		private moderationLogsRepository: ModerationLogsRepository,@inject(delay(() => IdService)) private idService: IdService) {
 	}
 
 	@bindThis

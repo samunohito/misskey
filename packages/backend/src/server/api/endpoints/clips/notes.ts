@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Brackets } from 'typeorm';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { NotesRepository, ClipsRepository, ClipNotesRepository } from '@/models/_.js';
@@ -63,11 +63,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private notesRepository: NotesRepository,
 
 		@inject(DI.clipNotesRepository)
-		private clipNotesRepository: ClipNotesRepository,
-
-		private noteEntityService: NoteEntityService,
-		private queryService: QueryService,
-	) {
+		private clipNotesRepository: ClipNotesRepository,@inject(delay(() => NoteEntityService)) private noteEntityService: NoteEntityService,@inject(delay(() => QueryService)) private queryService: QueryService) {
 		super(meta, paramDef, async (ps, me) => {
 			const clip = await this.clipsRepository.findOneBy({
 				id: ps.clipId,

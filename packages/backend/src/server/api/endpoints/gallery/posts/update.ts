@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 
 import ms from 'ms';
 import { Endpoint } from '@/server/api/endpoint-base.js';
@@ -58,10 +58,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private galleryPostsRepository: GalleryPostsRepository,
 
 		@inject(DI.driveFilesRepository)
-		private driveFilesRepository: DriveFilesRepository,
-
-		private galleryPostEntityService: GalleryPostEntityService,
-	) {
+		private driveFilesRepository: DriveFilesRepository,@inject(delay(() => GalleryPostEntityService)) private galleryPostEntityService: GalleryPostEntityService) {
 		super(meta, paramDef, async (ps, me) => {
 			let files: Array<MiDriveFile> | undefined;
 

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Disposable, DisposableRegistry } from '@/di/disposable-registry.js';
 import * as Redis from 'ioredis';
 import type { MiUser } from '@/models/User.js';
@@ -22,9 +22,7 @@ export class UserKeypairService implements Disposable {
 		private redisClient: Redis.Redis,
 
 		@inject(DI.userKeypairsRepository)
-		private userKeypairsRepository: UserKeypairsRepository,
-		registry: DisposableRegistry,
-	) {
+		private userKeypairsRepository: UserKeypairsRepository,@inject(delay(() => DisposableRegistry)) registry: DisposableRegistry) {
 		registry.register(this);
 		this.cache = new RedisKVCache<MiUserKeypair>(this.redisClient, 'userKeypair', {
 			lifetime: 1000 * 60 * 60 * 24, // 24h

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import ms from 'ms';
 import type { UserListsRepository, UserListMembershipsRepository, BlockingsRepository } from '@/models/_.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
@@ -80,11 +80,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private userListMembershipsRepository: UserListMembershipsRepository,
 
 		@inject(DI.blockingsRepository)
-		private blockingsRepository: BlockingsRepository,
-
-		private getterService: GetterService,
-		private userListService: UserListService,
-	) {
+		private blockingsRepository: BlockingsRepository,@inject(delay(() => GetterService)) private getterService: GetterService,@inject(delay(() => UserListService)) private userListService: UserListService) {
 		super(meta, paramDef, async (ps, me) => {
 			// Fetch the list
 			const userList = await this.userListsRepository.findOneBy({

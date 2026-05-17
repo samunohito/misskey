@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { ChannelsRepository } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
@@ -40,9 +40,7 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.channelsRepository)
-		private channelsRepository: ChannelsRepository,
-		private channelFollowingService: ChannelFollowingService,
-	) {
+		private channelsRepository: ChannelsRepository,@inject(delay(() => ChannelFollowingService)) private channelFollowingService: ChannelFollowingService) {
 		super(meta, paramDef, async (ps, me) => {
 			const channel = await this.channelsRepository.findOneBy({
 				id: ps.channelId,

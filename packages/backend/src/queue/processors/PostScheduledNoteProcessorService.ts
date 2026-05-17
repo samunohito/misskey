@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { DI } from '@/di-symbols.js';
 import type { NoteDraftsRepository } from '@/models/_.js';
 import type Logger from '@/logger.js';
@@ -20,12 +20,7 @@ export class PostScheduledNoteProcessorService {
 
 	constructor(
 		@inject(DI.noteDraftsRepository)
-		private noteDraftsRepository: NoteDraftsRepository,
-
-		private noteCreateService: NoteCreateService,
-		private notificationService: NotificationService,
-		private queueLoggerService: QueueLoggerService,
-	) {
+		private noteDraftsRepository: NoteDraftsRepository,@inject(delay(() => NoteCreateService)) private noteCreateService: NoteCreateService,@inject(delay(() => NotificationService)) private notificationService: NotificationService,@inject(delay(() => QueueLoggerService)) private queueLoggerService: QueueLoggerService) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('post-scheduled-note');
 	}
 

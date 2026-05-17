@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Disposable, DisposableRegistry } from '@/di/disposable-registry.js';
 import { setTimeout } from 'node:timers/promises';
 import * as Redis from 'ioredis';
@@ -36,16 +36,7 @@ export class NotificationService implements Disposable {
 		private redisClient: Redis.Redis,
 
 		@inject(DI.usersRepository)
-		private usersRepository: UsersRepository,
-
-		private notificationEntityService: NotificationEntityService,
-		private idService: IdService,
-		private globalEventService: GlobalEventService,
-		private pushNotificationService: PushNotificationService,
-		private cacheService: CacheService,
-		private userListService: UserListService,
-		registry: DisposableRegistry,
-	) {
+		private usersRepository: UsersRepository,@inject(delay(() => NotificationEntityService)) private notificationEntityService: NotificationEntityService,@inject(delay(() => IdService)) private idService: IdService,@inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService,@inject(delay(() => PushNotificationService)) private pushNotificationService: PushNotificationService,@inject(delay(() => CacheService)) private cacheService: CacheService,@inject(delay(() => UserListService)) private userListService: UserListService,@inject(delay(() => DisposableRegistry)) registry: DisposableRegistry) {
 		registry.register(this);
 	}
 

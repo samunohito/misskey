@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 
 import * as fs from 'node:fs';
 import { Writable } from 'node:stream';
@@ -39,14 +39,7 @@ export class ExportClipsProcessorService {
 		private clipsRepository: ClipsRepository,
 
 		@inject(DI.clipNotesRepository)
-		private clipNotesRepository: ClipNotesRepository,
-
-		private driveService: DriveService,
-		private queueLoggerService: QueueLoggerService,
-		private queryService: QueryService,
-		private idService: IdService,
-		private notificationService: NotificationService,
-	) {
+		private clipNotesRepository: ClipNotesRepository,@inject(delay(() => DriveService)) private driveService: DriveService,@inject(delay(() => QueueLoggerService)) private queueLoggerService: QueueLoggerService,@inject(delay(() => QueryService)) private queryService: QueryService,@inject(delay(() => IdService)) private idService: IdService,@inject(delay(() => NotificationService)) private notificationService: NotificationService) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('export-clips');
 	}
 

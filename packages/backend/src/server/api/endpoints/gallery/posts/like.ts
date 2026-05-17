@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { GalleryLikesRepository, GalleryPostsRepository } from '@/models/_.js';
 import { FeaturedService, GALLERY_POSTS_RANKING_WINDOW } from '@/core/FeaturedService.js';
@@ -56,11 +56,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private galleryPostsRepository: GalleryPostsRepository,
 
 		@inject(DI.galleryLikesRepository)
-		private galleryLikesRepository: GalleryLikesRepository,
-
-		private featuredService: FeaturedService,
-		private idService: IdService,
-	) {
+		private galleryLikesRepository: GalleryLikesRepository,@inject(delay(() => FeaturedService)) private featuredService: FeaturedService,@inject(delay(() => IdService)) private idService: IdService) {
 		super(meta, paramDef, async (ps, me) => {
 			const post = await this.galleryPostsRepository.findOneBy({ id: ps.postId });
 			if (post == null) {

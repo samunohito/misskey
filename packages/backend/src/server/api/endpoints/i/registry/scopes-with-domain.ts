@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { RegistryApiService } from '@/core/RegistryApiService.js';
 
@@ -42,9 +42,7 @@ export const paramDef = {
 
 @injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
-	constructor(
-		private registryApiService: RegistryApiService,
-	) {
+	constructor(@inject(delay(() => RegistryApiService)) private registryApiService: RegistryApiService) {
 		super(meta, paramDef, async (ps, me) => {
 			return await this.registryApiService.getAllScopeAndDomains(me.id);
 		});

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { IsNull } from 'typeorm';
 import { DI } from '@/di-symbols.js';
 import type { UsersRepository, DriveFilesRepository } from '@/models/_.js';
@@ -27,14 +27,7 @@ export class ImportFollowingProcessorService {
 		private usersRepository: UsersRepository,
 
 		@inject(DI.driveFilesRepository)
-		private driveFilesRepository: DriveFilesRepository,
-
-		private queueService: QueueService,
-		private utilityService: UtilityService,
-		private remoteUserResolveService: RemoteUserResolveService,
-		private downloadService: DownloadService,
-		private queueLoggerService: QueueLoggerService,
-	) {
+		private driveFilesRepository: DriveFilesRepository,@inject(delay(() => QueueService)) private queueService: QueueService,@inject(delay(() => UtilityService)) private utilityService: UtilityService,@inject(delay(() => RemoteUserResolveService)) private remoteUserResolveService: RemoteUserResolveService,@inject(delay(() => DownloadService)) private downloadService: DownloadService,@inject(delay(() => QueueLoggerService)) private queueLoggerService: QueueLoggerService) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('import-following');
 	}
 

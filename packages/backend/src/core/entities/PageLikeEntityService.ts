@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { DI } from '@/di-symbols.js';
 import type { PageLikesRepository } from '@/models/_.js';
 import type { } from '@/models/Blocking.js';
@@ -16,10 +16,7 @@ import { PageEntityService } from './PageEntityService.js';
 export class PageLikeEntityService {
 	constructor(
 		@inject(DI.pageLikesRepository)
-		private pageLikesRepository: PageLikesRepository,
-
-		private pageEntityService: PageEntityService,
-	) {
+		private pageLikesRepository: PageLikesRepository,@inject(delay(() => PageEntityService)) private pageEntityService: PageEntityService) {
 	}
 
 	@bindThis

@@ -5,7 +5,7 @@
 
 import 'reflect-metadata';
 import { describe, expect, it } from 'vitest';
-import { injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { createTestContainer } from './testing.js';
 import type { Disposable } from './disposable-registry.js';
 import { DisposableRegistry } from './disposable-registry.js';
@@ -37,7 +37,7 @@ describe('di', () => {
 
 		@injectable()
 		class RootService {
-			constructor(public leaf: LeafService) {}
+			constructor(@inject(delay(() => LeafService)) public leaf: LeafService) {}
 		}
 
 		const c = await createTestContainer({
@@ -86,13 +86,13 @@ describe('di', () => {
 
 		@injectable()
 		class A implements Disposable {
-			constructor(registry: DisposableRegistry) { registry.register(this); }
+			constructor(@inject(delay(() => DisposableRegistry)) registry: DisposableRegistry) { registry.register(this); }
 			dispose(): void { order.push('A'); }
 		}
 
 		@injectable()
 		class B implements Disposable {
-			constructor(registry: DisposableRegistry, public a: A) { registry.register(this); }
+			constructor(@inject(delay(() => DisposableRegistry)) registry: DisposableRegistry,@inject(delay(() => A)) public a: A) { registry.register(this); }
 			dispose(): void { order.push('B'); }
 		}
 
@@ -113,13 +113,13 @@ describe('di', () => {
 
 		@injectable()
 		class Bomb implements Disposable {
-			constructor(registry: DisposableRegistry) { registry.register(this); }
+			constructor(@inject(delay(() => DisposableRegistry)) registry: DisposableRegistry) { registry.register(this); }
 			dispose(): void { order.push('bomb'); throw new Error('boom'); }
 		}
 
 		@injectable()
 		class Survivor implements Disposable {
-			constructor(registry: DisposableRegistry, public b: Bomb) { registry.register(this); }
+			constructor(@inject(delay(() => DisposableRegistry)) registry: DisposableRegistry,@inject(delay(() => Bomb)) public b: Bomb) { registry.register(this); }
 			dispose(): void { order.push('survivor'); }
 		}
 

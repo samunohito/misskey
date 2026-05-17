@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 
 import { In, IsNull } from 'typeorm';
 import type { MiMeta, UsersRepository } from '@/models/_.js';
@@ -108,14 +108,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private serverSettings: MiMeta,
 
 		@inject(DI.usersRepository)
-		private usersRepository: UsersRepository,
-
-		private userEntityService: UserEntityService,
-		private remoteUserResolveService: RemoteUserResolveService,
-		private roleService: RoleService,
-		private perUserPvChart: PerUserPvChart,
-		private apiLoggerService: ApiLoggerService,
-	) {
+		private usersRepository: UsersRepository,@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService,@inject(delay(() => RemoteUserResolveService)) private remoteUserResolveService: RemoteUserResolveService,@inject(delay(() => RoleService)) private roleService: RoleService,@inject(delay(() => PerUserPvChart)) private perUserPvChart: PerUserPvChart,@inject(delay(() => ApiLoggerService)) private apiLoggerService: ApiLoggerService) {
 		super(meta, paramDef, async (ps, me, _1, _2, _3, ip) => {
 			// ログイン時にusers/showできなくなってしまう
 			//if (this.serverSettings.ugcVisibilityForVisitor === 'none' && me == null) {

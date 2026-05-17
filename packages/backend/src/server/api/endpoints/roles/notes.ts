@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import * as Redis from 'ioredis';
 import { Brackets } from 'typeorm';
 import { Endpoint } from '@/server/api/endpoint-base.js';
@@ -64,14 +64,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private notesRepository: NotesRepository,
 
 		@inject(DI.rolesRepository)
-		private rolesRepository: RolesRepository,
-
-		private idService: IdService,
-		private noteEntityService: NoteEntityService,
-		private queryService: QueryService,
-		private fanoutTimelineService: FanoutTimelineService,
-		private channelMutingService: ChannelMutingService,
-	) {
+		private rolesRepository: RolesRepository,@inject(delay(() => IdService)) private idService: IdService,@inject(delay(() => NoteEntityService)) private noteEntityService: NoteEntityService,@inject(delay(() => QueryService)) private queryService: QueryService,@inject(delay(() => FanoutTimelineService)) private fanoutTimelineService: FanoutTimelineService,@inject(delay(() => ChannelMutingService)) private channelMutingService: ChannelMutingService) {
 		super(meta, paramDef, async (ps, me) => {
 			const untilId = ps.untilId ?? (ps.untilDate ? this.idService.gen(ps.untilDate!) : null);
 			const sinceId = ps.sinceId ?? (ps.sinceDate ? this.idService.gen(ps.sinceDate!) : null);

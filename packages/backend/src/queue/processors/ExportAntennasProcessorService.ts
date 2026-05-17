@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 
 import fs from 'node:fs';
 import { format as DateFormat } from 'date-fns';
@@ -33,13 +33,7 @@ export class ExportAntennasProcessorService {
 		private antennsRepository: AntennasRepository,
 
 		@inject(DI.userListMembershipsRepository)
-		private userListMembershipsRepository: UserListMembershipsRepository,
-
-		private driveService: DriveService,
-		private utilityService: UtilityService,
-		private queueLoggerService: QueueLoggerService,
-		private notificationService: NotificationService,
-	) {
+		private userListMembershipsRepository: UserListMembershipsRepository,@inject(delay(() => DriveService)) private driveService: DriveService,@inject(delay(() => UtilityService)) private utilityService: UtilityService,@inject(delay(() => QueueLoggerService)) private queueLoggerService: QueueLoggerService,@inject(delay(() => NotificationService)) private notificationService: NotificationService) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('export-antennas');
 	}
 

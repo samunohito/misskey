@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 
 import { randomUUID } from 'crypto';
 import { IsNull } from 'typeorm';
@@ -41,14 +41,7 @@ export class SigninWithPasskeyApiService {
 		private userProfilesRepository: UserProfilesRepository,
 
 		@inject(DI.signinsRepository)
-		private signinsRepository: SigninsRepository,
-
-		private idService: IdService,
-		private rateLimiterService: RateLimiterService,
-		private signinService: SigninService,
-		private webAuthnService: WebAuthnService,
-		private loggerService: LoggerService,
-	) {
+		private signinsRepository: SigninsRepository,@inject(delay(() => IdService)) private idService: IdService,@inject(delay(() => RateLimiterService)) private rateLimiterService: RateLimiterService,@inject(delay(() => SigninService)) private signinService: SigninService,@inject(delay(() => WebAuthnService)) private webAuthnService: WebAuthnService,@inject(delay(() => LoggerService)) private loggerService: LoggerService) {
 		this.logger = this.loggerService.getLogger('PasskeyAuth');
 	}
 

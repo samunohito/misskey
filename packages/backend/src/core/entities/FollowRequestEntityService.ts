@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { DI } from '@/di-symbols.js';
 import type { FollowRequestsRepository } from '@/models/_.js';
 import type { } from '@/models/Blocking.js';
@@ -17,10 +17,7 @@ import { UserEntityService } from './UserEntityService.js';
 export class FollowRequestEntityService {
 	constructor(
 		@inject(DI.followRequestsRepository)
-		private followRequestsRepository: FollowRequestsRepository,
-
-		private userEntityService: UserEntityService,
-	) {
+		private followRequestsRepository: FollowRequestsRepository,@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService) {
 	}
 
 	@bindThis

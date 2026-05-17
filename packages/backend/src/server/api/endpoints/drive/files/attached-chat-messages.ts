@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { DriveFilesRepository, ChatMessagesRepository } from '@/models/_.js';
 import { QueryService } from '@/core/QueryService.js';
@@ -59,13 +59,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private driveFilesRepository: DriveFilesRepository,
 
 		@inject(DI.chatMessagesRepository)
-		private chatMessagesRepository: ChatMessagesRepository,
-
-		private chatService: ChatService,
-		private chatEntityService: ChatEntityService,
-		private queryService: QueryService,
-		private roleService: RoleService,
-	) {
+		private chatMessagesRepository: ChatMessagesRepository,@inject(delay(() => ChatService)) private chatService: ChatService,@inject(delay(() => ChatEntityService)) private chatEntityService: ChatEntityService,@inject(delay(() => QueryService)) private queryService: QueryService,@inject(delay(() => RoleService)) private roleService: RoleService) {
 		super(meta, paramDef, async (ps, me) => {
 			const isModerator = await this.roleService.isModerator(me);
 

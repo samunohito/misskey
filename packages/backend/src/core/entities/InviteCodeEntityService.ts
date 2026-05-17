@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { DI } from '@/di-symbols.js';
 import type { RegistrationTicketsRepository } from '@/models/_.js';
 import { awaitAll } from '@/misc/prelude/await-all.js';
@@ -18,11 +18,7 @@ import { UserEntityService } from './UserEntityService.js';
 export class InviteCodeEntityService {
 	constructor(
 		@inject(DI.registrationTicketsRepository)
-		private registrationTicketsRepository: RegistrationTicketsRepository,
-
-		private userEntityService: UserEntityService,
-		private idService: IdService,
-	) {
+		private registrationTicketsRepository: RegistrationTicketsRepository,@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService,@inject(delay(() => IdService)) private idService: IdService) {
 	}
 
 	@bindThis

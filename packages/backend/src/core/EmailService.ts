@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 
 import { URLSearchParams } from 'node:url';
 import * as nodemailer from 'nodemailer';
@@ -30,12 +30,7 @@ export class EmailService {
 		private meta: MiMeta,
 
 		@inject(DI.userProfilesRepository)
-		private userProfilesRepository: UserProfilesRepository,
-
-		private loggerService: LoggerService,
-		private utilityService: UtilityService,
-		private httpRequestService: HttpRequestService,
-	) {
+		private userProfilesRepository: UserProfilesRepository,@inject(delay(() => LoggerService)) private loggerService: LoggerService,@inject(delay(() => UtilityService)) private utilityService: UtilityService,@inject(delay(() => HttpRequestService)) private httpRequestService: HttpRequestService) {
 		this.logger = this.loggerService.getLogger('email');
 	}
 

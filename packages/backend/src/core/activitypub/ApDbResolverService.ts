@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Disposable, DisposableRegistry } from '@/di/disposable-registry.js';
 import { DI } from '@/di-symbols.js';
 import type { NotesRepository, UserPublickeysRepository, UsersRepository } from '@/models/_.js';
@@ -51,13 +51,7 @@ export class ApDbResolverService implements Disposable {
 		private notesRepository: NotesRepository,
 
 		@inject(DI.userPublickeysRepository)
-		private userPublickeysRepository: UserPublickeysRepository,
-
-		private cacheService: CacheService,
-		private apPersonService: ApPersonService,
-		private utilityService: UtilityService,
-		registry: DisposableRegistry,
-	) {
+		private userPublickeysRepository: UserPublickeysRepository,@inject(delay(() => CacheService)) private cacheService: CacheService,@inject(delay(() => ApPersonService)) private apPersonService: ApPersonService,@inject(delay(() => UtilityService)) private utilityService: UtilityService,@inject(delay(() => DisposableRegistry)) registry: DisposableRegistry) {
 		registry.register(this);
 		this.publicKeyCache = new MemoryKVCache<MiUserPublickey | null>(1000 * 60 * 60 * 12); // 12h
 		this.publicKeyByUserIdCache = new MemoryKVCache<MiUserPublickey | null>(1000 * 60 * 60 * 12); // 12h

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 
 import { URL } from 'node:url';
 import tinycolor from 'tinycolor2';
@@ -40,13 +40,9 @@ type NodeInfo = {
 export class FetchInstanceMetadataService {
 	private logger: Logger;
 
-	constructor(
-		private httpRequestService: HttpRequestService,
-		private loggerService: LoggerService,
-		private federatedInstanceService: FederatedInstanceService,
+	constructor(@inject(delay(() => HttpRequestService)) private httpRequestService: HttpRequestService,@inject(delay(() => LoggerService)) private loggerService: LoggerService,@inject(delay(() => FederatedInstanceService)) private federatedInstanceService: FederatedInstanceService,
 		@inject(DI.redis)
-		private redisClient: Redis.Redis,
-	) {
+		private redisClient: Redis.Redis) {
 		this.logger = this.loggerService.getLogger('metadata', 'cyan');
 	}
 

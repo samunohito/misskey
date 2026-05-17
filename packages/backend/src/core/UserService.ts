@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import type { FollowingsRepository, UsersRepository } from '@/models/_.js';
 import type { MiUser } from '@/models/User.js';
 import { DI } from '@/di-symbols.js';
@@ -17,10 +17,7 @@ export class UserService {
 		@inject(DI.usersRepository)
 		private usersRepository: UsersRepository,
 		@inject(DI.followingsRepository)
-		private followingsRepository: FollowingsRepository,
-		private systemWebhookService: SystemWebhookService,
-		private userEntityService: UserEntityService,
-	) {
+		private followingsRepository: FollowingsRepository,@inject(delay(() => SystemWebhookService)) private systemWebhookService: SystemWebhookService,@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService) {
 	}
 
 	@bindThis

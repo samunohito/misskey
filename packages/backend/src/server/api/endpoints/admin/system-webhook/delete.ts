@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { SystemWebhookService } from '@/core/SystemWebhookService.js';
 
@@ -31,9 +31,7 @@ export const paramDef = {
 
 @injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
-	constructor(
-		private systemWebhookService: SystemWebhookService,
-	) {
+	constructor(@inject(delay(() => SystemWebhookService)) private systemWebhookService: SystemWebhookService) {
 		super(meta, paramDef, async (ps, me) => {
 			await this.systemWebhookService.deleteSystemWebhook(
 				ps.id,

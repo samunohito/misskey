@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { UserFollowingService } from '@/core/UserFollowingService.js';
 import { UserBlockingService } from '@/core/UserBlockingService.js';
 import { bindThis } from '@/decorators.js';
@@ -22,12 +22,7 @@ export class RelationshipProcessorService {
 
 	constructor(
 		@inject(DI.usersRepository)
-		private usersRepository: UsersRepository,
-
-		private queueLoggerService: QueueLoggerService,
-		private userFollowingService: UserFollowingService,
-		private userBlockingService: UserBlockingService,
-	) {
+		private usersRepository: UsersRepository,@inject(delay(() => QueueLoggerService)) private queueLoggerService: QueueLoggerService,@inject(delay(() => UserFollowingService)) private userFollowingService: UserFollowingService,@inject(delay(() => UserBlockingService)) private userBlockingService: UserBlockingService) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('follow-block');
 	}
 

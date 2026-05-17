@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { AbuseUserReportsRepository } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
@@ -41,9 +41,7 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.abuseUserReportsRepository)
-		private abuseUserReportsRepository: AbuseUserReportsRepository,
-		private abuseReportService: AbuseReportService,
-	) {
+		private abuseUserReportsRepository: AbuseUserReportsRepository,@inject(delay(() => AbuseReportService)) private abuseReportService: AbuseReportService) {
 		super(meta, paramDef, async (ps, me) => {
 			const report = await this.abuseUserReportsRepository.findOneBy({ id: ps.reportId });
 			if (!report) {

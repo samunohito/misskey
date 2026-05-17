@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { DI } from '@/di-symbols.js';
 import type { GalleryLikesRepository } from '@/models/_.js';
 import type { } from '@/models/Blocking.js';
@@ -15,10 +15,7 @@ import { GalleryPostEntityService } from './GalleryPostEntityService.js';
 export class GalleryLikeEntityService {
 	constructor(
 		@inject(DI.galleryLikesRepository)
-		private galleryLikesRepository: GalleryLikesRepository,
-
-		private galleryPostEntityService: GalleryPostEntityService,
-	) {
+		private galleryLikesRepository: GalleryLikesRepository,@inject(delay(() => GalleryPostEntityService)) private galleryPostEntityService: GalleryPostEntityService) {
 	}
 
 	@bindThis

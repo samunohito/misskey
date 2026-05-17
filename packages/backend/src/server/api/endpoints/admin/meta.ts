@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { MetaService } from '@/core/MetaService.js';
 import type { Config } from '@/config.js';
@@ -611,11 +611,7 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.config)
-		private config: Config,
-
-		private metaService: MetaService,
-		private systemAccountService: SystemAccountService,
-	) {
+		private config: Config,@inject(delay(() => MetaService)) private metaService: MetaService,@inject(delay(() => SystemAccountService)) private systemAccountService: SystemAccountService) {
 		super(meta, paramDef, async () => {
 			const instance = await this.metaService.fetch(true);
 

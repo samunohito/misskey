@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { IsNull, Not } from 'typeorm';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { AccessTokensRepository } from '@/models/_.js';
@@ -64,10 +64,7 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.accessTokensRepository)
-		private accessTokensRepository: AccessTokensRepository,
-
-		private appEntityService: AppEntityService,
-	) {
+		private accessTokensRepository: AccessTokensRepository,@inject(delay(() => AppEntityService)) private appEntityService: AppEntityService) {
 		super(meta, paramDef, async (ps, me) => {
 			// Get tokens
 			const tokens = await this.accessTokensRepository.find({

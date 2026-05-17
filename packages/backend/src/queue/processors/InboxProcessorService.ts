@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Disposable, DisposableRegistry } from '@/di/disposable-registry.js';
 import { URL } from 'node:url';
 import httpSignature from '@peertube/http-signature';
@@ -45,21 +45,7 @@ export class InboxProcessorService implements Disposable {
 
 	constructor(
 		@inject(DI.meta)
-		private meta: MiMeta,
-
-		private utilityService: UtilityService,
-		private apInboxService: ApInboxService,
-		private federatedInstanceService: FederatedInstanceService,
-		private fetchInstanceMetadataService: FetchInstanceMetadataService,
-		private jsonLdService: JsonLdService,
-		private apPersonService: ApPersonService,
-		private apDbResolverService: ApDbResolverService,
-		private instanceChart: InstanceChart,
-		private apRequestChart: ApRequestChart,
-		private federationChart: FederationChart,
-		private queueLoggerService: QueueLoggerService,
-		registry: DisposableRegistry,
-	) {
+		private meta: MiMeta,@inject(delay(() => UtilityService)) private utilityService: UtilityService,@inject(delay(() => ApInboxService)) private apInboxService: ApInboxService,@inject(delay(() => FederatedInstanceService)) private federatedInstanceService: FederatedInstanceService,@inject(delay(() => FetchInstanceMetadataService)) private fetchInstanceMetadataService: FetchInstanceMetadataService,@inject(delay(() => JsonLdService)) private jsonLdService: JsonLdService,@inject(delay(() => ApPersonService)) private apPersonService: ApPersonService,@inject(delay(() => ApDbResolverService)) private apDbResolverService: ApDbResolverService,@inject(delay(() => InstanceChart)) private instanceChart: InstanceChart,@inject(delay(() => ApRequestChart)) private apRequestChart: ApRequestChart,@inject(delay(() => FederationChart)) private federationChart: FederationChart,@inject(delay(() => QueueLoggerService)) private queueLoggerService: QueueLoggerService,@inject(delay(() => DisposableRegistry)) registry: DisposableRegistry) {
 		registry.register(this);
 		this.logger = this.queueLoggerService.logger.createSubLogger('inbox');
 		this.updateInstanceQueue = new CollapsedQueue(process.env.NODE_ENV !== 'test' ? 60 * 1000 * 5 : 0, this.collapseUpdateInstanceJobs, this.performUpdateInstance);

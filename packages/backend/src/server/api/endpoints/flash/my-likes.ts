@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { FlashLikeEntityService } from '@/core/entities/FlashLikeEntityService.js';
 import { DI } from '@/di-symbols.js';
@@ -52,10 +52,7 @@ export const paramDef = {
 
 @injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
-	constructor(
-		private flashLikeEntityService: FlashLikeEntityService,
-		private flashService: FlashService,
-	) {
+	constructor(@inject(delay(() => FlashLikeEntityService)) private flashLikeEntityService: FlashLikeEntityService,@inject(delay(() => FlashService)) private flashService: FlashService) {
 		super(meta, paramDef, async (ps, me) => {
 			const likes = await this.flashService.myLikes(me.id, {
 				sinceId: ps.sinceId,

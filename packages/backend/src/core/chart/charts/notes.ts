@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Not, IsNull, DataSource } from 'typeorm';
 import * as Redis from 'ioredis';
 import type { NotesRepository } from '@/models/_.js';
@@ -29,10 +29,7 @@ export default class NotesChart extends Chart<typeof schema> { // eslint-disable
 		private redisClient: Redis.Redis,
 
 		@inject(DI.notesRepository)
-		private notesRepository: NotesRepository,
-
-		private chartLoggerService: ChartLoggerService,
-	) {
+		private notesRepository: NotesRepository,@inject(delay(() => ChartLoggerService)) private chartLoggerService: ChartLoggerService) {
 		super(db, (k) => acquireChartInsertLock(redisClient, k), chartLoggerService.logger, name, schema);
 	}
 

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import type { MiUser } from '@/models/User.js';
 import type { RelaysRepository } from '@/models/_.js';
 import { IdService } from '@/core/IdService.js';
@@ -22,13 +22,7 @@ export class RelayService {
 
 	constructor(
 		@inject(DI.relaysRepository)
-		private relaysRepository: RelaysRepository,
-
-		private idService: IdService,
-		private queueService: QueueService,
-		private systemAccountService: SystemAccountService,
-		private apRendererService: ApRendererService,
-	) {
+		private relaysRepository: RelaysRepository,@inject(delay(() => IdService)) private idService: IdService,@inject(delay(() => QueueService)) private queueService: QueueService,@inject(delay(() => SystemAccountService)) private systemAccountService: SystemAccountService,@inject(delay(() => ApRendererService)) private apRendererService: ApRendererService) {
 		this.relaysCache = new MemorySingleCache<MiRelay[]>(1000 * 60 * 10); // 10m
 	}
 

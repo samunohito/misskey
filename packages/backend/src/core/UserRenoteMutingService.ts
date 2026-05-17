@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { In } from 'typeorm';
 import type { RenoteMutingsRepository } from '@/models/_.js';
 import type { MiRenoteMuting } from '@/models/RenoteMuting.js';
@@ -18,11 +18,7 @@ import { CacheService } from '@/core/CacheService.js';
 export class UserRenoteMutingService {
 	constructor(
 		@inject(DI.renoteMutingsRepository)
-		private renoteMutingsRepository: RenoteMutingsRepository,
-
-		private idService: IdService,
-		private cacheService: CacheService,
-	) {
+		private renoteMutingsRepository: RenoteMutingsRepository,@inject(delay(() => IdService)) private idService: IdService,@inject(delay(() => CacheService)) private cacheService: CacheService) {
 	}
 
 	@bindThis

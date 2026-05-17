@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { EmojisRepository } from '@/models/_.js';
 import type { MiDriveFile } from '@/models/DriveFile.js';
@@ -60,11 +60,7 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.emojisRepository)
-		private emojisRepository: EmojisRepository,
-		private emojiEntityService: EmojiEntityService,
-		private customEmojiService: CustomEmojiService,
-		private driveService: DriveService,
-	) {
+		private emojisRepository: EmojisRepository,@inject(delay(() => EmojiEntityService)) private emojiEntityService: EmojiEntityService,@inject(delay(() => CustomEmojiService)) private customEmojiService: CustomEmojiService,@inject(delay(() => DriveService)) private driveService: DriveService) {
 		super(meta, paramDef, async (ps, me) => {
 			const emoji = await this.emojisRepository.findOneBy({ id: ps.emojiId });
 			if (emoji == null) {

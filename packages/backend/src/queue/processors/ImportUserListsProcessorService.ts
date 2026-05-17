@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { IsNull } from 'typeorm';
 import { DI } from '@/di-symbols.js';
 import type { UsersRepository, DriveFilesRepository, UserListMembershipsRepository, UserListsRepository } from '@/models/_.js';
@@ -34,15 +34,7 @@ export class ImportUserListsProcessorService {
 		private userListsRepository: UserListsRepository,
 
 		@inject(DI.userListMembershipsRepository)
-		private userListMembershipsRepository: UserListMembershipsRepository,
-
-		private utilityService: UtilityService,
-		private idService: IdService,
-		private userListService: UserListService,
-		private remoteUserResolveService: RemoteUserResolveService,
-		private downloadService: DownloadService,
-		private queueLoggerService: QueueLoggerService,
-	) {
+		private userListMembershipsRepository: UserListMembershipsRepository,@inject(delay(() => UtilityService)) private utilityService: UtilityService,@inject(delay(() => IdService)) private idService: IdService,@inject(delay(() => UserListService)) private userListService: UserListService,@inject(delay(() => RemoteUserResolveService)) private remoteUserResolveService: RemoteUserResolveService,@inject(delay(() => DownloadService)) private downloadService: DownloadService,@inject(delay(() => QueueLoggerService)) private queueLoggerService: QueueLoggerService) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('import-user-lists');
 	}
 

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 
 import * as crypto from 'node:crypto';
 import { URL } from 'node:url';
@@ -147,13 +147,7 @@ export class ApRequestService {
 
 	constructor(
 		@inject(DI.config)
-		private config: Config,
-
-		private userKeypairService: UserKeypairService,
-		private httpRequestService: HttpRequestService,
-		private loggerService: LoggerService,
-		private utilityService: UtilityService,
-	) {
+		private config: Config,@inject(delay(() => UserKeypairService)) private userKeypairService: UserKeypairService,@inject(delay(() => HttpRequestService)) private httpRequestService: HttpRequestService,@inject(delay(() => LoggerService)) private loggerService: LoggerService,@inject(delay(() => UtilityService)) private utilityService: UtilityService) {
 		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 		this.logger = this.loggerService?.getLogger('ap-request'); // なぜか TypeError: Cannot read properties of undefined (reading 'getLogger') と言われる
 	}

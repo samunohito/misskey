@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import type { DependencyContainer } from 'tsyringe';
 import { DependencyContainerToken } from '@/di/container.js';
 import { IsNull, Not } from 'typeorm';
@@ -59,16 +59,7 @@ export class Resolver {
 		private noteReactionsRepository: NoteReactionsRepository,
 
 		@inject(DI.followRequestsRepository)
-		private followRequestsRepository: FollowRequestsRepository,
-
-		private utilityService: UtilityService,
-		private systemAccountService: SystemAccountService,
-		private apRequestService: ApRequestService,
-		private httpRequestService: HttpRequestService,
-		private apRendererService: ApRendererService,
-		private apDbResolverService: ApDbResolverService,
-		private loggerService: LoggerService,
-	) {
+		private followRequestsRepository: FollowRequestsRepository,@inject(delay(() => UtilityService)) private utilityService: UtilityService,@inject(delay(() => SystemAccountService)) private systemAccountService: SystemAccountService,@inject(delay(() => ApRequestService)) private apRequestService: ApRequestService,@inject(delay(() => HttpRequestService)) private httpRequestService: HttpRequestService,@inject(delay(() => ApRendererService)) private apRendererService: ApRendererService,@inject(delay(() => ApDbResolverService)) private apDbResolverService: ApDbResolverService,@inject(delay(() => LoggerService)) private loggerService: LoggerService) {
 		this.history = new Set();
 		this.logger = this.loggerService.getLogger('ap-resolve');
 	}

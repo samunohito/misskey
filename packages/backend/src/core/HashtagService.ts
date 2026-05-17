@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import * as Redis from 'ioredis';
 import { DI } from '@/di-symbols.js';
 import type { MiUser } from '@/models/User.js';
@@ -26,13 +26,7 @@ export class HashtagService {
 		private redisClient: Redis.Redis, // TODO: 専用のRedisサーバーを設定できるようにする
 
 		@inject(DI.hashtagsRepository)
-		private hashtagsRepository: HashtagsRepository,
-
-		private userEntityService: UserEntityService,
-		private featuredService: FeaturedService,
-		private idService: IdService,
-		private utilityService: UtilityService,
-	) {
+		private hashtagsRepository: HashtagsRepository,@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService,@inject(delay(() => FeaturedService)) private featuredService: FeaturedService,@inject(delay(() => IdService)) private idService: IdService,@inject(delay(() => UtilityService)) private utilityService: UtilityService) {
 	}
 
 	@bindThis

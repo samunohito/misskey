@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import Redis from 'ioredis';
 import { Brackets, In } from 'typeorm';
 import { DI } from '@/di-symbols.js';
@@ -25,10 +25,7 @@ export class ChannelMutingService {
 		@inject(DI.channelsRepository)
 		private channelsRepository: ChannelsRepository,
 		@inject(DI.channelMutingRepository)
-		private channelMutingRepository: ChannelMutingRepository,
-		private idService: IdService,
-		private globalEventService: GlobalEventService,
-	) {
+		private channelMutingRepository: ChannelMutingRepository,@inject(delay(() => IdService)) private idService: IdService,@inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService) {
 		this.mutingChannelsCache = new RedisKVCache<Set<string>>(this.redisClient, 'channelMutingChannels', {
 			lifetime: 1000 * 60 * 30, // 30m
 			memoryCacheLifetime: 1000 * 60, // 1m

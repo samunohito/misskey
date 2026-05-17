@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { MoreThan } from 'typeorm';
 import { DI } from '@/di-symbols.js';
 import type { DriveFilesRepository, NotesRepository, PagesRepository, UserProfilesRepository, UsersRepository } from '@/models/_.js';
@@ -37,14 +37,7 @@ export class DeleteAccountProcessorService {
 		private driveFilesRepository: DriveFilesRepository,
 
 		@inject(DI.pagesRepository)
-		private pagesRepository: PagesRepository,
-
-		private driveService: DriveService,
-		private pageService: PageService,
-		private emailService: EmailService,
-		private queueLoggerService: QueueLoggerService,
-		private searchService: SearchService,
-	) {
+		private pagesRepository: PagesRepository,@inject(delay(() => DriveService)) private driveService: DriveService,@inject(delay(() => PageService)) private pageService: PageService,@inject(delay(() => EmailService)) private emailService: EmailService,@inject(delay(() => QueueLoggerService)) private queueLoggerService: QueueLoggerService,@inject(delay(() => SearchService)) private searchService: SearchService) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('delete-account');
 	}
 

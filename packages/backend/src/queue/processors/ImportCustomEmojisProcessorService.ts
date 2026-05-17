@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 
 import * as fs from 'node:fs';
 import { ZipReader } from 'slacc';
@@ -30,13 +30,7 @@ export class ImportCustomEmojisProcessorService {
 		private driveFilesRepository: DriveFilesRepository,
 
 		@inject(DI.emojisRepository)
-		private emojisRepository: EmojisRepository,
-
-		private customEmojiService: CustomEmojiService,
-		private driveService: DriveService,
-		private downloadService: DownloadService,
-		private queueLoggerService: QueueLoggerService,
-	) {
+		private emojisRepository: EmojisRepository,@inject(delay(() => CustomEmojiService)) private customEmojiService: CustomEmojiService,@inject(delay(() => DriveService)) private driveService: DriveService,@inject(delay(() => DownloadService)) private downloadService: DownloadService,@inject(delay(() => QueueLoggerService)) private queueLoggerService: QueueLoggerService) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('import-custom-emojis');
 	}
 

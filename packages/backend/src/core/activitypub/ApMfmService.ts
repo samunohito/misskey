@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import * as mfm from 'mfm-js';
 import { MfmService } from '@/core/MfmService.js';
 import type { MiNote } from '@/models/Note.js';
@@ -13,9 +13,7 @@ import type { IObject } from './type.js';
 
 @injectable()
 export class ApMfmService {
-	constructor(
-		private mfmService: MfmService,
-	) {
+	constructor(@inject(delay(() => MfmService)) private mfmService: MfmService) {
 	}
 
 	@bindThis

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import FFmpeg from 'fluent-ffmpeg';
 import { DI } from '@/di-symbols.js';
 import type { Config } from '@/config.js';
@@ -17,10 +17,7 @@ import { appendQuery, query } from '@/misc/prelude/url.js';
 export class VideoProcessingService {
 	constructor(
 		@inject(DI.config)
-		private config: Config,
-
-		private imageProcessingService: ImageProcessingService,
-	) {
+		private config: Config,@inject(delay(() => ImageProcessingService)) private imageProcessingService: ImageProcessingService) {
 	}
 
 	@bindThis

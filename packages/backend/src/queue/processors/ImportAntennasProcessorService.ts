@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import _Ajv from 'ajv';
 import { IdService } from '@/core/IdService.js';
 import { GlobalEventService } from '@/core/GlobalEventService.js';
@@ -63,12 +63,7 @@ export class ImportAntennasProcessorService {
 
 	constructor (
 		@inject(DI.antennasRepository)
-		private antennasRepository: AntennasRepository,
-
-		private queueLoggerService: QueueLoggerService,
-		private idService: IdService,
-		private globalEventService: GlobalEventService,
-	) {
+		private antennasRepository: AntennasRepository,@inject(delay(() => QueueLoggerService)) private queueLoggerService: QueueLoggerService,@inject(delay(() => IdService)) private idService: IdService,@inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('import-antennas');
 	}
 

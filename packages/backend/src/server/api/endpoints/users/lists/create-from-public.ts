@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import type { UserListsRepository, UserListMembershipsRepository, BlockingsRepository } from '@/models/_.js';
 import { IdService } from '@/core/IdService.js';
 import type { MiUserList } from '@/models/UserList.js';
@@ -81,14 +81,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private userListMembershipsRepository: UserListMembershipsRepository,
 
 		@inject(DI.blockingsRepository)
-		private blockingsRepository: BlockingsRepository,
-
-		private userListService: UserListService,
-		private userListEntityService: UserListEntityService,
-		private idService: IdService,
-		private getterService: GetterService,
-		private roleService: RoleService,
-	) {
+		private blockingsRepository: BlockingsRepository,@inject(delay(() => UserListService)) private userListService: UserListService,@inject(delay(() => UserListEntityService)) private userListEntityService: UserListEntityService,@inject(delay(() => IdService)) private idService: IdService,@inject(delay(() => GetterService)) private getterService: GetterService,@inject(delay(() => RoleService)) private roleService: RoleService) {
 		super(meta, paramDef, async (ps, me) => {
 			const listExist = await this.userListsRepository.exists({
 				where: {

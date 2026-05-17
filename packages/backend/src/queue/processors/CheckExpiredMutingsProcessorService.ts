@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { DI } from '@/di-symbols.js';
 import type { MutingsRepository } from '@/models/_.js';
 import type Logger from '@/logger.js';
@@ -18,12 +18,7 @@ export class CheckExpiredMutingsProcessorService {
 
 	constructor(
 		@inject(DI.mutingsRepository)
-		private mutingsRepository: MutingsRepository,
-
-		private userMutingService: UserMutingService,
-		private channelMutingService: ChannelMutingService,
-		private queueLoggerService: QueueLoggerService,
-	) {
+		private mutingsRepository: MutingsRepository,@inject(delay(() => UserMutingService)) private userMutingService: UserMutingService,@inject(delay(() => ChannelMutingService)) private channelMutingService: ChannelMutingService,@inject(delay(() => QueueLoggerService)) private queueLoggerService: QueueLoggerService) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('check-expired-mutings');
 	}
 

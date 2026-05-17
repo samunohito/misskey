@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Brackets } from 'typeorm';
 import { DI } from '@/di-symbols.js';
 import { type FlashLikesRepository, MiUser, type FlashsRepository } from '@/models/_.js';
@@ -20,10 +20,7 @@ export class FlashService {
 		private flashRepository: FlashsRepository,
 
 		@inject(DI.flashLikesRepository)
-		private flashLikesRepository: FlashLikesRepository,
-
-		private queryService: QueryService,
-	) {
+		private flashLikesRepository: FlashLikesRepository,@inject(delay(() => QueryService)) private queryService: QueryService) {
 	}
 
 	/**

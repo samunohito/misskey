@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import type Logger from '@/logger.js';
 import { RemoteLoggerService } from '@/core/RemoteLoggerService.js';
 
@@ -11,9 +11,7 @@ import { RemoteLoggerService } from '@/core/RemoteLoggerService.js';
 export class ApLoggerService {
 	public logger: Logger;
 
-	constructor(
-		private remoteLoggerService: RemoteLoggerService,
-	) {
+	constructor(@inject(delay(() => RemoteLoggerService)) private remoteLoggerService: RemoteLoggerService) {
 		this.logger = this.remoteLoggerService.logger.createSubLogger('ap', 'magenta');
 	}
 }

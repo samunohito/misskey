@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Not, IsNull } from 'typeorm';
 import type { FollowingsRepository, FollowRequestsRepository, UsersRepository } from '@/models/_.js';
 import type { MiUser } from '@/models/User.js';
@@ -26,14 +26,7 @@ export class UserSuspendService {
 		private followingsRepository: FollowingsRepository,
 
 		@inject(DI.followRequestsRepository)
-		private followRequestsRepository: FollowRequestsRepository,
-
-		private userEntityService: UserEntityService,
-		private queueService: QueueService,
-		private globalEventService: GlobalEventService,
-		private apRendererService: ApRendererService,
-		private moderationLogService: ModerationLogService,
-	) {
+		private followRequestsRepository: FollowRequestsRepository,@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService,@inject(delay(() => QueueService)) private queueService: QueueService,@inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService,@inject(delay(() => ApRendererService)) private apRendererService: ApRendererService,@inject(delay(() => ModerationLogService)) private moderationLogService: ModerationLogService) {
 	}
 
 	@bindThis

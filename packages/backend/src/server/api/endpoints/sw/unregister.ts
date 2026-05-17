@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import type { SwSubscriptionsRepository } from '@/models/_.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { DI } from '@/di-symbols.js';
@@ -29,10 +29,7 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.swSubscriptionsRepository)
-		private swSubscriptionsRepository: SwSubscriptionsRepository,
-
-		private pushNotificationService: PushNotificationService,
-	) {
+		private swSubscriptionsRepository: SwSubscriptionsRepository,@inject(delay(() => PushNotificationService)) private pushNotificationService: PushNotificationService) {
 		super(meta, paramDef, async (ps, me) => {
 			await this.swSubscriptionsRepository.delete({
 				...(me ? { userId: me.id } : {}),

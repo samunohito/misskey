@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Not, IsNull, DataSource } from 'typeorm';
 import * as Redis from 'ioredis';
 import type { MiUser } from '@/models/User.js';
@@ -30,11 +30,7 @@ export default class PerUserFollowingChart extends Chart<typeof schema> { // esl
 		private redisClient: Redis.Redis,
 
 		@inject(DI.followingsRepository)
-		private followingsRepository: FollowingsRepository,
-
-		private userEntityService: UserEntityService,
-		private chartLoggerService: ChartLoggerService,
-	) {
+		private followingsRepository: FollowingsRepository,@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService,@inject(delay(() => ChartLoggerService)) private chartLoggerService: ChartLoggerService) {
 		super(db, (k) => acquireChartInsertLock(redisClient, k), chartLoggerService.logger, name, schema, true);
 	}
 

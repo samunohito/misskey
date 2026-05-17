@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import * as Bull from 'bullmq';
 import { DI } from '@/di-symbols.js';
 import type { WebhooksRepository } from '@/models/_.js';
@@ -24,11 +24,7 @@ export class UserWebhookDeliverProcessorService {
 		private config: Config,
 
 		@inject(DI.webhooksRepository)
-		private webhooksRepository: WebhooksRepository,
-
-		private httpRequestService: HttpRequestService,
-		private queueLoggerService: QueueLoggerService,
-	) {
+		private webhooksRepository: WebhooksRepository,@inject(delay(() => HttpRequestService)) private httpRequestService: HttpRequestService,@inject(delay(() => QueueLoggerService)) private queueLoggerService: QueueLoggerService) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('webhook');
 	}
 

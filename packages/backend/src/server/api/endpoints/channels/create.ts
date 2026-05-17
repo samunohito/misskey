@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import ms from 'ms';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { ChannelsRepository, DriveFilesRepository } from '@/models/_.js';
@@ -64,11 +64,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private driveFilesRepository: DriveFilesRepository,
 
 		@inject(DI.channelsRepository)
-		private channelsRepository: ChannelsRepository,
-
-		private idService: IdService,
-		private channelEntityService: ChannelEntityService,
-	) {
+		private channelsRepository: ChannelsRepository,@inject(delay(() => IdService)) private idService: IdService,@inject(delay(() => ChannelEntityService)) private channelEntityService: ChannelEntityService) {
 		super(meta, paramDef, async (ps, me) => {
 			let banner = null;
 			if (ps.bannerId != null) {

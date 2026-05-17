@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Brackets, SelectQueryBuilder } from 'typeorm';
 import { DI } from '@/di-symbols.js';
 import { type FollowingsRepository, MiUser, type MutingsRepository, type UserProfilesRepository, type UsersRepository } from '@/models/_.js';
@@ -33,10 +33,7 @@ export class UserSearchService {
 		private followingsRepository: FollowingsRepository,
 
 		@inject(DI.mutingsRepository)
-		private mutingsRepository: MutingsRepository,
-
-		private userEntityService: UserEntityService,
-	) {
+		private mutingsRepository: MutingsRepository,@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService) {
 	}
 
 	/**

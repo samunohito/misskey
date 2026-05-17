@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { DI } from '@/di-symbols.js';
 import type { Config } from '@/config.js';
 import { MetaService } from '@/core/MetaService.js';
@@ -24,13 +24,7 @@ const nodeinfo_homepage = 'https://misskey-hub.net';
 export class NodeinfoServerService {
 	constructor(
 		@inject(DI.config)
-		private config: Config,
-
-		private systemAccountService: SystemAccountService,
-		private metaService: MetaService,
-		private notesChart: NotesChart,
-		private usersChart: UsersChart,
-	) {
+		private config: Config,@inject(delay(() => SystemAccountService)) private systemAccountService: SystemAccountService,@inject(delay(() => MetaService)) private metaService: MetaService,@inject(delay(() => NotesChart)) private notesChart: NotesChart,@inject(delay(() => UsersChart)) private usersChart: UsersChart) {
 		//this.createServer = this.createServer.bind(this);
 	}
 

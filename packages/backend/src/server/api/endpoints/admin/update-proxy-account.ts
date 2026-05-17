@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import {
 	descriptionSchema,
@@ -35,11 +35,7 @@ export const paramDef = {
 
 @injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
-	constructor(
-		private userEntityService: UserEntityService,
-		private moderationLogService: ModerationLogService,
-		private systemAccountService: SystemAccountService,
-	) {
+	constructor(@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService,@inject(delay(() => ModerationLogService)) private moderationLogService: ModerationLogService,@inject(delay(() => SystemAccountService)) private systemAccountService: SystemAccountService) {
 		super(meta, paramDef, async (ps, me) => {
 			const proxy = await this.systemAccountService.updateCorrespondingUserProfile('proxy', {
 				description: ps.description,

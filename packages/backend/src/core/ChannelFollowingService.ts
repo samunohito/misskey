@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import Redis from 'ioredis';
 import { DI } from '@/di-symbols.js';
 import type { ChannelFollowingsRepository, ChannelsRepository, MiUser } from '@/models/_.js';
@@ -26,10 +26,7 @@ export class ChannelFollowingService {
 		@inject(DI.channelsRepository)
 		private channelsRepository: ChannelsRepository,
 		@inject(DI.channelFollowingsRepository)
-		private channelFollowingsRepository: ChannelFollowingsRepository,
-		private idService: IdService,
-		private globalEventService: GlobalEventService,
-	) {
+		private channelFollowingsRepository: ChannelFollowingsRepository,@inject(delay(() => IdService)) private idService: IdService,@inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService) {
 		this.userFollowingChannelsCache = new RedisKVCache<Set<string>>(this.redisClient, 'userFollowingChannels', {
 			lifetime: 1000 * 60 * 30, // 30m
 			memoryCacheLifetime: 1000 * 60, // 1m

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 
 import { URL } from 'node:url';
 import chalk from 'chalk';
@@ -29,14 +29,7 @@ export class RemoteUserResolveService {
 		private config: Config,
 
 		@inject(DI.usersRepository)
-		private usersRepository: UsersRepository,
-
-		private utilityService: UtilityService,
-		private webfingerService: WebfingerService,
-		private remoteLoggerService: RemoteLoggerService,
-		private apDbResolverService: ApDbResolverService,
-		private apPersonService: ApPersonService,
-	) {
+		private usersRepository: UsersRepository,@inject(delay(() => UtilityService)) private utilityService: UtilityService,@inject(delay(() => WebfingerService)) private webfingerService: WebfingerService,@inject(delay(() => RemoteLoggerService)) private remoteLoggerService: RemoteLoggerService,@inject(delay(() => ApDbResolverService)) private apDbResolverService: ApDbResolverService,@inject(delay(() => ApPersonService)) private apPersonService: ApPersonService) {
 		this.logger = this.remoteLoggerService.logger.createSubLogger('resolve-user');
 	}
 

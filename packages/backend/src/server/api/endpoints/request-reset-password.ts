@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 
 import ms from 'ms';
 import { IsNull } from 'typeorm';
@@ -54,11 +54,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private userProfilesRepository: UserProfilesRepository,
 
 		@inject(DI.passwordResetRequestsRepository)
-		private passwordResetRequestsRepository: PasswordResetRequestsRepository,
-
-		private idService: IdService,
-		private emailService: EmailService,
-	) {
+		private passwordResetRequestsRepository: PasswordResetRequestsRepository,@inject(delay(() => IdService)) private idService: IdService,@inject(delay(() => EmailService)) private emailService: EmailService) {
 		super(meta, paramDef, async (ps, me) => {
 			const user = await this.usersRepository.findOneBy({
 				usernameLower: ps.username.toLowerCase(),

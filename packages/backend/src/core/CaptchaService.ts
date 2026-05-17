@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { HttpRequestService } from '@/core/HttpRequestService.js';
 import { bindThis } from '@/decorators.js';
 import { MetaService } from '@/core/MetaService.js';
@@ -75,11 +75,7 @@ type CaptchaResponse = {
 export class CaptchaService {
 	private readonly logger: Logger;
 
-	constructor(
-		private httpRequestService: HttpRequestService,
-		private metaService: MetaService,
-		loggerService: LoggerService,
-	) {
+	constructor(@inject(delay(() => HttpRequestService)) private httpRequestService: HttpRequestService,@inject(delay(() => MetaService)) private metaService: MetaService,@inject(delay(() => LoggerService)) loggerService: LoggerService) {
 		this.logger = loggerService.getLogger('captcha');
 	}
 

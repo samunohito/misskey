@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { AccessTokensRepository } from '@/models/_.js';
 import { IdService } from '@/core/IdService.js';
@@ -48,11 +48,7 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.accessTokensRepository)
-		private accessTokensRepository: AccessTokensRepository,
-
-		private idService: IdService,
-		private notificationService: NotificationService,
-	) {
+		private accessTokensRepository: AccessTokensRepository,@inject(delay(() => IdService)) private idService: IdService,@inject(delay(() => NotificationService)) private notificationService: NotificationService) {
 		super(meta, paramDef, async (ps, me) => {
 			// Generate access token
 			const accessToken = secureRndstr(32);

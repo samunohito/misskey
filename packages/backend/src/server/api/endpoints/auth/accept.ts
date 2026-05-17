@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 
 import * as crypto from 'node:crypto';
 import { Endpoint } from '@/server/api/endpoint-base.js';
@@ -47,10 +47,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private authSessionsRepository: AuthSessionsRepository,
 
 		@inject(DI.accessTokensRepository)
-		private accessTokensRepository: AccessTokensRepository,
-
-		private idService: IdService,
-	) {
+		private accessTokensRepository: AccessTokensRepository,@inject(delay(() => IdService)) private idService: IdService) {
 		super(meta, paramDef, async (ps, me) => {
 			// Fetch token
 			const session = await this.authSessionsRepository

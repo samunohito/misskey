@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 
 import ms from 'ms';
 import type { DriveFilesRepository, MiDriveFile, PagesRepository } from '@/models/_.js';
@@ -77,11 +77,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private pagesRepository: PagesRepository,
 
 		@inject(DI.driveFilesRepository)
-		private driveFilesRepository: DriveFilesRepository,
-
-		private pageService: PageService,
-		private pageEntityService: PageEntityService,
-	) {
+		private driveFilesRepository: DriveFilesRepository,@inject(delay(() => PageService)) private pageService: PageService,@inject(delay(() => PageEntityService)) private pageEntityService: PageEntityService) {
 		super(meta, paramDef, async (ps, me) => {
 			let eyeCatchingImage: MiDriveFile | null = null;
 			if (ps.eyeCatchingImageId != null) {

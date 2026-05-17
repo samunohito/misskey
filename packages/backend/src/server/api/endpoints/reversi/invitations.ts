@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { DI } from '@/di-symbols.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
@@ -26,10 +26,7 @@ export const paramDef = {
 
 @injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
-	constructor(
-		private userEntityService: UserEntityService,
-		private reversiService: ReversiService,
-	) {
+	constructor(@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService,@inject(delay(() => ReversiService)) private reversiService: ReversiService) {
 		super(meta, paramDef, async (ps, me) => {
 			const invitations = await this.reversiService.getInvitations(me);
 

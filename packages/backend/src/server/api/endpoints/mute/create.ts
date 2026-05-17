@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import ms from 'ms';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { MutingsRepository } from '@/models/_.js';
@@ -63,11 +63,7 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.mutingsRepository)
-		private mutingsRepository: MutingsRepository,
-
-		private getterService: GetterService,
-		private userMutingService: UserMutingService,
-	) {
+		private mutingsRepository: MutingsRepository,@inject(delay(() => GetterService)) private getterService: GetterService,@inject(delay(() => UserMutingService)) private userMutingService: UserMutingService) {
 		super(meta, paramDef, async (ps, me) => {
 			const muter = me;
 

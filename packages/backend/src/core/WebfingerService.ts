@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 
 import { URL } from 'node:url';
 import { query as urlQuery } from '@/misc/prelude/url.js';
@@ -25,9 +25,7 @@ const mRegex = /^([^@]+)@(.*)/;
 
 @injectable()
 export class WebfingerService {
-	constructor(
-		private httpRequestService: HttpRequestService,
-	) {
+	constructor(@inject(delay(() => HttpRequestService)) private httpRequestService: HttpRequestService) {
 	}
 
 	@bindThis

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { MiAbuseUserReport, MiNote, MiUser, MiWebhook } from '@/models/_.js';
 import { bindThis } from '@/decorators.js';
 import { MiSystemWebhook, type SystemWebhookEventType } from '@/models/SystemWebhook.js';
@@ -142,12 +142,7 @@ export class WebhookTestService {
 	public static NoSuchWebhookError = class extends Error {
 	};
 
-	constructor(
-		private customEmojiService: CustomEmojiService,
-		private userWebhookService: UserWebhookService,
-		private systemWebhookService: SystemWebhookService,
-		private queueService: QueueService,
-	) {
+	constructor(@inject(delay(() => CustomEmojiService)) private customEmojiService: CustomEmojiService,@inject(delay(() => UserWebhookService)) private userWebhookService: UserWebhookService,@inject(delay(() => SystemWebhookService)) private systemWebhookService: SystemWebhookService,@inject(delay(() => QueueService)) private queueService: QueueService) {
 	}
 
 	/**

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { RegistrationTicketsRepository } from '@/models/_.js';
 import { InviteCodeEntityService } from '@/core/entities/InviteCodeEntityService.js';
@@ -52,12 +52,7 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@inject(DI.registrationTicketsRepository)
-		private registrationTicketsRepository: RegistrationTicketsRepository,
-
-		private inviteCodeEntityService: InviteCodeEntityService,
-		private idService: IdService,
-		private moderationLogService: ModerationLogService,
-	) {
+		private registrationTicketsRepository: RegistrationTicketsRepository,@inject(delay(() => InviteCodeEntityService)) private inviteCodeEntityService: InviteCodeEntityService,@inject(delay(() => IdService)) private idService: IdService,@inject(delay(() => ModerationLogService)) private moderationLogService: ModerationLogService) {
 		super(meta, paramDef, async (ps, me) => {
 			if (ps.expiresAt && isNaN(Date.parse(ps.expiresAt))) {
 				throw new ApiError(meta.errors.invalidDateTime);

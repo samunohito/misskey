@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Disposable, DisposableRegistry } from '@/di/disposable-registry.js';
 import * as Redis from 'ioredis';
 import type { AvatarDecorationsRepository, MiAvatarDecoration, MiUser } from '@/models/_.js';
@@ -24,13 +24,7 @@ export class AvatarDecorationService implements Disposable {
 		private redisForSub: Redis.Redis,
 
 		@inject(DI.avatarDecorationsRepository)
-		private avatarDecorationsRepository: AvatarDecorationsRepository,
-
-		private idService: IdService,
-		private moderationLogService: ModerationLogService,
-		private globalEventService: GlobalEventService,
-		registry: DisposableRegistry,
-	) {
+		private avatarDecorationsRepository: AvatarDecorationsRepository,@inject(delay(() => IdService)) private idService: IdService,@inject(delay(() => ModerationLogService)) private moderationLogService: ModerationLogService,@inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService,@inject(delay(() => DisposableRegistry)) registry: DisposableRegistry) {
 		registry.register(this);
 		this.cache = new MemorySingleCache<MiAvatarDecoration[]>(1000 * 60 * 30); // 30s
 

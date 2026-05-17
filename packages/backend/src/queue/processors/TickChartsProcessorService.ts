@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import type Logger from '@/logger.js';
 import FederationChart from '@/core/chart/charts/federation.js';
 import NotesChart from '@/core/chart/charts/notes.js';
@@ -25,22 +25,7 @@ import type * as Bull from 'bullmq';
 export class TickChartsProcessorService {
 	private logger: Logger;
 
-	constructor(
-		private federationChart: FederationChart,
-		private notesChart: NotesChart,
-		private usersChart: UsersChart,
-		private activeUsersChart: ActiveUsersChart,
-		private instanceChart: InstanceChart,
-		private perUserNotesChart: PerUserNotesChart,
-		private perUserPvChart: PerUserPvChart,
-		private driveChart: DriveChart,
-		private perUserReactionsChart: PerUserReactionsChart,
-		private perUserFollowingChart: PerUserFollowingChart,
-		private perUserDriveChart: PerUserDriveChart,
-		private apRequestChart: ApRequestChart,
-
-		private queueLoggerService: QueueLoggerService,
-	) {
+	constructor(@inject(delay(() => FederationChart)) private federationChart: FederationChart,@inject(delay(() => NotesChart)) private notesChart: NotesChart,@inject(delay(() => UsersChart)) private usersChart: UsersChart,@inject(delay(() => ActiveUsersChart)) private activeUsersChart: ActiveUsersChart,@inject(delay(() => InstanceChart)) private instanceChart: InstanceChart,@inject(delay(() => PerUserNotesChart)) private perUserNotesChart: PerUserNotesChart,@inject(delay(() => PerUserPvChart)) private perUserPvChart: PerUserPvChart,@inject(delay(() => DriveChart)) private driveChart: DriveChart,@inject(delay(() => PerUserReactionsChart)) private perUserReactionsChart: PerUserReactionsChart,@inject(delay(() => PerUserFollowingChart)) private perUserFollowingChart: PerUserFollowingChart,@inject(delay(() => PerUserDriveChart)) private perUserDriveChart: PerUserDriveChart,@inject(delay(() => ApRequestChart)) private apRequestChart: ApRequestChart,@inject(delay(() => QueueLoggerService)) private queueLoggerService: QueueLoggerService) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('tick-charts');
 	}
 

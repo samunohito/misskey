@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 
 import RE2 from 're2';
 import * as mfm from 'mfm-js';
@@ -252,22 +252,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private driveFilesRepository: DriveFilesRepository,
 
 		@inject(DI.pagesRepository)
-		private pagesRepository: PagesRepository,
-
-		private userEntityService: UserEntityService,
-		private driveFileEntityService: DriveFileEntityService,
-		private globalEventService: GlobalEventService,
-		private userFollowingService: UserFollowingService,
-		private accountUpdateService: AccountUpdateService,
-		private remoteUserResolveService: RemoteUserResolveService,
-		private apiLoggerService: ApiLoggerService,
-		private hashtagService: HashtagService,
-		private roleService: RoleService,
-		private cacheService: CacheService,
-		private httpRequestService: HttpRequestService,
-		private avatarDecorationService: AvatarDecorationService,
-		private utilityService: UtilityService,
-	) {
+		private pagesRepository: PagesRepository,@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService,@inject(delay(() => DriveFileEntityService)) private driveFileEntityService: DriveFileEntityService,@inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService,@inject(delay(() => UserFollowingService)) private userFollowingService: UserFollowingService,@inject(delay(() => AccountUpdateService)) private accountUpdateService: AccountUpdateService,@inject(delay(() => RemoteUserResolveService)) private remoteUserResolveService: RemoteUserResolveService,@inject(delay(() => ApiLoggerService)) private apiLoggerService: ApiLoggerService,@inject(delay(() => HashtagService)) private hashtagService: HashtagService,@inject(delay(() => RoleService)) private roleService: RoleService,@inject(delay(() => CacheService)) private cacheService: CacheService,@inject(delay(() => HttpRequestService)) private httpRequestService: HttpRequestService,@inject(delay(() => AvatarDecorationService)) private avatarDecorationService: AvatarDecorationService,@inject(delay(() => UtilityService)) private utilityService: UtilityService) {
 		super(meta, paramDef, async (ps, _user, token) => {
 			const user = await this.usersRepository.findOneByOrFail({ id: _user.id }) as MiLocalUser;
 			const isSecure = token == null;

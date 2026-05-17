@@ -33,16 +33,7 @@ export class UserBlockingService {
 		private userListsRepository: UserListsRepository,
 
 		@inject(DI.userListMembershipsRepository)
-		private userListMembershipsRepository: UserListMembershipsRepository,
-
-		private cacheService: CacheService,
-		private userEntityService: UserEntityService,
-		private idService: IdService,
-		private queueService: QueueService,
-		private globalEventService: GlobalEventService,
-		private webhookService: UserWebhookService,
-		private apRendererService: ApRendererService,
-		private loggerService: LoggerService,
+		private userListMembershipsRepository: UserListMembershipsRepository,@inject(delay(() => CacheService)) private cacheService: CacheService,@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService,@inject(delay(() => IdService)) private idService: IdService,@inject(delay(() => QueueService)) private queueService: QueueService,@inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService,@inject(delay(() => UserWebhookService)) private webhookService: UserWebhookService,@inject(delay(() => ApRendererService)) private apRendererService: ApRendererService,@inject(delay(() => LoggerService)) private loggerService: LoggerService,
 		@inject(delay(() => UserFollowingService)) private userFollowingService: UserFollowingService,
 	) {
 		this.logger = this.loggerService.getLogger('user-block');

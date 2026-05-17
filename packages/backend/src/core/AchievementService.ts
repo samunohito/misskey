@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import type { UserProfilesRepository } from '@/models/_.js';
 import type { MiUser } from '@/models/User.js';
 import { DI } from '@/di-symbols.js';
@@ -15,10 +15,7 @@ import { ACHIEVEMENT_TYPES } from '@/models/UserProfile.js';
 export class AchievementService {
 	constructor(
 		@inject(DI.userProfilesRepository)
-		private userProfilesRepository: UserProfilesRepository,
-
-		private notificationService: NotificationService,
-	) {
+		private userProfilesRepository: UserProfilesRepository,@inject(delay(() => NotificationService)) private notificationService: NotificationService) {
 	}
 
 	@bindThis

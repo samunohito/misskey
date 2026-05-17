@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Disposable, DisposableRegistry } from '@/di/disposable-registry.js';
 import * as Redis from 'ioredis';
 import { In } from 'typeorm';
@@ -36,14 +36,7 @@ export class AntennaService implements Disposable {
 		private antennasRepository: AntennasRepository,
 
 		@inject(DI.userListMembershipsRepository)
-		private userListMembershipsRepository: UserListMembershipsRepository,
-
-		private cacheService: CacheService,
-		private utilityService: UtilityService,
-		private globalEventService: GlobalEventService,
-		private fanoutTimelineService: FanoutTimelineService,
-		registry: DisposableRegistry,
-	) {
+		private userListMembershipsRepository: UserListMembershipsRepository,@inject(delay(() => CacheService)) private cacheService: CacheService,@inject(delay(() => UtilityService)) private utilityService: UtilityService,@inject(delay(() => GlobalEventService)) private globalEventService: GlobalEventService,@inject(delay(() => FanoutTimelineService)) private fanoutTimelineService: FanoutTimelineService,@inject(delay(() => DisposableRegistry)) registry: DisposableRegistry) {
 		registry.register(this);
 		this.antennasFetched = false;
 		this.antennas = [];

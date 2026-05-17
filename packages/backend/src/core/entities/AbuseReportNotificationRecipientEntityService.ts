@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { In } from 'typeorm';
 import { DI } from '@/di-symbols.js';
 import type { AbuseReportNotificationRecipientRepository, MiAbuseReportNotificationRecipient } from '@/models/_.js';
@@ -16,10 +16,7 @@ import { SystemWebhookEntityService } from '@/core/entities/SystemWebhookEntityS
 export class AbuseReportNotificationRecipientEntityService {
 	constructor(
 		@inject(DI.abuseReportNotificationRecipientRepository)
-		private abuseReportNotificationRecipientRepository: AbuseReportNotificationRecipientRepository,
-		private userEntityService: UserEntityService,
-		private systemWebhookEntityService: SystemWebhookEntityService,
-	) {
+		private abuseReportNotificationRecipientRepository: AbuseReportNotificationRecipientRepository,@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService,@inject(delay(() => SystemWebhookEntityService)) private systemWebhookEntityService: SystemWebhookEntityService) {
 	}
 
 	@bindThis

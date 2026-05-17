@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
 import { GetterService } from '@/server/api/GetterService.js';
@@ -56,9 +56,7 @@ export const paramDef = {
 
 @injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
-	constructor(
-		private noteEntityService: NoteEntityService,
-	) {
+	constructor(@inject(delay(() => NoteEntityService)) private noteEntityService: NoteEntityService) {
 		super(meta, paramDef, async (ps, me) => {
 			return await this.noteEntityService.fetchDiffs(ps.noteIds);
 		});

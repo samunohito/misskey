@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 
 import { EventEmitter } from 'events';
 import * as Redis from 'ioredis';
@@ -32,10 +32,7 @@ export class StreamingApiServerService {
 		private redisForSub: Redis.Redis,
 
 		@inject(DependencyContainerToken)
-		private container: DependencyContainer,
-		private authenticateService: AuthenticateService,
-		private usersService: UserService,
-	) {
+		private container: DependencyContainer,@inject(delay(() => AuthenticateService)) private authenticateService: AuthenticateService,@inject(delay(() => UserService)) private usersService: UserService) {
 	}
 
 	@bindThis

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { DI } from '@/di-symbols.js';
 import type { AnnouncementsRepository, AnnouncementReadsRepository, MiAnnouncement, MiUser } from '@/models/_.js';
 import type { Packed } from '@/misc/json-schema.js';
@@ -17,10 +17,7 @@ export class AnnouncementEntityService {
 		private announcementsRepository: AnnouncementsRepository,
 
 		@inject(DI.announcementReadsRepository)
-		private announcementReadsRepository: AnnouncementReadsRepository,
-
-		private idService: IdService,
-	) {
+		private announcementReadsRepository: AnnouncementReadsRepository,@inject(delay(() => IdService)) private idService: IdService) {
 	}
 
 	@bindThis
