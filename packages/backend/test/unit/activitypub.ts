@@ -124,6 +124,7 @@ describe('ActivityPub', () => {
 	beforeAll(async () => {
 		const app = await createTestContainer({
 	loadGlobals: true,
+	loadRepositories: true,
 });
 
 		userProfilesRepository = app.resolve(DI.userProfilesRepository);

@@ -102,6 +102,7 @@ describe('ChannelMutingService', () => {
 	beforeAll(async () => {
 		app = await createTestContainer({
 	loadGlobals: true,
+	loadRepositories: true,
 	register: (c) => {
 		c.registerSingleton(GlobalEventService);
 		c.registerSingleton(IdService);

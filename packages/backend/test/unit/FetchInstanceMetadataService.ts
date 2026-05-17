@@ -50,6 +50,7 @@ describe('FetchInstanceMetadataService', () => {
 	beforeEach(async () => {
 		app = await createTestContainer({
 	loadGlobals: true,
+	loadRepositories: true,
 	register: (c) => {
 		c.registerSingleton(FetchInstanceMetadataService);
 		c.registerSingleton(LoggerService);

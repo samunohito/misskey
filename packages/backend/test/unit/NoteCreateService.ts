@@ -19,6 +19,7 @@ describe('NoteCreateService', () => {
 	beforeAll(async () => {
 		const app = await createTestContainer({
 	loadGlobals: true,
+	loadRepositories: true,
 });
 		noteCreateService = app.resolve<NoteCreateService>(NoteCreateService);
 	});

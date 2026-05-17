@@ -16,6 +16,7 @@ describe('ApMfmService', () => {
 	beforeAll(async () => {
 		const app = await createTestContainer({
 	loadGlobals: true,
+	loadRepositories: true,
 });
 		apMfmService = app.resolve<ApMfmService>(ApMfmService);
 	});

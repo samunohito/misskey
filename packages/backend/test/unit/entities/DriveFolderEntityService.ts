@@ -74,6 +74,7 @@ describe('DriveFolderEntityService', () => {
 	beforeAll(async () => {
 		app = await createTestContainer({
 	loadGlobals: true,
+	loadRepositories: true,
 });
 		service = app.resolve<DriveFolderEntityService>(DriveFolderEntityService);
 		driveFoldersRepository = app.resolve<DriveFoldersRepository>(DI.driveFoldersRepository);

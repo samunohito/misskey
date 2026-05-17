@@ -67,6 +67,7 @@ describe('FlashService', () => {
 	beforeEach(async () => {
 		app = await createTestContainer({
 	loadGlobals: true,
+	loadRepositories: true,
 	register: (c) => {
 		c.registerSingleton(FlashService);
 		c.registerSingleton(IdService);

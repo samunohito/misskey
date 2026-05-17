@@ -7,6 +7,7 @@ import 'reflect-metadata';
 import { EventEmitter } from 'node:events';
 import { composeCliContainer } from '@/di/compose.js';
 import { DisposableRegistry } from '@/di/disposable-registry.js';
+import { disposeGlobalResources } from '@/di/register-globals.js';
 import { CommandService } from '@/cli/CommandService.js';
 
 process.title = 'Misskey Cli';
@@ -46,6 +47,7 @@ try {
 	}
 } finally {
 	await container.resolve(DisposableRegistry).disposeAll();
+	await disposeGlobalResources();
 }
 
 process.exit(exitCode);

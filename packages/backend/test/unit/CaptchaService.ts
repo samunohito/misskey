@@ -31,6 +31,7 @@ describe('CaptchaService', () => {
 	beforeAll(async () => {
 		app = await createTestContainer({
 	loadGlobals: true,
+	loadRepositories: true,
 	register: (c) => {
 		c.registerSingleton(CaptchaService);
 		c.registerSingleton(LoggerService);

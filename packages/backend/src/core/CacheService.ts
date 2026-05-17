@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { inject, injectable } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 import { Disposable, DisposableRegistry } from '@/di/disposable-registry.js';
 import * as Redis from 'ioredis';
 import type { BlockingsRepository, FollowingsRepository, MutingsRepository, RenoteMutingsRepository, MiUserProfile, UserProfilesRepository, UsersRepository, MiFollowing } from '@/models/_.js';
@@ -13,6 +13,7 @@ import { DI } from '@/di-symbols.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
 import { bindThis } from '@/decorators.js';
 import type { GlobalEvents } from '@/core/GlobalEventService.js';
+
 @injectable()
 export class CacheService implements Disposable {
 	public userByIdCache: MemoryKVCache<MiUser>;
@@ -51,6 +52,10 @@ export class CacheService implements Disposable {
 		@inject(DI.followingsRepository)
 		private followingsRepository: FollowingsRepository,
 
+		// UserEntityService とは互いに参照しないが、間接的な循環 (UserEntityService→RoleService→CacheService)
+		// が ESM 評価順序で TDZ にぶつかると design:paramtypes が `Object` に erase される。
+		// delay() で resolve を遅らせて明示 token を渡すことで paramtypes に依存しない。
+		@inject(delay(() => UserEntityService))
 		private userEntityService: UserEntityService,
 		registry: DisposableRegistry,
 	) {

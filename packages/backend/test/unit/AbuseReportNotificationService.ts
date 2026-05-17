@@ -103,6 +103,7 @@ describe('AbuseReportNotificationService', () => {
 	beforeAll(async () => {
 		app = await createTestContainer({
 	loadGlobals: true,
+	loadRepositories: true,
 	register: (c) => {
 		c.registerSingleton(AbuseReportNotificationService);
 		c.registerSingleton(IdService);

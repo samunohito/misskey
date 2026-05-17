@@ -27,6 +27,7 @@ describe('DriveService', () => {
 	beforeAll(async () => {
 		app = await createTestContainer({
 	loadGlobals: true,
+	loadRepositories: true,
 	register: (c) => {
 		c.registerSingleton(DriveService);
 	},

@@ -64,6 +64,7 @@ describe('UserWebhookService', () => {
 	async function beforeAllImpl() {
 		app = await createTestContainer({
 	loadGlobals: true,
+	loadRepositories: true,
 	register: (c) => {
 		c.registerSingleton(UserWebhookService);
 		c.registerSingleton(IdService);

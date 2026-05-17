@@ -28,6 +28,7 @@ describe('S3Service', () => {
 	beforeAll(async () => {
 		app = await createTestContainer({
 	loadGlobals: true,
+	loadRepositories: true,
 	register: (c) => {
 		c.registerSingleton(S3Service);
 	},

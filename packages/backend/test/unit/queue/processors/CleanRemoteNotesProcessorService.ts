@@ -87,6 +87,7 @@ describe('CleanRemoteNotesProcessorService', () => {
 	beforeAll(async () => {
 		app = await createTestContainer({
 	loadGlobals: true,
+	loadRepositories: true,
 	register: (c) => {
 		c.registerSingleton(CleanRemoteNotesProcessorService);
 		c.registerSingleton(IdService);

@@ -28,6 +28,7 @@ describe('CustomEmojiService', () => {
 	beforeAll(async () => {
 		app = await createTestContainer({
 	loadGlobals: true,
+	loadRepositories: true,
 	register: (c) => {
 		c.registerSingleton(CustomEmojiService);
 		c.registerSingleton(UtilityService);

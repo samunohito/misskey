@@ -38,6 +38,7 @@ describe('FileInfoService', () => {
 	beforeAll(async () => {
 		app = await createTestContainer({
 	loadGlobals: true,
+	loadRepositories: true,
 	register: (c) => {
 		c.registerSingleton(AiService);
 		c.registerSingleton(LoggerService);

@@ -55,6 +55,7 @@ describe('WebhookTestService', () => {
 	beforeAll(async () => {
 		app = await createTestContainer({
 	loadGlobals: true,
+	loadRepositories: true,
 	register: (c) => {
 		c.registerSingleton(WebhookTestService);
 		c.registerSingleton(IdService);

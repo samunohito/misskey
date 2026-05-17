@@ -7,6 +7,7 @@ import { init } from 'slacc';
 import type { Config } from '@/config.js';
 import type { DependencyContainer } from 'tsyringe';
 import { DisposableRegistry } from '@/di/disposable-registry.js';
+import { disposeGlobalResources } from '@/di/register-globals.js';
 
 // 同一プロセス内に server() と jobQueue() が共存する場合があるため、
 // container を集めて SIGTERM/SIGINT で一括 disposeAll する。
@@ -23,6 +24,13 @@ function ensureShutdownHandler(): void {
 			} catch (e) {
 				console.error('[boot] disposeAll failed', e);
 			}
+		}
+		// グローバル resource (DB / Redis) は activeContainers の disposeAll では破棄しないため、
+		// ここで明示的に解放する。
+		try {
+			await disposeGlobalResources();
+		} catch (e) {
+			console.error('[boot] disposeGlobalResources failed', e);
 		}
 		process.exit(0);
 	};

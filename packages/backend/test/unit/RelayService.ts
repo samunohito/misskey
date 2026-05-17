@@ -28,6 +28,7 @@ describe('RelayService', () => {
 	beforeAll(async () => {
 		app = await createTestContainer({
 	loadGlobals: true,
+	loadRepositories: true,
 	register: (c) => {
 		c.registerSingleton(IdService);
 		c.registerSingleton(ApRendererService);

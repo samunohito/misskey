@@ -17,7 +17,8 @@ import { CacheService } from '@/core/CacheService.js';
 import { QueryService } from '@/core/QueryService.js';
 import { IdService } from '@/core/IdService.js';
 import { LoggerService } from '@/core/LoggerService.js';
-import type { Index, Meilisearch } from 'meilisearch';
+import { Meilisearch } from 'meilisearch';
+import type { Index } from 'meilisearch';
 
 type K = string;
 type V = string | number | boolean;
