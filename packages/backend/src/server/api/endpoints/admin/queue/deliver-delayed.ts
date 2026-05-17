@@ -7,7 +7,7 @@ import { inject, injectable } from 'tsyringe';
 
 import { URL } from 'node:url';
 import { Endpoint } from '@/server/api/endpoint-base.js';
-import type { DeliverQueue } from '@/core/QueueModule.js';
+import type { DeliverQueue } from '@/queue/queue-types.js';
 
 export const meta = {
 	tags: ['admin'],

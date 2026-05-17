@@ -7,7 +7,7 @@ import { inject, injectable } from 'tsyringe';
 
 import { URL } from 'node:url';
 import { Endpoint } from '@/server/api/endpoint-base.js';
-import type { InboxQueue } from '@/core/QueueModule.js';
+import type { InboxQueue } from '@/queue/queue-types.js';
 
 export const meta = {
 	tags: ['admin'],

@@ -3,10 +3,9 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { NestFactory } from '@nestjs/core';
 import { init } from 'slacc';
-import { NestLogger } from '@/NestLogger.js';
 import type { Config } from '@/config.js';
+import type { DependencyContainer } from 'tsyringe';
 
 let slaccInitialized = false;
 
@@ -20,41 +19,37 @@ export function initExtraThreadPool(config: Config) {
 	slaccInitialized = true;
 }
 
-export async function server() {
-	const { MainModule } = await import('../MainModule.js');
-	const { ServerService } = await import('../server/ServerService.js');
+export async function server(): Promise<DependencyContainer> {
+	const { composeServerContainer } = await import('@/di/compose.js');
+	const { ServerService } = await import('@/server/ServerService.js');
 
-	const app = await NestFactory.createApplicationContext(MainModule, {
-		logger: new NestLogger(),
-	});
+	const container = await composeServerContainer();
 
-	const serverService = app.get(ServerService);
+	const serverService = container.resolve(ServerService);
 	await serverService.launch();
 
 	if (process.env.NODE_ENV !== 'test') {
-		const { ChartManagementService } = await import('../core/chart/ChartManagementService.js');
-		const { QueueStatsService } = await import('../daemons/QueueStatsService.js');
-		const { ServerStatsService } = await import('../daemons/ServerStatsService.js');
+		const { ChartManagementService } = await import('@/core/chart/ChartManagementService.js');
+		const { QueueStatsService } = await import('@/daemons/QueueStatsService.js');
+		const { ServerStatsService } = await import('@/daemons/ServerStatsService.js');
 
-		app.get(ChartManagementService).start();
-		app.get(QueueStatsService).start();
-		app.get(ServerStatsService).start();
+		container.resolve(ChartManagementService).start();
+		container.resolve(QueueStatsService).start();
+		container.resolve(ServerStatsService).start();
 	}
 
-	return app;
+	return container;
 }
 
-export async function jobQueue() {
-	const { QueueProcessorModule } = await import('../queue/QueueProcessorModule.js');
-	const { QueueProcessorService } = await import('../queue/QueueProcessorService.js');
-	const { ChartManagementService } = await import('../core/chart/ChartManagementService.js');
+export async function jobQueue(): Promise<DependencyContainer> {
+	const { composeJobQueueContainer } = await import('@/di/compose.js');
+	const { QueueProcessorService } = await import('@/queue/QueueProcessorService.js');
+	const { ChartManagementService } = await import('@/core/chart/ChartManagementService.js');
 
-	const jobQueue = await NestFactory.createApplicationContext(QueueProcessorModule, {
-		logger: new NestLogger(),
-	});
+	const container = await composeJobQueueContainer();
 
-	jobQueue.get(QueueProcessorService).start();
-	jobQueue.get(ChartManagementService).start();
+	container.resolve(QueueProcessorService).start();
+	container.resolve(ChartManagementService).start();
 
-	return jobQueue;
+	return container;
 }
