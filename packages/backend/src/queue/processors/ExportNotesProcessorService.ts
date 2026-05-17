@@ -125,7 +125,8 @@ export class ExportNotesProcessorService {
 		private idService: IdService,
 
 		@inject(delay(() => NotificationService))
-		private notificationService: NotificationService) {
+		private notificationService: NotificationService,
+	) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('export-notes');
 	}
 

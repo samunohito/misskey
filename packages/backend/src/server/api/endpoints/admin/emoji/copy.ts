@@ -69,7 +69,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private customEmojiService: CustomEmojiService,
 
 		@inject(delay(() => DriveService))
-		private driveService: DriveService) {
+		private driveService: DriveService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			const emoji = await this.emojisRepository.findOneBy({ id: ps.emojiId });
 			if (emoji == null) {

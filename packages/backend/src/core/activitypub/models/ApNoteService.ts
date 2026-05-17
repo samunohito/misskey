@@ -96,7 +96,8 @@ export class ApNoteService {
 		private apDbResolverService: ApDbResolverService,
 
 		@inject(delay(() => ApLoggerService))
-		private apLoggerService: ApLoggerService) {
+		private apLoggerService: ApLoggerService,
+	) {
 		this.logger = this.apLoggerService.logger;
 	}
 

@@ -25,7 +25,10 @@ export const paramDef = {
 
 @injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
-	constructor(@inject(delay(() => RelayService)) private relayService: RelayService) {
+	constructor(
+		@inject(delay(() => RelayService))
+		private relayService: RelayService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			return await this.relayService.removeRelay(ps.inbox);
 		});

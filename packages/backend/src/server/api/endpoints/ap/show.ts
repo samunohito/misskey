@@ -128,7 +128,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private apPersonService: ApPersonService,
 
 		@inject(delay(() => ApNoteService))
-		private apNoteService: ApNoteService) {
+		private apNoteService: ApNoteService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			const object = await this.fetchAny(ps.uri, me);
 			if (object) {

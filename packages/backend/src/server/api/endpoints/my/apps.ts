@@ -42,7 +42,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private appsRepository: AppsRepository,
 
 		@inject(delay(() => AppEntityService))
-		private appEntityService: AppEntityService) {
+		private appEntityService: AppEntityService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			const query = {
 				userId: me.id,

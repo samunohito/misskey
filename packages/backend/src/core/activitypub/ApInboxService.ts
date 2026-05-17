@@ -125,7 +125,8 @@ export class ApInboxService {
 		private queueService: QueueService,
 
 		@inject(delay(() => GlobalEventService))
-		private globalEventService: GlobalEventService) {
+		private globalEventService: GlobalEventService,
+	) {
 		this.logger = this.apLoggerService.logger;
 	}
 

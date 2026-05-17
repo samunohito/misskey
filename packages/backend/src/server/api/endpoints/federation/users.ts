@@ -49,7 +49,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private userEntityService: UserEntityService,
 
 		@inject(delay(() => QueryService))
-		private queryService: QueryService) {
+		private queryService: QueryService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			const query = this.queryService.makePaginationQuery(this.usersRepository.createQueryBuilder('user'), ps.sinceId, ps.untilId, ps.sinceDate, ps.untilDate)
 				.andWhere('user.host = :host', { host: ps.host });

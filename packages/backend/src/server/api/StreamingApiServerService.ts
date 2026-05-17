@@ -38,7 +38,8 @@ export class StreamingApiServerService {
 		private authenticateService: AuthenticateService,
 
 		@inject(delay(() => UserService))
-		private usersService: UserService) {
+		private usersService: UserService,
+	) {
 	}
 
 	@bindThis

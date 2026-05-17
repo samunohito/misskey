@@ -38,7 +38,8 @@ export class HybridTimelineChannel extends Channel {
 		private noteEntityService: NoteEntityService,
 
 		@inject(delay(() => NoteStreamingHidingService))
-		private noteStreamingHidingService: NoteStreamingHidingService) {
+		private noteStreamingHidingService: NoteStreamingHidingService,
+	) {
 		super(request);
 		//this.onNote = this.onNote.bind(this);
 	}

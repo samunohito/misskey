@@ -44,7 +44,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private abuseUserReportsRepository: AbuseUserReportsRepository,
 
 		@inject(delay(() => AbuseReportService))
-		private abuseReportService: AbuseReportService) {
+		private abuseReportService: AbuseReportService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			const report = await this.abuseUserReportsRepository.findOneBy({ id: ps.reportId });
 			if (!report) {

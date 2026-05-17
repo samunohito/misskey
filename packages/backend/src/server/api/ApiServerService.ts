@@ -49,7 +49,8 @@ export class ApiServerService {
 		private signinApiService: SigninApiService,
 
 		@inject(SigninWithPasskeyApiService)
-		private signinWithPasskeyApiService: SigninWithPasskeyApiService) {
+		private signinWithPasskeyApiService: SigninWithPasskeyApiService,
+	) {
 		//this.createServer = this.createServer.bind(this);
 	}
 

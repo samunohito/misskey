@@ -33,7 +33,8 @@ export default class PerUserReactionsChart extends Chart<typeof schema> { // esl
 		private userEntityService: UserEntityService,
 
 		@inject(delay(() => ChartLoggerService))
-		private chartLoggerService: ChartLoggerService) {
+		private chartLoggerService: ChartLoggerService,
+	) {
 		super(db, (k) => acquireChartInsertLock(redisClient, k), chartLoggerService.logger, name, schema, true);
 	}
 

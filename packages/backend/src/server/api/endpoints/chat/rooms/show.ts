@@ -47,7 +47,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private chatService: ChatService,
 
 		@inject(delay(() => ChatEntityService))
-		private chatEntityService: ChatEntityService) {
+		private chatEntityService: ChatEntityService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			await this.chatService.checkChatAvailability(me.id, 'read');
 

@@ -57,7 +57,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private cacheService: CacheService,
 
 		@inject(delay(() => QueryService))
-		private queryService: QueryService) {
+		private queryService: QueryService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			const userIdsWhoBlockingMe = me ? await this.cacheService.userBlockedCache.fetch(me.id) : new Set<string>();
 

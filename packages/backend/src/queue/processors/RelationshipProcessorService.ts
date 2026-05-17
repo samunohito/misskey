@@ -31,7 +31,8 @@ export class RelationshipProcessorService {
 		private userFollowingService: UserFollowingService,
 
 		@inject(delay(() => UserBlockingService))
-		private userBlockingService: UserBlockingService) {
+		private userBlockingService: UserBlockingService,
+	) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('follow-block');
 	}
 

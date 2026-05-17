@@ -13,7 +13,10 @@ import type { IObject } from './type.js';
 
 @injectable()
 export class ApMfmService {
-	constructor(@inject(delay(() => MfmService)) private mfmService: MfmService) {
+	constructor(
+		@inject(delay(() => MfmService))
+		private mfmService: MfmService,
+	) {
 	}
 
 	@bindThis

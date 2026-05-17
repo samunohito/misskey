@@ -47,7 +47,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private driveFoldersRepository: DriveFoldersRepository,
 
 		@inject(delay(() => DriveFolderEntityService))
-		private driveFolderEntityService: DriveFolderEntityService) {
+		private driveFolderEntityService: DriveFolderEntityService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			// Get folder
 			const folder = await this.driveFoldersRepository.findOneBy({

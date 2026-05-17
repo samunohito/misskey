@@ -40,7 +40,8 @@ export class AuthenticateService implements Disposable {
 		private cacheService: CacheService,
 
 		@inject(delay(() => DisposableRegistry))
-		registry: DisposableRegistry) {
+		registry: DisposableRegistry,
+	) {
 		registry.register(this);
 		this.appCache = new MemoryKVCache<MiApp>(1000 * 60 * 60 * 24 * 7); // 1w
 	}

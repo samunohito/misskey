@@ -67,7 +67,8 @@ export class FanoutTimelineEndpointService {
 		private utilityService: UtilityService,
 
 		@inject(delay(() => ChannelMutingService))
-		private channelMutingService: ChannelMutingService) {
+		private channelMutingService: ChannelMutingService,
+	) {
 	}
 
 	@bindThis

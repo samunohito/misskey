@@ -38,7 +38,10 @@ export const paramDef = {
 
 @injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
-	constructor(@inject(delay(() => EmailService)) private emailService: EmailService) {
+	constructor(
+		@inject(delay(() => EmailService))
+		private emailService: EmailService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			return await this.emailService.validateEmailForAccount(ps.emailAddress);
 		});

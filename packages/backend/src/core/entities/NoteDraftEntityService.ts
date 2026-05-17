@@ -20,15 +20,24 @@ import { NoteEntityService } from './NoteEntityService.js';
 export class NoteDraftEntityService {
 	private noteDraftLoader = new DebounceLoader(this.findNoteDraftOrFail);
 
-	constructor(@inject(DI.noteDraftsRepository)
+	constructor(
+		@inject(DI.noteDraftsRepository)
 		private noteDraftsRepository: NoteDraftsRepository,
 
 		@inject(DI.channelsRepository)
 		private channelsRepository: ChannelsRepository,
-		@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService,
-		@inject(delay(() => DriveFileEntityService)) private driveFileEntityService: DriveFileEntityService,
-		@inject(delay(() => IdService)) private idService: IdService,
-		@inject(delay(() => NoteEntityService)) private noteEntityService: NoteEntityService,
+
+		@inject(delay(() => UserEntityService))
+		private userEntityService: UserEntityService,
+
+		@inject(delay(() => DriveFileEntityService))
+		private driveFileEntityService: DriveFileEntityService,
+
+		@inject(delay(() => IdService))
+		private idService: IdService,
+
+		@inject(delay(() => NoteEntityService))
+		private noteEntityService: NoteEntityService,
 	) {
 	}
 

@@ -18,7 +18,10 @@ import type { DeleteObjectCommandInput, PutObjectCommandInput } from '@aws-sdk/c
 
 @injectable()
 export class S3Service {
-	constructor(@inject(delay(() => HttpRequestService)) private httpRequestService: HttpRequestService) {
+	constructor(
+		@inject(delay(() => HttpRequestService))
+		private httpRequestService: HttpRequestService,
+	) {
 	}
 
 	@bindThis

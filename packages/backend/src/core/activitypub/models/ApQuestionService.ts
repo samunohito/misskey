@@ -42,7 +42,8 @@ export class ApQuestionService {
 		private apLoggerService: ApLoggerService,
 
 		@inject(delay(() => UtilityService))
-		private utilityService: UtilityService) {
+		private utilityService: UtilityService,
+	) {
 		this.logger = this.apLoggerService.logger;
 	}
 

@@ -65,7 +65,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 		private userListsRepository: UserListsRepository,
 
 		@inject(delay(() => UserListEntityService))
-		private userListEntityService: UserListEntityService) {
+		private userListEntityService: UserListEntityService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			if (typeof ps.userId !== 'undefined') {
 				const user = await this.usersRepository.findOneBy({ id: ps.userId });

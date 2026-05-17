@@ -71,7 +71,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private queryService: QueryService,
 
 		@inject(delay(() => UserEntityService))
-		private userEntityService: UserEntityService) {
+		private userEntityService: UserEntityService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			const role = await this.rolesRepository.findOneBy({
 				id: ps.roleId,

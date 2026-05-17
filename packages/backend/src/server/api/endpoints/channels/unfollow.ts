@@ -43,7 +43,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private channelsRepository: ChannelsRepository,
 
 		@inject(delay(() => ChannelFollowingService))
-		private channelFollowingService: ChannelFollowingService) {
+		private channelFollowingService: ChannelFollowingService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			const channel = await this.channelsRepository.findOneBy({
 				id: ps.channelId,

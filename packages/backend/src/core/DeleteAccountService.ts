@@ -43,7 +43,8 @@ export class DeleteAccountService {
 		private moderationLogService: ModerationLogService,
 
 		@inject(delay(() => SystemAccountService))
-		private systemAccountService: SystemAccountService) {
+		private systemAccountService: SystemAccountService,
+	) {
 	}
 
 	@bindThis

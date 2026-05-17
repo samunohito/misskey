@@ -52,7 +52,8 @@ export class DeleteAccountProcessorService {
 		private queueLoggerService: QueueLoggerService,
 
 		@inject(delay(() => SearchService))
-		private searchService: SearchService) {
+		private searchService: SearchService,
+	) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('delete-account');
 	}
 

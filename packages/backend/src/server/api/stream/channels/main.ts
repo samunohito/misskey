@@ -22,7 +22,8 @@ export class MainChannel extends Channel {
 		request: ChannelRequest,
 
 		@inject(delay(() => NoteEntityService))
-		private noteEntityService: NoteEntityService) {
+		private noteEntityService: NoteEntityService,
+	) {
 		super(request);
 	}
 

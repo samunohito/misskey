@@ -60,7 +60,8 @@ export class AbuseReportNotificationService implements Disposable {
 		private userEntityService: UserEntityService,
 
 		@inject(delay(() => DisposableRegistry))
-		registry: DisposableRegistry) {
+		registry: DisposableRegistry,
+	) {
 		registry.register(this);
 		this.redisForSub.on('message', this.onMessage);
 	}

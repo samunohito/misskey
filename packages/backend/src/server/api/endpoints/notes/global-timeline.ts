@@ -66,7 +66,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private roleService: RoleService,
 
 		@inject(delay(() => ActiveUsersChart))
-		private activeUsersChart: ActiveUsersChart) {
+		private activeUsersChart: ActiveUsersChart,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			const policies = await this.roleService.getUserPolicies(me ? me.id : null);
 			if (!policies.gtlAvailable) {

@@ -24,7 +24,8 @@ export class InviteCodeEntityService {
 		private userEntityService: UserEntityService,
 
 		@inject(delay(() => IdService))
-		private idService: IdService) {
+		private idService: IdService,
+	) {
 	}
 
 	@bindThis

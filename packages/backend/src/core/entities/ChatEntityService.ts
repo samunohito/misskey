@@ -37,7 +37,8 @@ export class ChatEntityService {
 		private driveFileEntityService: DriveFileEntityService,
 
 		@inject(delay(() => IdService))
-		private idService: IdService) {
+		private idService: IdService,
+	) {
 	}
 
 	@bindThis

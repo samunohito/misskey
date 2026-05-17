@@ -50,7 +50,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private noteFavoriteEntityService: NoteFavoriteEntityService,
 
 		@inject(delay(() => QueryService))
-		private queryService: QueryService) {
+		private queryService: QueryService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			const query = this.queryService.makePaginationQuery(this.noteFavoritesRepository.createQueryBuilder('favorite'), ps.sinceId, ps.untilId, ps.sinceDate, ps.untilDate)
 				.andWhere('favorite.userId = :meId', { meId: me.id })

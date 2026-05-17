@@ -41,7 +41,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private announcementsRepository: AnnouncementsRepository,
 
 		@inject(delay(() => AnnouncementService))
-		private announcementService: AnnouncementService) {
+		private announcementService: AnnouncementService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			const announcement = await this.announcementsRepository.findOneBy({ id: ps.id });
 

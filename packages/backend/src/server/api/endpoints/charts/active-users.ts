@@ -30,7 +30,10 @@ export const paramDef = {
 
 @injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
-	constructor(@inject(delay(() => ActiveUsersChart)) private activeUsersChart: ActiveUsersChart) {
+	constructor(
+		@inject(delay(() => ActiveUsersChart))
+		private activeUsersChart: ActiveUsersChart,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			return await this.activeUsersChart.getChart(ps.span, ps.limit, ps.offset ? new Date(ps.offset) : null);
 		});

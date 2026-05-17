@@ -60,7 +60,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private featuredService: FeaturedService,
 
 		@inject(delay(() => QueryService))
-		private queryService: QueryService) {
+		private queryService: QueryService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			let noteIds: string[];
 			if (ps.channelId) {

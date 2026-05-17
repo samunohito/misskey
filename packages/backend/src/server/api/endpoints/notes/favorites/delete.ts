@@ -47,7 +47,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private noteFavoritesRepository: NoteFavoritesRepository,
 
 		@inject(delay(() => GetterService))
-		private getterService: GetterService) {
+		private getterService: GetterService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			// Get favoritee
 			const note = await this.getterService.getNote(ps.noteId).catch(err => {

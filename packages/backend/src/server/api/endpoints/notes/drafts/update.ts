@@ -246,7 +246,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private noteDraftService: NoteDraftService,
 
 		@inject(delay(() => NoteDraftEntityService))
-		private noteDraftEntityService: NoteDraftEntityService) {
+		private noteDraftEntityService: NoteDraftEntityService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			const draft = await this.noteDraftService.update(me, ps.draftId, {
 				fileIds: ps.fileIds,

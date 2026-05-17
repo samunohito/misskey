@@ -27,7 +27,8 @@ export class ResyncChartsProcessorService {
 		private driveChart: DriveChart,
 
 		@inject(delay(() => QueueLoggerService))
-		private queueLoggerService: QueueLoggerService) {
+		private queueLoggerService: QueueLoggerService,
+	) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('resync-charts');
 	}
 

@@ -45,7 +45,10 @@ export const paramDef = {
 
 @injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
-	constructor(@inject(delay(() => PageService)) private pageService: PageService) {
+	constructor(
+		@inject(delay(() => PageService))
+		private pageService: PageService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			try {
 				await this.pageService.delete(me, ps.pageId);

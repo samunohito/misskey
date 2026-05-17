@@ -80,7 +80,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private driveService: DriveService,
 
 		@inject(delay(() => RoleService))
-		private roleService: RoleService) {
+		private roleService: RoleService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			const file = await this.driveFilesRepository.findOneBy({ id: ps.fileId });
 			if (file == null) {

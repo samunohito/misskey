@@ -320,7 +320,8 @@ export class NoteCreateService implements Disposable {
 		private cacheService: CacheService,
 
 		@inject(delay(() => DisposableRegistry))
-		registry: DisposableRegistry) {
+		registry: DisposableRegistry,
+	) {
 		registry.register(this);
 		this.updateNotesCountQueue = new CollapsedQueue(process.env.NODE_ENV !== 'test' ? 60 * 1000 * 5 : 0, this.collapseNotesCount, this.performUpdateNotesCount);
 	}

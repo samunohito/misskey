@@ -29,7 +29,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private getterService: GetterService,
 
 		@inject(delay(() => ApPersonService))
-		private apPersonService: ApPersonService) {
+		private apPersonService: ApPersonService,
+	) {
 		super(meta, paramDef, async (ps) => {
 			const user = await this.getterService.getRemoteUser(ps.userId);
 			await this.apPersonService.updatePerson(user.uri!);

@@ -40,7 +40,8 @@ export class AbuseReportService {
 		private apRendererService: ApRendererService,
 
 		@inject(delay(() => ModerationLogService))
-		private moderationLogService: ModerationLogService) {
+		private moderationLogService: ModerationLogService,
+	) {
 	}
 
 	/**

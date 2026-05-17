@@ -57,7 +57,8 @@ export class NotificationService implements Disposable {
 		private userListService: UserListService,
 
 		@inject(delay(() => DisposableRegistry))
-		registry: DisposableRegistry) {
+		registry: DisposableRegistry,
+	) {
 		registry.register(this);
 	}
 

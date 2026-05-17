@@ -26,7 +26,10 @@ export const paramDef = {
 
 @injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
-	constructor(@inject(delay(() => ReversiService)) private reversiService: ReversiService) {
+	constructor(
+		@inject(delay(() => ReversiService))
+		private reversiService: ReversiService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			if (ps.userId) {
 				await this.reversiService.matchSpecificUserCancel(me, ps.userId);

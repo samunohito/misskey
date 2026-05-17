@@ -74,7 +74,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private getterService: GetterService,
 
 		@inject(delay(() => UserFollowingService))
-		private userFollowingService: UserFollowingService) {
+		private userFollowingService: UserFollowingService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			const follower = me;
 

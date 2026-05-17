@@ -18,7 +18,8 @@ export class AchievementService {
 		private userProfilesRepository: UserProfilesRepository,
 
 		@inject(delay(() => NotificationService))
-		private notificationService: NotificationService) {
+		private notificationService: NotificationService,
+	) {
 	}
 
 	@bindThis

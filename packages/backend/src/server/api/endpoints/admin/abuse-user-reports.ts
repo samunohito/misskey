@@ -117,7 +117,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private abuseUserReportEntityService: AbuseUserReportEntityService,
 
 		@inject(delay(() => QueryService))
-		private queryService: QueryService) {
+		private queryService: QueryService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			const query = this.queryService.makePaginationQuery(this.abuseUserReportsRepository.createQueryBuilder('report'), ps.sinceId, ps.untilId, ps.sinceDate, ps.untilDate);
 

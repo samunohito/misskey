@@ -48,7 +48,8 @@ export const paramDef = {
 @injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
-		@inject('queue:inbox') public inboxQueue: InboxQueue,
+		@inject('queue:inbox')
+		public inboxQueue: InboxQueue,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const jobs = await this.inboxQueue.getJobs(['delayed']);

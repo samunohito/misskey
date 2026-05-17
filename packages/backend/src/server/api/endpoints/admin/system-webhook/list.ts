@@ -50,7 +50,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private systemWebhookService: SystemWebhookService,
 
 		@inject(delay(() => SystemWebhookEntityService))
-		private systemWebhookEntityService: SystemWebhookEntityService) {
+		private systemWebhookEntityService: SystemWebhookEntityService,
+	) {
 		super(meta, paramDef, async (ps) => {
 			const webhooks = await this.systemWebhookService.fetchSystemWebhooks({
 				isActive: ps.isActive,

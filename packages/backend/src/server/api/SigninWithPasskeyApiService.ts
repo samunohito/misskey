@@ -56,7 +56,8 @@ export class SigninWithPasskeyApiService {
 		private webAuthnService: WebAuthnService,
 
 		@inject(delay(() => LoggerService))
-		private loggerService: LoggerService) {
+		private loggerService: LoggerService,
+	) {
 		this.logger = this.loggerService.getLogger('PasskeyAuth');
 	}
 

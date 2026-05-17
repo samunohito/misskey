@@ -11,7 +11,10 @@ import { LoggerService } from '@/core/LoggerService.js';
 export class QueueLoggerService {
 	public logger: Logger;
 
-	constructor(@inject(delay(() => LoggerService)) private loggerService: LoggerService) {
+	constructor(
+		@inject(delay(() => LoggerService))
+		private loggerService: LoggerService,
+	) {
 		this.logger = this.loggerService.getLogger('queue', 'orange');
 	}
 }

@@ -39,7 +39,8 @@ export class UserListChannel extends Channel {
 		private noteEntityService: NoteEntityService,
 
 		@inject(delay(() => NoteStreamingHidingService))
-		private noteStreamingHidingService: NoteStreamingHidingService) {
+		private noteStreamingHidingService: NoteStreamingHidingService,
+	) {
 		super(request);
 		//this.updateListUsers = this.updateListUsers.bind(this);
 		//this.onNote = this.onNote.bind(this);

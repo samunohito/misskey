@@ -25,7 +25,10 @@ type GroupedAudience = Record<'public' | 'followers' | 'other', string[]>;
 
 @injectable()
 export class ApAudienceService {
-	constructor(@inject(delay(() => ApPersonService)) private apPersonService: ApPersonService) {
+	constructor(
+		@inject(delay(() => ApPersonService))
+		private apPersonService: ApPersonService,
+	) {
 	}
 
 	@bindThis

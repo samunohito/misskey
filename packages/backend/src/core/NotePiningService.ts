@@ -50,7 +50,8 @@ export class NotePiningService {
 		private apDeliverManagerService: ApDeliverManagerService,
 
 		@inject(delay(() => ApRendererService))
-		private apRendererService: ApRendererService) {
+		private apRendererService: ApRendererService,
+	) {
 	}
 
 	/**

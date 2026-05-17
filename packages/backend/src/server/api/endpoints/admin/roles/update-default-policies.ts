@@ -39,7 +39,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private globalEventService: GlobalEventService,
 
 		@inject(delay(() => ModerationLogService))
-		private moderationLogService: ModerationLogService) {
+		private moderationLogService: ModerationLogService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			const before = await this.metaService.fetch(true);
 

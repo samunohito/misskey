@@ -125,7 +125,8 @@ export class ReactionService {
 		private notificationService: NotificationService,
 
 		@inject(delay(() => PerUserReactionsChart))
-		private perUserReactionsChart: PerUserReactionsChart) {
+		private perUserReactionsChart: PerUserReactionsChart,
+	) {
 	}
 
 	@bindThis

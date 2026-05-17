@@ -25,7 +25,8 @@ export class RoleEntityService {
 		private roleAssignmentsRepository: RoleAssignmentsRepository,
 
 		@inject(delay(() => IdService))
-		private idService: IdService) {
+		private idService: IdService,
+	) {
 	}
 
 	@bindThis

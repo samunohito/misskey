@@ -61,7 +61,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private noteEntityService: NoteEntityService,
 
 		@inject(delay(() => GetterService))
-		private getterService: GetterService) {
+		private getterService: GetterService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			const note = await this.getterService.getNoteWithRelations(ps.noteId).catch(err => {
 				if (err.id === '9725d0ce-ba28-4dde-95a7-2cbb2c15de24') throw new ApiError(meta.errors.noSuchNote);

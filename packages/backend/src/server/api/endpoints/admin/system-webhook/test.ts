@@ -56,7 +56,10 @@ export const paramDef = {
 
 @injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
-	constructor(@inject(delay(() => WebhookTestService)) private webhookTestService: WebhookTestService) {
+	constructor(
+		@inject(delay(() => WebhookTestService))
+		private webhookTestService: WebhookTestService,
+	) {
 		super(meta, paramDef, async (ps) => {
 			try {
 				await this.webhookTestService.testSystemWebhook({

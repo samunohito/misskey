@@ -51,7 +51,8 @@ export class FetchInstanceMetadataService {
 		private federatedInstanceService: FederatedInstanceService,
 
 		@inject(DI.redis)
-		private redisClient: Redis.Redis) {
+		private redisClient: Redis.Redis,
+	) {
 		this.logger = this.loggerService.getLogger('metadata', 'cyan');
 	}
 

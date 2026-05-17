@@ -50,7 +50,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private queryService: QueryService,
 
 		@inject(delay(() => ClipEntityService))
-		private clipEntityService: ClipEntityService) {
+		private clipEntityService: ClipEntityService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			const query = this.queryService.makePaginationQuery(this.clipsRepository.createQueryBuilder('clip'), ps.sinceId, ps.untilId, ps.sinceDate, ps.untilDate)
 				.andWhere('clip.userId = :userId', { userId: me.id });

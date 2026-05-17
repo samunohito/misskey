@@ -91,7 +91,8 @@ export class AccountMoveService {
 		private roleService: RoleService,
 
 		@inject(delay(() => AntennaService))
-		private antennaService: AntennaService) {
+		private antennaService: AntennaService,
+	) {
 	}
 
 	/**

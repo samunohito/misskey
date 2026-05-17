@@ -23,7 +23,8 @@ export class NoteFavoriteEntityService {
 		private noteEntityService: NoteEntityService,
 
 		@inject(delay(() => IdService))
-		private idService: IdService) {
+		private idService: IdService,
+	) {
 	}
 
 	@bindThis

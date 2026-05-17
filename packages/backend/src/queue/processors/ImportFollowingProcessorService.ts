@@ -42,7 +42,8 @@ export class ImportFollowingProcessorService {
 		private downloadService: DownloadService,
 
 		@inject(delay(() => QueueLoggerService))
-		private queueLoggerService: QueueLoggerService) {
+		private queueLoggerService: QueueLoggerService,
+	) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('import-following');
 	}
 

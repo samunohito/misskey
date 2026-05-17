@@ -11,7 +11,10 @@ import { IdService } from '@/core/IdService.js';
 
 @injectable()
 export class SigninEntityService {
-	constructor(@inject(delay(() => IdService)) private idService: IdService) {
+	constructor(
+		@inject(delay(() => IdService))
+		private idService: IdService,
+	) {
 	}
 
 	@bindThis

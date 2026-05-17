@@ -44,7 +44,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private userEntityService: UserEntityService,
 
 		@inject(delay(() => GlobalEventService))
-		private globalEventService: GlobalEventService) {
+		private globalEventService: GlobalEventService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			const page = await this.pagesRepository.findOneBy({ id: ps.pageId });
 			if (page == null) {

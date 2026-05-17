@@ -97,7 +97,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private idService: IdService,
 
 		@inject(delay(() => GlobalEventService))
-		private globalEventService: GlobalEventService) {
+		private globalEventService: GlobalEventService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			if (ps.keywords.flat().every(x => x === '') && ps.excludeKeywords.flat().every(x => x === '')) {
 				throw new ApiError(meta.errors.emptyKeyword);

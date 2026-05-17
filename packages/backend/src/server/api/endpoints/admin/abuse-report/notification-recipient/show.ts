@@ -53,7 +53,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private abuseReportNotificationService: AbuseReportNotificationService,
 
 		@inject(delay(() => AbuseReportNotificationRecipientEntityService))
-		private abuseReportNotificationRecipientEntityService: AbuseReportNotificationRecipientEntityService) {
+		private abuseReportNotificationRecipientEntityService: AbuseReportNotificationRecipientEntityService,
+	) {
 		super(meta, paramDef, async (ps) => {
 			const recipients = await this.abuseReportNotificationService.fetchRecipients({ ids: [ps.id] });
 			if (recipients.length === 0) {

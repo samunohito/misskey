@@ -39,7 +39,8 @@ export class EmailService {
 		private utilityService: UtilityService,
 
 		@inject(delay(() => HttpRequestService))
-		private httpRequestService: HttpRequestService) {
+		private httpRequestService: HttpRequestService,
+	) {
 		this.logger = this.loggerService.getLogger('email');
 	}
 

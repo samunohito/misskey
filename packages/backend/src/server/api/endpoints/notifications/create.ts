@@ -35,7 +35,10 @@ export const paramDef = {
 
 @injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
-	constructor(@inject(delay(() => NotificationService)) private notificationService: NotificationService) {
+	constructor(
+		@inject(delay(() => NotificationService))
+		private notificationService: NotificationService,
+	) {
 		super(meta, paramDef, async (ps, user, token) => {
 			this.notificationService.createNotification(user.id, 'app', {
 				appAccessTokenId: token ? token.id : null,

@@ -45,7 +45,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private registrationTicketsRepository: RegistrationTicketsRepository,
 
 		@inject(delay(() => InviteCodeEntityService))
-		private inviteCodeEntityService: InviteCodeEntityService) {
+		private inviteCodeEntityService: InviteCodeEntityService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			const query = this.registrationTicketsRepository.createQueryBuilder('ticket')
 				.leftJoinAndSelect('ticket.createdBy', 'createdBy')

@@ -24,7 +24,8 @@ export class UserRenoteMutingService {
 		private idService: IdService,
 
 		@inject(delay(() => CacheService))
-		private cacheService: CacheService) {
+		private cacheService: CacheService,
+	) {
 	}
 
 	@bindThis

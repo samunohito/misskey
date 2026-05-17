@@ -109,7 +109,6 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 		@inject(DI.redis)
 		private redisClient: Redis.Redis,
-
 	) {
 		super(meta, paramDef, async () => {
 			const si = await import('systeminformation');

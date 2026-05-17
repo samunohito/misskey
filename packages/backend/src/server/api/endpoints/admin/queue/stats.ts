@@ -47,15 +47,32 @@ export const paramDef = {
 @injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
-		@inject('queue:system') public systemQueue: SystemQueue,
-		@inject('queue:endedPollNotification') public endedPollNotificationQueue: EndedPollNotificationQueue,
-		@inject('queue:postScheduledNote') public postScheduledNoteQueue: PostScheduledNoteQueue,
-		@inject('queue:deliver') public deliverQueue: DeliverQueue,
-		@inject('queue:inbox') public inboxQueue: InboxQueue,
-		@inject('queue:db') public dbQueue: DbQueue,
-		@inject('queue:objectStorage') public objectStorageQueue: ObjectStorageQueue,
-		@inject('queue:userWebhookDeliver') public userWebhookDeliverQueue: UserWebhookDeliverQueue,
-		@inject('queue:systemWebhookDeliver') public systemWebhookDeliverQueue: SystemWebhookDeliverQueue,
+		@inject('queue:system')
+		public systemQueue: SystemQueue,
+
+		@inject('queue:endedPollNotification')
+		public endedPollNotificationQueue: EndedPollNotificationQueue,
+
+		@inject('queue:postScheduledNote')
+		public postScheduledNoteQueue: PostScheduledNoteQueue,
+
+		@inject('queue:deliver')
+		public deliverQueue: DeliverQueue,
+
+		@inject('queue:inbox')
+		public inboxQueue: InboxQueue,
+
+		@inject('queue:db')
+		public dbQueue: DbQueue,
+
+		@inject('queue:objectStorage')
+		public objectStorageQueue: ObjectStorageQueue,
+
+		@inject('queue:userWebhookDeliver')
+		public userWebhookDeliverQueue: UserWebhookDeliverQueue,
+
+		@inject('queue:systemWebhookDeliver')
+		public systemWebhookDeliverQueue: SystemWebhookDeliverQueue,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const deliverJobCounts = await this.deliverQueue.getJobCounts();

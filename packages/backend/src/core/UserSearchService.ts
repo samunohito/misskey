@@ -36,7 +36,8 @@ export class UserSearchService {
 		private mutingsRepository: MutingsRepository,
 
 		@inject(delay(() => UserEntityService))
-		private userEntityService: UserEntityService) {
+		private userEntityService: UserEntityService,
+	) {
 	}
 
 	/**

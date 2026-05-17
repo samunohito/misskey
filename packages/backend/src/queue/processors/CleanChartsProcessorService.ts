@@ -63,7 +63,8 @@ export class CleanChartsProcessorService {
 		private apRequestChart: ApRequestChart,
 
 		@inject(delay(() => QueueLoggerService))
-		private queueLoggerService: QueueLoggerService) {
+		private queueLoggerService: QueueLoggerService,
+	) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('clean-charts');
 	}
 

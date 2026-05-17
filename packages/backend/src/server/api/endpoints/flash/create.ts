@@ -60,7 +60,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private flashEntityService: FlashEntityService,
 
 		@inject(delay(() => IdService))
-		private idService: IdService) {
+		private idService: IdService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			const flash = await this.flashsRepository.insertOne({
 				id: this.idService.gen(),

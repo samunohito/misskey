@@ -57,7 +57,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private flashLikeEntityService: FlashLikeEntityService,
 
 		@inject(delay(() => FlashService))
-		private flashService: FlashService) {
+		private flashService: FlashService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			const likes = await this.flashService.myLikes(me.id, {
 				sinceId: ps.sinceId,

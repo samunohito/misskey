@@ -44,7 +44,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private driveFileEntityService: DriveFileEntityService,
 
 		@inject(delay(() => RoleService))
-		private roleService: RoleService) {
+		private roleService: RoleService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			const usage = await this.driveFileEntityService.calcDriveUsageOf(me.id);
 

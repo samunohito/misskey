@@ -41,7 +41,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private channelFavoritesRepository: ChannelFavoritesRepository,
 
 		@inject(delay(() => ChannelEntityService))
-		private channelEntityService: ChannelEntityService) {
+		private channelEntityService: ChannelEntityService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			const query = this.channelFavoritesRepository.createQueryBuilder('favorite')
 				.andWhere('favorite.userId = :meId', { meId: me.id })

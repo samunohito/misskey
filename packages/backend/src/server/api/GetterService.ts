@@ -22,7 +22,8 @@ export class GetterService {
 		private notesRepository: NotesRepository,
 
 		@inject(delay(() => UserEntityService))
-		private userEntityService: UserEntityService) {
+		private userEntityService: UserEntityService,
+	) {
 	}
 
 	/**

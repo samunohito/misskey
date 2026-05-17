@@ -40,7 +40,8 @@ export class HashtagService {
 		private idService: IdService,
 
 		@inject(delay(() => UtilityService))
-		private utilityService: UtilityService) {
+		private utilityService: UtilityService,
+	) {
 	}
 
 	@bindThis

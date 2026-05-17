@@ -77,7 +77,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private instanceEntityService: InstanceEntityService,
 
 		@inject(delay(() => MetaService))
-		private metaService: MetaService) {
+		private metaService: MetaService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			const query = this.instancesRepository.createQueryBuilder('instance');
 

@@ -74,7 +74,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private accessTokensRepository: AccessTokensRepository,
 
 		@inject(delay(() => IdService))
-		private idService: IdService) {
+		private idService: IdService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			const query = this.accessTokensRepository.createQueryBuilder('token')
 				.where('token.userId = :userId', { userId: me.id })

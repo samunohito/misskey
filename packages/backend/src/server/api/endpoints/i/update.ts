@@ -291,7 +291,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private avatarDecorationService: AvatarDecorationService,
 
 		@inject(delay(() => UtilityService))
-		private utilityService: UtilityService) {
+		private utilityService: UtilityService,
+	) {
 		super(meta, paramDef, async (ps, _user, token) => {
 			const user = await this.usersRepository.findOneByOrFail({ id: _user.id }) as MiLocalUser;
 			const isSecure = token == null;

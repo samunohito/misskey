@@ -32,7 +32,8 @@ export class FederatedInstanceService implements Disposable {
 		private idService: IdService,
 
 		@inject(delay(() => DisposableRegistry))
-		registry: DisposableRegistry) {
+		registry: DisposableRegistry,
+	) {
 		registry.register(this);
 		this.federatedInstanceCache = new RedisKVCache<MiInstance | null>(this.redisClient, 'federatedInstance', {
 			lifetime: 1000 * 60 * 30, // 30m

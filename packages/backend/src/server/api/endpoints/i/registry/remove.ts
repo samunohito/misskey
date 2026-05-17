@@ -37,7 +37,10 @@ export const paramDef = {
 
 @injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
-	constructor(@inject(delay(() => RegistryApiService)) private registryApiService: RegistryApiService) {
+	constructor(
+		@inject(delay(() => RegistryApiService))
+		private registryApiService: RegistryApiService,
+	) {
 		super(meta, paramDef, async (ps, me, accessToken) => {
 			await this.registryApiService.remove(me.id, accessToken != null ? accessToken.id : (ps.domain ?? null), ps.scope, ps.key);
 		});

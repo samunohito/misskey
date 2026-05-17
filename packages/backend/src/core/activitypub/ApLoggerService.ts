@@ -11,7 +11,10 @@ import { RemoteLoggerService } from '@/core/RemoteLoggerService.js';
 export class ApLoggerService {
 	public logger: Logger;
 
-	constructor(@inject(delay(() => RemoteLoggerService)) private remoteLoggerService: RemoteLoggerService) {
+	constructor(
+		@inject(delay(() => RemoteLoggerService))
+		private remoteLoggerService: RemoteLoggerService,
+	) {
 		this.logger = this.remoteLoggerService.logger.createSubLogger('ap', 'magenta');
 	}
 }

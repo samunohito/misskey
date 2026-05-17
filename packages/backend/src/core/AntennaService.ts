@@ -51,7 +51,8 @@ export class AntennaService implements Disposable {
 		private fanoutTimelineService: FanoutTimelineService,
 
 		@inject(delay(() => DisposableRegistry))
-		registry: DisposableRegistry) {
+		registry: DisposableRegistry,
+	) {
 		registry.register(this);
 		this.antennasFetched = false;
 		this.antennas = [];

@@ -90,7 +90,8 @@ export class ActivityPubServerService {
 		private queryService: QueryService,
 
 		@inject(delay(() => FanoutTimelineEndpointService))
-		private fanoutTimelineEndpointService: FanoutTimelineEndpointService) {
+		private fanoutTimelineEndpointService: FanoutTimelineEndpointService,
+	) {
 		//this.createServer = this.createServer.bind(this);
 	}
 

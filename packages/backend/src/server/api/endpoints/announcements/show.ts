@@ -39,7 +39,10 @@ export const paramDef = {
 
 @injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
-	constructor(@inject(delay(() => AnnouncementService)) private announcementService: AnnouncementService) {
+	constructor(
+		@inject(delay(() => AnnouncementService))
+		private announcementService: AnnouncementService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			try {
 				return await this.announcementService.getAnnouncement(ps.announcementId, me);

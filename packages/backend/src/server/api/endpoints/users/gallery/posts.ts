@@ -49,7 +49,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private galleryPostEntityService: GalleryPostEntityService,
 
 		@inject(delay(() => QueryService))
-		private queryService: QueryService) {
+		private queryService: QueryService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			const query = this.queryService.makePaginationQuery(this.galleryPostsRepository.createQueryBuilder('post'), ps.sinceId, ps.untilId, ps.sinceDate, ps.untilDate)
 				.andWhere('post.userId = :userId', { userId: ps.userId });

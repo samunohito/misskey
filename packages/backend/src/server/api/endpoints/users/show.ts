@@ -123,7 +123,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private perUserPvChart: PerUserPvChart,
 
 		@inject(delay(() => ApiLoggerService))
-		private apiLoggerService: ApiLoggerService) {
+		private apiLoggerService: ApiLoggerService,
+	) {
 		super(meta, paramDef, async (ps, me, _1, _2, _3, ip) => {
 			// ログイン時にusers/showできなくなってしまう
 			//if (this.serverSettings.ugcVisibilityForVisitor === 'none' && me == null) {

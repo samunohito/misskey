@@ -43,7 +43,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private appsRepository: AppsRepository,
 
 		@inject(delay(() => AppEntityService))
-		private appEntityService: AppEntityService) {
+		private appEntityService: AppEntityService,
+	) {
 		super(meta, paramDef, async (ps, user, token) => {
 			const isSecure = user != null && token == null;
 

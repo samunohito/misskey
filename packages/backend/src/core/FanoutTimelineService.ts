@@ -46,7 +46,8 @@ export class FanoutTimelineService {
 		private redisForTimelines: Redis.Redis,
 
 		@inject(delay(() => IdService))
-		private idService: IdService) {
+		private idService: IdService,
+	) {
 	}
 
 	@bindThis

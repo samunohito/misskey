@@ -58,7 +58,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private bubbleGameRecordsRepository: BubbleGameRecordsRepository,
 
 		@inject(delay(() => IdService))
-		private idService: IdService) {
+		private idService: IdService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			const seedDate = new Date(parseInt(ps.seed, 10));
 			const now = new Date();

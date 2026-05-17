@@ -58,7 +58,8 @@ export class SignupService {
 		private metaService: MetaService,
 
 		@inject(delay(() => UsersChart))
-		private usersChart: UsersChart) {
+		private usersChart: UsersChart,
+	) {
 	}
 
 	@bindThis

@@ -136,7 +136,8 @@ export class ApPersonService {
 		private apLoggerService: ApLoggerService,
 
 		@inject(delay(() => AccountMoveService))
-		private accountMoveService: AccountMoveService) {
+		private accountMoveService: AccountMoveService,
+	) {
 		this.logger = this.apLoggerService.logger;
 	}
 

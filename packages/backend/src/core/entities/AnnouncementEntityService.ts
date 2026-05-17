@@ -20,7 +20,8 @@ export class AnnouncementEntityService {
 		private announcementReadsRepository: AnnouncementReadsRepository,
 
 		@inject(delay(() => IdService))
-		private idService: IdService) {
+		private idService: IdService,
+	) {
 	}
 
 	@bindThis

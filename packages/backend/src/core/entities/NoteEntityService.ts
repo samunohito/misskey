@@ -61,7 +61,8 @@ async function nullIfEntityNotFound<T>(promise: Promise<T>): Promise<T | null> {
 export class NoteEntityService {
 	private noteLoader = new DebounceLoader(this.findNoteOrFail);
 
-	constructor(@inject(DI.meta)
+	constructor(
+		@inject(DI.meta)
 		private meta: MiMeta,
 
 		@inject(DI.usersRepository)
@@ -93,12 +94,24 @@ export class NoteEntityService {
 		//private idService: IdService,
 		//private cacheService: CacheService,
 		@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService,
-		@inject(delay(() => DriveFileEntityService)) private driveFileEntityService: DriveFileEntityService,
-		@inject(delay(() => CustomEmojiService)) private customEmojiService: CustomEmojiService,
-		@inject(delay(() => ReactionService)) private reactionService: ReactionService,
-		@inject(delay(() => ReactionsBufferingService)) private reactionsBufferingService: ReactionsBufferingService,
-		@inject(delay(() => IdService)) private idService: IdService,
-		@inject(delay(() => CacheService)) private cacheService: CacheService,
+
+		@inject(delay(() => DriveFileEntityService))
+		private driveFileEntityService: DriveFileEntityService,
+
+		@inject(delay(() => CustomEmojiService))
+		private customEmojiService: CustomEmojiService,
+
+		@inject(delay(() => ReactionService))
+		private reactionService: ReactionService,
+
+		@inject(delay(() => ReactionsBufferingService))
+		private reactionsBufferingService: ReactionsBufferingService,
+
+		@inject(delay(() => IdService))
+		private idService: IdService,
+
+		@inject(delay(() => CacheService))
+		private cacheService: CacheService,
 	) {
 	}
 

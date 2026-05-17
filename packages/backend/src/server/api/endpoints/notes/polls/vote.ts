@@ -107,7 +107,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private globalEventService: GlobalEventService,
 
 		@inject(delay(() => UserBlockingService))
-		private userBlockingService: UserBlockingService) {
+		private userBlockingService: UserBlockingService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			const createdAt = new Date();
 

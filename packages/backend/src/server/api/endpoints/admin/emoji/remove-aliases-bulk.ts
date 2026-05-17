@@ -30,7 +30,10 @@ export const paramDef = {
 
 @injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
-	constructor(@inject(delay(() => CustomEmojiService)) private customEmojiService: CustomEmojiService) {
+	constructor(
+		@inject(delay(() => CustomEmojiService))
+		private customEmojiService: CustomEmojiService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			await this.customEmojiService.removeAliasesBulk(ps.ids, ps.aliases);
 		});

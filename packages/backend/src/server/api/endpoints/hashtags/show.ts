@@ -46,7 +46,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private hashtagsRepository: HashtagsRepository,
 
 		@inject(delay(() => HashtagEntityService))
-		private hashtagEntityService: HashtagEntityService) {
+		private hashtagEntityService: HashtagEntityService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			const hashtag = await this.hashtagsRepository.findOneBy({ name: normalizeForSearch(ps.tag) });
 			if (hashtag == null) {

@@ -72,7 +72,8 @@ export class SystemWebhookService implements Disposable {
 		private globalEventService: GlobalEventService,
 
 		@inject(delay(() => DisposableRegistry))
-		registry: DisposableRegistry) {
+		registry: DisposableRegistry,
+	) {
 		registry.register(this);
 		this.redisForSub.on('message', this.onMessage);
 	}

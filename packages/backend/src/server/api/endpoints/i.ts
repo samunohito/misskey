@@ -45,7 +45,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private userProfilesRepository: UserProfilesRepository,
 
 		@inject(delay(() => UserEntityService))
-		private userEntityService: UserEntityService) {
+		private userEntityService: UserEntityService,
+	) {
 		super(meta, paramDef, async (ps, user, token) => {
 			const isSecure = token == null;
 

@@ -40,7 +40,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private utilityService: UtilityService,
 
 		@inject(delay(() => InstanceEntityService))
-		private instanceEntityService: InstanceEntityService) {
+		private instanceEntityService: InstanceEntityService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			const instance = await this.instancesRepository
 				.findOneBy({ host: this.utilityService.toPuny(ps.host) });

@@ -128,7 +128,10 @@ export const paramDef = {
 
 @injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
-	constructor(@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService) {
+	constructor(
+		@inject(delay(() => UserEntityService))
+		private userEntityService: UserEntityService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			return Array.isArray(ps.userId)
 				? await this.userEntityService.getRelations(me.id, ps.userId).then(it => [...it.values()])

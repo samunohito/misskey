@@ -27,7 +27,8 @@ export default class ApRequestChart extends Chart<typeof schema> { // eslint-dis
 		private redisClient: Redis.Redis,
 
 		@inject(delay(() => ChartLoggerService))
-		private chartLoggerService: ChartLoggerService) {
+		private chartLoggerService: ChartLoggerService,
+	) {
 		super(db, (k) => acquireChartInsertLock(redisClient, k), chartLoggerService.logger, name, schema);
 	}
 

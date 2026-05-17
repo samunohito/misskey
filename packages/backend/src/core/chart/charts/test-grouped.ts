@@ -29,7 +29,8 @@ export default class TestGroupedChart extends Chart<typeof schema> { // eslint-d
 		private redisClient: Redis.Redis,
 
 		@inject(delay(() => Logger))
-		logger: Logger) {
+		logger: Logger,
+	) {
 		super(db, (k) => acquireChartInsertLock(redisClient, k), logger, name, schema, true);
 	}
 

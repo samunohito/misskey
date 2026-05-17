@@ -60,7 +60,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private idService: IdService,
 
 		@inject(delay(() => EmailService))
-		private emailService: EmailService) {
+		private emailService: EmailService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			const user = await this.usersRepository.findOneBy({
 				usernameLower: ps.username.toLowerCase(),

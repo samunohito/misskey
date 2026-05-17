@@ -68,7 +68,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private queueService: QueueService,
 
 		@inject(delay(() => AccountMoveService))
-		private accountMoveService: AccountMoveService) {
+		private accountMoveService: AccountMoveService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			const file = await this.driveFilesRepository.findOneBy({ id: ps.fileId, userId: me.id });
 

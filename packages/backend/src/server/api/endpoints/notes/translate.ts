@@ -74,7 +74,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private httpRequestService: HttpRequestService,
 
 		@inject(delay(() => RoleService))
-		private roleService: RoleService) {
+		private roleService: RoleService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			const policies = await this.roleService.getUserPolicies(me.id);
 			if (!policies.canUseTranslator) {

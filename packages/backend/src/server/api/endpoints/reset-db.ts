@@ -47,7 +47,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private metaService: MetaService,
 
 		@inject(delay(() => GlobalEventService))
-		private globalEventService: GlobalEventService) {
+		private globalEventService: GlobalEventService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			if (process.env.NODE_ENV !== 'test') throw new Error('NODE_ENV is not a test');
 

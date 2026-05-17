@@ -108,7 +108,8 @@ export class UserFollowingService {
 		private instanceChart: InstanceChart,
 
 		@inject(delay(() => UserBlockingService))
-		private userBlockingService: UserBlockingService) {
+		private userBlockingService: UserBlockingService,
+	) {
 	}
 
 	@bindThis

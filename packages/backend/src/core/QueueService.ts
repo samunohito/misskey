@@ -105,16 +105,35 @@ export class QueueService {
 		@inject(DI.config)
 		private config: Config,
 
-		@inject('queue:system') public systemQueue: SystemQueue,
-		@inject('queue:endedPollNotification') public endedPollNotificationQueue: EndedPollNotificationQueue,
-		@inject('queue:postScheduledNote') public postScheduledNoteQueue: PostScheduledNoteQueue,
-		@inject('queue:deliver') public deliverQueue: DeliverQueue,
-		@inject('queue:inbox') public inboxQueue: InboxQueue,
-		@inject('queue:db') public dbQueue: DbQueue,
-		@inject('queue:relationship') public relationshipQueue: RelationshipQueue,
-		@inject('queue:objectStorage') public objectStorageQueue: ObjectStorageQueue,
-		@inject('queue:userWebhookDeliver') public userWebhookDeliverQueue: UserWebhookDeliverQueue,
-		@inject('queue:systemWebhookDeliver') public systemWebhookDeliverQueue: SystemWebhookDeliverQueue,
+		@inject('queue:system')
+		public systemQueue: SystemQueue,
+
+		@inject('queue:endedPollNotification')
+		public endedPollNotificationQueue: EndedPollNotificationQueue,
+
+		@inject('queue:postScheduledNote')
+		public postScheduledNoteQueue: PostScheduledNoteQueue,
+
+		@inject('queue:deliver')
+		public deliverQueue: DeliverQueue,
+
+		@inject('queue:inbox')
+		public inboxQueue: InboxQueue,
+
+		@inject('queue:db')
+		public dbQueue: DbQueue,
+
+		@inject('queue:relationship')
+		public relationshipQueue: RelationshipQueue,
+
+		@inject('queue:objectStorage')
+		public objectStorageQueue: ObjectStorageQueue,
+
+		@inject('queue:userWebhookDeliver')
+		public userWebhookDeliverQueue: UserWebhookDeliverQueue,
+
+		@inject('queue:systemWebhookDeliver')
+		public systemWebhookDeliverQueue: SystemWebhookDeliverQueue,
 	) {
 		for (const def of REPEATABLE_SYSTEM_JOB_DEF) {
 			this.systemQueue.upsertJobScheduler(def.name, {

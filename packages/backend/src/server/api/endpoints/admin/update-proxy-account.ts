@@ -43,7 +43,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private moderationLogService: ModerationLogService,
 
 		@inject(delay(() => SystemAccountService))
-		private systemAccountService: SystemAccountService) {
+		private systemAccountService: SystemAccountService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			const proxy = await this.systemAccountService.updateCorrespondingUserProfile('proxy', {
 				description: ps.description,

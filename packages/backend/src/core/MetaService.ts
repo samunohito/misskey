@@ -32,7 +32,8 @@ export class MetaService implements Disposable {
 		private globalEventService: GlobalEventService,
 
 		@inject(delay(() => DisposableRegistry))
-		registry: DisposableRegistry) {
+		registry: DisposableRegistry,
+	) {
 		registry.register(this);
 		//this.onMessage = this.onMessage.bind(this);
 

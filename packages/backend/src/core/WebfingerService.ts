@@ -25,7 +25,10 @@ const mRegex = /^([^@]+)@(.*)/;
 
 @injectable()
 export class WebfingerService {
-	constructor(@inject(delay(() => HttpRequestService)) private httpRequestService: HttpRequestService) {
+	constructor(
+		@inject(delay(() => HttpRequestService))
+		private httpRequestService: HttpRequestService,
+	) {
 	}
 
 	@bindThis

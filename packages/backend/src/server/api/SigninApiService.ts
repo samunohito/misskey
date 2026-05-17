@@ -73,7 +73,8 @@ export class SigninApiService {
 		private webAuthnService: WebAuthnService,
 
 		@inject(delay(() => CaptchaService))
-		private captchaService: CaptchaService) {
+		private captchaService: CaptchaService,
+	) {
 		this.logger = this.loggerService.getLogger('Signin');
 	}
 

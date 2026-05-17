@@ -102,7 +102,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private apPersonService: ApPersonService,
 
 		@inject(delay(() => UserEntityService))
-		private userEntityService: UserEntityService) {
+		private userEntityService: UserEntityService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			// check parameter
 			if (!ps.moveToAccount) throw new ApiError(meta.errors.noSuchUser);

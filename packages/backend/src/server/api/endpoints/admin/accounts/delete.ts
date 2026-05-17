@@ -34,7 +34,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private usersRepository: UsersRepository,
 
 		@inject(delay(() => DeleteAccountService))
-		private deleteAccoountService: DeleteAccountService) {
+		private deleteAccoountService: DeleteAccountService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			const user = await this.usersRepository.findOneBy({ id: ps.userId });
 

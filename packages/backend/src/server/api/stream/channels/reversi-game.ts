@@ -28,7 +28,8 @@ export class ReversiGameChannel extends Channel {
 		private reversiService: ReversiService,
 
 		@inject(delay(() => ReversiGameEntityService))
-		private reversiGameEntityService: ReversiGameEntityService) {
+		private reversiGameEntityService: ReversiGameEntityService,
+	) {
 		super(request);
 	}
 

@@ -72,7 +72,8 @@ export class ImportAntennasProcessorService {
 		private idService: IdService,
 
 		@inject(delay(() => GlobalEventService))
-		private globalEventService: GlobalEventService) {
+		private globalEventService: GlobalEventService,
+	) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('import-antennas');
 	}
 

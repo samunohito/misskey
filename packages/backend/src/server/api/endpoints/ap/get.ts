@@ -39,7 +39,10 @@ export const paramDef = {
 
 @injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
-	constructor(@inject(delay(() => ApResolverService)) private apResolverService: ApResolverService) {
+	constructor(
+		@inject(delay(() => ApResolverService))
+		private apResolverService: ApResolverService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			const resolver = await this.apResolverService.createResolver();
 			const object = await resolver.resolve(ps.uri);

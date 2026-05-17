@@ -16,6 +16,7 @@ export class EmojiEntityService {
 	constructor(
 		@inject(DI.emojisRepository)
 		private emojisRepository: EmojisRepository,
+
 		@inject(DI.rolesRepository)
 		private rolesRepository: RolesRepository,
 	) {

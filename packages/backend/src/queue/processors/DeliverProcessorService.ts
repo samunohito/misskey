@@ -58,7 +58,8 @@ export class DeliverProcessorService {
 		private federationChart: FederationChart,
 
 		@inject(delay(() => QueueLoggerService))
-		private queueLoggerService: QueueLoggerService) {
+		private queueLoggerService: QueueLoggerService,
+	) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('deliver');
 		this.suspendedHostsCache = new MemorySingleCache<MiInstance[]>(1000 * 60 * 60); // 1h
 	}

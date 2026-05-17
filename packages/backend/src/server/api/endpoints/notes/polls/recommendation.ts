@@ -54,7 +54,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private mutingsRepository: MutingsRepository,
 
 		@inject(delay(() => NoteEntityService))
-		private noteEntityService: NoteEntityService) {
+		private noteEntityService: NoteEntityService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			const query = this.pollsRepository.createQueryBuilder('poll')
 				.where('poll.userHost IS NULL')

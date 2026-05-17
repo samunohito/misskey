@@ -36,7 +36,8 @@ export class AvatarDecorationService implements Disposable {
 		private globalEventService: GlobalEventService,
 
 		@inject(delay(() => DisposableRegistry))
-		registry: DisposableRegistry) {
+		registry: DisposableRegistry,
+	) {
 		registry.register(this);
 		this.cache = new MemorySingleCache<MiAvatarDecoration[]>(1000 * 60 * 30); // 30s
 

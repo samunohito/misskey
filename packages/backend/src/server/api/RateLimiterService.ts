@@ -30,7 +30,8 @@ export class RateLimiterService {
 		private redisClient: Redis.Redis,
 
 		@inject(delay(() => LoggerService))
-		private loggerService: LoggerService) {
+		private loggerService: LoggerService,
+	) {
 		this.logger = this.loggerService.getLogger('limiter');
 
 		if (process.env.NODE_ENV !== 'production') {

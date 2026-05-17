@@ -51,7 +51,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private clipEntityService: ClipEntityService,
 
 		@inject(delay(() => ClipService))
-		private clipService: ClipService) {
+		private clipService: ClipService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			let clip: MiClip;
 			try {

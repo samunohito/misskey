@@ -50,7 +50,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private channelEntityService: ChannelEntityService,
 
 		@inject(delay(() => QueryService))
-		private queryService: QueryService) {
+		private queryService: QueryService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			const query = this.queryService.makePaginationQuery(this.channelsRepository.createQueryBuilder('channel'), ps.sinceId, ps.untilId, ps.sinceDate, ps.untilDate)
 				.andWhere('channel.isArchived = FALSE')

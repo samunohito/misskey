@@ -41,7 +41,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private rolesRepository: RolesRepository,
 
 		@inject(delay(() => RoleEntityService))
-		private roleEntityService: RoleEntityService) {
+		private roleEntityService: RoleEntityService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			const roles = await this.rolesRepository.findBy({
 				isPublic: true,

@@ -51,7 +51,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private idService: IdService,
 
 		@inject(delay(() => ModerationLogService))
-		private moderationLogService: ModerationLogService) {
+		private moderationLogService: ModerationLogService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			const ad = await this.adsRepository.insertOne({
 				id: this.idService.gen(),

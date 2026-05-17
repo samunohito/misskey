@@ -36,7 +36,8 @@ export default class UsersChart extends Chart<typeof schema> { // eslint-disable
 		private userEntityService: UserEntityService,
 
 		@inject(delay(() => ChartLoggerService))
-		private chartLoggerService: ChartLoggerService) {
+		private chartLoggerService: ChartLoggerService,
+	) {
 		super(db, (k) => acquireChartInsertLock(redisClient, k), chartLoggerService.logger, name, schema);
 	}
 

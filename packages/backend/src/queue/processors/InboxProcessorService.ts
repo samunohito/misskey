@@ -81,7 +81,8 @@ export class InboxProcessorService implements Disposable {
 		private queueLoggerService: QueueLoggerService,
 
 		@inject(delay(() => DisposableRegistry))
-		registry: DisposableRegistry) {
+		registry: DisposableRegistry,
+	) {
 		registry.register(this);
 		this.logger = this.queueLoggerService.logger.createSubLogger('inbox');
 		this.updateInstanceQueue = new CollapsedQueue(process.env.NODE_ENV !== 'test' ? 60 * 1000 * 5 : 0, this.collapseUpdateInstanceJobs, this.performUpdateInstance);

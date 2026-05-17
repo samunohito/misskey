@@ -41,7 +41,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private antennasRepository: AntennasRepository,
 
 		@inject(delay(() => GlobalEventService))
-		private globalEventService: GlobalEventService) {
+		private globalEventService: GlobalEventService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			const antenna = await this.antennasRepository.findOneBy({
 				id: ps.antennaId,

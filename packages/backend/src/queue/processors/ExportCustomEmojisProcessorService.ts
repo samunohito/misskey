@@ -46,7 +46,8 @@ export class ExportCustomEmojisProcessorService {
 		private queueLoggerService: QueueLoggerService,
 
 		@inject(delay(() => NotificationService))
-		private notificationService: NotificationService) {
+		private notificationService: NotificationService,
+	) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('export-custom-emojis');
 	}
 

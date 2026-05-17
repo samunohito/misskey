@@ -45,7 +45,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private flashService: FlashService,
 
 		@inject(delay(() => FlashEntityService))
-		private flashEntityService: FlashEntityService) {
+		private flashEntityService: FlashEntityService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			const result = await this.flashService.search(ps.query, {
 				sinceId: ps.sinceId,

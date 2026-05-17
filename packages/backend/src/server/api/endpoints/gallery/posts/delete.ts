@@ -54,7 +54,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private moderationLogService: ModerationLogService,
 
 		@inject(delay(() => RoleService))
-		private roleService: RoleService) {
+		private roleService: RoleService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			const post = await this.galleryPostsRepository.findOneBy({ id: ps.postId });
 

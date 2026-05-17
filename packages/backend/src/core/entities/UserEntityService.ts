@@ -83,7 +83,8 @@ export type UserRelation = {
 
 @injectable()
 export class UserEntityService {
-	constructor(@inject(DI.config)
+	constructor(
+		@inject(DI.config)
 		private config: Config,
 
 		@inject(DI.meta)
@@ -121,16 +122,36 @@ export class UserEntityService {
 
 		@inject(DI.userMemosRepository)
 		private userMemosRepository: UserMemoRepository,
-		@inject(delay(() => ApPersonService)) private apPersonService: ApPersonService,
-		@inject(delay(() => NoteEntityService)) private noteEntityService: NoteEntityService,
-		@inject(delay(() => PageEntityService)) private pageEntityService: PageEntityService,
-		@inject(delay(() => CustomEmojiService)) private customEmojiService: CustomEmojiService,
-		@inject(delay(() => AnnouncementService)) private announcementService: AnnouncementService,
-		@inject(delay(() => RoleService)) private roleService: RoleService,
-		@inject(delay(() => FederatedInstanceService)) private federatedInstanceService: FederatedInstanceService,
-		@inject(delay(() => IdService)) private idService: IdService,
-		@inject(delay(() => AvatarDecorationService)) private avatarDecorationService: AvatarDecorationService,
-		@inject(delay(() => ChatService)) private chatService: ChatService,
+
+		@inject(delay(() => ApPersonService))
+		private apPersonService: ApPersonService,
+
+		@inject(delay(() => NoteEntityService))
+		private noteEntityService: NoteEntityService,
+
+		@inject(delay(() => PageEntityService))
+		private pageEntityService: PageEntityService,
+
+		@inject(delay(() => CustomEmojiService))
+		private customEmojiService: CustomEmojiService,
+
+		@inject(delay(() => AnnouncementService))
+		private announcementService: AnnouncementService,
+
+		@inject(delay(() => RoleService))
+		private roleService: RoleService,
+
+		@inject(delay(() => FederatedInstanceService))
+		private federatedInstanceService: FederatedInstanceService,
+
+		@inject(delay(() => IdService))
+		private idService: IdService,
+
+		@inject(delay(() => AvatarDecorationService))
+		private avatarDecorationService: AvatarDecorationService,
+
+		@inject(delay(() => ChatService))
+		private chatService: ChatService,
 	) {
 	}
 

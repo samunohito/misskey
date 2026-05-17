@@ -19,7 +19,8 @@ export class AuthSessionEntityService {
 		private authSessionsRepository: AuthSessionsRepository,
 
 		@inject(delay(() => AppEntityService))
-		private appEntityService: AppEntityService) {
+		private appEntityService: AppEntityService,
+	) {
 	}
 
 	@bindThis

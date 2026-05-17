@@ -79,7 +79,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private userEntityService: UserEntityService,
 
 		@inject(delay(() => SignupService))
-		private signupService: SignupService) {
+		private signupService: SignupService,
+	) {
 		super(meta, paramDef, async (ps, _me, token) => {
 			const me = _me ? await this.usersRepository.findOneByOrFail({ id: _me.id }) : null;
 

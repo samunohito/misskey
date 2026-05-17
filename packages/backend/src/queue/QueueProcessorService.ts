@@ -201,7 +201,8 @@ export class QueueProcessorService implements Disposable {
 		private cleanRemoteNotesProcessorService: CleanRemoteNotesProcessorService,
 
 		@inject(delay(() => DisposableRegistry))
-		registry: DisposableRegistry) {
+		registry: DisposableRegistry,
+	) {
 		registry.register(this);
 		this.logger = this.queueLoggerService.logger;
 

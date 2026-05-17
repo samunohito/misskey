@@ -31,7 +31,8 @@ export class UrlPreviewService {
 		private httpRequestService: HttpRequestService,
 
 		@inject(delay(() => LoggerService))
-		private loggerService: LoggerService) {
+		private loggerService: LoggerService,
+	) {
 		this.logger = this.loggerService.getLogger('url-preview');
 	}
 

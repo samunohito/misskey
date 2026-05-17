@@ -19,7 +19,8 @@ export class PageLikeEntityService {
 		private pageLikesRepository: PageLikesRepository,
 
 		@inject(delay(() => PageEntityService))
-		private pageEntityService: PageEntityService) {
+		private pageEntityService: PageEntityService,
+	) {
 	}
 
 	@bindThis

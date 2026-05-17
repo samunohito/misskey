@@ -30,7 +30,8 @@ export class MetaEntityService {
 		private adsRepository: AdsRepository,
 
 		@inject(delay(() => SystemAccountService))
-		private systemAccountService: SystemAccountService) { }
+		private systemAccountService: SystemAccountService,
+	) { }
 
 	@bindThis
 	public async pack(meta?: MiMeta): Promise<Packed<'MetaLite'>> {

@@ -29,7 +29,8 @@ export class PostScheduledNoteProcessorService {
 		private notificationService: NotificationService,
 
 		@inject(delay(() => QueueLoggerService))
-		private queueLoggerService: QueueLoggerService) {
+		private queueLoggerService: QueueLoggerService,
+	) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('post-scheduled-note');
 	}
 

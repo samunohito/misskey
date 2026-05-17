@@ -56,7 +56,8 @@ export class PageService {
 		private moderationLogService: ModerationLogService,
 
 		@inject(delay(() => IdService))
-		private idService: IdService) {
+		private idService: IdService,
+	) {
 	}
 
 	@bindThis

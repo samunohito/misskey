@@ -75,7 +75,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private accessTokensRepository: AccessTokensRepository,
 
 		@inject(delay(() => UserEntityService))
-		private userEntityService: UserEntityService) {
+		private userEntityService: UserEntityService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			// Lookup app
 			const app = await this.appsRepository.findOneBy({

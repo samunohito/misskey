@@ -17,7 +17,8 @@ import { UserEntityService } from './UserEntityService.js';
 import { NoteEntityService } from './NoteEntityService.js';
 @injectable()
 export class NoteReactionEntityService {
-	constructor(@inject(DI.noteReactionsRepository)
+	constructor(
+		@inject(DI.noteReactionsRepository)
 		private noteReactionsRepository: NoteReactionsRepository,
 
 		//private userEntityService: UserEntityService,
@@ -25,9 +26,15 @@ export class NoteReactionEntityService {
 		//private reactionService: ReactionService,
 		//private idService: IdService,
 		@inject(delay(() => UserEntityService)) private userEntityService: UserEntityService,
-		@inject(delay(() => NoteEntityService)) private noteEntityService: NoteEntityService,
-		@inject(delay(() => ReactionService)) private reactionService: ReactionService,
-		@inject(delay(() => IdService)) private idService: IdService,
+
+		@inject(delay(() => NoteEntityService))
+		private noteEntityService: NoteEntityService,
+
+		@inject(delay(() => ReactionService))
+		private reactionService: ReactionService,
+
+		@inject(delay(() => IdService))
+		private idService: IdService,
 	) {
 	}
 

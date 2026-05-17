@@ -69,7 +69,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private userEntityService: UserEntityService,
 
 		@inject(delay(() => GetterService))
-		private getterService: GetterService) {
+		private getterService: GetterService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			// Lookup user
 			const user = await this.getterService.getUser(ps.userId).catch(err => {

@@ -28,7 +28,8 @@ export class QueueStatsService implements Disposable {
 		private queueService: QueueService,
 
 		@inject(delay(() => DisposableRegistry))
-		registry: DisposableRegistry) {
+		registry: DisposableRegistry,
+	) {
 		registry.register(this);
 	}
 

@@ -70,7 +70,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private notesChart: NotesChart,
 
 		@inject(delay(() => UsersChart))
-		private usersChart: UsersChart) {
+		private usersChart: UsersChart,
+	) {
 		super(meta, paramDef, async () => {
 			const notesChart = await this.notesChart.getChart('hour', 1, null);
 			const notesCount = notesChart.local.total[0] + notesChart.remote.total[0];

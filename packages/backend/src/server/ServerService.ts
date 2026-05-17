@@ -96,7 +96,8 @@ export class ServerService implements Disposable {
 		private oauth2ProviderService: OAuth2ProviderService,
 
 		@inject(delay(() => DisposableRegistry))
-		registry: DisposableRegistry) {
+		registry: DisposableRegistry,
+	) {
 		registry.register(this);
 		this.logger = this.loggerService.getLogger('server', 'gray');
 	}

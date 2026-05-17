@@ -81,7 +81,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private driveFilesRepository: DriveFilesRepository,
 
 		@inject(delay(() => PageService))
-		private pageService: PageService) {
+		private pageService: PageService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			try {
 				let eyeCatchingImage: MiDriveFile | null | undefined | string = ps.eyeCatchingImageId;

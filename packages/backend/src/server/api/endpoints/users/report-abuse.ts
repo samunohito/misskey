@@ -58,7 +58,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private roleService: RoleService,
 
 		@inject(delay(() => AbuseReportService))
-		private abuseReportService: AbuseReportService) {
+		private abuseReportService: AbuseReportService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			// Lookup user
 			const targetUser = await this.getterService.getUser(ps.userId).catch(err => {

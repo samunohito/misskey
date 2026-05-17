@@ -82,7 +82,10 @@ export const paramDef = {
 
 @injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
-	constructor(@inject(delay(() => CaptchaService)) private captchaService: CaptchaService) {
+	constructor(
+		@inject(delay(() => CaptchaService))
+		private captchaService: CaptchaService,
+	) {
 		super(meta, paramDef, async (ps) => {
 			const result = await this.captchaService.save(ps.provider, {
 				sitekey: ps.sitekey,

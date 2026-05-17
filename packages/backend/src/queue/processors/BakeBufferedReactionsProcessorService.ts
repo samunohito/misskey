@@ -24,7 +24,8 @@ export class BakeBufferedReactionsProcessorService {
 		private reactionsBufferingService: ReactionsBufferingService,
 
 		@inject(delay(() => QueueLoggerService))
-		private queueLoggerService: QueueLoggerService) {
+		private queueLoggerService: QueueLoggerService,
+	) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('bake-buffered-reactions');
 	}
 

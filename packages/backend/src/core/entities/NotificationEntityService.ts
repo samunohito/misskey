@@ -56,7 +56,8 @@ export class NotificationEntityService {
 		private roleEntityService: RoleEntityService,
 
 		@inject(delay(() => ChatEntityService))
-		private chatEntityService: ChatEntityService) {
+		private chatEntityService: ChatEntityService,
+	) {
 	}
 
 	/**

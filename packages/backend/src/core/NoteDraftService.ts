@@ -49,7 +49,8 @@ export class NoteDraftService {
 		private noteEntityService: NoteEntityService,
 
 		@inject(delay(() => QueueService))
-		private queueService: QueueService) {
+		private queueService: QueueService,
+	) {
 	}
 
 	@bindThis

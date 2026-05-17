@@ -20,7 +20,8 @@ export class VideoProcessingService {
 		private config: Config,
 
 		@inject(delay(() => ImageProcessingService))
-		private imageProcessingService: ImageProcessingService) {
+		private imageProcessingService: ImageProcessingService,
+	) {
 	}
 
 	@bindThis

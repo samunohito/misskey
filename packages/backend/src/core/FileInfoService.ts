@@ -59,7 +59,8 @@ export class FileInfoService {
 		private aiService: AiService,
 
 		@inject(delay(() => LoggerService))
-		private loggerService: LoggerService) {
+		private loggerService: LoggerService,
+	) {
 		this.logger = this.loggerService.getLogger('file-info');
 	}
 

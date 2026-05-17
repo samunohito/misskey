@@ -56,7 +56,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private queryService: QueryService,
 
 		@inject(delay(() => NoteDraftEntityService))
-		private noteDraftEntityService: NoteDraftEntityService) {
+		private noteDraftEntityService: NoteDraftEntityService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			const query = this.queryService.makePaginationQuery<MiNoteDraft>(this.noteDraftsRepository.createQueryBuilder('drafts'), ps.sinceId, ps.untilId, ps.sinceDate, ps.untilDate)
 				.andWhere('drafts.userId = :meId', { meId: me.id });

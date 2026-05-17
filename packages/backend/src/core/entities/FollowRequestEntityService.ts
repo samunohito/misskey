@@ -20,7 +20,8 @@ export class FollowRequestEntityService {
 		private followRequestsRepository: FollowRequestsRepository,
 
 		@inject(delay(() => UserEntityService))
-		private userEntityService: UserEntityService) {
+		private userEntityService: UserEntityService,
+	) {
 	}
 
 	@bindThis

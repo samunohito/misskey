@@ -163,7 +163,8 @@ export class DriveService {
 		private instanceChart: InstanceChart,
 
 		@inject(delay(() => UtilityService))
-		private utilityService: UtilityService) {
+		private utilityService: UtilityService,
+	) {
 		const logger = new Logger('drive', 'blue');
 		this.registerLogger = logger.createSubLogger('register', 'yellow');
 		this.downloaderLogger = logger.createSubLogger('downloader');

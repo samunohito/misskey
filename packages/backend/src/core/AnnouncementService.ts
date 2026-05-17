@@ -37,7 +37,8 @@ export class AnnouncementService {
 		private moderationLogService: ModerationLogService,
 
 		@inject(delay(() => AnnouncementEntityService))
-		private announcementEntityService: AnnouncementEntityService) {
+		private announcementEntityService: AnnouncementEntityService,
+	) {
 	}
 
 	@bindThis

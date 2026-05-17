@@ -32,7 +32,8 @@ export class EndedPollNotificationProcessorService {
 		private notificationService: NotificationService,
 
 		@inject(delay(() => QueueLoggerService))
-		private queueLoggerService: QueueLoggerService) {
+		private queueLoggerService: QueueLoggerService,
+	) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('ended-poll-notification');
 	}
 

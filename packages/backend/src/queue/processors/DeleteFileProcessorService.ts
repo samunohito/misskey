@@ -20,7 +20,8 @@ export class DeleteFileProcessorService {
 		private driveService: DriveService,
 
 		@inject(delay(() => QueueLoggerService))
-		private queueLoggerService: QueueLoggerService) {
+		private queueLoggerService: QueueLoggerService,
+	) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('delete-file');
 	}
 

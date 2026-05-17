@@ -58,7 +58,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private pageLikesRepository: PageLikesRepository,
 
 		@inject(delay(() => IdService))
-		private idService: IdService) {
+		private idService: IdService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			const page = await this.pagesRepository.findOneBy({ id: ps.pageId });
 			if (page == null) {

@@ -61,7 +61,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private userProfilesRepository: UserProfilesRepository,
 
 		@inject(delay(() => UserAuthService))
-		private userAuthService: UserAuthService) {
+		private userAuthService: UserAuthService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			const token = ps.token;
 			const profile = await this.userProfilesRepository.findOneByOrFail({ userId: me.id });

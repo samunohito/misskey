@@ -617,7 +617,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private metaService: MetaService,
 
 		@inject(delay(() => SystemAccountService))
-		private systemAccountService: SystemAccountService) {
+		private systemAccountService: SystemAccountService,
+	) {
 		super(meta, paramDef, async () => {
 			const instance = await this.metaService.fetch(true);
 

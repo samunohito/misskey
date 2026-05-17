@@ -57,7 +57,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private bubbleGameRecordsRepository: BubbleGameRecordsRepository,
 
 		@inject(delay(() => UserEntityService))
-		private userEntityService: UserEntityService) {
+		private userEntityService: UserEntityService,
+	) {
 		super(meta, paramDef, async (ps) => {
 			const records = await this.bubbleGameRecordsRepository.find({
 				where: {

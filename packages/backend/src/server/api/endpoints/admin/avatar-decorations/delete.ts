@@ -29,7 +29,10 @@ export const paramDef = {
 
 @injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
-	constructor(@inject(delay(() => AvatarDecorationService)) private avatarDecorationService: AvatarDecorationService) {
+	constructor(
+		@inject(delay(() => AvatarDecorationService))
+		private avatarDecorationService: AvatarDecorationService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			await this.avatarDecorationService.delete(ps.id, me);
 		});

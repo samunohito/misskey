@@ -216,7 +216,10 @@ export const paramDef = {
 
 @injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
-	constructor(@inject(delay(() => HttpRequestService)) private httpRequestService: HttpRequestService) {
+	constructor(
+		@inject(delay(() => HttpRequestService))
+		private httpRequestService: HttpRequestService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			const res = await this.httpRequestService.send(ps.url, {
 				method: 'GET',

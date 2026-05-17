@@ -36,7 +36,8 @@ export default class ActiveUsersChart extends Chart<typeof schema> { // eslint-d
 		private chartLoggerService: ChartLoggerService,
 
 		@inject(delay(() => IdService))
-		private idService: IdService) {
+		private idService: IdService,
+	) {
 		super(db, (k) => acquireChartInsertLock(redisClient, k), chartLoggerService.logger, name, schema);
 	}
 

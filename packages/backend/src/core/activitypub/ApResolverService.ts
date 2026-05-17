@@ -80,7 +80,8 @@ export class Resolver {
 		private apDbResolverService: ApDbResolverService,
 
 		@inject(delay(() => LoggerService))
-		private loggerService: LoggerService) {
+		private loggerService: LoggerService,
+	) {
 		this.history = new Set();
 		this.logger = this.loggerService.getLogger('ap-resolve');
 	}

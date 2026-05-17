@@ -32,7 +32,8 @@ export class GalleryPostEntityService {
 		private driveFileEntityService: DriveFileEntityService,
 
 		@inject(delay(() => IdService))
-		private idService: IdService) {
+		private idService: IdService,
+	) {
 	}
 
 	@bindThis

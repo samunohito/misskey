@@ -31,7 +31,8 @@ export class RoleTimelineChannel extends Channel {
 		private roleservice: RoleService,
 
 		@inject(delay(() => NoteStreamingHidingService))
-		private noteStreamingHidingService: NoteStreamingHidingService) {
+		private noteStreamingHidingService: NoteStreamingHidingService,
+	) {
 		super(request);
 		//this.onNote = this.onNote.bind(this);
 	}

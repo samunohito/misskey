@@ -53,7 +53,8 @@ export class ReversiService implements Disposable {
 		private notificationService: NotificationService,
 
 		@inject(delay(() => DisposableRegistry))
-		registry: DisposableRegistry) {
+		registry: DisposableRegistry,
+	) {
 		registry.register(this);
 	}
 

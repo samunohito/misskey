@@ -30,7 +30,8 @@ export class SystemWebhookDeliverProcessorService {
 		private httpRequestService: HttpRequestService,
 
 		@inject(delay(() => QueueLoggerService))
-		private queueLoggerService: QueueLoggerService) {
+		private queueLoggerService: QueueLoggerService,
+	) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('webhook');
 	}
 

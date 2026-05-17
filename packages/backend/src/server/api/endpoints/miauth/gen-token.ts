@@ -54,7 +54,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private idService: IdService,
 
 		@inject(delay(() => NotificationService))
-		private notificationService: NotificationService) {
+		private notificationService: NotificationService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			// Generate access token
 			const accessToken = secureRndstr(32);

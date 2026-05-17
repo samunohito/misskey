@@ -61,7 +61,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private idService: IdService,
 
 		@inject(delay(() => ModerationLogService))
-		private moderationLogService: ModerationLogService) {
+		private moderationLogService: ModerationLogService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			if (ps.expiresAt && isNaN(Date.parse(ps.expiresAt))) {
 				throw new ApiError(meta.errors.invalidDateTime);

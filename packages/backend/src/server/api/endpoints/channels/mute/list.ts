@@ -40,7 +40,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private channelMutingService: ChannelMutingService,
 
 		@inject(delay(() => ChannelEntityService))
-		private channelEntityService: ChannelEntityService) {
+		private channelEntityService: ChannelEntityService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			const mutings = await this.channelMutingService.list({
 				requestUserId: me.id,

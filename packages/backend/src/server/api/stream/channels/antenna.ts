@@ -33,7 +33,8 @@ export class AntennaChannel extends Channel {
 		private noteEntityService: NoteEntityService,
 
 		@inject(delay(() => NoteStreamingHidingService))
-		private noteStreamingHidingService: NoteStreamingHidingService) {
+		private noteStreamingHidingService: NoteStreamingHidingService,
+	) {
 		super(request);
 		//this.onEvent = this.onEvent.bind(this);
 	}

@@ -48,7 +48,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private adsRepository: AdsRepository,
 
 		@inject(delay(() => QueryService))
-		private queryService: QueryService) {
+		private queryService: QueryService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			const query = this.queryService.makePaginationQuery(this.adsRepository.createQueryBuilder('ad'), ps.sinceId, ps.untilId, ps.sinceDate, ps.untilDate);
 			if (ps.publishing === true) {

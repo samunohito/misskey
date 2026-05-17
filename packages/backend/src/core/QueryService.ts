@@ -40,7 +40,8 @@ export class QueryService {
 		private meta: MiMeta,
 
 		@inject(delay(() => IdService))
-		private idService: IdService) {
+		private idService: IdService,
+	) {
 	}
 
 	public makePaginationQuery<T extends ObjectLiteral>(

@@ -42,7 +42,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private emojisRepository: EmojisRepository,
 
 		@inject(delay(() => EmojiEntityService))
-		private emojiEntityService: EmojiEntityService) {
+		private emojiEntityService: EmojiEntityService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			const emoji = await this.emojisRepository.findOneOrFail({
 				where: {

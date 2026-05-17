@@ -22,7 +22,8 @@ export class AbuseReportNotificationRecipientEntityService {
 		private userEntityService: UserEntityService,
 
 		@inject(delay(() => SystemWebhookEntityService))
-		private systemWebhookEntityService: SystemWebhookEntityService) {
+		private systemWebhookEntityService: SystemWebhookEntityService,
+	) {
 	}
 
 	@bindThis

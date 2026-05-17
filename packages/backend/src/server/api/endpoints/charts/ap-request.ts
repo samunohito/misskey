@@ -30,7 +30,10 @@ export const paramDef = {
 
 @injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
-	constructor(@inject(delay(() => ApRequestChart)) private apRequestChart: ApRequestChart) {
+	constructor(
+		@inject(delay(() => ApRequestChart))
+		private apRequestChart: ApRequestChart,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			return await this.apRequestChart.getChart(ps.span, ps.limit, ps.offset ? new Date(ps.offset) : null);
 		});

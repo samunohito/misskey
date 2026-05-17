@@ -33,7 +33,8 @@ export class CleanRemoteNotesProcessorService {
 		private idService: IdService,
 
 		@inject(delay(() => QueueLoggerService))
-		private queueLoggerService: QueueLoggerService) {
+		private queueLoggerService: QueueLoggerService,
+	) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('clean-remote-notes');
 	}
 

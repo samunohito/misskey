@@ -98,7 +98,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private followingsRepository: FollowingsRepository,
 
 		@inject(delay(() => UserEntityService))
-		private userEntityService: UserEntityService) {
+		private userEntityService: UserEntityService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			const query = this.followingsRepository
 				.createQueryBuilder('following')

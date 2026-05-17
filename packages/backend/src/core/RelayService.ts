@@ -34,7 +34,8 @@ export class RelayService {
 		private systemAccountService: SystemAccountService,
 
 		@inject(delay(() => ApRendererService))
-		private apRendererService: ApRendererService) {
+		private apRendererService: ApRendererService,
+	) {
 		this.relaysCache = new MemorySingleCache<MiRelay[]>(1000 * 60 * 10); // 10m
 	}
 

@@ -61,7 +61,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private swSubscriptionsRepository: SwSubscriptionsRepository,
 
 		@inject(delay(() => PushNotificationService))
-		private pushNotificationService: PushNotificationService) {
+		private pushNotificationService: PushNotificationService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			const swSubscription = await this.swSubscriptionsRepository.findOneBy({
 				userId: me.id,

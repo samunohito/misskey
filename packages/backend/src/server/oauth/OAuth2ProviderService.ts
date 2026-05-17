@@ -333,7 +333,8 @@ export class OAuth2ProviderService {
 		loggerService: LoggerService,
 
 		@inject(delay(() => HtmlTemplateService))
-		private htmlTemplateService: HtmlTemplateService) {
+		private htmlTemplateService: HtmlTemplateService,
+	) {
 		this.logger = loggerService.getLogger('oauth');
 
 		const grantCodeCache = new MemoryKVCache<{

@@ -86,7 +86,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private driveFilesRepository: DriveFilesRepository,
 
 		@inject(delay(() => CustomEmojiService))
-		private customEmojiService: CustomEmojiService) {
+		private customEmojiService: CustomEmojiService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			let driveFile;
 			if (ps.fileId) {

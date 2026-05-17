@@ -41,7 +41,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private clipFavoritesRepository: ClipFavoritesRepository,
 
 		@inject(delay(() => ClipEntityService))
-		private clipEntityService: ClipEntityService) {
+		private clipEntityService: ClipEntityService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			const query = this.clipFavoritesRepository.createQueryBuilder('favorite')
 				.andWhere('favorite.userId = :meId', { meId: me.id })

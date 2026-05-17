@@ -168,7 +168,10 @@ class JsonLd {
 
 @injectable()
 export class JsonLdService {
-	constructor(@inject(delay(() => HttpRequestService)) private httpRequestService: HttpRequestService) {
+	constructor(
+		@inject(delay(() => HttpRequestService))
+		private httpRequestService: HttpRequestService,
+	) {
 	}
 
 	@bindThis

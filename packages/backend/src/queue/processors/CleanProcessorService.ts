@@ -39,7 +39,8 @@ export class CleanProcessorService {
 		private reversiService: ReversiService,
 
 		@inject(delay(() => IdService))
-		private idService: IdService) {
+		private idService: IdService,
+	) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('clean');
 	}
 

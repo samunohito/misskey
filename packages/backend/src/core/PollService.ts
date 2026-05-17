@@ -50,7 +50,8 @@ export class PollService {
 		private apRendererService: ApRendererService,
 
 		@inject(delay(() => ApDeliverManagerService))
-		private apDeliverManagerService: ApDeliverManagerService) {
+		private apDeliverManagerService: ApDeliverManagerService,
+	) {
 	}
 
 	@bindThis

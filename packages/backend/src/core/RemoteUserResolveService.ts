@@ -44,7 +44,8 @@ export class RemoteUserResolveService {
 		private apDbResolverService: ApDbResolverService,
 
 		@inject(delay(() => ApPersonService))
-		private apPersonService: ApPersonService) {
+		private apPersonService: ApPersonService,
+	) {
 		this.logger = this.remoteLoggerService.logger.createSubLogger('resolve-user');
 	}
 

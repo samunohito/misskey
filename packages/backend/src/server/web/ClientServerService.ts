@@ -152,7 +152,8 @@ export class ClientServerService {
 		private htmlTemplateService: HtmlTemplateService,
 
 		@inject(delay(() => ClientLoggerService))
-		private clientLoggerService: ClientLoggerService) {
+		private clientLoggerService: ClientLoggerService,
+	) {
 		//this.createServer = this.createServer.bind(this);
 		const backendRootdir = resolve(this.config.rootDir, 'packages/backend');
 		const frontendRootdir = resolve(this.config.rootDir, 'packages/frontend');

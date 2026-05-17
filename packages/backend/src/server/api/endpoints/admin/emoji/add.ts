@@ -84,7 +84,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private customEmojiService: CustomEmojiService,
 
 		@inject(delay(() => EmojiEntityService))
-		private emojiEntityService: EmojiEntityService) {
+		private emojiEntityService: EmojiEntityService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			const driveFile = await this.driveFilesRepository.findOneBy({ id: ps.fileId });
 			if (driveFile == null) throw new ApiError(meta.errors.noSuchFile);

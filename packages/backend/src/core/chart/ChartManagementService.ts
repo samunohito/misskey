@@ -61,7 +61,8 @@ export class ChartManagementService implements Disposable {
 		private apRequestChart: ApRequestChart,
 
 		@inject(delay(() => DisposableRegistry))
-		registry: DisposableRegistry) {
+		registry: DisposableRegistry,
+	) {
 		registry.register(this);
 		this.charts = [
 			this.federationChart,

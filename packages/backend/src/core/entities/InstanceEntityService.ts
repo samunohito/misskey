@@ -23,7 +23,8 @@ export class InstanceEntityService {
 		private roleService: RoleService,
 
 		@inject(delay(() => UtilityService))
-		private utilityService: UtilityService) {
+		private utilityService: UtilityService,
+	) {
 	}
 
 	@bindThis

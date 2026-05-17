@@ -63,7 +63,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private pagesRepository: PagesRepository,
 
 		@inject(delay(() => PageEntityService))
-		private pageEntityService: PageEntityService) {
+		private pageEntityService: PageEntityService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			let page: MiPage | null = null;
 

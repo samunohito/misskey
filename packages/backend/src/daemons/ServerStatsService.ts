@@ -26,7 +26,8 @@ export class ServerStatsService implements Disposable {
 		private meta: MiMeta,
 
 		@inject(delay(() => DisposableRegistry))
-		registry: DisposableRegistry) {
+		registry: DisposableRegistry,
+	) {
 		registry.register(this);
 	}
 

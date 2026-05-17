@@ -18,7 +18,8 @@ export class AntennaEntityService {
 		private antennasRepository: AntennasRepository,
 
 		@inject(delay(() => IdService))
-		private idService: IdService) {
+		private idService: IdService,
+	) {
 	}
 
 	@bindThis

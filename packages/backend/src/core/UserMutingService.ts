@@ -22,7 +22,8 @@ export class UserMutingService {
 		private idService: IdService,
 
 		@inject(delay(() => CacheService))
-		private cacheService: CacheService) {
+		private cacheService: CacheService,
+	) {
 	}
 
 	@bindThis

@@ -59,7 +59,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private channelsRepository: ChannelsRepository,
 
 		@inject(delay(() => ChannelMutingService))
-		private channelMutingService: ChannelMutingService) {
+		private channelMutingService: ChannelMutingService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			// Check if exists the channel
 			const targetChannel = await this.channelsRepository.findOneBy({ id: ps.channelId });

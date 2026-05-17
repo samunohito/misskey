@@ -40,7 +40,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private antennasRepository: AntennasRepository,
 
 		@inject(delay(() => AntennaEntityService))
-		private antennaEntityService: AntennaEntityService) {
+		private antennaEntityService: AntennaEntityService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			const antennas = await this.antennasRepository.findBy({
 				userId: me.id,

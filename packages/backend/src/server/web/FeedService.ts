@@ -42,7 +42,8 @@ export class FeedService {
 		private idService: IdService,
 
 		@inject(delay(() => MfmService))
-		private mfmService: MfmService) {
+		private mfmService: MfmService,
+	) {
 	}
 
 	@bindThis

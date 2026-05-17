@@ -34,7 +34,8 @@ export class ReactionsBufferingService implements Disposable {
 		private notesRepository: NotesRepository,
 
 		@inject(delay(() => DisposableRegistry))
-		registry: DisposableRegistry) {
+		registry: DisposableRegistry,
+	) {
 		registry.register(this);
 		this.redisForSub.on('message', this.onMessage);
 	}

@@ -83,7 +83,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 		private userListEntityService: UserListEntityService,
 
 		@inject(delay(() => QueryService))
-		private queryService: QueryService) {
+		private queryService: QueryService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			// Fetch the list
 			const userList = await this.userListsRepository.findOneBy(!ps.forPublic && me !== null ? {

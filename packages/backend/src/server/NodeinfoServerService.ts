@@ -36,7 +36,8 @@ export class NodeinfoServerService {
 		private notesChart: NotesChart,
 
 		@inject(delay(() => UsersChart))
-		private usersChart: UsersChart) {
+		private usersChart: UsersChart,
+	) {
 		//this.createServer = this.createServer.bind(this);
 	}
 

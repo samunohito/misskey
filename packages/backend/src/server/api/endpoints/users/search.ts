@@ -47,7 +47,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private userEntityService: UserEntityService,
 
 		@inject(delay(() => UserSearchService))
-		private userSearchService: UserSearchService) {
+		private userSearchService: UserSearchService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			const users = await this.userSearchService.search(ps.query.trim(), me?.id ?? null, {
 				offset: ps.offset,

@@ -19,7 +19,8 @@ export class CommandService {
 		private config: Config,
 
 		@inject(delay(() => MetaService))
-		private metaService: MetaService) {
+		private metaService: MetaService,
+	) {
 	}
 
 	@bindThis

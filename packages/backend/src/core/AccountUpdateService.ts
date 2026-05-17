@@ -29,7 +29,8 @@ export class AccountUpdateService {
 		private apDeliverManagerService: ApDeliverManagerService,
 
 		@inject(delay(() => RelayService))
-		private relayService: RelayService) {
+		private relayService: RelayService,
+	) {
 	}
 
 	@bindThis

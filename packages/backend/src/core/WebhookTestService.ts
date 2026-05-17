@@ -153,7 +153,8 @@ export class WebhookTestService {
 		private systemWebhookService: SystemWebhookService,
 
 		@inject(delay(() => QueueService))
-		private queueService: QueueService) {
+		private queueService: QueueService,
+	) {
 	}
 
 	/**

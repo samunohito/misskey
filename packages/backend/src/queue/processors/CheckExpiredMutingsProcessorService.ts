@@ -27,7 +27,8 @@ export class CheckExpiredMutingsProcessorService {
 		private channelMutingService: ChannelMutingService,
 
 		@inject(delay(() => QueueLoggerService))
-		private queueLoggerService: QueueLoggerService) {
+		private queueLoggerService: QueueLoggerService,
+	) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('check-expired-mutings');
 	}
 

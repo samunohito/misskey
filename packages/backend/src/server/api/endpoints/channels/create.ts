@@ -70,7 +70,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private idService: IdService,
 
 		@inject(delay(() => ChannelEntityService))
-		private channelEntityService: ChannelEntityService) {
+		private channelEntityService: ChannelEntityService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			let banner = null;
 			if (ps.bannerId != null) {

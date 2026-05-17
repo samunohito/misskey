@@ -52,7 +52,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private webhooksRepository: WebhooksRepository,
 
 		@inject(delay(() => GlobalEventService))
-		private globalEventService: GlobalEventService) {
+		private globalEventService: GlobalEventService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			const webhook = await this.webhooksRepository.findOneBy({
 				id: ps.webhookId,

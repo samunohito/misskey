@@ -74,7 +74,8 @@ export class NoteDeleteService {
 		private perUserNotesChart: PerUserNotesChart,
 
 		@inject(delay(() => InstanceChart))
-		private instanceChart: InstanceChart) {}
+		private instanceChart: InstanceChart,
+	) {}
 
 	/**
 	 * 投稿を削除します。

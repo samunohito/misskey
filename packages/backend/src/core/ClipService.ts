@@ -35,7 +35,8 @@ export class ClipService {
 		private roleService: RoleService,
 
 		@inject(delay(() => IdService))
-		private idService: IdService) {
+		private idService: IdService,
+	) {
 	}
 
 	@bindThis

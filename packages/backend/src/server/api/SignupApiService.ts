@@ -61,7 +61,8 @@ export class SignupApiService {
 		private signinService: SigninService,
 
 		@inject(delay(() => EmailService))
-		private emailService: EmailService) {
+		private emailService: EmailService,
+	) {
 	}
 
 	@bindThis

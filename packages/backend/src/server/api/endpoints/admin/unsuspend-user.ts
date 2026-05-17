@@ -32,7 +32,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private usersRepository: UsersRepository,
 
 		@inject(delay(() => UserSuspendService))
-		private userSuspendService: UserSuspendService) {
+		private userSuspendService: UserSuspendService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			const user = await this.usersRepository.findOneBy({ id: ps.userId });
 

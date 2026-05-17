@@ -72,7 +72,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 		private userListFavoritesRepository: UserListFavoritesRepository,
 
 		@inject(delay(() => UserListEntityService))
-		private userListEntityService: UserListEntityService) {
+		private userListEntityService: UserListEntityService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			const additionalProperties: Partial<{ likedCount: number, isLiked: boolean }> = {};
 			// Fetch the list

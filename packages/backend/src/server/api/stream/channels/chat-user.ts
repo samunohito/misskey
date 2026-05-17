@@ -23,7 +23,8 @@ export class ChatUserChannel extends Channel {
 		request: ChannelRequest,
 
 		@inject(delay(() => ChatService))
-		private chatService: ChatService) {
+		private chatService: ChatService,
+	) {
 		super(request);
 	}
 

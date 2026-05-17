@@ -119,7 +119,8 @@ export class CheckModeratorsActivityProcessorService {
 		private systemWebhookService: SystemWebhookService,
 
 		@inject(delay(() => QueueLoggerService))
-		private queueLoggerService: QueueLoggerService) {
+		private queueLoggerService: QueueLoggerService,
+	) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('check-moderators-activity');
 	}
 

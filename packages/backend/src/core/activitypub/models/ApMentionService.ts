@@ -15,7 +15,10 @@ import type { IObject, IApMention } from '../type.js';
 
 @injectable()
 export class ApMentionService {
-	constructor(@inject(delay(() => ApPersonService)) private apPersonService: ApPersonService) {
+	constructor(
+		@inject(delay(() => ApPersonService))
+		private apPersonService: ApPersonService,
+	) {
 	}
 
 	@bindThis

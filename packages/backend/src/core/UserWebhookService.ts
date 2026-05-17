@@ -40,7 +40,8 @@ export class UserWebhookService implements Disposable {
 		private queueService: QueueService,
 
 		@inject(delay(() => DisposableRegistry))
-		registry: DisposableRegistry) {
+		registry: DisposableRegistry,
+	) {
 		registry.register(this);
 		this.redisForSub.on('message', this.onMessage);
 	}

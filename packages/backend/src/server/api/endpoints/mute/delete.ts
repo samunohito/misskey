@@ -57,7 +57,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private userMutingService: UserMutingService,
 
 		@inject(delay(() => GetterService))
-		private getterService: GetterService) {
+		private getterService: GetterService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			const muter = me;
 

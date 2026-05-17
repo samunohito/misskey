@@ -84,7 +84,8 @@ export default class Connection {
 		private channelMutingService: ChannelMutingService,
 
 		@inject(RequestToken)
-		request: ConnectionRequest) {
+		request: ConnectionRequest,
+	) {
 		if (request.user) this.user = request.user;
 		if (request.token) this.token = request.token;
 	}

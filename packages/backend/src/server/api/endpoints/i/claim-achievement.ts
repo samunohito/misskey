@@ -24,7 +24,10 @@ export const paramDef = {
 
 @injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
-	constructor(@inject(delay(() => AchievementService)) private achievementService: AchievementService) {
+	constructor(
+		@inject(delay(() => AchievementService))
+		private achievementService: AchievementService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			await this.achievementService.create(me.id, ps.name);
 		});

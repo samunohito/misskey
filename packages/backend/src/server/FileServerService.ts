@@ -57,7 +57,8 @@ export class FileServerService {
 		private internalStorageService: InternalStorageService,
 
 		@inject(delay(() => LoggerService))
-		private loggerService: LoggerService) {
+		private loggerService: LoggerService,
+	) {
 		this.logger = this.loggerService.getLogger('server', 'gray');
 		this.assets = resolve(this.config.rootDir, 'packages/backend/src/server/file/assets');
 		this.fileResolver = new FileServerFileResolver(

@@ -18,7 +18,8 @@ export class GalleryLikeEntityService {
 		private galleryLikesRepository: GalleryLikesRepository,
 
 		@inject(delay(() => GalleryPostEntityService))
-		private galleryPostEntityService: GalleryPostEntityService) {
+		private galleryPostEntityService: GalleryPostEntityService,
+	) {
 	}
 
 	@bindThis

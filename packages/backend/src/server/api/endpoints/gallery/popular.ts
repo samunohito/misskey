@@ -38,7 +38,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private galleryPostsRepository: GalleryPostsRepository,
 
 		@inject(delay(() => GalleryPostEntityService))
-		private galleryPostEntityService: GalleryPostEntityService) {
+		private galleryPostEntityService: GalleryPostEntityService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			const query = this.galleryPostsRepository.createQueryBuilder('post')
 				.andWhere('post.likedCount > 0')

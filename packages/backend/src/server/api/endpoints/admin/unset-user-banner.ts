@@ -33,7 +33,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 		private usersRepository: UsersRepository,
 
 		@inject(delay(() => ModerationLogService))
-		private moderationLogService: ModerationLogService) {
+		private moderationLogService: ModerationLogService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			const user = await this.usersRepository.findOneBy({ id: ps.userId });
 

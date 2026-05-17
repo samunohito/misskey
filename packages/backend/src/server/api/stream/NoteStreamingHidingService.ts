@@ -14,7 +14,10 @@ import type { MiUser } from '@/models/User.js';
 /** Streamにおいて、ノートを隠す（hideNote）を適用するためのService */
 @injectable()
 export class NoteStreamingHidingService {
-	constructor(@inject(delay(() => NoteEntityService)) private noteEntityService: NoteEntityService) {}
+	constructor(
+		@inject(delay(() => NoteEntityService))
+		private noteEntityService: NoteEntityService,
+	) {}
 
 	private collectRenoteChain(note: Packed<'Note'>): Packed<'Note'>[] {
 		const renoteChain: Packed<'Note'>[] = [];

@@ -63,7 +63,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private noteReactionEntityService: NoteReactionEntityService,
 
 		@inject(delay(() => QueryService))
-		private queryService: QueryService) {
+		private queryService: QueryService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			const query = this.queryService.makePaginationQuery(this.noteReactionsRepository.createQueryBuilder('reaction'), ps.sinceId, ps.untilId, ps.sinceDate, ps.untilDate)
 				.andWhere('reaction.noteId = :noteId', { noteId: ps.noteId })

@@ -24,7 +24,8 @@ export class UserService {
 		private systemWebhookService: SystemWebhookService,
 
 		@inject(delay(() => UserEntityService))
-		private userEntityService: UserEntityService) {
+		private userEntityService: UserEntityService,
+	) {
 	}
 
 	@bindThis

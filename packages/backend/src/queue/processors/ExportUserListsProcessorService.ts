@@ -44,7 +44,8 @@ export class ExportUserListsProcessorService {
 		private queueLoggerService: QueueLoggerService,
 
 		@inject(delay(() => NotificationService))
-		private notificationService: NotificationService) {
+		private notificationService: NotificationService,
+	) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('export-user-lists');
 	}
 

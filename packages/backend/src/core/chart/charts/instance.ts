@@ -46,7 +46,8 @@ export default class InstanceChart extends Chart<typeof schema> { // eslint-disa
 		private utilityService: UtilityService,
 
 		@inject(delay(() => ChartLoggerService))
-		private chartLoggerService: ChartLoggerService) {
+		private chartLoggerService: ChartLoggerService,
+	) {
 		super(db, (k) => acquireChartInsertLock(redisClient, k), chartLoggerService.logger, name, schema, true);
 	}
 

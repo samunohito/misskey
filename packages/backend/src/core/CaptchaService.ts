@@ -83,7 +83,8 @@ export class CaptchaService {
 		private metaService: MetaService,
 
 		@inject(delay(() => LoggerService))
-		loggerService: LoggerService) {
+		loggerService: LoggerService,
+	) {
 		this.logger = loggerService.getLogger('captcha');
 	}
 

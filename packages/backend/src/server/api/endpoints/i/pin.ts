@@ -59,7 +59,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private userEntityService: UserEntityService,
 
 		@inject(delay(() => NotePiningService))
-		private notePiningService: NotePiningService) {
+		private notePiningService: NotePiningService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			await this.notePiningService.addPinned(me, ps.noteId).catch(err => {
 				if (err.id === '70c4e51f-5bea-449c-a030-53bee3cce202') throw new ApiError(meta.errors.noSuchNote);

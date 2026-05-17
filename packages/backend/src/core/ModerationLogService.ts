@@ -19,7 +19,8 @@ export class ModerationLogService {
 		private moderationLogsRepository: ModerationLogsRepository,
 
 		@inject(delay(() => IdService))
-		private idService: IdService) {
+		private idService: IdService,
+	) {
 	}
 
 	@bindThis

@@ -50,7 +50,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private queryService: QueryService,
 
 		@inject(delay(() => AnnouncementEntityService))
-		private announcementEntityService: AnnouncementEntityService) {
+		private announcementEntityService: AnnouncementEntityService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			const query = this.queryService.makePaginationQuery(this.announcementsRepository.createQueryBuilder('announcement'), ps.sinceId, ps.untilId, ps.sinceDate, ps.untilDate)
 				.andWhere('announcement.isActive = :isActive', { isActive: ps.isActive })

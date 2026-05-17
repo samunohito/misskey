@@ -37,7 +37,10 @@ describe('di', () => {
 
 		@injectable()
 		class RootService {
-			constructor(@inject(delay(() => LeafService)) public leaf: LeafService) {}
+			constructor(
+				@inject(delay(() => LeafService))
+				public leaf: LeafService,
+			) {}
 		}
 
 		const c = await createTestContainer({
@@ -86,7 +89,10 @@ describe('di', () => {
 
 		@injectable()
 		class A implements Disposable {
-			constructor(@inject(DisposableRegistry) registry: DisposableRegistry) { registry.register(this); }
+			constructor(
+				@inject(DisposableRegistry)
+				registry: DisposableRegistry,
+			) { registry.register(this); }
 			dispose(): void { order.push('A'); }
 		}
 
@@ -97,7 +103,8 @@ describe('di', () => {
 				registry: DisposableRegistry,
 
 				@inject(A)
-				public a: A) { registry.register(this); }
+				public a: A,
+			) { registry.register(this); }
 			dispose(): void { order.push('B'); }
 		}
 
@@ -118,7 +125,10 @@ describe('di', () => {
 
 		@injectable()
 		class Bomb implements Disposable {
-			constructor(@inject(DisposableRegistry) registry: DisposableRegistry) { registry.register(this); }
+			constructor(
+				@inject(DisposableRegistry)
+				registry: DisposableRegistry,
+			) { registry.register(this); }
 			dispose(): void { order.push('bomb'); throw new Error('boom'); }
 		}
 
@@ -129,7 +139,8 @@ describe('di', () => {
 				registry: DisposableRegistry,
 
 				@inject(Bomb)
-				public b: Bomb) { registry.register(this); }
+				public b: Bomb,
+			) { registry.register(this); }
 			dispose(): void { order.push('survivor'); }
 		}
 

@@ -61,7 +61,8 @@ export class UserBlockingService {
 		private loggerService: LoggerService,
 
 		@inject(delay(() => UserFollowingService))
-		private userFollowingService: UserFollowingService) {
+		private userFollowingService: UserFollowingService,
+	) {
 		this.logger = this.loggerService.getLogger('user-block');
 	}
 

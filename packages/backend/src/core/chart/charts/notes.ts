@@ -32,7 +32,8 @@ export default class NotesChart extends Chart<typeof schema> { // eslint-disable
 		private notesRepository: NotesRepository,
 
 		@inject(delay(() => ChartLoggerService))
-		private chartLoggerService: ChartLoggerService) {
+		private chartLoggerService: ChartLoggerService,
+	) {
 		super(db, (k) => acquireChartInsertLock(redisClient, k), chartLoggerService.logger, name, schema);
 	}
 

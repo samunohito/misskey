@@ -117,7 +117,8 @@ export class ChatService {
 		private customEmojiService: CustomEmojiService,
 
 		@inject(delay(() => ModerationLogService))
-		private moderationLogService: ModerationLogService) {
+		private moderationLogService: ModerationLogService,
+	) {
 	}
 
 	@bindThis

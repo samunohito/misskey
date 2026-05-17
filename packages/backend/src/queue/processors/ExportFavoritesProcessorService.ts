@@ -50,7 +50,8 @@ export class ExportFavoritesProcessorService {
 		private idService: IdService,
 
 		@inject(delay(() => NotificationService))
-		private notificationService: NotificationService) {
+		private notificationService: NotificationService,
+	) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('export-favorites');
 	}
 

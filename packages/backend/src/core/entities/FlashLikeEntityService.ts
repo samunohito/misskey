@@ -19,7 +19,8 @@ export class FlashLikeEntityService {
 		private flashLikesRepository: FlashLikesRepository,
 
 		@inject(delay(() => FlashEntityService))
-		private flashEntityService: FlashEntityService) {
+		private flashEntityService: FlashEntityService,
+	) {
 	}
 
 	@bindThis

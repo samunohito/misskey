@@ -62,7 +62,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private getterService: GetterService,
 
 		@inject(delay(() => AchievementService))
-		private achievementService: AchievementService) {
+		private achievementService: AchievementService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			// Get favoritee
 			const note = await this.getterService.getNote(ps.noteId).catch(err => {

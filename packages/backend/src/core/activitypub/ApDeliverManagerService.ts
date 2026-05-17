@@ -158,7 +158,8 @@ export class ApDeliverManagerService {
 		private userEntityService: UserEntityService,
 
 		@inject(delay(() => QueueService))
-		private queueService: QueueService) {
+		private queueService: QueueService,
+	) {
 	}
 
 	/**

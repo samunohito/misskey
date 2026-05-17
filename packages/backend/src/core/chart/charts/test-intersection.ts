@@ -27,7 +27,8 @@ export default class TestIntersectionChart extends Chart<typeof schema> { // esl
 		private redisClient: Redis.Redis,
 
 		@inject(delay(() => Logger))
-		logger: Logger) {
+		logger: Logger,
+	) {
 		super(db, (k) => acquireChartInsertLock(redisClient, k), logger, name, schema);
 	}
 

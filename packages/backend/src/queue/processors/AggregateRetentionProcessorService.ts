@@ -30,7 +30,8 @@ export class AggregateRetentionProcessorService {
 		private idService: IdService,
 
 		@inject(delay(() => QueueLoggerService))
-		private queueLoggerService: QueueLoggerService) {
+		private queueLoggerService: QueueLoggerService,
+	) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('aggregate-retention');
 	}
 

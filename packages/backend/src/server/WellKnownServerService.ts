@@ -39,7 +39,8 @@ export class WellKnownServerService {
 		private userEntityService: UserEntityService,
 
 		@inject(OAuth2ProviderService)
-		private oauth2ProviderService: OAuth2ProviderService) {
+		private oauth2ProviderService: OAuth2ProviderService,
+	) {
 		//this.createServer = this.createServer.bind(this);
 	}
 

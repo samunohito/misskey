@@ -37,7 +37,8 @@ export default class FederationChart extends Chart<typeof schema> { // eslint-di
 		private instancesRepository: InstancesRepository,
 
 		@inject(delay(() => ChartLoggerService))
-		private chartLoggerService: ChartLoggerService) {
+		private chartLoggerService: ChartLoggerService,
+	) {
 		super(db, (k) => acquireChartInsertLock(redisClient, k), chartLoggerService.logger, name, schema);
 	}
 

@@ -43,7 +43,10 @@ export const paramDef = {
 
 @injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
-	constructor(@inject(delay(() => ClipService)) private clipService: ClipService) {
+	constructor(
+		@inject(delay(() => ClipService))
+		private clipService: ClipService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			try {
 				await this.clipService.removeNote(me, ps.clipId, ps.noteId);

@@ -74,7 +74,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 		private queueService: QueueService,
 
 		@inject(delay(() => DownloadService))
-		private downloadService: DownloadService) {
+		private downloadService: DownloadService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			const userExist = await this.usersRepository.exists({ where: { id: me.id } });
 			if (!userExist) throw new ApiError(meta.errors.noSuchUser);

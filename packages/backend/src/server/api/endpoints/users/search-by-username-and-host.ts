@@ -57,7 +57,10 @@ export const paramDef = {
 
 @injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
-	constructor(@inject(delay(() => UserSearchService)) private userSearchService: UserSearchService) {
+	constructor(
+		@inject(delay(() => UserSearchService))
+		private userSearchService: UserSearchService,
+	) {
 		super(meta, paramDef, (ps, me) => {
 			return this.userSearchService.searchByUsernameAndHost({
 				username: 'username' in ps ? ps.username : undefined,

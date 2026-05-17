@@ -221,7 +221,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private noteEntityService: NoteEntityService,
 
 		@inject(delay(() => NoteCreateService))
-		private noteCreateService: NoteCreateService) {
+		private noteCreateService: NoteCreateService,
+	) {
 		super(meta, paramDef, async (ps, me) => {
 			try {
 				const note = await this.noteCreateService.fetchAndCreate(me, {

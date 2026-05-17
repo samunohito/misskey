@@ -22,7 +22,8 @@ export class RegistryApiService {
 		private idService: IdService,
 
 		@inject(delay(() => GlobalEventService))
-		private globalEventService: GlobalEventService) {
+		private globalEventService: GlobalEventService,
+	) {
 	}
 
 	@bindThis
