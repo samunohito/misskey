@@ -100,7 +100,10 @@ export async function registerGlobals(c: DependencyContainer): Promise<void> {
 	c.register<Redis.Redis>(DI.redisForSub, { useValue: g.redisForSub });
 	c.register<Redis.Redis>(DI.redisForTimelines, { useValue: g.redisForTimelines });
 	c.register<Redis.Redis>(DI.redisForReactions, { useValue: g.redisForReactions });
-	c.register<Meilisearch | null>(DI.meilisearch, { useValue: g.meilisearch });
+	// tsyringe の `isValueProvider` は `provider.useValue != undefined` (loose) で判定するため、
+	// `useValue: null` は value provider と認識されない。null 可能性のあるトークンは
+	// `useFactory` で wrap する。
+	c.register<Meilisearch | null>(DI.meilisearch, { useFactory: () => g.meilisearch });
 	c.register<MiMeta>(DI.meta, { useValue: g.meta });
 
 	// DisposableRegistry は test の `app.resolve(DisposableRegistry).disposeAll()` で

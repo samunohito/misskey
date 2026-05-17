@@ -8,6 +8,7 @@ import { EventEmitter } from 'node:events';
 import { composeCliContainer } from '@/di/compose.js';
 import { DisposableRegistry } from '@/di/disposable-registry.js';
 import { disposeGlobalResources } from '@/di/register-globals.js';
+import { disposeQueueClients } from '@/di/register-queue.js';
 import { CommandService } from '@/cli/CommandService.js';
 
 process.title = 'Misskey Cli';
@@ -47,6 +48,7 @@ try {
 	}
 } finally {
 	await container.resolve(DisposableRegistry).disposeAll();
+	await disposeQueueClients();
 	await disposeGlobalResources();
 }
 

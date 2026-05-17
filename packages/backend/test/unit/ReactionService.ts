@@ -17,6 +17,8 @@ describe('ReactionService', () => {
 		const app = await createTestContainer({
 	loadGlobals: true,
 	loadRepositories: true,
+	loadQueueClients: true,
+	loadCore: true,
 });
 		reactionService = app.resolve<ReactionService>(ReactionService);
 	});

@@ -20,6 +20,8 @@ describe('NoteCreateService', () => {
 		const app = await createTestContainer({
 	loadGlobals: true,
 	loadRepositories: true,
+	loadQueueClients: true,
+	loadCore: true,
 });
 		noteCreateService = app.resolve<NoteCreateService>(NoteCreateService);
 	});

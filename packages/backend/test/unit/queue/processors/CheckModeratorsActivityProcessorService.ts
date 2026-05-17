@@ -91,6 +91,8 @@ describe('CheckModeratorsActivityProcessorService', () => {
 		app = await createTestContainer({
 	loadGlobals: true,
 	loadRepositories: true,
+	loadQueueClients: true,
+	loadCore: true,
 	register: (c) => {
 		c.registerSingleton(CheckModeratorsActivityProcessorService);
 		c.registerSingleton(IdService);

@@ -15,6 +15,12 @@ export interface CreateTestContainerOptions {
 	// 旧 `imports: [RepositoryModule]` 相当: 75 個の repository を全部登録する。
 	// 既定は false。`loadGlobals: true` 前提。
 	loadRepositories?: boolean;
+	// 10 個の BullMQ Queue (`queue:xxx`) を登録する。QueueService 経由のサービスを resolve するテスト向け。
+	// 既定は false。`loadGlobals: true` 前提。
+	loadQueueClients?: boolean;
+	// 旧 `imports: [CoreModule]` 相当: services / entities / activitypub / chart を全部登録する。
+	// 既定は false。`loadGlobals: true` + `loadRepositories: true` + `loadQueueClients: true` 前提。
+	loadCore?: boolean;
 	// 任意の追加登録 (テスト固有の Singleton 等)。
 	// fluent API (`c.registerSingleton(X)` の戻り値が container) も許容するため `unknown` を返り型に取る。
 	register?: (c: DependencyContainer) => unknown | Promise<unknown>;
@@ -37,6 +43,14 @@ export async function createTestContainer(opts: CreateTestContainerOptions = {})
 	if (opts.loadRepositories) {
 		const { registerRepositories } = await import('./register-repositories.js');
 		registerRepositories(c);
+	}
+	if (opts.loadQueueClients) {
+		const { registerQueueClients } = await import('./register-queue.js');
+		registerQueueClients(c);
+	}
+	if (opts.loadCore) {
+		const { registerCoreServices } = await import('./register-core/index.js');
+		registerCoreServices(c);
 	}
 
 	await opts.register?.(c);

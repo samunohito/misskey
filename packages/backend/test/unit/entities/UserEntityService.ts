@@ -181,6 +181,8 @@ describe('UserEntityService', () => {
 			app = await createTestContainer({
 				loadGlobals: true,
 				loadRepositories: true,
+	loadQueueClients: true,
+	loadCore: true,
 				register: (c) => {
 					// services 配列はクラスの heterogeneous union 型なので、登録時は constructor を緩めに受ける
 					// eslint-disable-next-line @typescript-eslint/no-explicit-any

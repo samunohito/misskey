@@ -63,6 +63,8 @@ describe('AnnouncementService', () => {
 		app = await createTestContainer({
 	loadGlobals: true,
 	loadRepositories: true,
+	loadQueueClients: true,
+	loadCore: true,
 	register: (c) => {
 		c.registerSingleton(AnnouncementService);
 		c.registerSingleton(AnnouncementEntityService);

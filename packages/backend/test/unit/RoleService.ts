@@ -112,6 +112,8 @@ describe('RoleService', () => {
 		app = await createTestContainer({
 			loadGlobals: true,
 			loadRepositories: true,
+	loadQueueClients: true,
+	loadCore: true,
 			register: (c) => {
 				c.registerSingleton(RoleService);
 				c.registerSingleton(CacheService);

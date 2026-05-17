@@ -8,6 +8,7 @@ import type { Config } from '@/config.js';
 import type { DependencyContainer } from 'tsyringe';
 import { DisposableRegistry } from '@/di/disposable-registry.js';
 import { disposeGlobalResources } from '@/di/register-globals.js';
+import { disposeQueueClients } from '@/di/register-queue.js';
 
 // 同一プロセス内に server() と jobQueue() が共存する場合があるため、
 // container を集めて SIGTERM/SIGINT で一括 disposeAll する。
@@ -25,8 +26,13 @@ function ensureShutdownHandler(): void {
 				console.error('[boot] disposeAll failed', e);
 			}
 		}
-		// グローバル resource (DB / Redis) は activeContainers の disposeAll では破棄しないため、
-		// ここで明示的に解放する。
+		// グローバル resource (DB / Redis / BullMQ Queue) は activeContainers の disposeAll では
+		// 破棄しないため、ここで明示的に解放する。
+		try {
+			await disposeQueueClients();
+		} catch (e) {
+			console.error('[boot] disposeQueueClients failed', e);
+		}
 		try {
 			await disposeGlobalResources();
 		} catch (e) {
