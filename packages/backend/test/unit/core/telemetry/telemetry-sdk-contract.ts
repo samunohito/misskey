@@ -118,8 +118,10 @@ async function createLoopbackOtlpCollector(): Promise<{ url: string; getBody: ()
 }
 
 /** outbound HTTP (webhook) の代役になる loopback サーバ。任意の status code を返す。 */
-async function createLoopbackTarget(statusCode: number): Promise<{ port: number; close: () => Promise<void> }> {
-	const server = createHttpServer((_request, response) => {
+async function createLoopbackTarget(statusCode: number): Promise<{ port: number; getHeaders: () => Array<Record<string, string | string[] | undefined>>; close: () => Promise<void> }> {
+	const headers: Array<Record<string, string | string[] | undefined>> = [];
+	const server = createHttpServer((request, response) => {
+		headers.push(request.headers);
 		response.writeHead(statusCode);
 		response.end('ok');
 	});
@@ -130,6 +132,7 @@ async function createLoopbackTarget(statusCode: number): Promise<{ port: number;
 	}
 	return {
 		port: address.port,
+		getHeaders: () => headers,
 		close: () => new Promise<void>((resolve, reject) => server.close(error => error == null ? resolve() : reject(error))),
 	};
 }
@@ -147,6 +150,7 @@ describe('3-configuration canary: sentinel fixture never reaches the wire, opera
 	test('combined: real SentryTelemetryAdapter.createWithOtlpExport feeds both a real OTLP protobuf and a real Sentry envelope from the same spans', async () => {
 		const otlp = await createLoopbackOtlpCollector();
 		const captured: unknown[] = [];
+		const allowedTarget = await createLoopbackTarget(200);
 		const webhookTarget = await createLoopbackTarget(500);
 		let app: ReturnType<typeof Fastify> | undefined;
 		let adapter: SentryTelemetryAdapter | undefined;
@@ -166,6 +170,7 @@ describe('3-configuration canary: sentinel fixture never reaches the wire, opera
 			}, {
 				serviceVersion: '0.0.0-test',
 				endpoint: otlp.url,
+				propagationAllowedOrigins: [`http://127.0.0.1:${allowedTarget.port}`],
 				// Sentry の HTTP 自動計装を OTLP 側でも確認するため、`safe` を明示する。
 				sentryAutoInstrumentationExport: 'safe',
 			});
@@ -185,6 +190,7 @@ describe('3-configuration canary: sentinel fixture never reaches the wire, opera
 			await Sentry.startSpan({ name: 'canary-client' }, () => requestLoopback(`http://127.0.0.1:${address.port}/notes/1?i=${QUERY_SENTINEL}`));
 			await Sentry.startSpan({ name: 'canary-client' }, () => requestLoopback(`http://127.0.0.1:${address.port}/reset-password/${RESET_PASSWORD_SENTINEL}`));
 			await Sentry.startSpan({ name: 'canary-root' }, () => requestLoopback(`http://127.0.0.1:${webhookTarget.port}/services/T0/B0/${WEBHOOK_SENTINEL}`));
+			await Sentry.startSpan({ name: 'canary-client' }, () => requestLoopback(`http://127.0.0.1:${allowedTarget.port}/internal`));
 			// native fetch 固有の span 形式と、送信 URL の origin 化も確認する。
 			await Sentry.startSpan({ name: 'canary-client' }, async () => {
 				const response = await fetch(`http://127.0.0.1:${webhookTarget.port}/services/T0/B0/${WEBHOOK_SENTINEL}?i=${QUERY_SENTINEL}`);
@@ -237,10 +243,18 @@ describe('3-configuration canary: sentinel fixture never reaches the wire, opera
 			expect(sentryWire).toContain('http.response.status_code');
 			// captureMessage の error.type は Sentry event 側に残る。
 			expect(sentryWire).toContain('error.type');
+			// combined の allowlist は Sentry の trace/baggage と W3C traceparent を同時に制御する。
+			expect(allowedTarget.getHeaders()[0]?.['sentry-trace']).toBeDefined();
+			expect(allowedTarget.getHeaders()[0]?.baggage).toBeDefined();
+			expect(allowedTarget.getHeaders()[0]?.traceparent).toMatch(/^00-[0-9a-f]{32}-[0-9a-f]{16}-0[01]$/);
+			expect(webhookTarget.getHeaders()[0]?.['sentry-trace']).toBeUndefined();
+			expect(webhookTarget.getHeaders()[0]?.baggage).toBeUndefined();
+			expect(webhookTarget.getHeaders()[0]?.traceparent).toBeUndefined();
 		} finally {
 			if (appListening) {
 				await app?.close().catch(() => undefined);
 			}
+			await allowedTarget.close().catch(() => undefined);
 			await webhookTarget.close().catch(() => undefined);
 			await adapter?.shutdown().catch(() => undefined);
 			await otlp.close();

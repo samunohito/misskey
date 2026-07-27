@@ -180,10 +180,10 @@ id: 'aidx'
 # organization's Sentry data scrubbing settings.
 #
 # One exception: the tracePropagationTargets default ([]) and the
-# propagateTraceToRemote startup check further below govern what Misskey
-# sends to third-party remote hosts (federated ActivityPub inboxes, webhook
-# targets), not what Sentry itself receives. They do not filter or reduce
-# anything Sentry collects.
+# otelForBackend.propagationAllowedOrigins setting govern what Misskey sends
+# to third-party remote hosts (federated ActivityPub inboxes, webhook targets),
+# not what Sentry itself receives. They do not filter or reduce anything
+# Sentry collects.
 
 # Uncomment the properties below to enable Sentry for the backend.
 
@@ -222,8 +222,8 @@ id: 'aidx'
 #    # carries the Sentry project's public key (the only credential needed
 #    # to send events into that project), so propagating it to arbitrary
 #    # federated/webhook targets would hand out a credential to them.
-#    # To intentionally propagate distributed traces to trusted internal services,
-#    # list only those internal URL patterns here.
+#    # To intentionally propagate distributed traces from Sentry-only mode to
+#    # trusted internal services, list only those internal URL patterns here.
 #    # Avoid broad patterns that match remote servers unless you intentionally
 #    # want to restore Sentry's legacy behavior of propagating traces to all
 #    # outbound HTTP requests.
@@ -267,15 +267,16 @@ id: 'aidx'
 #   'safe' is a precondition checked uniformly before the PostgreSQL/Redis/HTTP
 #   branches below: with 'none', none of the capture* flags have any effect on
 #   what reaches OTLP, no matter which are enabled.
-# - sentry-trace / baggage propagation to outbound remote requests is disabled
-#   by default. Setting propagateTraceToRemote: true requires an explicit
-#   sentryForBackend.options.tracePropagationTargets (see above); startup
-#   fails otherwise. This is enforced because the outgoing baggage carries
-#   the Sentry project's public key (the only credential needed to send
-#   events into that project), plus org_id, environment, release and the
-#   transaction name -- propagating that to untrusted remotes (every
-#   federated ActivityPub inbox, every webhook target) hands out a
-#   credential.
+# - sentry-trace / baggage / traceparent propagation to outbound remote
+#   requests is disabled by default. In combined mode, set
+#   otelForBackend.propagationAllowedOrigins to canonical HTTP(S) origins when
+#   a trusted internal service needs distributed trace headers. The same list
+#   controls OTel-only injection and is mapped to Sentry's exact-origin
+#   matchers. An explicit empty list is authoritative and fail-closed. If the
+#   list is omitted, combined mode preserves Sentry's native
+#   tracePropagationTargets/propagateTraceparent options; when those are also
+#   unset, propagation remains disabled. Do not combine an explicit list with
+#   sentryForBackend.options.tracePropagationTargets or propagateTraceparent.
 
 # Uncomment the properties below to enable OpenTelemetry for the backend.
 
@@ -285,7 +286,10 @@ id: 'aidx'
 #  #headers:
 #  #  authorization: 'Bearer xxxxx'
 
-#  #sampleRate: 1.0
+#  #sampleRate: 0.01
+#  # Explicit sampleRate takes priority over OTEL_TRACES_SAMPLER. If omitted,
+#  # the SDK's OTEL_TRACES_SAMPLER/OTEL_TRACES_SAMPLER_ARG pair is honored;
+#  # otherwise Misskey uses a 1% ParentBased trace-id ratio sampler.
 
 #  # ------------------------------------------------------------
 #  # Record PostgreSQL query spans.
@@ -394,11 +398,22 @@ id: 'aidx'
 #  #  deployment.environment: 'production'
 
 #  # ------------------------------------------------------------
-#  # See "sentry-trace / baggage propagation" above for the requirements that
-#  # apply when this is combined with sentryForBackend.
+#  # Add operator-selected standard OTel span attributes without replacing the
+#  # built-in safe attribute set. Values remain bounded scalar/array types;
+#  # URL/query, SQL parameter, authorization and cookie keys are rejected.
 #  # ------------------------------------------------------------
 
-#  #propagateTraceToRemote: false
+#  #additionalAllowedSpanAttributes: ['user_agent.original']
+
+#  # ------------------------------------------------------------
+#  # Propagate trace headers only to these exact HTTP(S) origins. An origin has
+#  # no path, query, fragment, userinfo or wildcard. When this list is set
+#  # (including []), it is authoritative for outbound propagation and Sentry
+#  # in combined mode. If omitted, OTel-only mode denies propagation while
+#  # combined mode preserves Sentry's native options.
+#  # ------------------------------------------------------------
+
+#  #propagationAllowedOrigins: []
 
 #  # ------------------------------------------------------------
 #  # Queue worker spans are independent traces linked to their enqueuer by default.

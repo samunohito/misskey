@@ -4,11 +4,12 @@
  */
 
 import { beforeEach, describe, expect, test, vi } from 'vitest';
-import { SpanStatusCode } from '@opentelemetry/api';
+import { ROOT_CONTEXT, SamplingDecision, SpanKind, SpanStatusCode, trace } from '@opentelemetry/api';
 import { defaultResource, detectResources, envDetector, resourceFromAttributes } from '@opentelemetry/resources';
 import { ParentBasedSampler, TraceIdRatioBasedSampler } from '@opentelemetry/sdk-trace-base';
 import { ATTR_SERVICE_INSTANCE_ID, ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION } from '@opentelemetry/semantic-conventions';
 import { OpenTelemetryAdapter, createResource, createSampler, getMisskeyProcessRole } from '@/core/telemetry/adapters/OpenTelemetryAdapter.js';
+import { defaultTraceSampleRate, hasOtelSamplerEnvironment, resolveTraceSampler } from '@/core/telemetry/observability-config.js';
 import { createApiEndpointFailedEvent } from '@/logging/OperationalLogEvents.js';
 import type { Context, Span, SpanContext } from '@opentelemetry/api';
 
@@ -348,8 +349,39 @@ describe('createSampler', () => {
 		expect(() => createSampler(Number.NaN, samplerDeps)).toThrow();
 	});
 
+	test('rejects Infinity instead of allowing an invalid ratio to reach the SDK', () => {
+		expect(() => createSampler(Number.POSITIVE_INFINITY, samplerDeps)).toThrow();
+		expect(() => createSampler(Number.NEGATIVE_INFINITY, samplerDeps)).toThrow();
+	});
+
 	test('rejects non-number values that pass through YAML as strings', () => {
 		expect(() => createSampler('0.5' as unknown as number, samplerDeps)).toThrow();
+	});
+
+	test('uses the standard ParentBased remote-parent policy while applying the local ratio to roots', () => {
+		const sampler = createSampler(0, samplerDeps);
+		const remoteSampled = trace.setSpanContext(ROOT_CONTEXT, {
+			traceId: '0123456789abcdef0123456789abcdef', spanId: '0123456789abcdef', traceFlags: 1, isRemote: true,
+		});
+		const remoteUnsampled = trace.setSpanContext(ROOT_CONTEXT, {
+			traceId: '0123456789abcdef0123456789abcdef', spanId: '0123456789abcdef', traceFlags: 0, isRemote: true,
+		});
+
+		// 標準の ParentBasedSampler は remote sampled parent を継続し、未sampled parent は抑制する。
+		expect(sampler.shouldSample(remoteSampled, 'fedcba9876543210fedcba9876543210', 'test', SpanKind.INTERNAL, {}, []).decision).toBe(SamplingDecision.RECORD_AND_SAMPLED);
+		expect(sampler.shouldSample(remoteUnsampled, 'fedcba9876543210fedcba9876543210', 'test', SpanKind.INTERNAL, {}, []).decision).toBe(SamplingDecision.NOT_RECORD);
+	});
+});
+
+describe('OTel sampler environment precedence', () => {
+	test('resolves YAML sampleRate before the SDK sampler environment and Misskey default', () => {
+		expect(defaultTraceSampleRate).toBe(0.01);
+		expect(resolveTraceSampler(0.25, { OTEL_TRACES_SAMPLER: 'always_off' })).toEqual({ source: 'config', sampleRate: 0.25 });
+		expect(resolveTraceSampler(undefined, { OTEL_TRACES_SAMPLER: 'always_off' })).toEqual({ source: 'environment' });
+		expect(resolveTraceSampler(undefined, {})).toEqual({ source: 'default', sampleRate: 0.01 });
+		expect(hasOtelSamplerEnvironment({})).toBe(false);
+		expect(hasOtelSamplerEnvironment({ OTEL_TRACES_SAMPLER: '' })).toBe(false);
+		expect(hasOtelSamplerEnvironment({ OTEL_TRACES_SAMPLER: 'parentbased_traceidratio' })).toBe(true);
 	});
 });
 

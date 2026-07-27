@@ -5,7 +5,7 @@
 
 import { channel } from 'node:diagnostics_channel';
 import type { ClientRequest, IncomingMessage } from 'node:http';
-import type { Span, SpanOptions, SpanStatusCode, Tracer } from '@opentelemetry/api';
+import type { ContextAPI, PropagationAPI, Span, SpanOptions, SpanStatusCode, TraceAPI, Tracer } from '@opentelemetry/api';
 
 const HTTP_CLIENT_REQUEST_CREATED = 'http.client.request.created';
 const HTTP_CLIENT_RESPONSE_FINISH = 'http.client.response.finish';
@@ -17,6 +17,10 @@ type HttpClientInstrumentationDeps = {
 	tracer: Pick<Tracer, 'startSpan'>;
 	spanKindClient: SpanOptions['kind'];
 	spanStatusCodeError: SpanStatusCode;
+	context?: Pick<ContextAPI, 'active'>;
+	trace?: Pick<TraceAPI, 'setSpan'>;
+	propagation?: Pick<PropagationAPI, 'inject'>;
+	shouldPropagate?: (origin: string) => boolean;
 	subscribe: (name: string, listener: (message: unknown) => void) => () => void;
 };
 
@@ -46,6 +50,23 @@ export function createHttpClientInstrumentation(deps: HttpClientInstrumentationD
 				},
 			});
 			spans.set(request, span);
+
+			// trace headers は operator が許可した canonical origin にだけ注入する。
+			// setter や propagator の失敗は outbound request 自体を壊さない。
+			if (deps.shouldPropagate?.(origin) === true && deps.context != null && deps.trace != null && deps.propagation != null) {
+				try {
+					const context = deps.trace.setSpan(deps.context.active(), span);
+					deps.propagation.inject(context, request, {
+						set: (carrier, key, value) => {
+							if (carrier != null && typeof carrier.setHeader === 'function' && typeof value === 'string') {
+								carrier.setHeader(key, value);
+							}
+						},
+					});
+				} catch {
+					// request header injection is best-effort; tracing must not affect delivery.
+				}
+			}
 		} catch {
 			// 不正な request 情報では計装だけを諦め、HTTP 処理には影響させない。
 		}

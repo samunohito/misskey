@@ -16,6 +16,7 @@ function request() {
 		path: '/inbox?token=secret',
 		host: 'remote.example',
 		getHeader: vi.fn((name: string) => name === 'host' ? 'user:password@remote.example:8443' : undefined),
+		setHeader: vi.fn(),
 	};
 }
 
@@ -128,5 +129,64 @@ describe('http-client-instrumentation', () => {
 
 		const [name, options] = startSpan.mock.calls[0] as unknown as [string, { attributes: Record<string, unknown> }];
 		expect(safeName(name, sanitizeAttributes(options.attributes))).toBe(name);
+	});
+
+	test('injects W3C trace context only for an exact allowlisted origin and never blocks the request on injection failure', () => {
+		const listeners = new Map<string, (message: unknown) => void>();
+		const span = { end: vi.fn(), recordException: vi.fn(), setAttribute: vi.fn(), setStatus: vi.fn() };
+		const allowedRequest = request();
+		const deniedRequest = request();
+		deniedRequest.getHeader.mockImplementation(() => 'other.example' as any);
+		const activeContext = {};
+		const contextApi = { active: vi.fn(() => activeContext) };
+		const traceApi = { setSpan: vi.fn((context: unknown) => ({ context })) };
+		const propagationApi = {
+			inject: vi.fn((_context: unknown, carrier: typeof allowedRequest, setter: { set: (carrier: typeof allowedRequest, key: string, value: string) => void }) => {
+				setter.set(carrier, 'traceparent', '00-0123456789abcdef0123456789abcdef-0123456789abcdef-01');
+			}),
+		};
+		createHttpClientInstrumentation({
+			tracer: { startSpan: vi.fn(() => span) } as any,
+			spanKindClient: SpanKind.CLIENT,
+			spanStatusCodeError: SpanStatusCode.ERROR,
+			context: contextApi as any,
+			trace: traceApi as any,
+			propagation: propagationApi as any,
+			shouldPropagate: origin => origin === 'https://remote.example:8443',
+			subscribe: (name, listener) => {
+				listeners.set(name, listener);
+				return () => listeners.delete(name);
+			},
+		});
+
+		listeners.get('http.client.request.created')!({ request: allowedRequest });
+		listeners.get('http.client.request.created')!({ request: deniedRequest });
+
+		expect(propagationApi.inject).toHaveBeenCalledTimes(1);
+		expect(allowedRequest.setHeader).toHaveBeenCalledWith('traceparent', expect.stringContaining('00-'));
+		expect(deniedRequest.setHeader).not.toHaveBeenCalled();
+	});
+
+	test('swallows a propagator/setHeader failure after the span has been created', () => {
+		const listeners = new Map<string, (message: unknown) => void>();
+		const clientRequest = request();
+		clientRequest.setHeader.mockImplementation(() => { throw new Error('headers already sent'); });
+		const span = { end: vi.fn(), recordException: vi.fn(), setAttribute: vi.fn(), setStatus: vi.fn() };
+		createHttpClientInstrumentation({
+			tracer: { startSpan: vi.fn(() => span) } as any,
+			spanKindClient: SpanKind.CLIENT,
+			spanStatusCodeError: SpanStatusCode.ERROR,
+			context: { active: () => ({}) } as any,
+			trace: { setSpan: (_context: unknown, spanArg: unknown) => spanArg } as any,
+			propagation: { inject: (_context: unknown, carrier: typeof clientRequest, setter: { set: (carrier: typeof clientRequest, key: string, value: string) => void }) => setter.set(carrier, 'traceparent', '00-0123456789abcdef0123456789abcdef-0123456789abcdef-01') } as any,
+			shouldPropagate: () => true,
+			subscribe: (name, listener) => {
+				listeners.set(name, listener);
+				return () => listeners.delete(name);
+			},
+		});
+
+		expect(() => listeners.get('http.client.request.created')!({ request: clientRequest })).not.toThrow();
+		expect(span.end).not.toHaveBeenCalled();
 	});
 });

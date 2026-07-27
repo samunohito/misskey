@@ -54,7 +54,7 @@ export function isFastifyIdentifierText(value: string): boolean {
  * 名前の形式は計装ごとに違う (@fastify/otel は `<hook> - <handler>`、Sentry は `<plugin> - <hook>` と `request`)。
  * 名前の形だけでは判別できないため、OTel-only 構成は `fastify.type`、Sentry 併用構成は `sentry.op` で確認する。
  */
-function isFastifyHookSpan(data: Record<string, string | number | boolean>): boolean {
+function isFastifyHookSpan(data: Record<string, unknown>): boolean {
 	const fastifyType = data['fastify.type'];
 	if (typeof fastifyType === 'string' && fastifyType !== marker) {
 		return true;
@@ -82,7 +82,7 @@ const dbInstrumentationVerbPattern = new RegExp(`^(${withoutAnchors(pgQueryNameP
  * Fastify の hook span は名前もソース上の識別子だけでできているため、属性と形式を確認したうえでそのまま使う。
  * どの形式にも一致しない名前は伏せる。
  */
-export function safeName(value: unknown, data: Record<string, string | number | boolean> = {}): string {
+export function safeName(value: unknown, data: Record<string, unknown> = {}): string {
 	if (typeof value === 'string' && (misskeyVocabularyPattern.test(value) || dbInstrumentationVerbPattern.test(value) || sentryOpPattern.test(value))) {
 		return value;
 	}

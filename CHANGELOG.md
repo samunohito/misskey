@@ -66,7 +66,7 @@
 - Fix: `/stats` API のレスポンス型が正しくない問題を修正
 - Fix: ハッシュタグに関連するデータを更新する際のエラーハンドリングを修正
 - Fix: Sentry 使用環境下にて、Misskey が発行した SQL クエリが span に含まれない問題を修正
-- Fix: Sentry 使用環境下にて、外部送信リクエストへ `sentry-trace` / `baggage` ヘッダーが既定で付与されないように（`otelForBackend.propagateTraceToRemote: true` を設定する場合は `sentryForBackend.options.tracePropagationTargets` の明示指定が必須になり、未指定時は起動に失敗するように）
+- Enhance: バックエンドTelemetryのtrace sampling既定値を1%にし、外向きtrace header伝播を `otelForBackend.propagationAllowedOrigins` のorigin allowlistで制御できるように
 - Fix: フォロワー限定投稿へのリプライをホーム投稿に出来る問題を修正
 - Fix: ファイルをアップロードするAPIにて、処理終了後に一時ファイルが削除されないことがある問題を修正
 - Fix: 初期設定で作成したアカウント以外でアカウント作成APIが使用できない問題を修正

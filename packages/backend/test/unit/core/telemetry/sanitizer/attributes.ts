@@ -205,6 +205,46 @@ describe('telemetry attribute sanitizer', () => {
 		});
 	});
 
+	describe('operator additional attribute policy', () => {
+		const policy = { additionalAllowedAttributeKeys: new Set(['tenant.id', 'user_agent.original', 'tenant.labels']) };
+
+		test('adds standard scalar and homogeneous array attributes without replacing defaults', () => {
+			expect(sanitizeAttributes({
+				'event.name': 'queue.job.failed',
+				'tenant.id': 'tenant-123',
+				'user_agent.original': 'Misskey/2026',
+				'tenant.labels': ['blue', 'canary'],
+				'unknown.attribute': 'DO_NOT_EXPORT',
+			}, policy)).toEqual({
+				'event.name': 'queue.job.failed',
+				'tenant.id': 'tenant-123',
+				'user_agent.original': 'Misskey/2026',
+				'tenant.labels': ['blue', 'canary'],
+			});
+		});
+
+		test('strips controls, caps strings and arrays, and drops mixed/non-finite arrays', () => {
+			const result = sanitizeAttributes({
+				'tenant.id': `a\x00${'あ'.repeat(4000)}`,
+				'tenant.labels': Array.from({ length: 120 }, (_, index) => `label-${index}`),
+				'user_agent.original': ['ok', 1],
+			}, policy);
+			expect(result['tenant.id']).not.toContain('\x00');
+			expect(Buffer.byteLength(result['tenant.id'] as string, 'utf8')).toBeLessThanOrEqual(8 * 1024);
+			expect(result['tenant.labels']).toHaveLength(100);
+			expect(result).not.toHaveProperty('user_agent.original');
+		});
+
+		test('does not let a large custom value evict already-sanitized default attributes', () => {
+			const result = sanitizeAttributes({
+				'event.name': 'queue.job.failed',
+				'tenant.id': 'x'.repeat(8 * 1024),
+			}, policy);
+			expect(result['event.name']).toBe('queue.job.failed');
+			expect(result['tenant.id']).toBeDefined();
+		});
+	});
+
 	describe('Fastify hook attributes', () => {
 		test('keeps the Fastify hook attributes @fastify/otel actually produces', () => {
 			// 値の材料は登録時に確定する関数名とプラグイン名だけで、リクエスト由来の値を含まない。

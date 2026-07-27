@@ -73,8 +73,10 @@ async function createLoopbackOtlpCollector(): Promise<{ url: string; getBody: ()
 	};
 }
 
-async function createLoopbackTarget(statusCode: number): Promise<{ port: number; close: () => Promise<void> }> {
-	const server = createHttpServer((_request, response) => {
+async function createLoopbackTarget(statusCode: number): Promise<{ port: number; getHeaders: () => Array<Record<string, string | string[] | undefined>>; close: () => Promise<void> }> {
+	const headers: Array<Record<string, string | string[] | undefined>> = [];
+	const server = createHttpServer((request, response) => {
+		headers.push(request.headers);
 		response.writeHead(statusCode);
 		response.end('ok');
 	});
@@ -85,6 +87,7 @@ async function createLoopbackTarget(statusCode: number): Promise<{ port: number;
 	}
 	return {
 		port: address.port,
+		getHeaders: () => headers,
 		close: () => new Promise<void>((resolve, reject) => server.close(error => error == null ? resolve() : reject(error))),
 	};
 }
@@ -186,6 +189,37 @@ describe('telemetry SDK contract (OTel-only, installed dependency versions)', ()
 });
 
 describe('3-configuration canary (OTel-only part): sentinel fixture never reaches the wire, operational fields survive', () => {
+	test('OTel-only: injects traceparent only into an exact origin allowlist entry', async () => {
+		const allowedTarget = await createLoopbackTarget(200);
+		const deniedTarget = await createLoopbackTarget(200);
+		const otlp = await createLoopbackOtlpCollector();
+		let adapter: OpenTelemetryAdapter | undefined;
+		try {
+			adapter = await OpenTelemetryAdapter.create({
+				serviceVersion: '0.0.0-test',
+				endpoint: otlp.url,
+				sampleRate: 1,
+				propagationAllowedOrigins: [`http://127.0.0.1:${allowedTarget.port}`],
+			});
+
+			await adapter.startSpan('API: propagation-canary', async () => {
+				await Promise.all([
+					requestLoopback(`http://127.0.0.1:${allowedTarget.port}/allowed`),
+					requestLoopback(`http://127.0.0.1:${deniedTarget.port}/denied`),
+				]);
+			});
+
+			expect(allowedTarget.getHeaders()[0]?.traceparent).toMatch(/^00-[0-9a-f]{32}-[0-9a-f]{16}-0[01]$/);
+			expect(deniedTarget.getHeaders()[0]?.traceparent).toBeUndefined();
+		} finally {
+			await adapter?.shutdown().catch(() => undefined);
+			await allowedTarget.close().catch(() => undefined);
+			await deniedTarget.close().catch(() => undefined);
+			await otlp.close();
+			resetOpenTelemetryGlobals();
+		}
+	}, 10000);
+
 	test('OTel-only: real OpenTelemetryAdapter + real OTLP protobuf', async () => {
 		const otlp = await createLoopbackOtlpCollector();
 		const webhookTarget = await createLoopbackTarget(500);
@@ -197,6 +231,7 @@ describe('3-configuration canary (OTel-only part): sentinel fixture never reache
 			const otelConfig = {
 				serviceVersion: '0.0.0-test',
 				endpoint: otlp.url,
+				sampleRate: 1,
 				capturePgSpans: false,
 				capturePgStatement: false,
 				capturePgConnectionSpans: false,
@@ -271,6 +306,7 @@ describe('3-configuration canary (OTel-only part): sentinel fixture never reache
 			const otelConfig = {
 				serviceVersion: '0.0.0-test',
 				endpoint: otlp.url,
+				sampleRate: 1,
 				capturePgSpans: false,
 				capturePgStatement: false,
 				capturePgConnectionSpans: false,

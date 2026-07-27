@@ -79,6 +79,16 @@ describe('SentryTelemetryAdapter', () => {
 		expect(options.tracePropagationTargets).toEqual([]);
 	});
 
+	test('uses a bounded trace default and only enables profiling sampling with the explicit profiling integration', () => {
+		const withoutProfiling = buildSentryNodeOptions({ enableNodeProfiling: false, options: {} });
+		const withProfiling = buildSentryNodeOptions({ enableNodeProfiling: true, options: {} });
+
+		expect(withoutProfiling.tracesSampleRate).toBe(0.01);
+		expect(withoutProfiling.profilesSampleRate).toBe(0);
+		expect(withProfiling.tracesSampleRate).toBe(0.01);
+		expect(withProfiling.profilesSampleRate).toBe(1);
+	});
+
 	test('allows explicit tracePropagationTargets to override the default', () => {
 		const options = buildSentryNodeOptions({
 			enableNodeProfiling: false,
@@ -163,67 +173,62 @@ describe('SentryTelemetryAdapter', () => {
 		expect(result.openTelemetrySpanProcessors).toHaveLength(1);
 	});
 
-	describe('tracePropagationTargets option-resolution matrix', () => {
-		// trace header の送信先を明示せずに全 outbound host へ伝播させないことを確認する。
-
-		test('propagateTraceToRemote: true without explicit tracePropagationTargets throws at startup instead of silently propagating to every host', () => {
-			expect(() => buildSentryOtlpInitOptions({
+	describe('trace propagation option-resolution matrix', () => {
+		test('maps canonical OTel origins to anchored Sentry matchers and enables W3C traceparent', () => {
+			const result = buildSentryOtlpInitOptions({
 				sentryConfig: {
 					enableNodeProfiling: false,
 					options: {},
 				},
 				otelConfig: {
 					serviceVersion: '2026.1.0',
-					propagateTraceToRemote: true,
-				},
-				otlpProcessor: { name: 'otlpProcessor' },
-			})).toThrow('otelForBackend.propagateTraceToRemote');
-		});
-
-		test('propagateTraceToRemote: true with explicit tracePropagationTargets is honored without throwing', () => {
-			const result = buildSentryOtlpInitOptions({
-				sentryConfig: {
-					enableNodeProfiling: false,
-					options: {
-						tracePropagationTargets: ['^https://internal\\.example/'],
-					},
-				},
-				otelConfig: {
-					serviceVersion: '2026.1.0',
-					propagateTraceToRemote: true,
+					propagationAllowedOrigins: ['HTTPS://internal.example/'],
 				},
 				otlpProcessor: { name: 'otlpProcessor' },
 			});
 
-			expect(result.tracePropagationTargets).toEqual(['^https://internal\\.example/']);
+			expect(result.tracePropagationTargets).toHaveLength(1);
+			expect((result.tracePropagationTargets as RegExp[])[0].test('https://internal.example/api')).toBe(true);
+			expect((result.tracePropagationTargets as RegExp[])[0].test('https://internal.example.evil/api')).toBe(false);
+			expect(result.propagateTraceparent).toBe(true);
 		});
 
-		test('honors explicit tracePropagationTargets for OTel coexistence even without propagateTraceToRemote', () => {
+		test('keeps an explicit empty origin list fail-closed', () => {
 			const result = buildSentryOtlpInitOptions({
-				sentryConfig: {
-					enableNodeProfiling: false,
-					options: {
-						tracePropagationTargets: ['^https://internal\\.example/'],
-					},
-				},
-				otelConfig: { serviceVersion: '2026.1.0' },
-				otlpProcessor: { name: 'otlpProcessor' },
-			});
-
-			expect(result.tracePropagationTargets).toEqual(['^https://internal\\.example/']);
-		});
-
-		test('propagateTraceToRemote unset and tracePropagationTargets unset keeps the safe empty-array default', () => {
-			const result = buildSentryOtlpInitOptions({
-				sentryConfig: {
-					enableNodeProfiling: false,
-					options: {},
-				},
-				otelConfig: { serviceVersion: '2026.1.0' },
+				sentryConfig: { enableNodeProfiling: false, options: {} },
+				otelConfig: { serviceVersion: '2026.1.0', propagationAllowedOrigins: [] },
 				otlpProcessor: { name: 'otlpProcessor' },
 			});
 
 			expect(result.tracePropagationTargets).toEqual([]);
+			expect(result.propagateTraceparent).toBe(true);
+		});
+
+		test('rejects ambiguous Sentry propagation options when the OTel origin allowlist is configured', () => {
+			for (const options of [
+				{ tracePropagationTargets: ['^https://internal\\.example/'] },
+				{ propagateTraceparent: true },
+			]) {
+				expect(() => buildSentryOtlpInitOptions({
+					sentryConfig: { enableNodeProfiling: false, options },
+					otelConfig: { serviceVersion: '2026.1.0', propagationAllowedOrigins: ['https://internal.example'] },
+					otlpProcessor: { name: 'otlpProcessor' },
+				})).toThrow('propagationAllowedOrigins');
+			}
+		});
+
+		test('preserves native Sentry propagation options when the OTel allowlist is omitted', () => {
+			const result = buildSentryOtlpInitOptions({
+				sentryConfig: {
+					enableNodeProfiling: false,
+					options: { tracePropagationTargets: ['^https://internal\\.example/'], propagateTraceparent: true },
+				},
+				otelConfig: { serviceVersion: '2026.1.0' },
+				otlpProcessor: { name: 'otlpProcessor' },
+			});
+
+			expect(result.tracePropagationTargets).toEqual(['^https://internal\\.example/']);
+			expect(result.propagateTraceparent).toBe(true);
 		});
 	});
 

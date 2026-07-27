@@ -8,6 +8,7 @@ import { registerDiagLogger } from '@/core/telemetry/telemetry-diag.js';
 import { executeSpan, getQueueTraceContextMode, injectActiveTraceContext, startSpanWithQueueTraceContext } from '@/core/telemetry/queue-trace-context.js';
 import { normalizeOperationalEvent, type OperationalEvent } from '@/logging/OperationalLogEvents.js';
 import { isAllowedCombinedScope, SanitizingSpanProcessor } from '@/core/telemetry/SanitizingSpanProcessor.js';
+import { buildSentryTracePropagationTargets, defaultTraceSampleRate, resolveAdditionalAllowedSpanAttributes, resolvePropagationAllowedOrigins } from '@/core/telemetry/observability-config.js';
 import type { LogTraceContext } from '@/logging/types.js';
 import type * as SentryNode from '@sentry/node';
 import type { NodeOptions } from '@sentry/node';
@@ -59,10 +60,10 @@ export function buildSentryNodeOptions(
 		tracePropagationTargets: [],
 
 		// Performance Monitoring
-		tracesSampleRate: 1.0, // transaction をすべて採取する
+		tracesSampleRate: defaultTraceSampleRate,
 
-		// profiling の採取率は tracesSampleRate に対する相対値
-		profilesSampleRate: 1.0,
+		// profiling は integration 自体が明示 opt-in。有効時は採取した trace に対して採取する。
+		profilesSampleRate: config.enableNodeProfiling ? 1.0 : 0,
 
 		maxBreadcrumbs: 0,
 
@@ -100,14 +101,21 @@ type BuildSentryOtlpInitOptions = {
 
 export function buildSentryOtlpInitOptions(options: BuildSentryOtlpInitOptions): SentryNodeOptions {
 	// OTel併存時も、remoteへtrace headerを漏らさないデフォルトはSentry単体時と揃える。
-	// key が存在して値が `undefined` の項目を spread し、既定の `[]` を上書きしないよう、値を分離して明示時だけ戻す。
-	const { tracePropagationTargets, ...sentryOptions } = options.sentryConfig.options;
-
-	// 送信先の未指定は、絞り込み先の指定漏れか意図的な全許可かを判別できない。
-	// 全 outbound host への伝播にも、無言での伝播無効にも倒さず、起動時に失敗させる。
-	if (options.otelConfig.propagateTraceToRemote === true && tracePropagationTargets == null) {
-		throw new Error('otelForBackend.propagateTraceToRemote is true but sentryForBackend.options.tracePropagationTargets is not set. Specify tracePropagationTargets explicitly (e.g. internal service hostnames only); otherwise the Sentry trace/baggage headers (including the project public key) would propagate to every outbound host.');
+	// 新しいorigin allowlistとSentryの低レベル matcherを同時に指定すると authority が曖昧になるため拒否する。
+	const { tracePropagationTargets, propagateTraceparent, ...sentryOptions } = options.sentryConfig.options;
+	const propagationAllowedOrigins = resolvePropagationAllowedOrigins(options.otelConfig.propagationAllowedOrigins);
+	if (propagationAllowedOrigins != null && (tracePropagationTargets !== undefined || propagateTraceparent !== undefined)) {
+		throw new Error('otelForBackend.propagationAllowedOrigins cannot be combined with sentryForBackend.options.tracePropagationTargets or propagateTraceparent. Configure the origin allowlist in one place.');
 	}
+	const propagationOptions = propagationAllowedOrigins != null
+		? {
+			tracePropagationTargets: buildSentryTracePropagationTargets(propagationAllowedOrigins),
+			propagateTraceparent: true,
+		}
+		: {
+			...(tracePropagationTargets !== undefined ? { tracePropagationTargets } : {}),
+			...(propagateTraceparent !== undefined ? { propagateTraceparent } : {}),
+		};
 
 	const warn = options.warn ?? ((message: string) => logger.warn(message));
 
@@ -122,10 +130,10 @@ export function buildSentryOtlpInitOptions(options: BuildSentryOtlpInitOptions):
 	return {
 		...buildSentryNodeOptions({
 			...options.sentryConfig,
-			options: {
-				...sentryOptions,
-				...(tracePropagationTargets != null ? { tracePropagationTargets } : {}),
-			},
+		options: {
+			...sentryOptions,
+			...propagationOptions,
+		},
 		}, options.nodeProfilingIntegration),
 
 		// Sentryの単一TracerProviderにOTLP processorを追加し、親欠損や二重providerを避ける。
@@ -173,6 +181,7 @@ export class SentryTelemetryAdapter implements TelemetryAdapter {
 			...(otelConfig.endpoint != null ? { url: otelConfig.endpoint } : {}),
 			...(otelConfig.headers != null ? { headers: otelConfig.headers } : {}),
 		});
+		const additionalAllowedSpanAttributes = resolveAdditionalAllowedSpanAttributes(otelConfig.additionalAllowedSpanAttributes);
 		const otlpProcessor = new SanitizingSpanProcessor(new BatchSpanProcessor(exporter), (scope, span) => isAllowedCombinedScope(exportPolicy, scope, span, {
 			capturePgSpans: otelConfig.capturePgSpans === true,
 			capturePgConnectionSpans: otelConfig.capturePgConnectionSpans === true,
@@ -181,6 +190,9 @@ export class SentryTelemetryAdapter implements TelemetryAdapter {
 			captureRedisRootSpans: otelConfig.captureRedisRootSpans === true,
 		}), {
 			allowDbStatement: otelConfig.capturePgStatement === true,
+			...(additionalAllowedSpanAttributes != null
+				? { additionalAllowedAttributeKeys: new Set(additionalAllowedSpanAttributes) }
+				: {}),
 		});
 
 		// SentryとOTLPを同一providerに集約することで、どちらの宛先にも同じspan実体を流す。

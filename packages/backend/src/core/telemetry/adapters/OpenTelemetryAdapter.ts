@@ -11,6 +11,7 @@ import { installHttpClientInstrumentation } from '@/core/telemetry/http-client-i
 import { installDatabaseInstrumentation } from '@/core/telemetry/database-instrumentation.js';
 import { installRedisInstrumentation } from '@/core/telemetry/redis-instrumentation.js';
 import { SanitizingSpanProcessor } from '@/core/telemetry/SanitizingSpanProcessor.js';
+import { resolveAdditionalAllowedSpanAttributes, resolvePropagationAllowedOrigins, resolveTraceSampler } from '@/core/telemetry/observability-config.js';
 import { executeSpan, getQueueTraceContextMode, injectActiveTraceContext, recordSpanError, startSpanWithQueueTraceContext } from '@/core/telemetry/queue-trace-context.js';
 import { normalizeOperationalEvent, type OperationalEvent } from '@/logging/OperationalLogEvents.js';
 import type { LogTraceContext } from '@/logging/types.js';
@@ -85,11 +86,19 @@ export class OpenTelemetryAdapter implements TelemetryAdapter {
 			...(config.endpoint != null ? { url: config.endpoint } : {}),
 			...(config.headers != null ? { headers: config.headers } : {}),
 		});
+		const additionalAllowedSpanAttributes = resolveAdditionalAllowedSpanAttributes(config.additionalAllowedSpanAttributes);
 		// SQL 本文の許可と運用者定義の resource 属性を、OTLP 送信前の加工に反映する。
 		const spanProcessor = new SanitizingSpanProcessor(new BatchSpanProcessor(exporter), undefined, {
 			allowDbStatement: config.capturePgStatement === true,
 			allowedResourceKeys: new Set(Object.keys(config.resourceAttributes ?? {})),
+			...(additionalAllowedSpanAttributes != null ? { additionalAllowedAttributeKeys: new Set(additionalAllowedSpanAttributes) } : {}),
 		});
+		const propagationAllowedOrigins = new Set(resolvePropagationAllowedOrigins(config.propagationAllowedOrigins) ?? []);
+		const configuredSampleRate = (config as { sampleRate?: unknown }).sampleRate;
+		const samplerResolution = resolveTraceSampler(configuredSampleRate);
+		const sampler = samplerResolution.source === 'environment'
+			? undefined
+			: createSampler(samplerResolution.sampleRate, { ParentBasedSampler, TraceIdRatioBasedSampler });
 
 		// SDK 2.xではSpanProcessorをprovider生成時に渡す。ここでOTel単体用のproviderを作る。
 		const provider = new NodeTracerProvider({
@@ -103,14 +112,11 @@ export class OpenTelemetryAdapter implements TelemetryAdapter {
 				serviceVersionAttribute: ATTR_SERVICE_VERSION,
 				serviceVersion: config.serviceVersion,
 			}),
-			...(config.sampleRate != null ? { sampler: createSampler(config.sampleRate, {
-				ParentBasedSampler,
-				TraceIdRatioBasedSampler,
-			}) } : {}),
+			...(sampler != null ? { sampler } : {}),
 			spanProcessors: [spanProcessor],
 		});
 
-		// HTTP送信には注入しないが、将来のQueue連結でpropagation APIを使える状態にする。
+		// HTTP送信への伝播は明示されたoriginだけに限定し、Queueは従来どおり標準propagatorを使う。
 		provider.register({
 			propagator: new W3CTraceContextPropagator(),
 		});
@@ -128,6 +134,10 @@ export class OpenTelemetryAdapter implements TelemetryAdapter {
 				tracer,
 				spanKindClient: SpanKind.CLIENT,
 				spanStatusCodeError: SpanStatusCode.ERROR,
+				context,
+				trace,
+				propagation,
+				shouldPropagate: origin => propagationAllowedOrigins.has(origin),
 			}),
 			// pg のrequire hookとioredis diagnostics channelは、Nest moduleの動的importより前に有効化する。
 			shutdownDatabaseInstrumentation: await installDatabaseInstrumentation(provider, {

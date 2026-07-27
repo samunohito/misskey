@@ -7,6 +7,8 @@ import { isFastifyIdentifierText, sentryOpPattern } from '@/core/telemetry/sanit
 import { stripLogInjectionControlChars, truncateUtf8Bytes } from '@/core/telemetry/sanitizer/text.js';
 import { isWithinObservabilityLimit, marker } from '@/core/telemetry/sanitizer/validation.js';
 
+export type SanitizedAttributeValue = string | number | boolean | Array<string | number | boolean>;
+
 /**
  * 旧 semconv の属性名から、許可一覧が持つ現行名への対応。
  *
@@ -105,6 +107,9 @@ export type SanitizeAttributesOptions = {
 	 * 起動時に決まる属性だけ、resource の許可一覧へ追加する。
 	 */
 	allowedResourceKeys?: ReadonlySet<string>;
+
+	/** operator が追加で許可した span 属性のキー。既定の許可一覧を置き換えない。 */
+	additionalAllowedAttributeKeys?: ReadonlySet<string>;
 };
 
 /**
@@ -189,8 +194,8 @@ function isAgreeingPostgresSystem(value: object): boolean {
  * 未知の属性は利用者情報を含む可能性があるため、外部へ渡さない。
  * SQL 本文は `allowDbStatement` が有効な PostgreSQL span に限って許可する。
  */
-export function sanitizeAttributes(value: unknown, options?: SanitizeAttributesOptions): Record<string, string | number | boolean> {
-	const output: Record<string, string | number | boolean> = {};
+export function sanitizeAttributes(value: unknown, options?: SanitizeAttributesOptions): Record<string, SanitizedAttributeValue> {
+	const output: Record<string, SanitizedAttributeValue> = {};
 	try {
 		if (value == null || typeof value !== 'object') {
 			return output;
@@ -199,7 +204,9 @@ export function sanitizeAttributes(value: unknown, options?: SanitizeAttributesO
 		// Redis の同名属性を通さないよう、SQL 本文の許可を属性集合全体から先に判定する。
 		const isPostgresStatement = options?.allowDbStatement === true && isAgreeingPostgresSystem(value);
 
-		for (const key of Object.keys(value)) {
+		const keys = Object.keys(value);
+		// 既定属性を先に処理する。追加属性が既定値を追い出したり、既定属性の検証を迂回したりしないようにする。
+		for (const key of keys) {
 			// 旧名は現行名へ寄せてから判定する。現行名が同じ属性集合に存在する場合は、そちらを優先して旧名を捨てる。
 			const canonicalKey = legacyAttributeKeyAliases.get(key) ?? key;
 			if (canonicalKey !== key && Object.hasOwn(value, canonicalKey)) {
@@ -214,6 +221,24 @@ export function sanitizeAttributes(value: unknown, options?: SanitizeAttributesO
 			if (safe != null) {
 				output[canonicalKey] = safe;
 			}
+		}
+
+		// 追加属性は、既定属性では扱わない標準的な scalar/array 型だけを受け付ける。
+		// 既定属性と同名なら、常に上の専用検証を優先する。
+		for (const key of keys) {
+			const canonicalKey = legacyAttributeKeyAliases.get(key) ?? key;
+			if (canonicalKey !== key && Object.hasOwn(value, canonicalKey)) {
+				continue;
+			}
+			const allowedAsDbStatement = isPostgresStatement && dbStatementAttributeKeys.has(canonicalKey);
+			if (allowedAttributeKeys.has(canonicalKey) || allowedAsDbStatement || !(options?.additionalAllowedAttributeKeys?.has(canonicalKey) ?? false)) {
+				continue;
+			}
+			const safe = sanitizeAdditionalAttribute(Reflect.get(value, key));
+			if (safe == null || !isWithinObservabilityLimit({ ...output, [canonicalKey]: safe })) {
+				continue;
+			}
+			output[canonicalKey] = safe;
 		}
 	} catch {
 		// 読み取り中に失敗した場合も、部分的な値を返さない。
@@ -288,6 +313,45 @@ function sanitizeAttribute(key: string, value: unknown, allowedAsDbStatement = f
 		return asciiToken(value);
 	}
 	return undefined;
+}
+
+const additionalAttributeStringMaxBytes = 8 * 1024;
+const additionalAttributeArrayMaxLength = 100;
+
+/** 追加属性の generic gate。OTel の scalar/同一型 array と共通のサイズ上限だけを適用する。 */
+function sanitizeAdditionalAttribute(value: unknown): SanitizedAttributeValue | undefined {
+	if (typeof value === 'string') {
+		return truncateUtf8Bytes(stripLogInjectionControlChars(value), additionalAttributeStringMaxBytes);
+	}
+	if (typeof value === 'number') {
+		return Number.isFinite(value) ? value : undefined;
+	}
+	if (typeof value === 'boolean') {
+		return value;
+	}
+	if (!Array.isArray(value)) {
+		return undefined;
+	}
+	if (value.length === 0) {
+		return [];
+	}
+
+	const firstType = typeof value[0];
+	if (firstType !== 'string' && firstType !== 'number' && firstType !== 'boolean') {
+		return undefined;
+	}
+	const output: Array<string | number | boolean> = [];
+	for (const item of value.slice(0, additionalAttributeArrayMaxLength)) {
+		if (typeof item !== firstType || (typeof item === 'number' && !Number.isFinite(item))) {
+			return undefined;
+		}
+		if (typeof item === 'string') {
+			output.push(truncateUtf8Bytes(stripLogInjectionControlChars(item), additionalAttributeStringMaxBytes));
+		} else {
+			output.push(item);
+		}
+	}
+	return output;
 }
 
 /**
