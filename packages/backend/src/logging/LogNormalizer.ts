@@ -49,6 +49,37 @@ const TRUNCATED = '[Truncated]';
 const UNSUPPORTED = '[Unsupported]';
 const TRUNCATED_KEY = '[Truncated]';
 
+/** Logger messageへ入力されるnetwork URLを、認証情報を含まない形へ整えます。 */
+function sanitizeNetworkUrls(value: string): string {
+	const urlPattern = /\b(?:https?|wss?|ftp|redis|rediss|postgres(?:ql)?):\/\/[^\s<>"']+/gi;
+	return value.replace(urlPattern, candidate => {
+		let trailing = '';
+		let trimmed = candidate;
+		while (/[.,!?;:)]$/.test(trimmed)) {
+			trailing = trimmed.slice(-1) + trailing;
+			trimmed = trimmed.slice(0, -1);
+		}
+		try {
+			const url = new URL(trimmed);
+			const origin = url.origin === 'null' ? `${url.protocol}//${url.host}` : url.origin;
+			const pathname = url.pathname === '/' && !trimmed.endsWith('/') ? '' : url.pathname;
+			return `${origin}${pathname}${trailing}`;
+		} catch {
+			// URLとして解釈できない値は、元の文字列を保持せず安全なmarkerへ縮退します。
+			return `[URL]${trailing}`;
+		}
+	});
+}
+
+/** 端末制御や改行によるログ偽装を防ぐため、自由形式の文字列を無害化します。 */
+function sanitizeLogText(value: string): string {
+	// C0/C1 control文字は端末制御を含むため、正規表現でまとめて除去します。
+	// eslint-disable-next-line no-control-regex
+	return sanitizeNetworkUrls(value).replace(/[\x00-\x1f\x7f-\x9f]/g, character => {
+		return character === '\n' || character === '\r' || character === '\t' ? ' ' : '';
+	});
+}
+
 const sensitiveKeyParts = [
 	'password',
 	'passwd',
@@ -76,7 +107,7 @@ function normalizeKey(key: string): string {
 /** 既定の秘匿対象を判定します。Misskey APIの`i`も認証情報として扱います。 */
 export function defaultLogRedactor(_path: readonly string[], key: string): boolean {
 	const normalized = normalizeKey(key);
-	return normalized === 'i' || sensitiveKeyParts.some(part => normalized.includes(part));
+	return normalized === 'i' || normalized === 'pass' || sensitiveKeyParts.some(part => normalized.includes(part));
 }
 
 /** 選択した方式と個別指定を合わせて、実際の上限値を決めます。 */
@@ -122,14 +153,21 @@ function byteLength(value: string): number {
 
 /** 文字列をUTF-8の上限内へ切り詰めます。 */
 function normalizeString(value: string, maxBytes: number): string {
-	if (byteLength(value) <= maxBytes) return value;
+	const sanitized = sanitizeLogText(value);
+	if (byteLength(sanitized) <= maxBytes) return sanitized;
 	const suffix = `…${TRUNCATED}`;
 	if (byteLength(suffix) > maxBytes) {
-		const end = findMaxPrefixLength(value, '', maxBytes);
-		return value.slice(0, end);
+		const end = findMaxPrefixLength(sanitized, '', maxBytes);
+		return sanitized.slice(0, end);
 	}
-	const end = findMaxPrefixLength(value, suffix, maxBytes);
-	return value.slice(0, end) + suffix;
+	const end = findMaxPrefixLength(sanitized, suffix, maxBytes);
+	return sanitized.slice(0, end) + suffix;
+}
+
+/** 自由形式のログ本文を、属性と同じ秘匿・byte上限規則で正規化します。 */
+export function normalizeLogMessage(value: unknown, options: LogNormalizationOptions = {}): string {
+	const limits = resolveLogNormalizationLimits(options);
+	return normalizeString(stringifySafely(value), limits.maxStringBytes);
 }
 
 /** 指定した後置文字列を含めて上限に収まる接頭辞の長さを二分探索します。 */

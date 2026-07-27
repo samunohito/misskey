@@ -17,6 +17,7 @@ vi.mock('node-fetch', () => ({ default: fetchMock }));
 const { AiService } = await import('@/core/AiService.js');
 
 let getAgentByUrlMock: ReturnType<typeof vi.fn>;
+let loggerWriteMock: ReturnType<typeof vi.fn>;
 
 const DEFAULT_META = {
 	sensitiveMediaDetectionApiUrl: 'http://localhost:3009' as string | null,
@@ -28,9 +29,10 @@ const DEFAULT_META = {
 function makeService(metaOverrides: Partial<typeof DEFAULT_META> = {}): AiServiceType {
 	const meta = { ...DEFAULT_META, ...metaOverrides } as unknown as MiMeta;
 	getAgentByUrlMock = vi.fn(() => undefined);
+	loggerWriteMock = vi.fn();
 	const httpRequestService = { getAgentByUrl: getAgentByUrlMock } as unknown as HttpRequestService;
 	const loggerService = {
-		getLogger: () => ({ warn: () => {}, error: () => {}, info: () => {} }),
+		getLogger: () => ({ warn: () => {}, error: () => {}, info: () => {}, write: loggerWriteMock }),
 	} as unknown as LoggerService;
 	return new AiService(meta, httpRequestService, loggerService);
 }
@@ -39,11 +41,13 @@ function neutral(): Prediction[] {
 	return [{ className: 'Neutral', probability: 0.99 }];
 }
 
-function okResponse(results: unknown[]) {
+function okResponse(results: unknown[], options: { contentType?: string; body?: unknown } = {}) {
 	return {
 		ok: true,
 		status: 200,
 		statusText: 'OK',
+		headers: { get: () => options.contentType ?? 'application/json' },
+		body: options.body ?? null,
 		json: async () => ({ success: true, result: { results } }),
 	};
 }
@@ -68,6 +72,7 @@ describe('AiService', () => {
 		]);
 		expect(fetchMock).toHaveBeenCalledTimes(1);
 		expect(fetchMock.mock.calls[0][0]).toBe('http://localhost:3009/v1/detect-images');
+		expect((fetchMock.mock.calls[0][1] as { size: number }).size).toBe(64 * 1024);
 	});
 
 	test('外部サービス: 通常の outbound agent を使用する', async () => {
@@ -100,10 +105,34 @@ describe('AiService', () => {
 	});
 
 	test('非200: チャンク全件 null（例外を投げない）', async () => {
-		fetchMock.mockResolvedValue({ ok: false, status: 503, statusText: 'Service Unavailable', json: async () => ({}) });
+		const destroy = vi.fn();
+		fetchMock.mockResolvedValue({ ok: false, status: 503, statusText: 'Service Unavailable', headers: { get: () => 'application/json' }, body: { destroy }, json: async () => ({}) });
 		const svc = makeService();
 		const res = await svc.detectSensitiveMany([buf('a'), buf('b')]);
 		expect(res).toEqual([null, null]);
+		expect(destroy).toHaveBeenCalledOnce();
+		expect(JSON.stringify(loggerWriteMock.mock.calls)).not.toContain('Service Unavailable');
+	});
+
+	test('不正なContent-Type: bodyを破棄してnullへfallbackする', async () => {
+		const destroy = vi.fn();
+		fetchMock.mockResolvedValue(okResponse([], { contentType: 'text/plain', body: { destroy } }));
+		const svc = makeService();
+
+		expect(await svc.detectSensitiveMany([buf('a')])).toEqual([null]);
+		expect(destroy).toHaveBeenCalledOnce();
+	});
+
+	test('予測確率のNaN・範囲外と結果件数不一致を拒否する', async () => {
+		fetchMock.mockResolvedValueOnce(okResponse([{ success: true, predictions: [{ className: 'nan', probability: Number.NaN }] }]));
+		const svc = makeService();
+		expect(await svc.detectSensitiveMany([buf('a')])).toEqual([null]);
+
+		fetchMock.mockResolvedValueOnce(okResponse([{ success: true, predictions: [{ className: 'out-of-range', probability: 1.1 }] }]));
+		expect(await svc.detectSensitiveMany([buf('a')])).toEqual([null]);
+
+		fetchMock.mockResolvedValueOnce(okResponse([]));
+		expect(await svc.detectSensitiveMany([buf('a')])).toEqual([null]);
 	});
 
 	test('通信エラー: チャンク全件 null（例外を投げない）', async () => {
@@ -121,12 +150,18 @@ describe('AiService', () => {
 	});
 
 	test('チャンク分割: maxImagesPerRequest ごとに順次送信する', async () => {
-		fetchMock.mockResolvedValue(okResponse([
-			{ success: true, predictions: neutral() },
-			{ success: true, predictions: neutral() },
-			{ success: true, predictions: neutral() },
-			{ success: true, predictions: neutral() },
-		]));
+		fetchMock
+			.mockResolvedValueOnce(okResponse([
+				{ success: true, predictions: neutral() },
+				{ success: true, predictions: neutral() },
+			]))
+			.mockResolvedValueOnce(okResponse([
+				{ success: true, predictions: neutral() },
+				{ success: true, predictions: neutral() },
+			]))
+			.mockResolvedValueOnce(okResponse([
+				{ success: true, predictions: neutral() },
+			]));
 		const svc = makeService({ sensitiveMediaDetectionMaxImagesPerRequest: 2 });
 		const res = await svc.detectSensitiveMany([buf('a'), buf('b'), buf('c'), buf('d'), buf('e')]);
 		// 5 枚を 2 枚ずつ → 3 リクエスト、結果は順序を保って 5 件。
@@ -140,12 +175,12 @@ describe('AiService', () => {
 
 		const withKey = makeService({ sensitiveMediaDetectionApiKey: 'secret' });
 		await withKey.detectSensitiveMany([buf('a')]);
-		expect((fetchMock.mock.calls[0][1] as any).headers.Authorization).toBe('Bearer secret');
+		expect((fetchMock.mock.calls[0][1] as { headers: { Authorization?: string } }).headers.Authorization).toBe('Bearer secret');
 
 		fetchMock.mockClear();
 		fetchMock.mockResolvedValue(okResponse([{ success: true, predictions: neutral() }]));
 		const withoutKey = makeService();
 		await withoutKey.detectSensitiveMany([buf('a')]);
-		expect((fetchMock.mock.calls[0][1] as any).headers.Authorization).toBeUndefined();
+		expect((fetchMock.mock.calls[0][1] as { headers: { Authorization?: string } }).headers.Authorization).toBeUndefined();
 	});
 });

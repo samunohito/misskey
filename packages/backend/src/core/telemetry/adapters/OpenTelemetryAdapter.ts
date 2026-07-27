@@ -12,6 +12,7 @@ import { installDatabaseInstrumentation } from '@/core/telemetry/database-instru
 import { installRedisInstrumentation } from '@/core/telemetry/redis-instrumentation.js';
 import { SanitizingSpanProcessor } from '@/core/telemetry/SanitizingSpanProcessor.js';
 import { executeSpan, getQueueTraceContextMode, injectActiveTraceContext, recordSpanError, startSpanWithQueueTraceContext } from '@/core/telemetry/queue-trace-context.js';
+import { normalizeOperationalEvent, type OperationalEvent } from '@/logging/OperationalLogEvents.js';
 import type { LogTraceContext } from '@/logging/types.js';
 import type { Attributes, Span, SpanStatusCode, Tracer } from '@opentelemetry/api';
 import type { Resource, ResourceDetector } from '@opentelemetry/resources';
@@ -173,6 +174,26 @@ export class OpenTelemetryAdapter implements TelemetryAdapter {
 			if (attributes != null) {
 				reportSpan.setAttributes(attributes);
 			}
+			reportSpan.end();
+		});
+	}
+
+	public captureOperationalEvent(event: OperationalEvent): void {
+		const normalized = normalizeOperationalEvent(event);
+		const attributes: Attributes = {
+			'event.name': normalized.eventName,
+			...normalized.attributes,
+		};
+		const span = this.deps.getActiveSpan();
+		if (span != null) {
+			recordSpanError(span, new Error(normalized.message), this.deps.spanStatusCodeError);
+			span.setAttributes(attributes);
+			return;
+		}
+
+		this.deps.tracer.startActiveSpan(normalized.message, reportSpan => {
+			recordSpanError(reportSpan, new Error(normalized.message), this.deps.spanStatusCodeError);
+			reportSpan.setAttributes(attributes);
 			reportSpan.end();
 		});
 	}

@@ -76,10 +76,11 @@ describe('JsonConsoleBackend', () => {
 		}));
 
 		expect(output).toHaveBeenCalledOnce();
+		// eslint-disable-next-line @stylistic/quotes
 		expect(output.mock.calls[0][0]).toMatchInlineSnapshot(`"{\"timestamp\":\"2025-01-02T03:04:05.678Z\",\"level\":\"error\",\"message\":\"delivery failed\",\"loggerName\":\"queue.deliver\",\"eventName\":\"queue.job.failed\",\"attributes\":{\"jobId\":\"123\",\"attempt\":2},\"error\":{\"type\":\"TypeError\",\"message\":\"broken\",\"stack\":\"stack\"},\"processId\":1234,\"isPrimary\":false,\"workerId\":7}"`);
 	});
 
-	test('omits pretty-only compatibility data and context colors', () => {
+	test('emits normalized legacy data and omits context colors', () => {
 		const output = vi.fn<(line: string) => void>();
 		const backend = new JsonConsoleBackend({ output });
 		const record = createRecord({
@@ -87,7 +88,7 @@ describe('JsonConsoleBackend', () => {
 			compatibility: {
 				legacyLevel: 'success',
 				important: true,
-				data: { secret: 'must not be written' },
+				legacyData: { detail: 'diagnostic', token: '[REDACTED]' },
 			},
 		});
 
@@ -98,6 +99,7 @@ describe('JsonConsoleBackend', () => {
 			level: 'error',
 			message: 'delivery failed',
 			loggerName: 'queue.deliver',
+			legacyData: { detail: 'diagnostic', token: '[REDACTED]' },
 			processId: 1234,
 			isPrimary: false,
 			workerId: 7,

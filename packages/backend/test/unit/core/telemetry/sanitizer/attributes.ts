@@ -77,6 +77,32 @@ describe('telemetry attribute sanitizer', () => {
 	});
 
 	describe('allowlist is fail-closed on value type, not only on key name', () => {
+		test('keeps typed operational event metadata and rejects unsafe forms', () => {
+			expect(sanitizeAttributes({
+				'event.name': 'queue.job.failed',
+				'api.endpoint': 'users/show',
+				'queue.job.attempts_made': 2,
+				'error.id': 'error-1',
+				'destination.origin': 'https://example.test/path?token=DO_NOT_EXPORT',
+				'failure.kind': 'invalid_shape',
+			})).toEqual({
+				'event.name': 'queue.job.failed',
+				'api.endpoint': 'users/show',
+				'queue.job.attempts_made': 2,
+				'error.id': 'error-1',
+				'destination.origin': 'https://example.test',
+				'failure.kind': 'invalid_shape',
+			});
+			expect(sanitizeAttributes({
+				'event.name': 'queue job failed',
+				'queue.job.attempts_made': '2',
+				'destination.origin': 'https://example.test/path?DO_NOT_EXPORT',
+			})).toEqual({
+				'event.name': marker,
+				'destination.origin': 'https://example.test',
+			});
+		});
+
 		test('keeps numbers only for the keys whose value is a number in semconv', () => {
 			expect(sanitizeAttributes({ 'http.response.status_code': 404, 'server.port': 5432 }))
 				.toEqual({ 'http.response.status_code': 404, 'server.port': 5432 });
@@ -136,6 +162,7 @@ describe('telemetry attribute sanitizer', () => {
 		test('strips NUL/CR/LF/ESC control characters even when allowed', () => {
 			const withControlChars = 'SELECT 1\x00 -- comment\r\ncontinued\x1b[31m';
 			const result = sanitizeAttributes({ 'db.statement': withControlChars, 'db.system': 'postgresql' }, { allowDbStatement: true })['db.statement'] as string;
+			// eslint-disable-next-line no-control-regex
 			expect(result).not.toMatch(/[\x00\r\n\x1b]/);
 			expect(result).toBe('SELECT 1 -- commentcontinued[31m');
 		});

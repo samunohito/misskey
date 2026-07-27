@@ -4,7 +4,7 @@
  */
 
 import type { LogBackend } from './LogBackend.js';
-import type { AccessLogRecord, LogRecord } from './types.js';
+import type { AccessLogRecord, LogAttributeValue, LogRecord } from './types.js';
 
 /** JSON形式のログを1行で出力する処理が外部から受け取る依存関係です。 */
 export type JsonConsoleBackendDependencies = {
@@ -20,6 +20,7 @@ type JsonLogRecord = {
 	readonly eventName?: string;
 	readonly attributes?: LogRecord['attributes'];
 	readonly error?: LogRecord['error'];
+	readonly legacyData?: LogAttributeValue;
 	readonly processId: number;
 	readonly isPrimary: boolean;
 	readonly workerId: number | null;
@@ -64,6 +65,7 @@ function createJsonLogRecord(record: LogRecord): JsonLogRecord {
 		...(record.eventName != null ? { eventName: record.eventName } : {}),
 		...(record.attributes != null ? { attributes: record.attributes } : {}),
 		...(record.error != null ? { error: record.error } : {}),
+		...(record.compatibility?.legacyData !== undefined ? { legacyData: record.compatibility.legacyData } : {}),
 		// 実行主体の情報は常に出し、ログを横断して検索できる形を保ちます。
 		processId: record.processId,
 		isPrimary: record.isPrimary,

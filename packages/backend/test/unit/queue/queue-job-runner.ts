@@ -30,10 +30,22 @@ describe('runQueueJobWithTraceContext', () => {
 
 	test('handles failures while the processor span is active and rethrows the original error', async () => {
 		let spanActive = false;
+		let callbackResult: unknown;
+		let callbackRejected = false;
 		const startSpanWithTraceContext = vi.fn(<T>(_name: string, _jobData: object, fn: () => T): T => {
 			spanActive = true;
 			const result = fn();
-			if (result instanceof Promise) return result.finally(() => { spanActive = false; }) as T;
+			if (result instanceof Promise) {
+				return result.then(value => {
+					callbackResult = value;
+					spanActive = false;
+					return value;
+				}, error => {
+					callbackRejected = true;
+					spanActive = false;
+					throw error;
+				}) as T;
+			}
 			spanActive = false;
 			return result;
 		});
@@ -51,6 +63,8 @@ describe('runQueueJobWithTraceContext', () => {
 		}, onError)).rejects.toBe(originalError);
 
 		expect(onError).toHaveBeenCalledOnce();
+		expect(callbackRejected).toBe(false);
+		expect(callbackResult).toMatchObject({ outcome: 'failure' });
 		expect(spanActive).toBe(false);
 	});
 });

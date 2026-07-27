@@ -137,8 +137,12 @@ type Source = {
 		format?: LogFormat;
 		level?: LogLevelSetting;
 		domains?: Record<string, LogLevelSetting> | null;
+		diagnostics?: {
+			legacyData?: boolean;
+		};
 		access?: AccessLogConfiguration;
 		sql?: {
+			statement?: boolean;
 			disableQueryTruncation?: boolean,
 			enableQueryParamLogging?: boolean,
 		}
@@ -203,8 +207,12 @@ export type Config = {
 		format?: LogFormat;
 		level?: LogLevelSetting;
 		domains?: Record<string, LogLevelSetting> | null;
+		diagnostics?: {
+			legacyData?: boolean;
+		};
 		access?: AccessLogConfiguration;
 		sql?: {
+			statement?: boolean;
 			disableQueryTruncation?: boolean,
 			enableQueryParamLogging?: boolean,
 		}

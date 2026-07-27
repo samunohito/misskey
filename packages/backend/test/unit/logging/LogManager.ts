@@ -366,7 +366,7 @@ describe('LogManager', () => {
 		expect(write.mock.calls[0][0]).not.toHaveProperty('error');
 	});
 
-	test('keeps legacy data for the pretty output while serializing its Error separately', () => {
+	test('drops legacy data by default while serializing its Error separately', () => {
 		const { manager, write } = createManager();
 		const error = new Error('legacy failure');
 		const data = { detail: 'legacy', e: error };
@@ -376,11 +376,25 @@ describe('LogManager', () => {
 			compatibility: { data },
 		});
 
-		expect(write.mock.calls[0][0].compatibility?.data).toBe(data);
+		expect(write.mock.calls[0][0].compatibility).toBeUndefined();
 		expect(write.mock.calls[0][0]).toMatchObject({
 			error: { type: 'Error', message: 'legacy failure' },
 		});
 		expect(write.mock.calls[0][0].attributes).toBeUndefined();
+	});
+
+	test('emits only normalized legacy data when explicitly enabled', () => {
+		const { manager, write } = createManager();
+		manager.configure({ diagnostics: { legacyData: true } });
+
+		manager.write({
+			...createInput('warn'),
+			compatibility: { data: { detail: 'legacy', token: 'secret' } },
+		});
+
+		expect(write.mock.calls[0][0].compatibility).toEqual({
+			legacyData: { detail: 'legacy', token: '[REDACTED]' },
+		});
 	});
 
 	test('supports the detailed normalization profile', () => {

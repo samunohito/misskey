@@ -134,7 +134,7 @@ describe('PrettyConsoleBackend', () => {
 
 		backend.write(createRecord({
 			level: 'error',
-			compatibility: { important: true, data },
+			compatibility: { important: true, legacyData: data },
 		}));
 
 		expect(output).toHaveBeenCalledWith(
@@ -156,7 +156,7 @@ describe('PrettyConsoleBackend', () => {
 		const output = vi.fn();
 		const backend = new PrettyConsoleBackend({ output, withLogTime: () => false });
 
-		backend.write(createRecord({ compatibility: { data: null } }));
+		backend.write(createRecord({ compatibility: { legacyData: null } }));
 
 		expect(output).toHaveBeenCalledTimes(1);
 		expect(output.mock.calls[0]).toHaveLength(1);

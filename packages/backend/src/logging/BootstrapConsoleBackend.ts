@@ -34,8 +34,8 @@ export class BootstrapConsoleBackend implements LogBackend {
 		const line = `${record.timestamp} ${record.level.toUpperCase()} ${worker}\t[${record.loggerName}]\t${record.message}`;
 		const args: unknown[] = [line];
 
-		if (record.compatibility?.data != null) {
-			args.push(record.compatibility.data);
+		if (record.compatibility?.legacyData != null) {
+			args.push(record.compatibility.legacyData);
 		} else if (record.eventName != null || record.attributes != null || record.error != null) {
 			args.push({
 				...(record.eventName != null ? { eventName: record.eventName } : {}),

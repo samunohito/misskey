@@ -4,7 +4,7 @@
  */
 
 import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
-import type { SummalyResult } from '@misskey-dev/summaly';
+import { createUrlPreviewFailedEvent } from '@/logging/OperationalLogEvents.js';
 import { DI } from '@/di-symbols.js';
 import type { Config } from '@/config.js';
 import { HttpRequestService } from '@/core/HttpRequestService.js';
@@ -17,7 +17,18 @@ import { UtilityService } from '@/core/UtilityService.js';
 import { bindThis } from '@/decorators.js';
 import { ApiError } from '@/server/api/error.js';
 import { MiMeta } from '@/models/Meta.js';
+import type { SummalyResult } from '@misskey-dev/summaly';
 import type { FastifyRequest, FastifyReply } from 'fastify';
+
+/** URL previewの開発用ログに残せる、credentialやqueryを含まないoriginを返します。 */
+function getUrlPreviewOrigin(value: string): string | undefined {
+	try {
+		const origin = new URL(value).origin;
+		return origin === 'null' ? undefined : origin;
+	} catch {
+		return undefined;
+	}
+}
 
 @Injectable()
 export class UrlPreviewService implements OnApplicationShutdown {
@@ -79,16 +90,26 @@ export class UrlPreviewService implements OnApplicationShutdown {
 			};
 		}
 
-		this.logger.info(this.meta.urlPreviewSummaryProxyUrl
-			? `(Proxy) Getting preview of ${url}@${lang} ...`
-			: `Getting preview of ${url}@${lang} ...`);
+		const sourceOrigin = getUrlPreviewOrigin(url);
+		const usesProxy = Boolean(this.meta.urlPreviewSummaryProxyUrl);
+		if (process.env.NODE_ENV === 'production') {
+			this.logger.debug('URL preview requested');
+		} else {
+			this.logger.debug({
+				message: 'URL preview requested',
+				attributes: {
+					...(sourceOrigin != null ? { 'url.origin': sourceOrigin } : {}),
+					'url_preview.proxy': usesProxy,
+				},
+			});
+		}
 
 		try {
 			const fetcher = async () => {
 				const result = await (
-					this.meta.urlPreviewSummaryProxyUrl
-					? this.fetchSummaryFromProxy(url, lang)
-					: this.fetchSummary(url, lang)
+					usesProxy
+						? this.fetchSummaryFromProxy(url, lang)
+						: this.fetchSummary(url, lang)
 				);
 
 				if (!result.url.startsWith('http://') && !result.url.startsWith('https://')) {
@@ -108,7 +129,20 @@ export class UrlPreviewService implements OnApplicationShutdown {
 				throw new Error('Invalid summary');
 			}
 
-			this.logger.succ(`Got preview of ${url}: ${summary.title}`);
+			if (process.env.NODE_ENV === 'production') {
+				this.logger.debug('URL preview completed');
+			} else {
+				const resultOrigin = getUrlPreviewOrigin(summary.url);
+				this.logger.debug({
+					message: 'URL preview completed',
+					attributes: {
+						...(sourceOrigin != null ? { 'url.origin': sourceOrigin } : {}),
+						...(resultOrigin != null ? { 'destination.origin': resultOrigin } : {}),
+						'url_preview.has_title': summary.title != null && summary.title !== '',
+						'url_preview.has_thumbnail': summary.thumbnail != null && summary.thumbnail !== '',
+					},
+				});
+			}
 
 			summary.icon = this.wrap(summary.icon);
 			summary.thumbnail = this.wrap(summary.thumbnail);
@@ -122,7 +156,7 @@ export class UrlPreviewService implements OnApplicationShutdown {
 
 			return summary;
 		} catch (err) {
-			this.logger.warn(`Failed to get preview of ${url}: ${err}`);
+			this.logger.write(createUrlPreviewFailedEvent(url, err));
 
 			reply.code(422);
 			reply.header('Cache-Control', 'max-age=86400, immutable');

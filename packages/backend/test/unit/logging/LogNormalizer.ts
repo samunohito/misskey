@@ -7,6 +7,7 @@ import { describe, expect, test } from 'vitest';
 import {
 	findLegacyLogError,
 	normalizeLogAttributes,
+	normalizeLogMessage,
 	normalizeLogValue,
 	serializeLogError,
 } from '@/logging/LogNormalizer.js';
@@ -24,6 +25,16 @@ describe('LogNormalizer', () => {
 			infinity: 'Infinity',
 			undefinedValue: '[Unsupported]: undefined',
 		});
+	});
+
+	test('sanitizes message control characters and credential-bearing URLs', () => {
+		const message = normalizeLogMessage('before\r\n\t\u001b[31m https://user:password@example.test/path?token=DO_NOT_EXPORT#fragment after');
+
+		// eslint-disable-next-line no-control-regex
+		expect(message).not.toMatch(/[\r\n\u001b]/);
+		expect(message).not.toContain('password');
+		expect(message).not.toContain('DO_NOT_EXPORT');
+		expect(message).toContain('https://example.test/path');
 	});
 
 	test('normalizes a standalone body value with the same redaction and size rules', () => {
@@ -58,6 +69,7 @@ describe('LogNormalizer', () => {
 			request: {
 				Authorization: 'bearer-token',
 				captcha: 'captcha-value',
+				pass: 'password-alias',
 				password: 'password',
 				nested: [{ api_key: 'api-key' }],
 			},
@@ -67,6 +79,7 @@ describe('LogNormalizer', () => {
 			request: {
 				Authorization: '[REDACTED]',
 				captcha: '[REDACTED]',
+				pass: '[REDACTED]',
 				password: '[REDACTED]',
 				nested: [{ api_key: '[REDACTED]' }],
 			},

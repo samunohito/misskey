@@ -6,6 +6,7 @@
 import Logger from '@/logger.js';
 import { registerDiagLogger } from '@/core/telemetry/telemetry-diag.js';
 import { executeSpan, getQueueTraceContextMode, injectActiveTraceContext, startSpanWithQueueTraceContext } from '@/core/telemetry/queue-trace-context.js';
+import { normalizeOperationalEvent, type OperationalEvent } from '@/logging/OperationalLogEvents.js';
 import { isAllowedCombinedScope, SanitizingSpanProcessor } from '@/core/telemetry/SanitizingSpanProcessor.js';
 import type { LogTraceContext } from '@/logging/types.js';
 import type * as SentryNode from '@sentry/node';
@@ -209,6 +210,22 @@ export class SentryTelemetryAdapter implements TelemetryAdapter {
 			level: opts.level,
 			...(opts.userId != null ? { user: { id: opts.userId } } : {}),
 			extra: opts.extra,
+		});
+	}
+
+	public captureOperationalEvent(event: OperationalEvent): void {
+		const normalized = normalizeOperationalEvent(event);
+		if (normalized.level === 'error') {
+			// Queue failureはspan callbackから例外を投げずに固定eventを記録するため、
+			// Sentryでもworker spanをERRORとして明示する。元のError本文は記録しない。
+			this.Sentry.getActiveSpan()?.setStatus({ code: 2, message: normalized.message });
+		}
+		this.Sentry.captureMessage(normalized.message, {
+			level: normalized.level === 'warn' ? 'warning' : normalized.level,
+			extra: {
+				'event.name': normalized.eventName,
+				...normalized.attributes,
+			},
 		});
 	}
 

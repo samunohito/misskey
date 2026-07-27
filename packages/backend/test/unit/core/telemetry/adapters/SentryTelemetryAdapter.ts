@@ -5,6 +5,7 @@
 
 import { afterEach, describe, expect, test, vi } from 'vitest';
 import { SentryTelemetryAdapter, buildSentryIntegrations, buildSentryNodeOptions, buildSentryOtlpInitOptions, resolveSentryAutoInstrumentationExport } from '@/core/telemetry/adapters/SentryTelemetryAdapter.js';
+import { createApiEndpointFailedEvent } from '@/logging/OperationalLogEvents.js';
 
 type TestIntegration = Parameters<ReturnType<typeof buildSentryIntegrations>>[0][number];
 
@@ -268,6 +269,41 @@ describe('resolveSentryAutoInstrumentationExport', () => {
 });
 
 describe('SentryTelemetryAdapter trace context', () => {
+	test('captures typed operational events with fixed message and metadata-only extra', async () => {
+		const captureMessage = vi.fn();
+		const activeSpan = { setStatus: vi.fn() };
+		vi.doMock('@sentry/node', () => ({
+			init: vi.fn(),
+			close: vi.fn(),
+			captureMessage,
+			getActiveSpan: vi.fn(() => activeSpan),
+		}));
+		vi.doMock('@sentry/profiling-node', () => ({
+			nodeProfilingIntegration: vi.fn(),
+		}));
+
+		const adapter = await SentryTelemetryAdapter.create({
+			enableNodeProfiling: false,
+			options: {},
+		});
+		adapter.captureOperationalEvent(createApiEndpointFailedEvent('/notes/create', new Error('params=DO_NOT_EXPORT'), 'error-1'));
+
+		expect(captureMessage).toHaveBeenCalledWith('API endpoint failed', {
+			level: 'error',
+			extra: {
+				'event.name': 'api.endpoint.failed',
+				'api.endpoint': '/notes/create',
+				'error.id': 'error-1',
+				'error.type': 'Error',
+			},
+		});
+		expect(activeSpan.setStatus).toHaveBeenCalledWith({ code: 2, message: 'API endpoint failed' });
+		expect(JSON.stringify(captureMessage.mock.calls)).not.toContain('DO_NOT_EXPORT');
+
+		vi.doUnmock('@sentry/node');
+		vi.doUnmock('@sentry/profiling-node');
+	});
+
 	test('returns the active span context for log enrichment', async () => {
 		const activeSpan = {
 			spanContext: () => ({

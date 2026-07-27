@@ -5,6 +5,7 @@
 
 import type { Config } from '@/config.js';
 import type { LogTraceContext } from '@/logging/types.js';
+import type { OperationalEvent } from '@/logging/OperationalLogEvents.js';
 import type { QueueTraceContextCarrier } from '../queue-trace-context.js';
 
 export type SentryBackendConfig = NonNullable<Config['sentryForBackend']>;
@@ -35,6 +36,9 @@ export interface TelemetryAdapter {
 	 * Sentryはmessage通知、OTelはactive spanまたは短命spanへの例外記録として扱う。
 	 */
 	captureMessage(message: string, opts: TelemetryCaptureMessageOptions): void;
+
+	/** Loggerと同じtyped operational eventを、adapter固有のsinkへ送る。 */
+	captureOperationalEvent(event: OperationalEvent): void;
 
 	/** 現在のactive Spanからログへ付加するTrace Contextを取得する。 */
 	getActiveTraceContext?(): LogTraceContext | undefined;

@@ -83,9 +83,9 @@ export class PrettyConsoleBackend implements LogBackend {
 
 		// `data`は文字列へ埋め込まず、第2引数として渡す従来の挙動を維持します。
 		const args: unknown[] = [important ? chalk.bold(log) : log];
-		if (record.compatibility?.data != null) {
-			// 旧形式の値はそのまま第2引数へ渡し、既存の表示と調査方法を保ちます。
-			args.push(record.compatibility.data);
+		if (record.compatibility?.legacyData != null) {
+			// legacy dataはLogManagerで正規化済みのcopyだけを表示します。
+			args.push(toPrettyLogValue(record.compatibility.legacyData));
 		} else if (record.eventName != null || record.attributes != null || record.error != null) {
 			// 構造化ログは、専用の出力先がなくても調査情報を確認できるようにします。
 			args.push({

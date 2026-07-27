@@ -9,7 +9,8 @@ import { defaultResource, detectResources, envDetector, resourceFromAttributes }
 import { ParentBasedSampler, TraceIdRatioBasedSampler } from '@opentelemetry/sdk-trace-base';
 import { ATTR_SERVICE_INSTANCE_ID, ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION } from '@opentelemetry/semantic-conventions';
 import { OpenTelemetryAdapter, createResource, createSampler, getMisskeyProcessRole } from '@/core/telemetry/adapters/OpenTelemetryAdapter.js';
-import type { Context, SpanContext } from '@opentelemetry/api';
+import { createApiEndpointFailedEvent } from '@/logging/OperationalLogEvents.js';
+import type { Context, Span, SpanContext } from '@opentelemetry/api';
 
 const mocks = vi.hoisted(() => {
 	return {
@@ -186,7 +187,7 @@ describe('OpenTelemetryAdapter', () => {
 		const adapter = new OpenTelemetryAdapter({
 			tracer: { startActiveSpan: vi.fn() },
 			provider: { shutdown: vi.fn() },
-			getActiveSpan: () => activeSpan as any,
+			getActiveSpan: () => activeSpan as unknown as Span,
 			spanStatusCodeError: SpanStatusCode.ERROR,
 			shutdownTimeout: 10,
 		});
@@ -216,7 +217,7 @@ describe('OpenTelemetryAdapter', () => {
 		const adapter = new OpenTelemetryAdapter({
 			tracer: { startActiveSpan: vi.fn() },
 			provider: { shutdown: vi.fn() },
-			getActiveSpan: () => activeSpan as any,
+			getActiveSpan: () => activeSpan as unknown as Span,
 			spanStatusCodeError: SpanStatusCode.ERROR,
 			shutdownTimeout: 10,
 		});
@@ -231,6 +232,32 @@ describe('OpenTelemetryAdapter', () => {
 		});
 
 		expect(activeSpan.setAttributes).toHaveBeenCalledWith({ 'queue.name': 'deliver' });
+	});
+
+	test('captures typed operational events with fixed message and metadata-only attributes', () => {
+		const activeSpan = {
+			recordException: vi.fn(),
+			setStatus: vi.fn(),
+			setAttributes: vi.fn(),
+		};
+		const adapter = new OpenTelemetryAdapter({
+			tracer: { startActiveSpan: vi.fn() },
+			provider: { shutdown: vi.fn() },
+			getActiveSpan: () => activeSpan as unknown as Span,
+			spanStatusCodeError: SpanStatusCode.ERROR,
+			shutdownTimeout: 10,
+		});
+
+		adapter.captureOperationalEvent(createApiEndpointFailedEvent('/notes/create', new Error('params=DO_NOT_EXPORT'), 'error-1'));
+
+		expect(activeSpan.recordException).toHaveBeenCalledWith(expect.objectContaining({ message: 'API endpoint failed' }));
+		expect(activeSpan.setAttributes).toHaveBeenCalledWith({
+			'event.name': 'api.endpoint.failed',
+			'api.endpoint': '/notes/create',
+			'error.id': 'error-1',
+			'error.type': 'Error',
+		});
+		expect(JSON.stringify(activeSpan.recordException.mock.calls)).not.toContain('DO_NOT_EXPORT');
 	});
 
 	test('times out shutdown instead of waiting forever', async () => {

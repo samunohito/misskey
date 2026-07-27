@@ -27,7 +27,7 @@ describe('BootstrapConsoleBackend', () => {
 		const backend = new BootstrapConsoleBackend({ output });
 		const data = { detail: 'failed' };
 
-		backend.write(createRecord({ compatibility: { data } }));
+		backend.write(createRecord({ compatibility: { legacyData: data } }));
 
 		expect(output).toHaveBeenCalledWith('2025-01-02T03:04:05.678Z ERROR *\t[core.boot]\tconfiguration failed', data);
 	});

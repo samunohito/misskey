@@ -9,6 +9,7 @@ import { envOption } from '@/env.js';
 import {
 	findLegacyLogError,
 	normalizeLogAttributes,
+	normalizeLogMessage,
 	normalizeLogValue,
 	serializeLogError,
 	type LogNormalizationProfile,
@@ -56,6 +57,14 @@ export type LogManagerConfiguration = {
 	readonly level?: LogLevelSetting;
 	readonly domains?: Readonly<Record<string, LogLevelSetting>> | null;
 	readonly access?: AccessLogConfiguration;
+	readonly diagnostics?: {
+		readonly legacyData?: boolean;
+	};
+	readonly sql?: {
+		readonly statement?: boolean;
+		readonly disableQueryTruncation?: boolean;
+		readonly enableQueryParamLogging?: boolean;
+	};
 };
 
 /** 正規化済みのAccess log設定です。 */
@@ -178,13 +187,39 @@ function resolveConfiguration(configuration: LogManagerConfiguration | undefined
 	readonly level: LogLevelSetting | undefined;
 	readonly domains: readonly (readonly [string, LogLevelSetting])[];
 	readonly access: ResolvedAccessLogConfiguration;
+	readonly legacyData: boolean;
 	readonly warnings: readonly string[];
 } {
-	if (configuration == null) return { level: undefined, domains: [], access: createDisabledAccessLogConfiguration(), warnings: [] };
+	if (configuration == null) return { level: undefined, domains: [], access: createDisabledAccessLogConfiguration(), legacyData: false, warnings: [] };
 
 	const level = validateLogLevel(configuration.level, 'logging.level');
 	const access = resolveAccessConfiguration(configuration.access, nodeEnv);
-	if (configuration.domains == null) return { level, domains: [], ...access };
+	let legacyData = false;
+	const warnings = [...access.warnings];
+	if (configuration.diagnostics != null) {
+		if (typeof configuration.diagnostics !== 'object' || Array.isArray(configuration.diagnostics)) {
+			throw new Error('logging.diagnostics must be an object');
+		}
+		if (typeof configuration.diagnostics.legacyData !== 'undefined' && typeof configuration.diagnostics.legacyData !== 'boolean') {
+			throw new Error('logging.diagnostics.legacyData must be a boolean');
+		}
+		legacyData = configuration.diagnostics.legacyData ?? false;
+		if (legacyData) warnings.push('logging.diagnostics.legacyData is enabled; only normalized legacy data is emitted.');
+	}
+	if (configuration.sql != null) {
+		if (typeof configuration.sql !== 'object' || Array.isArray(configuration.sql)) {
+			throw new Error('logging.sql must be an object');
+		}
+		for (const [key, value] of Object.entries(configuration.sql)) {
+			if (typeof value !== 'undefined' && typeof value !== 'boolean') {
+				throw new Error(`logging.sql.${key} must be a boolean`);
+			}
+		}
+		if (configuration.sql.statement === true) warnings.push('logging.sql.statement is enabled; SQL text is bounded to 8 KiB and may contain sensitive data.');
+		if (configuration.sql.enableQueryParamLogging === true) warnings.push('logging.sql.enableQueryParamLogging is ignored; query parameters are never logged.');
+		if (configuration.sql.disableQueryTruncation === true) warnings.push('logging.sql.disableQueryTruncation is ignored; SQL text remains bounded to 8 KiB.');
+	}
+	if (configuration.domains == null) return { level, domains: [], ...access, legacyData, warnings };
 	if (typeof configuration.domains !== 'object' || configuration.domains === null || Array.isArray(configuration.domains)) {
 		throw new Error('logging.domains must be an object');
 	}
@@ -198,7 +233,7 @@ function resolveConfiguration(configuration: LogManagerConfiguration | undefined
 		return [domain, level] as const;
 	}).sort((left, right) => right[0].length - left[0].length);
 
-	return { level, domains, ...access };
+	return { level, domains, ...access, legacyData, warnings };
 }
 
 const defaultDependencies: LogManagerDependencies = {
@@ -225,6 +260,7 @@ export class LogManager {
 	private configuredLevel: LogLevelSetting | undefined;
 	private configuredDomains: readonly (readonly [string, LogLevelSetting])[];
 	private accessConfiguration: ResolvedAccessLogConfiguration;
+	private legacyDataEnabled: boolean;
 	private shutdownPromise: Promise<void> | undefined;
 
 	/**
@@ -246,6 +282,7 @@ export class LogManager {
 		this.configuredLevel = undefined;
 		this.configuredDomains = [];
 		this.accessConfiguration = createDisabledAccessLogConfiguration();
+		this.legacyDataEnabled = false;
 	}
 
 	/**
@@ -262,6 +299,7 @@ export class LogManager {
 		this.configuredLevel = resolved.level;
 		this.configuredDomains = resolved.domains;
 		this.accessConfiguration = resolved.access;
+		this.legacyDataEnabled = resolved.legacyData;
 		return resolved.warnings;
 	}
 
@@ -341,24 +379,38 @@ export class LogManager {
 		// 呼び出し側の配列を共有せず、親から末端までの順序を固定します。
 		const context = [...input.context];
 		// 出力を実際に行う直前にだけ正規化し、捨てられるdebugログのコストを抑えます。
-		const { attributes, error: inputError, ...inputWithoutStructuredValues } = input;
+		const compatibilityInput = input.compatibility;
+		const { attributes, error: inputError, compatibility, ...inputWithoutStructuredValues } = input;
 		const normalizedAttributes = typeof attributes !== 'undefined'
 			? normalizeLogAttributes(attributes, { profile: this.normalizationProfile })
 			: undefined;
-		const error = inputError ?? findLegacyLogError(input.compatibility?.data);
+		const error = inputError ?? findLegacyLogError(compatibilityInput?.data);
 		const normalizedError = typeof error !== 'undefined'
 			? serializeLogError(error, { profile: this.normalizationProfile })
+			: undefined;
+		const normalizedLegacyData = this.legacyDataEnabled && compatibilityInput?.data != null
+			? normalizeLogValue(compatibilityInput.data, { profile: this.normalizationProfile })
+			: undefined;
+		const normalizedMessage = normalizeLogMessage(input.message, { profile: this.normalizationProfile });
+		const normalizedCompatibility = compatibilityInput != null
+			? {
+				...(compatibilityInput.legacyLevel != null ? { legacyLevel: compatibilityInput.legacyLevel } : {}),
+				...(compatibilityInput.important != null ? { important: compatibilityInput.important } : {}),
+				...(typeof normalizedLegacyData !== 'undefined' ? { legacyData: normalizedLegacyData } : {}),
+			}
 			: undefined;
 		// 実際に出力するログだけ、TelemetryからactiveなTrace Contextを取得します。
 		const traceContext = this.traceContextProvider?.();
 		const record = {
 			...inputWithoutStructuredValues,
+			message: normalizedMessage,
 			context,
 			timestamp: this.dependencies.now().toISOString(),
 			loggerName,
 			processId: processInfo.processId,
 			isPrimary: processInfo.isPrimary,
 			workerId: processInfo.workerId,
+			...(normalizedCompatibility && Object.keys(normalizedCompatibility).length > 0 ? { compatibility: normalizedCompatibility } : {}),
 			...(traceContext ?? {}),
 			...(normalizedAttributes ? { attributes: normalizedAttributes } : {}),
 			...(normalizedError ? { error: normalizedError } : {}),

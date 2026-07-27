@@ -5,7 +5,8 @@
 
 import { Injectable } from '@nestjs/common';
 import { bindThis } from '@/decorators.js';
-import { captureMessage, shutdownTelemetry, startSpan, startSpanWithTraceContext } from './telemetry-registry.js';
+import type { OperationalEvent } from '@/logging/OperationalLogEvents.js';
+import { captureMessage, captureOperationalEvent, shutdownTelemetry, startSpan, startSpanWithTraceContext } from './telemetry-registry.js';
 import type { OnApplicationShutdown } from '@nestjs/common';
 import type { TelemetryCaptureMessageOptions } from './adapters/TelemetryAdapter.js';
 
@@ -14,6 +15,11 @@ export class TelemetryService implements OnApplicationShutdown {
 	@bindThis
 	public captureMessage(message: string, opts: TelemetryCaptureMessageOptions): void {
 		captureMessage(message, opts);
+	}
+
+	@bindThis
+	public captureOperationalEvent(event: OperationalEvent): void {
+		captureOperationalEvent(event);
 	}
 
 	@bindThis

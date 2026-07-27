@@ -5,6 +5,7 @@
 
 import type { Config } from '@/config.js';
 import { setLogTraceContextProvider } from '@/logging/logging-runtime.js';
+import type { OperationalEvent } from '@/logging/OperationalLogEvents.js';
 import { OpenTelemetryAdapter } from './adapters/OpenTelemetryAdapter.js';
 import { SentryTelemetryAdapter } from './adapters/SentryTelemetryAdapter.js';
 import type { OtelBackendRuntimeConfig, TelemetryAdapter, TelemetryCaptureMessageOptions } from './adapters/TelemetryAdapter.js';
@@ -46,6 +47,12 @@ export function captureMessage(message: string, opts: TelemetryCaptureMessageOpt
 	// 有効なadapterすべてへ通知し、宛先ごとの差異はadapter内に閉じ込める。
 	for (const adapter of adapters) {
 		adapter.captureMessage(message, opts);
+	}
+}
+
+export function captureOperationalEvent(event: OperationalEvent): void {
+	for (const adapter of adapters) {
+		adapter.captureOperationalEvent(event);
 	}
 }
 

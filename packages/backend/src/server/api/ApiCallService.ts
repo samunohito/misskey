@@ -17,6 +17,7 @@ import { createTemp } from '@/misc/create-temp.js';
 import { bindThis } from '@/decorators.js';
 import { RoleService } from '@/core/RoleService.js';
 import { TelemetryService } from '@/core/telemetry/TelemetryService.js';
+import { createApiEndpointFailedEvent } from '@/logging/OperationalLogEvents.js';
 import type { Config } from '@/config.js';
 import { ApiError } from './error.js';
 import { RateLimiterService } from './RateLimiterService.js';
@@ -105,36 +106,14 @@ export class ApiCallService implements OnApplicationShutdown {
 		}
 	}
 
-	#onExecError(ep: IEndpoint, data: any, err: Error, userId?: MiUser['id']): void {
+	#onExecError(ep: IEndpoint, _data: any, err: Error): void {
 		if (err instanceof ApiError || err instanceof AuthenticationError) {
 			throw err;
 		} else {
 			const errId = randomUUID();
-			this.logger.write({
-				level: 'error',
-				eventName: 'api.endpoint.failed',
-				message: `Internal error occurred in ${ep.name}: ${err.message}`,
-				attributes: {
-					'api.endpoint': ep.name,
-					'error.id': errId,
-					'api.params': data,
-				},
-				error: err,
-			});
-
-			this.telemetryService.captureMessage(`Internal error occurred in ${ep.name}: ${err.message}`, {
-				level: 'error',
-				userId,
-				extra: {
-					ep: ep.name,
-					e: {
-						message: err.message,
-						code: err.name,
-						stack: err.stack,
-						id: errId,
-					},
-				},
-			});
+			const event = createApiEndpointFailedEvent(ep.name, err, errId);
+			this.logger.write(event);
+			this.telemetryService.captureOperationalEvent(event);
 
 			throw new ApiError(null, {
 				e: {
@@ -443,7 +422,7 @@ export class ApiCallService implements OnApplicationShutdown {
 		// The API span starts in handleRequest/handleMultipartRequest so it also covers
 		// authentication, rate limiting, and parameter validation.
 		return await ep.exec(data, user, token, file, request.ip, request.headers)
-			.catch((err: Error) => this.#onExecError(ep, data, err, user?.id));
+			.catch((err: Error) => this.#onExecError(ep, data, err));
 	}
 
 	@bindThis

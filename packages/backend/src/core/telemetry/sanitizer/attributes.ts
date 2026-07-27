@@ -29,6 +29,17 @@ const allowedAttributeKeys = new Set([
 	'http.request.method',
 	'http.response.status_code',
 	'http.route',
+	'event.name',
+	'api.endpoint',
+	'queue.name',
+	'queue.job.name',
+	'queue.job.id',
+	'queue.job.attempts_made',
+	'queue.job.attempts_max',
+	'error.id',
+	'destination.origin',
+	'url.origin',
+	'failure.kind',
 	'url.full',
 	'server.address',
 	'server.port',
@@ -58,7 +69,13 @@ const allowedAttributeKeys = new Set([
  *
  * ほかの属性は文字列として検証し、型による検証の迂回を防ぐ。
  */
-const numericAttributeKeys = new Set(['http.response.status_code', 'server.port', 'db.response.status_code']);
+const numericAttributeKeys = new Set([
+	'http.response.status_code',
+	'server.port',
+	'db.response.status_code',
+	'queue.job.attempts_made',
+	'queue.job.attempts_max',
+]);
 
 /**
  * 明示的な許可がある場合に限り通す SQL 本文の属性名。
@@ -234,6 +251,15 @@ function sanitizeAttribute(key: string, value: unknown, allowedAsDbStatement = f
 	if (key === 'http.route') {
 		return sanitizeRoute(value);
 	}
+	if (key === 'event.name') {
+		return /^[a-z][a-z0-9]*(?:\.[a-z0-9_]+)+$/.test(value) ? value : marker;
+	}
+	if (key === 'api.endpoint') {
+		return /^[A-Za-z0-9._/-]{1,256}$/.test(value) ? value : marker;
+	}
+	if (key === 'destination.origin' || key === 'url.origin') {
+		return sanitizeOutboundUrl(value) ?? marker;
+	}
 
 	// 接続先や内部の識別子は、決めた文字種と長さだけを許可する。
 	if (key === 'server.address') {
@@ -258,7 +284,7 @@ function sanitizeAttribute(key: string, value: unknown, allowedAsDbStatement = f
 	// db.response.status_code は数値とは限らない。semconv 1.43 の例は '08P01' / 'ORA-17002' で、
 	// Misskey 自身の Redis 計装 (redis-instrumentation.ts の getRedisErrorStatusCode) も 'ERR' 等の
 	// 文字列を設定する。数値 (numericAttributeKeys) と文字列の両方を許可する。
-	if (key === 'db.system' || key === 'db.system.name' || key === 'db.namespace' || key === 'db.operation' || key === 'db.operation.name' || key === 'db.response.status_code' || key === 'error.type' || key === 'http.request.method' || key === 'network.protocol.version' || key.startsWith('service.') || key === 'misskey.process.role') {
+	if (key === 'db.system' || key === 'db.system.name' || key === 'db.namespace' || key === 'db.operation' || key === 'db.operation.name' || key === 'db.response.status_code' || key === 'error.type' || key === 'error.id' || key === 'api.endpoint' || key === 'queue.name' || key === 'queue.job.name' || key === 'queue.job.id' || key === 'failure.kind' || key === 'http.request.method' || key === 'network.protocol.version' || key.startsWith('service.') || key === 'misskey.process.role') {
 		return asciiToken(value);
 	}
 	return undefined;

@@ -46,9 +46,9 @@ describe('telemetry-registry', () => {
 		mocks.sentryCreateWithOtlpExport.mockReset();
 		mocks.otelCreate.mockReset();
 		mocks.setLogTraceContextProvider.mockReset();
-		mocks.sentryCreate.mockResolvedValue({ shutdown: vi.fn(), captureMessage: vi.fn(), startSpan: vi.fn() });
-		mocks.sentryCreateWithOtlpExport.mockResolvedValue({ shutdown: vi.fn(), captureMessage: vi.fn(), startSpan: vi.fn() });
-		mocks.otelCreate.mockResolvedValue({ shutdown: vi.fn(), captureMessage: vi.fn(), startSpan: vi.fn() });
+		mocks.sentryCreate.mockResolvedValue({ shutdown: vi.fn(), captureMessage: vi.fn(), captureOperationalEvent: vi.fn(), startSpan: vi.fn() });
+		mocks.sentryCreateWithOtlpExport.mockResolvedValue({ shutdown: vi.fn(), captureMessage: vi.fn(), captureOperationalEvent: vi.fn(), startSpan: vi.fn() });
+		mocks.otelCreate.mockResolvedValue({ shutdown: vi.fn(), captureMessage: vi.fn(), captureOperationalEvent: vi.fn(), startSpan: vi.fn() });
 	});
 
 	test('uses OpenTelemetryAdapter when only otelForBackend is configured', async () => {
@@ -65,6 +65,24 @@ describe('telemetry-registry', () => {
 		expect(mocks.sentryCreateWithOtlpExport).not.toHaveBeenCalled();
 	});
 
+	test('broadcasts typed operational events to the active adapter', async () => {
+		const { initTelemetry, captureOperationalEvent } = await import('@/core/telemetry/telemetry-registry.js');
+		const capture = vi.fn();
+		mocks.otelCreate.mockResolvedValue({ shutdown: vi.fn(), captureMessage: vi.fn(), captureOperationalEvent: capture, startSpan: vi.fn() });
+
+		await initTelemetry(config({ otelForBackend: { endpoint: 'http://collector:4318/v1/traces' } }));
+		const event = {
+			level: 'error' as const,
+			eventName: 'api.endpoint.failed' as const,
+			message: 'API endpoint failed',
+			attributes: { 'api.endpoint': 'notes/create' },
+		};
+
+		captureOperationalEvent(event);
+
+		expect(capture).toHaveBeenCalledWith(event);
+	});
+
 	test('registers the adapter trace context provider after telemetry initialization', async () => {
 		const { initTelemetry } = await import('@/core/telemetry/telemetry-registry.js');
 		const getActiveTraceContext = vi.fn(() => ({
@@ -75,6 +93,7 @@ describe('telemetry-registry', () => {
 		mocks.otelCreate.mockResolvedValue({
 			shutdown: vi.fn(),
 			captureMessage: vi.fn(),
+			captureOperationalEvent: vi.fn(),
 			startSpan: vi.fn(),
 			getActiveTraceContext,
 		});
@@ -118,7 +137,7 @@ describe('telemetry-registry', () => {
 		const { initTelemetry, startSpan } = await import('@/core/telemetry/telemetry-registry.js');
 		const otelForBackend = { endpoint: 'http://collector:4318/v1/traces' };
 		const adapterStartSpan = vi.fn((_name: string, fn: () => string) => fn());
-		mocks.otelCreate.mockResolvedValue({ shutdown: vi.fn(), captureMessage: vi.fn(), startSpan: adapterStartSpan });
+		mocks.otelCreate.mockResolvedValue({ shutdown: vi.fn(), captureMessage: vi.fn(), captureOperationalEvent: vi.fn(), startSpan: adapterStartSpan });
 
 		await initTelemetry(config({ otelForBackend }));
 
@@ -133,6 +152,7 @@ describe('telemetry-registry', () => {
 		mocks.sentryCreate.mockResolvedValue({
 			shutdown: vi.fn(),
 			captureMessage: vi.fn(),
+			captureOperationalEvent: vi.fn(),
 			startSpan: vi.fn((_name: string, fn: () => string) => {
 				calls.push('sentry:start');
 				const result = fn();
@@ -143,6 +163,7 @@ describe('telemetry-registry', () => {
 		mocks.otelCreate.mockResolvedValue({
 			shutdown: vi.fn(),
 			captureMessage: vi.fn(),
+			captureOperationalEvent: vi.fn(),
 			startSpan: vi.fn((_name: string, fn: () => string) => {
 				calls.push('otel:start');
 				const result = fn();
@@ -167,8 +188,8 @@ describe('telemetry-registry', () => {
 		const { initTelemetry, shutdownTelemetry } = await import('@/core/telemetry/telemetry-registry.js');
 		const sentryShutdown = vi.fn().mockRejectedValue(new Error('sentry failed'));
 		const otelShutdown = vi.fn().mockResolvedValue(undefined);
-		mocks.sentryCreate.mockResolvedValue({ shutdown: sentryShutdown, captureMessage: vi.fn(), startSpan: vi.fn() });
-		mocks.otelCreate.mockResolvedValue({ shutdown: otelShutdown, captureMessage: vi.fn(), startSpan: vi.fn() });
+		mocks.sentryCreate.mockResolvedValue({ shutdown: sentryShutdown, captureMessage: vi.fn(), captureOperationalEvent: vi.fn(), startSpan: vi.fn() });
+		mocks.otelCreate.mockResolvedValue({ shutdown: otelShutdown, captureMessage: vi.fn(), captureOperationalEvent: vi.fn(), startSpan: vi.fn() });
 
 		await initTelemetry(config({ sentryForBackend: { options: {}, enableNodeProfiling: false } }));
 		await initTelemetry(config({ otelForBackend: { endpoint: 'http://collector:4318/v1/traces' } }));

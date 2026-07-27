@@ -77,12 +77,20 @@ export type LoggerContext = {
 /**
  * 従来のコンソール表示を維持するための情報です。
  * 構造化ログの項目と混同しないよう、互換用の領域へ分離しています。
- * `data`は従来表示を保つため正規化せず、秘匿が必要な値は構造化属性へ移します。
+ * `data`は互換入力としてだけ受け取り、出力時に標準正規化します。
  */
 export type LogCompatibility = {
 	readonly legacyLevel?: 'success';
 	readonly important?: boolean;
+	/** 旧APIから受け取る未加工のdata。LogManagerより下流へ渡してはいけません。 */
 	readonly data?: unknown;
+};
+
+/** 出力先へ渡すpresentation compatibility。未加工のdataは含みません。 */
+export type LogCompatibilityOutput = {
+	readonly legacyLevel?: 'success';
+	readonly important?: boolean;
+	readonly legacyData?: LogAttributeValue;
 };
 
 /**
@@ -103,14 +111,15 @@ export type SerializedError = {
 
 /**
  * 出力先へ渡すログです。
- * `compatibility.data`は見やすい形式だけが使う従来値で、構造化した出力先は属性とエラーを利用します。
+ * `compatibility.data`は出力レコードには含めず、必要な場合だけ`legacyData`へ正規化して渡します。
  */
-export type LogRecord = Omit<LogRecordInput, 'attributes' | 'error'> & {
+export type LogRecord = Omit<LogRecordInput, 'attributes' | 'error' | 'compatibility'> & {
 	readonly timestamp: string;
 	readonly loggerName: string;
 	readonly processId: number;
 	readonly isPrimary: boolean;
 	readonly workerId: number | null;
+	readonly compatibility?: LogCompatibilityOutput;
 	readonly traceId?: string;
 	readonly spanId?: string;
 	readonly traceFlags?: number;

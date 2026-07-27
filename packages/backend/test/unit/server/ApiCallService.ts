@@ -29,6 +29,7 @@ function createService() {
 	const telemetryService = {
 		startSpan: vi.fn((_name: string, callback: () => unknown) => callback()),
 		captureMessage: vi.fn(),
+		captureOperationalEvent: vi.fn(),
 	};
 	const apiLoggerService = { logger: new Logger('api') };
 
@@ -46,7 +47,7 @@ function createService() {
 }
 
 describe('ApiCallService structured error logging', () => {
-	test('redacts API credentials and serializes the endpoint error', async () => {
+	test('records only endpoint metadata and an operational error ID', async () => {
 		const write = vi.fn<LogBackend['write']>();
 		logManager.setBackend({ write });
 		const previousQuiet = envOption.quiet;
@@ -79,16 +80,12 @@ describe('ApiCallService structured error logging', () => {
 				eventName: 'api.endpoint.failed',
 				attributes: {
 					'api.endpoint': 'notes/show',
-					'api.params': {
-						i: '[REDACTED]',
-						password: '[REDACTED]',
-						options: { visible: true },
-					},
+					'error.type': 'TypeError',
 				},
-				error: { type: 'TypeError', message: 'broken endpoint' },
 			});
 			expect(record.attributes?.['error.id']).toEqual(expect.any(String));
-			expect(telemetryService.captureMessage.mock.calls[0][1].extra).not.toHaveProperty('ps');
+			expect(record).not.toHaveProperty('error');
+			expect(telemetryService.captureOperationalEvent).toHaveBeenCalledOnce();
 		} finally {
 			service.dispose();
 			envOption.quiet = previousQuiet;

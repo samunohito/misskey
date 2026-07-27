@@ -95,21 +95,27 @@ export const dbLogger = new MisskeyLogger('db');
 const sqlLogger = dbLogger.createSubLogger('sql', 'gray');
 
 export type LoggerProps = {
-	disableQueryTruncation?: boolean;
-	enableQueryParamLogging?: boolean;
+	statement?: boolean;
 	printReplicationMode?: boolean,
 };
 
-function truncateSql(sql: string) {
-	return sql.length > 100 ? `${sql.substring(0, 100)}...` : sql;
-}
+const SQL_LOG_MAX_BYTES = 8 * 1024;
 
-function stringifyParameter(param: any) {
-	if (param instanceof Date) {
-		return param.toISOString();
-	} else {
-		return param;
+function truncateSql(sql: string): string {
+	if (Buffer.byteLength(sql, 'utf8') <= SQL_LOG_MAX_BYTES) return sql;
+	const suffix = '...';
+	let lower = 0;
+	let upper = sql.length;
+	while (lower < upper) {
+		const middle = Math.ceil((lower + upper) / 2);
+		if (Buffer.byteLength(sql.substring(0, middle) + suffix, 'utf8') <= SQL_LOG_MAX_BYTES) {
+			lower = middle;
+		} else {
+			upper = middle - 1;
+		}
 	}
+	if (lower > 0 && lower < sql.length && sql.charCodeAt(lower - 1) >= 0xd800 && sql.charCodeAt(lower - 1) <= 0xdbff) lower--;
+	return sql.substring(0, lower) + suffix;
 }
 
 class MyCustomLogger implements Logger {
@@ -120,45 +126,32 @@ class MyCustomLogger implements Logger {
 	private transformQueryLog(sql: string, opts?: {
 		prefix?: string;
 	}) {
-		let modded = opts?.prefix ? opts.prefix + sql : sql;
-		if (!this.props.disableQueryTruncation) {
-			modded = truncateSql(modded);
-		}
-
-		return modded;
+		const modded = opts?.prefix ? opts.prefix + sql : sql;
+		return this.props.statement === true ? truncateSql(modded) : 'SQL query executed';
 	}
 
 	@bindThis
-	private transformParameters(parameters?: any[]) {
-		if (this.props.enableQueryParamLogging && parameters && parameters.length > 0) {
-			return parameters.map(stringifyParameter);
-		}
-
-		return undefined;
-	}
-
-	@bindThis
-	public logQuery(query: string, parameters?: any[], queryRunner?: QueryRunner) {
+	public logQuery(query: string, _parameters?: any[], queryRunner?: QueryRunner) {
 		const prefix = (this.props.printReplicationMode && queryRunner)
 			? `[${queryRunner.getReplicationMode()}] `
 			: undefined;
-		sqlLogger.info(this.transformQueryLog(query, { prefix }), this.transformParameters(parameters));
+		sqlLogger.info(this.transformQueryLog(query, { prefix }));
 	}
 
 	@bindThis
-	public logQueryError(error: string, query: string, parameters?: any[], queryRunner?: QueryRunner) {
+	public logQueryError(_error: string, query: string, _parameters?: any[], queryRunner?: QueryRunner) {
 		const prefix = (this.props.printReplicationMode && queryRunner)
 			? `[${queryRunner.getReplicationMode()}] `
 			: undefined;
-		sqlLogger.error(this.transformQueryLog(query, { prefix }), this.transformParameters(parameters));
+		sqlLogger.error(this.transformQueryLog(query, { prefix }));
 	}
 
 	@bindThis
-	public logQuerySlow(time: number, query: string, parameters?: any[], queryRunner?: QueryRunner) {
+	public logQuerySlow(_time: number, query: string, _parameters?: any[], queryRunner?: QueryRunner) {
 		const prefix = (this.props.printReplicationMode && queryRunner)
 			? `[${queryRunner.getReplicationMode()}] `
 			: undefined;
-		sqlLogger.warn(this.transformQueryLog(query, { prefix }), this.transformParameters(parameters));
+		sqlLogger.warn(this.transformQueryLog(query, { prefix }));
 	}
 
 	@bindThis
@@ -257,9 +250,8 @@ export const entities = [
 	...charts,
 ];
 
-const log = process.env.NODE_ENV !== 'production';
-
 export function createPostgresDataSource(config: Config) {
+	const sqlStatementLogging = config.logging?.sql?.statement === true;
 	return new DataSource({
 		type: 'postgres',
 		host: config.db.host,
@@ -306,11 +298,10 @@ export function createPostgresDataSource(config: Config) {
 				db: config.redis.db ?? 0,
 			},
 		} : false,
-		logging: log,
-		logger: log
+		logging: sqlStatementLogging,
+		logger: sqlStatementLogging
 			? new MyCustomLogger({
-				disableQueryTruncation: config.logging?.sql?.disableQueryTruncation,
-				enableQueryParamLogging: config.logging?.sql?.enableQueryParamLogging,
+				statement: true,
 				printReplicationMode: !!config.dbReplications,
 			})
 			: undefined,

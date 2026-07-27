@@ -11,6 +11,7 @@ import { HttpRequestService } from '@/core/HttpRequestService.js';
 import { LoggerService } from '@/core/LoggerService.js';
 import type { MiMeta } from '@/models/_.js';
 import type Logger from '@/logger.js';
+import { createSensitiveDetectionFailedEvent } from '@/logging/OperationalLogEvents.js';
 
 /**
  * 正規化済み画像に対する nsfwjs 互換の予測値。
@@ -29,11 +30,29 @@ type DetectImagesResponse =
 	| { success: true; result: { results: BatchItemResult[] } }
 	| { success: false; error: { code: string; message: string } };
 
+/** 早期return時も外部responseのsocketを残さないため、読み取り可能なら破棄します。 */
+function destroyResponseBody(body: NodeJS.ReadableStream | null): void {
+	try {
+		const destroyable = body as (NodeJS.ReadableStream & { destroy?: () => void }) | null;
+		if (typeof destroyable?.destroy === 'function') {
+			destroyable.destroy();
+		} else {
+			body?.resume();
+		}
+	} catch {
+		// cleanup failure must not change the detector fallback result
+	}
+}
+
 // #region type guards
 function isPrediction(v: unknown): v is Prediction {
 	if (typeof v !== 'object' || v === null) return false;
 	const obj = v as Record<string, unknown>;
-	return typeof obj['className'] === 'string' && typeof obj['probability'] === 'number';
+	return typeof obj['className'] === 'string'
+		&& typeof obj['probability'] === 'number'
+		&& Number.isFinite(obj['probability'])
+		&& obj['probability'] >= 0
+		&& obj['probability'] <= 1;
 }
 
 function isBatchItemResult(v: unknown): v is BatchItemResult {
@@ -117,7 +136,7 @@ export class AiService {
 		try {
 			url = new URL(DETECT_IMAGES_PATH, base).href;
 		} catch {
-			this.logger.warn(`invalid sensitiveMediaDetectionApiUrl: ${baseUrl}`);
+			this.logger.write(createSensitiveDetectionFailedEvent({ failureKind: 'invalid_configuration' }));
 			return sources.map(() => null);
 		}
 
@@ -156,30 +175,48 @@ export class AiService {
 				// サイドカーへの private network 接続は allowedPrivateNetworks 等で明示的に許可する。
 				agent: (u) => this.httpRequestService.getAgentByUrl(u),
 				signal: controller.signal,
+				size: 64 * 1024,
 			});
 
 			if (!res.ok) {
-				this.logger.warn(`sensitive detection request failed: ${res.status} ${res.statusText}`);
+				this.logger.write(createSensitiveDetectionFailedEvent({
+					failureKind: 'http_status',
+					statusCode: res.status,
+				}));
+				destroyResponseBody(res.body);
+				return chunk.map(() => null);
+			}
+
+			const contentType = res.headers.get('content-type')?.split(';', 1)[0]?.trim().toLowerCase();
+			if (contentType !== 'application/json' && contentType !== 'application/problem+json') {
+				this.logger.write(createSensitiveDetectionFailedEvent({ failureKind: 'invalid_content_type' }));
+				destroyResponseBody(res.body);
 				return chunk.map(() => null);
 			}
 
 			const body = await res.json();
 			if (!isDetectImagesResponse(body)) {
-				this.logger.warn(`sensitive detection responded with unexpected shape: ${JSON.stringify(body)}`);
+				this.logger.write(createSensitiveDetectionFailedEvent({ failureKind: 'invalid_shape' }));
 				return chunk.map(() => null);
 			}
 			if (!body.success) {
-				this.logger.warn(`sensitive detection responded with failure: ${body.error.code}`);
+				this.logger.write(createSensitiveDetectionFailedEvent({ failureKind: 'remote_failure' }));
 				return chunk.map(() => null);
 			}
 
 			const items = body.result.results;
+			if (items.length !== chunk.length) {
+				this.logger.write(createSensitiveDetectionFailedEvent({ failureKind: 'result_count_mismatch' }));
+				return chunk.map(() => null);
+			}
 			return chunk.map((_, i) => {
 				const item = items[i];
 				return (item.success) ? item.predictions : null;
 			});
 		} catch (err) {
-			this.logger.warn(`sensitive detection error: ${err instanceof Error ? err.message : String(err)}`);
+			this.logger.write(createSensitiveDetectionFailedEvent({
+				failureKind: controller.signal.aborted ? 'timeout' : 'request_error',
+			}, err));
 			return chunk.map(() => null);
 		} finally {
 			clearTimeout(timer);

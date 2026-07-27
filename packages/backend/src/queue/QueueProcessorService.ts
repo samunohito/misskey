@@ -11,6 +11,7 @@ import type Logger from '@/logger.js';
 import { bindThis } from '@/decorators.js';
 import { TelemetryService } from '@/core/telemetry/TelemetryService.js';
 import { CheckModeratorsActivityProcessorService } from '@/queue/processors/CheckModeratorsActivityProcessorService.js';
+import { createQueueJobFailedEvent } from '@/logging/OperationalLogEvents.js';
 import { runQueueJobWithTraceContext } from './queue-job-runner.js';
 import { UserWebhookDeliverProcessorService } from './processors/UserWebhookDeliverProcessorService.js';
 import { SystemWebhookDeliverProcessorService } from './processors/SystemWebhookDeliverProcessorService.js';
@@ -75,6 +76,21 @@ function getJobInfo(job: Bull.Job | undefined, increment = false): string {
 	return `id=${job.id} attempts=${currentAttempts}/${maxAttempts} age=${formated}`;
 }
 
+function getErrorType(error: unknown): string {
+	const type = error instanceof Error ? (error.name || 'Error') : typeof error;
+	return /^[A-Za-z0-9._:-]{1,128}$/.test(type) ? type : 'Error';
+}
+
+function getDestinationOrigin(value: unknown): string | undefined {
+	if (typeof value !== 'string') return undefined;
+	try {
+		const origin = new URL(value).origin;
+		return origin === 'null' ? undefined : origin;
+	} catch {
+		return undefined;
+	}
+}
+
 @Injectable()
 export class QueueProcessorService implements OnApplicationShutdown {
 	private logger: Logger;
@@ -132,32 +148,22 @@ export class QueueProcessorService implements OnApplicationShutdown {
 		private cleanRemoteNotesProcessorService: CleanRemoteNotesProcessorService,
 	) {
 		this.logger = this.queueLoggerService.logger;
-
-		function renderError(e?: Error) {
-			// 何故かeがundefinedで来ることがある
-			if (!e) return '?';
-
-			if (e instanceof Bull.UnrecoverableError || e.name === 'AbortError') {
-				return `${e.name}: ${e.message}`;
-			}
-
-			return {
-				stack: e.stack,
-				message: e.message,
-				name: e.name,
-			};
-		}
-
-		function renderJob(job?: Bull.Job) {
-			if (!job) return '?';
-
-			return {
-				name: job.name || undefined,
-				info: getJobInfo(job),
-				failedReason: job.failedReason || undefined,
-				data: job.data,
-			};
-		}
+		const captureQueueFailure = (logger: Logger, queueName: string, job: Bull.Job, error: unknown, destination?: unknown) => {
+			const event = createQueueJobFailedEvent({
+				queueName,
+				jobName: job.name || undefined,
+				jobId: job.id,
+				attemptsMade: job.attemptsMade,
+				attemptsMax: job.opts.attempts,
+				destinationOrigin: getDestinationOrigin(destination),
+			}, error);
+			logger.write(event);
+			this.telemetryService.captureOperationalEvent(event);
+		};
+		const logWorkerError = (logger: Logger, error: unknown) => logger.error({
+			message: 'Queue worker error',
+			attributes: { 'error.type': getErrorType(error) },
+		});
 
 		// 以下の各 Worker は job.data に保存された enqueue 元の trace context を復元し、
 		// ジョブの実処理全体を Link または parent の worker span で囲む。
@@ -186,11 +192,7 @@ export class QueueProcessorService implements OnApplicationShutdown {
 					job.data,
 					() => processer(job) as Promise<void>,
 					err => {
-						logger.error(`failed(${err.name}: ${err.message}) id=${job.id}`, { job: renderJob(job), e: renderError(err) });
-						this.telemetryService.captureMessage(`Queue: System: ${job.name}: ${err.name}: ${err.message}`, {
-							level: 'error',
-							extra: { job, err },
-						});
+						captureQueueFailure(logger, QUEUE.SYSTEM, job, err);
 					},
 				);
 			}, {
@@ -200,8 +202,8 @@ export class QueueProcessorService implements OnApplicationShutdown {
 
 			this.systemQueueWorker
 				.on('active', (job) => logger.debug(`active id=${job.id}`))
-				.on('completed', (job, result) => logger.debug(`completed(${result}) id=${job.id}`))
-				.on('error', (err: Error) => logger.error(`error ${err.name}: ${err.message}`, { e: renderError(err) }))
+				.on('completed', (job) => logger.debug(`completed id=${job.id}`))
+				.on('error', (err: Error) => logWorkerError(logger, err))
 				.on('stalled', (jobId) => logger.warn(`stalled id=${jobId}`));
 		}
 		//#endregion
@@ -241,11 +243,7 @@ export class QueueProcessorService implements OnApplicationShutdown {
 					job.data,
 					() => processer(job),
 					err => {
-						logger.error(`failed(${err.name}: ${err.message}) id=${job.id}`, { job: renderJob(job), e: renderError(err) });
-						this.telemetryService.captureMessage(`Queue: DB: ${job.name}: ${err.name}: ${err.message}`, {
-							level: 'error',
-							extra: { job, err },
-						});
+						captureQueueFailure(logger, QUEUE.DB, job, err);
 					},
 				);
 			}, {
@@ -255,8 +253,8 @@ export class QueueProcessorService implements OnApplicationShutdown {
 
 			this.dbQueueWorker
 				.on('active', (job) => logger.debug(`active id=${job.id}`))
-				.on('completed', (job, result) => logger.debug(`completed(${result}) id=${job.id}`))
-				.on('error', (err: Error) => logger.error(`error ${err.name}: ${err.message}`, { e: renderError(err) }))
+				.on('completed', (job) => logger.debug(`completed id=${job.id}`))
+				.on('error', (err: Error) => logWorkerError(logger, err))
 				.on('stalled', (jobId) => logger.warn(`stalled id=${jobId}`));
 		}
 		//#endregion
@@ -272,11 +270,7 @@ export class QueueProcessorService implements OnApplicationShutdown {
 					job.data,
 					() => this.deliverProcessorService.process(job),
 					err => {
-						logger.error(`failed(${err.name}: ${err.message}) ${getJobInfo(job)} to=${job.data.to}`, { e: renderError(err) });
-						this.telemetryService.captureMessage(`Queue: Deliver: ${err.name}: ${err.message}`, {
-							level: 'error',
-							extra: { job, err },
-						});
+						captureQueueFailure(logger, QUEUE.DELIVER, job, err, job.data.to);
 					},
 				);
 			}, {
@@ -293,9 +287,9 @@ export class QueueProcessorService implements OnApplicationShutdown {
 			});
 
 			this.deliverQueueWorker
-				.on('active', (job) => logger.debug(`active ${getJobInfo(job, true)} to=${job.data.to}`))
-				.on('completed', (job, result) => logger.debug(`completed(${result}) ${getJobInfo(job, true)} to=${job.data.to}`))
-				.on('error', (err: Error) => logger.error(`error ${err.name}: ${err.message}`, { e: renderError(err) }))
+				.on('active', (job) => logger.debug(`active ${getJobInfo(job, true)}`))
+				.on('completed', (job) => logger.debug(`completed ${getJobInfo(job, true)}`))
+				.on('error', (err: Error) => logWorkerError(logger, err))
 				.on('stalled', (jobId) => logger.warn(`stalled id=${jobId}`));
 		}
 		//#endregion
@@ -311,12 +305,7 @@ export class QueueProcessorService implements OnApplicationShutdown {
 					job.data,
 					() => this.inboxProcessorService.process(job),
 					err => {
-						const activityId = job.data.activity ? job.data.activity.id : 'none';
-						logger.error(`failed(${err.name}: ${err.message}) ${getJobInfo(job)} activity=${activityId}`, { job: renderJob(job), e: renderError(err) });
-						this.telemetryService.captureMessage(`Queue: Inbox: ${err.name}: ${err.message}`, {
-							level: 'error',
-							extra: { job, err },
-						});
+						captureQueueFailure(logger, QUEUE.INBOX, job, err);
 					},
 				);
 			}, {
@@ -334,8 +323,8 @@ export class QueueProcessorService implements OnApplicationShutdown {
 
 			this.inboxQueueWorker
 				.on('active', (job) => logger.debug(`active ${getJobInfo(job, true)}`))
-				.on('completed', (job, result) => logger.debug(`completed(${result}) ${getJobInfo(job, true)}`))
-				.on('error', (err: Error) => logger.error(`error ${err.name}: ${err.message}`, { e: renderError(err) }))
+				.on('completed', (job) => logger.debug(`completed ${getJobInfo(job, true)}`))
+				.on('error', (err: Error) => logWorkerError(logger, err))
 				.on('stalled', (jobId) => logger.warn(`stalled id=${jobId}`));
 		}
 		//#endregion
@@ -351,11 +340,7 @@ export class QueueProcessorService implements OnApplicationShutdown {
 					job.data,
 					() => this.userWebhookDeliverProcessorService.process(job),
 					err => {
-						logger.error(`failed(${err.name}: ${err.message}) ${getJobInfo(job)} to=${job.data.to}`, { e: renderError(err) });
-						this.telemetryService.captureMessage(`Queue: UserWebhookDeliver: ${err.name}: ${err.message}`, {
-							level: 'error',
-							extra: { job, err },
-						});
+						captureQueueFailure(logger, QUEUE.USER_WEBHOOK_DELIVER, job, err, job.data.to);
 					},
 				);
 			}, {
@@ -372,9 +357,9 @@ export class QueueProcessorService implements OnApplicationShutdown {
 			});
 
 			this.userWebhookDeliverQueueWorker
-				.on('active', (job) => logger.debug(`active ${getJobInfo(job, true)} to=${job.data.to}`))
-				.on('completed', (job, result) => logger.debug(`completed(${result}) ${getJobInfo(job, true)} to=${job.data.to}`))
-				.on('error', (err: Error) => logger.error(`error ${err.name}: ${err.message}`, { e: renderError(err) }))
+				.on('active', (job) => logger.debug(`active ${getJobInfo(job, true)}`))
+				.on('completed', (job) => logger.debug(`completed ${getJobInfo(job, true)}`))
+				.on('error', (err: Error) => logWorkerError(logger, err))
 				.on('stalled', (jobId) => logger.warn(`stalled id=${jobId}`));
 		}
 		//#endregion
@@ -390,11 +375,7 @@ export class QueueProcessorService implements OnApplicationShutdown {
 					job.data,
 					() => this.systemWebhookDeliverProcessorService.process(job),
 					err => {
-						logger.error(`failed(${err.name}: ${err.message}) ${getJobInfo(job)} to=${job.data.to}`, { e: renderError(err) });
-						this.telemetryService.captureMessage(`Queue: SystemWebhookDeliver: ${err.name}: ${err.message}`, {
-							level: 'error',
-							extra: { job, err },
-						});
+						captureQueueFailure(logger, QUEUE.SYSTEM_WEBHOOK_DELIVER, job, err, job.data.to);
 					},
 				);
 			}, {
@@ -411,9 +392,9 @@ export class QueueProcessorService implements OnApplicationShutdown {
 			});
 
 			this.systemWebhookDeliverQueueWorker
-				.on('active', (job) => logger.debug(`active ${getJobInfo(job, true)} to=${job.data.to}`))
-				.on('completed', (job, result) => logger.debug(`completed(${result}) ${getJobInfo(job, true)} to=${job.data.to}`))
-				.on('error', (err: Error) => logger.error(`error ${err.name}: ${err.message}`, { e: renderError(err) }))
+				.on('active', (job) => logger.debug(`active ${getJobInfo(job, true)}`))
+				.on('completed', (job) => logger.debug(`completed ${getJobInfo(job, true)}`))
+				.on('error', (err: Error) => logWorkerError(logger, err))
 				.on('stalled', (jobId) => logger.warn(`stalled id=${jobId}`));
 		}
 		//#endregion
@@ -438,11 +419,7 @@ export class QueueProcessorService implements OnApplicationShutdown {
 					job.data,
 					() => processer(job),
 					err => {
-						logger.error(`failed(${err.name}: ${err.message}) id=${job.id}`, { job: renderJob(job), e: renderError(err) });
-						this.telemetryService.captureMessage(`Queue: Relationship: ${job.name}: ${err.name}: ${err.message}`, {
-							level: 'error',
-							extra: { job, err },
-						});
+						captureQueueFailure(logger, QUEUE.RELATIONSHIP, job, err);
 					},
 				);
 			}, {
@@ -457,8 +434,8 @@ export class QueueProcessorService implements OnApplicationShutdown {
 
 			this.relationshipQueueWorker
 				.on('active', (job) => logger.debug(`active id=${job.id}`))
-				.on('completed', (job, result) => logger.debug(`completed(${result}) id=${job.id}`))
-				.on('error', (err: Error) => logger.error(`error ${err.name}: ${err.message}`, { e: renderError(err) }))
+				.on('completed', (job) => logger.debug(`completed id=${job.id}`))
+				.on('error', (err: Error) => logWorkerError(logger, err))
 				.on('stalled', (jobId) => logger.warn(`stalled id=${jobId}`));
 		}
 		//#endregion
@@ -481,11 +458,7 @@ export class QueueProcessorService implements OnApplicationShutdown {
 					job.data,
 					() => processer(job) as Promise<void>,
 					err => {
-						logger.error(`failed(${err.name}: ${err.message}) id=${job.id}`, { job: renderJob(job), e: renderError(err) });
-						this.telemetryService.captureMessage(`Queue: ObjectStorage: ${job.name}: ${err.name}: ${err.message}`, {
-							level: 'error',
-							extra: { job, err },
-						});
+						captureQueueFailure(logger, QUEUE.OBJECT_STORAGE, job, err);
 					},
 				);
 			}, {
@@ -496,8 +469,8 @@ export class QueueProcessorService implements OnApplicationShutdown {
 
 			this.objectStorageQueueWorker
 				.on('active', (job) => logger.debug(`active id=${job.id}`))
-				.on('completed', (job, result) => logger.debug(`completed(${result}) id=${job.id}`))
-				.on('error', (err: Error) => logger.error(`error ${err.name}: ${err.message}`, { e: renderError(err) }))
+				.on('completed', (job) => logger.debug(`completed id=${job.id}`))
+				.on('error', (err: Error) => logWorkerError(logger, err))
 				.on('stalled', (jobId) => logger.warn(`stalled id=${jobId}`));
 		}
 		//#endregion
@@ -513,11 +486,7 @@ export class QueueProcessorService implements OnApplicationShutdown {
 					job.data,
 					() => this.endedPollNotificationProcessorService.process(job),
 					err => {
-						logger.error(`failed(${err.name}: ${err.message}) id=${job.id}`, { job: renderJob(job), e: renderError(err) });
-						this.telemetryService.captureMessage(`Queue: EndedPollNotification: ${err.name}: ${err.message}`, {
-							level: 'error',
-							extra: { job, err },
-						});
+						captureQueueFailure(logger, QUEUE.ENDED_POLL_NOTIFICATION, job, err);
 					},
 				);
 			}, {
@@ -538,11 +507,7 @@ export class QueueProcessorService implements OnApplicationShutdown {
 					job.data,
 					() => this.postScheduledNoteProcessorService.process(job),
 					err => {
-						logger.error(`failed(${err.name}: ${err.message}) id=${job.id}`, { job: renderJob(job), e: renderError(err) });
-						this.telemetryService.captureMessage(`Queue: PostScheduledNote: ${err.name}: ${err.message}`, {
-							level: 'error',
-							extra: { job, err },
-						});
+						captureQueueFailure(logger, QUEUE.POST_SCHEDULED_NOTE, job, err);
 					},
 				);
 			}, {
