@@ -73,7 +73,10 @@ export function startSpanWithTraceContext<T>(name: string, jobData: object, fn: 
 	// Queue context を解釈できる adapter に span 作成を任せる。
 	// 対応 adapter が無い構成では通常の startSpan へフォールバックする。
 	const adapter = adapters.find(adapter => adapter.startSpanWithTraceContext != null);
-	return adapter?.startSpanWithTraceContext?.(name, jobData, fn) ?? startSpan(name, fn);
+	if (adapter?.startSpanWithTraceContext != null) {
+		return adapter.startSpanWithTraceContext(name, jobData, fn);
+	}
+	return startSpan(name, fn);
 }
 
 export async function shutdownTelemetry(): Promise<void> {

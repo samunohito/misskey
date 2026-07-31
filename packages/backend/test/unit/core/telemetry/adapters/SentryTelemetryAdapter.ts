@@ -4,9 +4,11 @@
  */
 
 import { describe, expect, test, vi } from 'vitest';
+import { normalizeSentryBackendConfig } from '@/config.js';
 import { SentryTelemetryAdapter, buildSentryIntegrations, buildSentryNodeOptions, buildSentryOtlpInitOptions } from '@/core/telemetry/adapters/SentryTelemetryAdapter.js';
 
 type TestIntegration = Parameters<ReturnType<typeof buildSentryIntegrations>>[0][number];
+type TestSpanProcessor = NonNullable<ReturnType<typeof buildSentryOtlpInitOptions>['openTelemetrySpanProcessors']>[number];
 
 function testIntegration(name: string): TestIntegration {
 	return { name };
@@ -79,31 +81,47 @@ describe('SentryTelemetryAdapter', () => {
 	});
 
 	test('builds Sentry options that export spans to both Sentry and OTLP', () => {
-		const existingProcessor = { name: 'existingProcessor' };
+		const existingProcessor = { name: 'existingProcessor' } as unknown as TestSpanProcessor;
 		const otlpProcessor = { name: 'otlpProcessor' };
 
-			const result = buildSentryOtlpInitOptions({
-				sentryConfig: {
-					enableNodeProfiling: false,
-					disabledIntegrations: ['Redis'],
+		const result = buildSentryOtlpInitOptions({
+			sentryConfig: {
+				enableNodeProfiling: false,
+				disabledIntegrations: ['Redis'],
 				options: {
-					openTelemetrySpanProcessors: [existingProcessor as any],
+					openTelemetrySpanProcessors: [existingProcessor],
 					tracesSampleRate: 0.25,
-					},
 				},
-				otelConfig: { serviceVersion: '2026.1.0' },
-				otlpProcessor,
-			});
+			},
+			otelConfig: { serviceVersion: '2026.1.0' },
+			otlpProcessor,
+		});
 
 		expect(result.tracesSampleRate).toBe(0.25);
 		expect(result.openTelemetrySpanProcessors).toEqual([existingProcessor, otlpProcessor]);
 		// OTel併存時もremoteへtrace headerを漏らさないデフォルトはSentry単体時と揃える。
 		expect(result.tracePropagationTargets).toEqual([]);
-		expect((result.integrations as any)([
+		expect(result.integrations).toBeTypeOf('function');
+		if (typeof result.integrations !== 'function') throw new Error('Expected integrations to be a function');
+		expect(result.integrations([
 			testIntegration('Http'),
 			testIntegration('Redis'),
 			testIntegration('Postgres'),
 		]).map((integration: TestIntegration) => integration.name)).toEqual(['Http', 'Postgres']);
+	});
+
+	test('uses safe defaults when Sentry options are omitted', () => {
+		const otlpProcessor = { name: 'otlpProcessor' };
+		const result = buildSentryOtlpInitOptions({
+			sentryConfig: normalizeSentryBackendConfig({
+				enableNodeProfiling: false,
+			}),
+			otelConfig: { serviceVersion: '2026.1.0' },
+			otlpProcessor,
+		});
+
+		expect(result.tracePropagationTargets).toEqual([]);
+		expect(result.openTelemetrySpanProcessors).toEqual([otlpProcessor]);
 	});
 
 	test('does not disable Sentry trace propagation when explicitly enabled for OTel coexistence', () => {
@@ -112,10 +130,10 @@ describe('SentryTelemetryAdapter', () => {
 				enableNodeProfiling: false,
 				options: {},
 			},
-				otelConfig: {
-					serviceVersion: '2026.1.0',
-					propagateTraceToRemote: true,
-				},
+			otelConfig: {
+				serviceVersion: '2026.1.0',
+				propagateTraceToRemote: true,
+			},
 			otlpProcessor: { name: 'otlpProcessor' },
 		});
 
@@ -130,9 +148,9 @@ describe('SentryTelemetryAdapter', () => {
 					tracePropagationTargets: ['^https://internal\\.example/'],
 				},
 			},
-				otelConfig: { serviceVersion: '2026.1.0' },
-				otlpProcessor: { name: 'otlpProcessor' },
-			});
+			otelConfig: { serviceVersion: '2026.1.0' },
+			otlpProcessor: { name: 'otlpProcessor' },
+		});
 
 		expect(result.tracePropagationTargets).toEqual(['^https://internal\\.example/']);
 	});

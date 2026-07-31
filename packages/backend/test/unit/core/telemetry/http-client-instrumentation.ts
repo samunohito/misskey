@@ -57,7 +57,7 @@ describe('http-client-instrumentation', () => {
 		expect(span.setAttribute).toHaveBeenCalledWith('network.protocol.version', '1.1');
 		expect(span.end).toHaveBeenCalledTimes(1);
 		unsubscribe();
-		expect(listeners).toHaveLength(0);
+		expect(listeners.size).toBe(0);
 	});
 
 	test('records a request error and ends the span once', () => {
@@ -104,5 +104,85 @@ describe('http-client-instrumentation', () => {
 
 		expect(span.setAttribute).toHaveBeenCalledWith('error.type', '502');
 		expect(span.setStatus).toHaveBeenCalledWith({ code: SpanStatusCode.ERROR });
+	});
+
+	test('uses safe request details when the request URL cannot be constructed', () => {
+		const listeners = new Map<string, (message: unknown) => void>();
+		const span = { end: vi.fn(), recordException: vi.fn(), setAttribute: vi.fn(), setStatus: vi.fn() };
+		const tracer = { startSpan: vi.fn(() => span) };
+		createHttpClientInstrumentation({
+			tracer: tracer as any,
+			spanKindClient: SpanKind.CLIENT,
+			spanStatusCodeError: SpanStatusCode.ERROR,
+			subscribe: (name, listener) => {
+				listeners.set(name, listener);
+				return () => listeners.delete(name);
+			},
+		});
+		const clientRequest = {
+			...request(),
+			host: '::1',
+			getHeader: vi.fn(() => undefined),
+		};
+
+		listeners.get('http.client.request.created')!({ request: clientRequest });
+
+		expect(tracer.startSpan).toHaveBeenCalledWith('POST', {
+			kind: SpanKind.CLIENT,
+			attributes: {
+				'http.request.method': 'POST',
+				'url.full': 'https://localhost/',
+				'server.address': 'localhost',
+				'server.port': 443,
+			},
+		});
+	});
+
+	test('does not propagate errors from diagnostics listeners', () => {
+		const listeners = new Map<string, (message: unknown) => void>();
+		const reportError = vi.fn();
+		const responseError = new Error('response instrumentation failed');
+		const requestError = new Error('request instrumentation failed');
+		const startError = new Error('span creation failed');
+		const span = {
+			end: vi.fn(),
+			recordException: vi.fn(() => { throw requestError; }),
+			setAttribute: vi.fn(() => { throw responseError; }),
+			setStatus: vi.fn(),
+		};
+		const tracer = {
+			startSpan: vi.fn()
+				.mockReturnValueOnce(span)
+				.mockReturnValueOnce(span)
+				.mockImplementationOnce(() => { throw startError; }),
+		};
+		createHttpClientInstrumentation({
+			tracer: tracer as any,
+			spanKindClient: SpanKind.CLIENT,
+			spanStatusCodeError: SpanStatusCode.ERROR,
+			subscribe: (name, listener) => {
+				listeners.set(name, listener);
+				return () => listeners.delete(name);
+			},
+			reportError,
+		});
+		const responseRequest = request();
+		const errorRequest = request();
+
+		listeners.get('http.client.request.created')!({ request: responseRequest });
+		expect(() => listeners.get('http.client.response.finish')!({
+			request: responseRequest,
+			response: { statusCode: 200 },
+		})).not.toThrow();
+		listeners.get('http.client.request.created')!({ request: errorRequest });
+		expect(() => listeners.get('http.client.request.error')!({
+			request: errorRequest,
+			error: new Error('connection failed'),
+		})).not.toThrow();
+		expect(() => listeners.get('http.client.request.created')!({ request: request() })).not.toThrow();
+
+		expect(reportError).toHaveBeenCalledWith(responseError);
+		expect(reportError).toHaveBeenCalledWith(requestError);
+		expect(reportError).toHaveBeenCalledWith(startError);
 	});
 });

@@ -145,4 +145,65 @@ describe('redis-instrumentation', () => {
 
 		expect(tracingChannel).not.toHaveBeenCalled();
 	});
+
+	test('omits the database attribute when diagnostics context has no database', () => {
+		let subscribers: any;
+		const span = { end: vi.fn(), recordException: vi.fn(), setStatus: vi.fn(), setAttribute: vi.fn() };
+		const tracer = { startSpan: vi.fn(() => span) };
+		createRedisInstrumentation({
+			tracingChannel: () => ({ subscribe: (value) => { subscribers = value; }, unsubscribe: vi.fn() }),
+			tracer: tracer as any,
+			getActiveSpan: () => ({}) as any,
+			spanKindClient: SpanKind.CLIENT,
+			spanStatusCodeError: SpanStatusCode.ERROR,
+		}, { captureCommandSpans: true });
+
+		subscribers.start({ command: 'get', args: ['key'], database: undefined, serverAddress: 'redis', serverPort: 6379 });
+
+		expect(tracer.startSpan).toHaveBeenCalledWith('get', expect.objectContaining({
+			attributes: expect.not.objectContaining({
+				'db.namespace': expect.anything(),
+			}),
+		}));
+	});
+
+	test('does not propagate errors from Redis tracing subscribers', () => {
+		const subscribers = new Map<string, any>();
+		const reportError = vi.fn();
+		const endError = new Error('span end failed');
+		const startError = new Error('span creation failed');
+		const span = {
+			end: vi.fn(() => { throw endError; }),
+			recordException: vi.fn(),
+			setStatus: vi.fn(),
+			setAttribute: vi.fn(),
+		};
+		const tracer = {
+			startSpan: vi.fn()
+				.mockReturnValueOnce(span)
+				.mockImplementationOnce(() => { throw startError; }),
+		};
+		createRedisInstrumentation({
+			tracingChannel: (name) => ({
+				subscribe: (value) => { subscribers.set(name, value); },
+				unsubscribe: vi.fn(),
+			}),
+			tracer: tracer as any,
+			getActiveSpan: () => ({}) as any,
+			spanKindClient: SpanKind.CLIENT,
+			spanStatusCodeError: SpanStatusCode.ERROR,
+			reportError,
+		}, {
+			captureCommandSpans: true,
+			captureConnectionSpans: true,
+		});
+		const command = { command: 'get', args: ['key'], database: 0, serverAddress: 'redis', serverPort: 6379 };
+
+		subscribers.get('ioredis:command').start(command);
+		expect(() => subscribers.get('ioredis:command').asyncEnd(command)).not.toThrow();
+		expect(() => subscribers.get('ioredis:connect').start({ serverAddress: 'redis', serverPort: 6379 })).not.toThrow();
+
+		expect(reportError).toHaveBeenCalledWith(endError);
+		expect(reportError).toHaveBeenCalledWith(startError);
+	});
 });

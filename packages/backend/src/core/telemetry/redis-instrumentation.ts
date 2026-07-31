@@ -4,13 +4,13 @@
  */
 
 import { tracingChannel } from 'node:diagnostics_channel';
-import { context, trace } from '@opentelemetry/api';
+import { context, diag, trace } from '@opentelemetry/api';
 import type { Span, SpanKind, SpanStatusCode, Tracer } from '@opentelemetry/api';
 
 type IORedisCommandContext = {
 	command: string;
 	args: string[];
-	database: number;
+	database: number | undefined;
 	serverAddress: string;
 	serverPort: number | undefined;
 };
@@ -39,6 +39,7 @@ type RedisInstrumentationDeps = {
 	getActiveSpan(): Span | undefined;
 	spanKindClient: SpanKind;
 	spanStatusCodeError: SpanStatusCode;
+	reportError?: (error: unknown) => void;
 };
 
 type RedisInstrumentationOptions = {
@@ -65,6 +66,7 @@ export function installRedisInstrumentation(
 		getActiveSpan: () => trace.getSpan(context.active()),
 		spanKindClient,
 		spanStatusCodeError,
+		reportError: error => diag.error('Failed to process Redis diagnostics event.', error),
 	}, options);
 }
 
@@ -77,9 +79,9 @@ export function createRedisInstrumentation(deps: RedisInstrumentationDeps, optio
 			name: message.command,
 			attributes: {
 				'db.system.name': 'redis',
-				'db.namespace': message.database.toString(10),
 				'db.operation.name': message.command,
 				'server.address': message.serverAddress,
+				...(message.database != null ? { 'db.namespace': message.database.toString(10) } : {}),
 				...(message.serverPort != null ? { 'server.port': message.serverPort } : {}),
 			},
 		}));
@@ -138,7 +140,7 @@ function createTracingChannelSubscribers<T extends object>(
 	};
 
 	const subscribers: TracingChannelSubscribers<T> = {
-		start: (message) => {
+		start: guardTracingSubscriber(deps, (message: T) => {
 			if (requireParentSpan && deps.getActiveSpan() == null) return;
 
 			const options = getSpanOptions(message);
@@ -147,22 +149,39 @@ function createTracingChannelSubscribers<T extends object>(
 				attributes: options.attributes,
 			});
 			spans.set(message, { span, recordedError: false });
-		},
+		}),
 		// Promiseを返すコマンドでは完了前にもendイベントが来るため、同期例外だけここで閉じる。
-		end: (message) => {
+		end: guardTracingSubscriber(deps, (message: T & { error?: unknown }) => {
 			if (message.error != null) finish(message);
-		},
+		}),
 		asyncStart: () => {},
-		asyncEnd: finish,
-		error: (message) => {
+		asyncEnd: guardTracingSubscriber(deps, finish),
+		error: guardTracingSubscriber(deps, (message: T & { error: unknown }) => {
 			const state = spans.get(message);
 			if (state == null) return;
 			recordError(state, message.error);
-		},
+		}),
 	};
 
 	channel.subscribe(subscribers);
 	return subscribers;
+}
+
+function guardTracingSubscriber<T>(
+	deps: Pick<RedisInstrumentationDeps, 'reportError'>,
+	subscriber: (message: T) => void,
+): (message: T) => void {
+	return (message) => {
+		try {
+			subscriber(message);
+		} catch (error) {
+			try {
+				deps.reportError?.(error);
+			} catch {
+				// diagnostics subscriber の失敗をアプリケーションへ伝播させない。
+			}
+		}
+	};
 }
 
 function toError(value: unknown): Error {

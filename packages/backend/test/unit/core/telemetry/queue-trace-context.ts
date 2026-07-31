@@ -7,8 +7,8 @@ import { describe, expect, test, vi } from 'vitest';
 import type { Context, SpanContext } from '@opentelemetry/api';
 import { getQueueSpanContext, getQueueTraceContextMode, injectActiveTraceContext, injectQueueTraceContext } from '@/core/telemetry/queue-trace-context.js';
 
-const rootContext = {} as Context;
-const extractedContext = {} as Context;
+const rootContext = { kind: 'root' } as unknown as Context;
+const extractedContext = { kind: 'extracted' } as unknown as Context;
 const sourceSpanContext: SpanContext = {
 	traceId: '0123456789abcdef0123456789abcdef',
 	spanId: '0123456789abcdef',
@@ -94,6 +94,8 @@ describe('queue-trace-context', () => {
 			},
 			parentContext: rootContext,
 		});
+		expect(result?.parentContext).toBe(rootContext);
+		expect(getSpanContext).toHaveBeenCalledWith(extractedContext);
 	});
 
 	test('uses the extracted context as the parent when parent mode is selected', () => {
@@ -108,6 +110,7 @@ describe('queue-trace-context', () => {
 			options: {},
 			parentContext: extractedContext,
 		});
+		expect(result?.parentContext).toBe(extractedContext);
 	});
 
 	test('ignores malformed or missing carriers', () => {

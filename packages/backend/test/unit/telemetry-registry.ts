@@ -127,6 +127,28 @@ describe('telemetry-registry', () => {
 		expect(adapterStartSpan).toHaveBeenCalledWith('test', fn);
 	});
 
+	test('startSpanWithTraceContext executes an undefined-returning callback only once', async () => {
+		const { initTelemetry, startSpanWithTraceContext } = await import('@/core/telemetry/telemetry-registry.js');
+		const otelForBackend = { endpoint: 'http://collector:4318/v1/traces' };
+		const adapterStartSpan = vi.fn((_name: string, fn: () => undefined) => fn());
+		const adapterStartSpanWithTraceContext = vi.fn((_name: string, _jobData: object, fn: () => undefined) => fn());
+		mocks.otelCreate.mockResolvedValue({
+			shutdown: vi.fn(),
+			captureMessage: vi.fn(),
+			startSpan: adapterStartSpan,
+			startSpanWithTraceContext: adapterStartSpanWithTraceContext,
+		});
+
+		await initTelemetry(config({ otelForBackend }));
+
+		const jobData = { id: 'job' };
+		const fn = vi.fn(() => undefined);
+		expect(startSpanWithTraceContext('test', jobData, fn)).toBeUndefined();
+		expect(adapterStartSpanWithTraceContext).toHaveBeenCalledWith('test', jobData, fn);
+		expect(adapterStartSpan).not.toHaveBeenCalled();
+		expect(fn).toHaveBeenCalledTimes(1);
+	});
+
 	test('startSpan wraps work through multiple registered adapters in order for future adapter combinations', async () => {
 		const { initTelemetry, startSpan } = await import('@/core/telemetry/telemetry-registry.js');
 		const calls: string[] = [];

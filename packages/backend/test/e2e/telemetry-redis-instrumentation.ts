@@ -55,6 +55,7 @@ describe('Redis telemetry instrumentation', () => {
 				}, { connection, prefix });
 				worker.once('completed', () => resolve());
 				worker.once('failed', (_job, error) => reject(error));
+				worker.on('error', reject);
 			});
 
 			await tracer.startActiveSpan('HTTP POST /telemetry-test', async httpSpan => {
@@ -78,7 +79,7 @@ describe('Redis telemetry instrumentation', () => {
 				expect(Object.values(span.attributes)).not.toContain(secret);
 			}
 		} finally {
-			await worker?.close();
+			await worker?.close(true);
 			await queue.obliterate({ force: true });
 			await queue.close();
 			uninstall();
