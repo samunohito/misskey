@@ -6,24 +6,22 @@ PR 全体 (タイトル・説明文・変更範囲) をレビューする人 (�
 
 ## Scope
 
-- Also, make sure that the granularity of this PR is appropriate. Please do not include more than one type of change or interest in a single PR. (出典: [CONTRIBUTING.md](../../CONTRIBUTING.md?plain=1#L61))
-- Scope
-  	- Are the goals of the PR clear?
-  	- Is the granularity of the PR appropriate?
+- **[Major]** PR の目的が明確か (タイトルと説明文から何をする PR か分かるか)。
+- **[Major]** PR の粒度が適切か。1 つの PR に複数の種類の変更や関心事を混ぜていないか。 → [CONTRIBUTING.md](../../CONTRIBUTING.md#creating-a-pr)
 
 ## スコープ外
 
-- プルリクエストで変更されていない部分において、プルリクエストのタイトルや説明文に照らしてスコープ外であるが修正すべき点を見つけた場合は、このプルリクエストで修正させるのではなく、別のプルリクエストを開いてそれを修正するように指示してください。\
-  なお、当該プルリクエストで行が追加/削除されたことによりスコープ外の問題が起こりうる場合は、例外的にこのプルリクエストで修正させてください。
-- プルリクエストのタイトルや説明文に照らしてスコープ外の変更が含まれていないかをレビューしてください。なお、明らかにスコープ外であると確信できるもの（例: 全く関係ないファイルを編集している等）のみを対象とし、スコープ外かどうかの判断に困る場合は指摘しないでください。\
-  スコープ外の変更が含まれていた場合は指摘し、その部分について、このプルリクエストに含めずに別のプルリクエストを開いて変更するように指示してください。
+- **[Major]** タイトル・説明文に照らしてスコープ外の変更が含まれていないか。含まれていれば、その部分を別 PR に分けるよう求める。
+- **[Minor]** PR で変更していない部分に、スコープ外だが修正すべき点を見つけた場合は、この PR で直させず別 PR を開くよう求める。ただし、この PR の行の追加・削除によってスコープ外の問題が起こりうる場合は、この PR で直させる。
+
+**指摘しないこと:**
+
+- スコープ外かどうか判断に迷う変更 (明らかにスコープ外と確信できるもの、例えば全く関係ないファイルの編集だけを対象にする)
 
 ## PR の作り方
 
-- If possible, prefix the title with a keyword that identifies the type of this PR, as shown below.
-  	- `fix` / `refactor` / `feat` / `enhance` / `perf` / `chore` etc
-  (出典: [CONTRIBUTING.md](../../CONTRIBUTING.md?plain=1#L59-L60))
-- If there is an Issue which will be resolved by this PR, please include a reference to the Issue in the text. (出典: [CONTRIBUTING.md](../../CONTRIBUTING.md?plain=1#L62))
-- Check if there are any documents that need to be created or updated due to this change. (出典: [CONTRIBUTING.md](../../CONTRIBUTING.md?plain=1#L64))
-- Please make sure that tests and Lint are passed in advance. (出典: [CONTRIBUTING.md](../../CONTRIBUTING.md?plain=1#L66))
-- If this PR includes UI changes, please attach a screenshot in the text. (出典: [CONTRIBUTING.md](../../CONTRIBUTING.md?plain=1#L68))
+- **[Minor]** タイトルに種類を表す prefix (`fix` / `refactor` / `feat` / `enhance` / `perf` / `chore` など) が付いているか (可能な範囲で)。 → [CONTRIBUTING.md](../../CONTRIBUTING.md#creating-a-pr)
+- **[Minor]** この PR で解決する Issue があれば、本文で参照しているか。 → [CONTRIBUTING.md](../../CONTRIBUTING.md#creating-a-pr)
+- **[Minor]** この変更に伴って作成・更新が必要なドキュメントが漏れていないか。 → [CONTRIBUTING.md](../../CONTRIBUTING.md#creating-a-pr)
+- **[Minor]** テストと Lint を事前に通しているか。 → [CONTRIBUTING.md](../../CONTRIBUTING.md#creating-a-pr)
+- **[Minor]** UI の変更を含む場合、本文にスクリーンショットが添付されているか。 → [CONTRIBUTING.md](../../CONTRIBUTING.md#creating-a-pr)

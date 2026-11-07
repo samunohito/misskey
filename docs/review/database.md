@@ -6,152 +6,54 @@ migration・entity に加え、SQL / クエリ / スキーマに触れる変更�
 
 ## entity
 
-- エンティティ側の `@Column` / `@Entity` / `@Index` 変更は migration の DDL と整合させる必要がある。`pnpm --filter backend check-migrations` がエンティティと migration の不一致を検出する ([scripts/check_migrations_clean.js](../../packages/backend/scripts/check_migrations_clean.js))。 (出典: [typeorm-patterns.md](../../.claude/skills/working-on-backend/references/knowledge/typeorm-patterns.md?plain=1#L10))
+- **[Critical]** エンティティの `@Entity` / `@Column` / `@Index` を変えたら、同じ PR に対応する DDL を持つ migration がある。不一致だと CI の `pnpm --filter backend check-migrations` (pending DDL 検出) が失敗する → [typeorm-patterns.md](../../.claude/skills/working-on-backend/references/knowledge/typeorm-patterns.md)
+- **[Minor]** denormalize した列 (他テーブルの値を複製した列) は `@Column({ comment: '[Denormalized]' })` を付け、migration にも対応する `COMMENT ON COLUMN ... IS '[Denormalized]'` がある → [typeorm-patterns.md](../../.claude/skills/working-on-backend/references/knowledge/typeorm-patterns.md)
 
-## insert
+## SQL / TypeORM のクエリ
 
-- INSERTするときにはsaveではなくinsertを使用する
-  #6441
-  (出典: [backend.md](../contributing/backend.md?plain=1#L115-L116))
+- **[Major]** 新しい行の追加に Repository の `save()` ではなく `insert()` を使っている (#6441) → [backend.md](../contributing/backend.md)
+- **[Major]** クエリビルダで同じ名前のプレースホルダを複数回使っていない。ループ内で `orWhere(':type = ...', { type })` のように同名を使い回すと最後の値で上書きされ、結果がおかしくなる。`type${i}` のように添字で一意にする → [backend.md](../contributing/backend.md)
+- **[Major]** 「NULL でない」の条件は `Not(null)` ではなく `Not(IsNull())` で書いている。`Not(null)` は期待どおりに動かない → [backend.md](../contributing/backend.md)
+- **[Major]** `null` になり得るパラメータを `col = :param` に渡していない。`col = NULL` はどの行にも一致しないので、`null` のときは `col IS NULL` に SQL を出し分ける → [backend.md](../contributing/backend.md)
+- **[Major]** `IN` / `In()` に空配列が渡り得る箇所では、空のときにクエリを発行しない (または SQL を出し分ける) 分岐がある。`IN ()` は不正な SQL になる → [backend.md](../contributing/backend.md)
+- **[Major]** NULL を含み得る列に対する `IN` 条件は、`OR col IS NULL` などで NULL を明示的に扱っている。`IN` だけでは NULL の行が一致しない → [backend.md](../contributing/backend.md)
+- **[Major]** SQL 内の配列要素アクセスは 1 始まりで書いている (先頭要素は `[1]`。`[0]` は先頭ではない) → [backend.md](../contributing/backend.md)
 
-## placeholder
+## スキーマ変更 (enum・列・制約)
 
-- placeholder
-  SQLをクエリビルダで組み立てる際、使用するプレースホルダは重複してはならない
-  (出典: [backend.md](../contributing/backend.md?plain=1#L118-L119))
+- **[Critical]** 既存行のあるテーブルに `NOT NULL` 列を足すときは、`DEFAULT` を付けるか、「nullable で追加 → `UPDATE` でバックフィル → `SET NOT NULL`」の 3 段にしている。`DEFAULT` 無しで足すと既存行を埋められず `ALTER TABLE` が失敗する → [typeorm-patterns.md](../../.claude/skills/working-on-backend/references/knowledge/typeorm-patterns.md)
+- **[Critical]** enum の値の追加・変更は `ALTER TYPE ... ADD VALUE` ではなく「旧型を `RENAME` → 新型を `CREATE TYPE` → 列を `ALTER COLUMN ... TYPE ... USING "col"::"text"::"新型"` → 旧型を `DROP`」で書いている。`ADD VALUE` は巻き戻せず (PostgreSQL に `DROP VALUE` は無い)、既定の 1 トランザクション実行 (`migrationsTransactionMode: 'all'`) では追加した値を同じトランザクション内で使えない → [typeorm-patterns.md](../../.claude/skills/working-on-backend/references/knowledge/typeorm-patterns.md)
+- **[Critical]** enum 列の型を載せ替えるとき、列にデフォルトがあれば `ALTER` の前に `DROP DEFAULT`、後に `SET DEFAULT` を挟み、配列列は `TYPE "..."[] USING "col"::"text"::"..."[]` の配列キャストにしている。無いと型変更が失敗する → [typeorm-patterns.md](../../.claude/skills/working-on-backend/references/knowledge/typeorm-patterns.md)
+- **[Critical]** enum から値を削除する変更では、その値を持つ既存行を先に削除または別の値へ `UPDATE` している。削除が重い・不可能なら値は残す。既存行が残ったままだと `USING` キャストが失敗する → [backend.md](../contributing/backend.md)
+- **[Critical]** 列のリネームが `ALTER TABLE ... RENAME COLUMN "old" TO "new"` で書かれている (down は逆向き)。`migration:generate` はプロパティ名の変更を「旧列 DROP + 新列 ADD」として出し、そのまま使うとデータが消える → [typeorm-patterns.md](../../.claude/skills/working-on-backend/references/knowledge/typeorm-patterns.md)
+- **[Major]** 大規模テーブルへの `CREATE INDEX` は `CONCURRENTLY` 対応を検討している。通常の `CREATE INDEX` は本番で長時間ロックし得る → [typeorm-patterns.md](../../.claude/skills/working-on-backend/references/knowledge/typeorm-patterns.md)
+- **[Minor]** JSONB / 配列列の既定値は既存の書式に揃っている: JSON オブジェクトは `jsonb NOT NULL DEFAULT '{}'`、JSON 配列は `DEFAULT '[]'`、PostgreSQL 配列型は `DEFAULT '{}'::varchar[]` → [typeorm-patterns.md](../../.claude/skills/working-on-backend/references/knowledge/typeorm-patterns.md)
 
-## NULL
+## migration の書き方
 
-- Not `null` in TypeORM
-  ```ts
-  const foo = await Foos.findOne({
-  	bar: Not(null)
-  });
-  ```
-  のようなクエリ(`bar`が`null`ではない)は期待通りに動作しない。
-  次のようにします:
-  ```ts
-  const foo = await Foos.findOne({
-  	bar: Not(IsNull())
-  });
-  ```
-  (出典: [backend.md](../contributing/backend.md?plain=1#L139-L151))
-- `null` in SQL
-  SQLを発行する際、パラメータが`null`になる可能性のある場合はSQL文を出し分けなければならない
-  (出典: [backend.md](../contributing/backend.md?plain=1#L153-L154))
-- null IN
-  nullが含まれる可能性のあるカラムにINするときは、そのままだとおかしくなるのでORなどでnullのハンドリングをしよう。
-  (出典: [backend.md](../contributing/backend.md?plain=1#L189-L190))
+- **[Critical]** 新規 migration は `packages/backend/migration/` 直下の `.js` ファイルで、ESM 形式 (`export class ...`) で書かれている。`ormconfig.js` は `migration/*.js` だけを読み、backend は `"type": "module"` なので、`.ts` や CommonJS では読み込まれない (`migration:generate` / `migration:create` は `-o --esm` 付きで生成する) → [creating-migration.md](../../.claude/skills/working-on-backend/references/tasks/creating-migration.md)
+- **[Critical]** `CREATE INDEX CONCURRENTLY` を使う migration は、`const isConcurrentIndexMigrationEnabled = process.env.MISSKEY_MIGRATION_CREATE_INDEX_CONCURRENTLY === '1'` で分岐し、class に `transaction = isConcurrentIndexMigrationEnabled ? false : undefined;` を持つ。無いと transaction 内で実行され `CREATE INDEX CONCURRENTLY cannot run inside a transaction block` で失敗する → [typeorm-patterns.md](../../.claude/skills/working-on-backend/references/knowledge/typeorm-patterns.md)
+- **[Critical]** `CONCURRENTLY` を使う migration は、環境変数が未設定 (既定) のときに通常の `CREATE INDEX` / `DROP INDEX` で動くよう、`up()` と `down()` の両方を同じ環境変数で分岐している → [typeorm-patterns.md](../../.claude/skills/working-on-backend/references/knowledge/typeorm-patterns.md)
+- **[Major]** クラス名は PascalCase + 13 桁タイムスタンプで、そのタイムスタンプがファイル名先頭の 13 桁と一致し、`name = '...'` プロパティがクラス名と完全に同じ文字列である (`migration:create` の雛形は `name` を出力しないので手で足す) → [creating-migration.md](../../.claude/skills/working-on-backend/references/tasks/creating-migration.md)
+- **[Major]** `migration:generate` の出力に、この PR の変更と無関係な DDL (ローカル DB との差分など) が残っていない → [backend.md](../contributing/backend.md)
+- **[Major]** migration 内の `UPDATE` によるバックフィルは冪等に書かれている (既定値を入れるだけなら `UPDATE ... WHERE col IS NULL`)。複数回流れても結果が変わらない → [typeorm-patterns.md](../../.claude/skills/working-on-backend/references/knowledge/typeorm-patterns.md)
+- **[Major]** 巨大テーブルの全行 `UPDATE` や、巨大テーブルへの `SET NOT NULL` (全行スキャン) を含む場合、長時間ロックへの対処 (バッチ分割・別運用など) が PR で説明・相談されている → [typeorm-patterns.md](../../.claude/skills/working-on-backend/references/knowledge/typeorm-patterns.md)
+- **[Minor]** `DROP ... IF EXISTS` は、対象が条件付きでしか存在しないと分かっている場合だけに使っている。無闇に付けると本来検出すべき不整合を隠す → [typeorm-patterns.md](../../.claude/skills/working-on-backend/references/knowledge/typeorm-patterns.md)
+- **[Minor]** 既存 migration と同じスタイル (`` await queryRunner.query(`...`) `` による raw SQL、`migration:create` 雛形の `@typedef` / `@implements MigrationInterface` JSDoc は削除) に揃っている → [creating-migration.md](../../.claude/skills/working-on-backend/references/tasks/creating-migration.md)
 
-## IN
+**指摘しないこと:**
 
-- `[]` in SQL
-  SQLを発行する際、`IN`のパラメータが`[]`(空の配列)になる可能性のある場合はSQL文を出し分けなければならない
-  (出典: [backend.md](../contributing/backend.md?plain=1#L169-L170))
+- 既存の古い migration にある命名の揺れ (`name` プロパティが無い、クラス名が PascalCase でない等) は、新規 migration の規約違反の根拠にしない
+- 対象が条件付きでしか存在しない DROP (例: `CONCURRENTLY` 対応の migration の `DROP INDEX IF EXISTS`) に `IF EXISTS` が付いていること
 
-## 配列
+## migration の down()
 
-- 配列のインデックス in SQL
-  SQLでは配列のインデックスは**1始まり**。
-  `[a, b, c]`の `a`にアクセスしたいなら`[0]`ではなく`[1]`と書く
-  (出典: [backend.md](../contributing/backend.md?plain=1#L185-L187))
+- **[Critical]** `down()` が空でなく、`up()` の各文を逆順に完全に巻き戻している (列追加 ↔ 列削除、テーブル作成 ↔ 削除、FK 追加 ↔ 削除、インデックス作成 ↔ 削除が対になっている)。`pnpm migrate` → `pnpm revert` → `pnpm migrate` が通る状態である → [creating-migration.md](../../.claude/skills/working-on-backend/references/tasks/creating-migration.md)
+- **[Major]** enum から値を外す方向の `down()` は、その値を使う既存行を先に `UPDATE ... SET "type" = '<代替値>' WHERE "type" = '<消す値>'` で退避してから型を載せ替えている。退避しないと `USING` キャストが失敗し巻き戻せない → [typeorm-patterns.md](../../.claude/skills/working-on-backend/references/knowledge/typeorm-patterns.md)
+- **[Major]** 元の値に戻せないデータ移行 (情報が失われる変換) では、`down()` に戻せない旨のコメントがあり、少なくともスキーマは巻き戻している → [typeorm-patterns.md](../../.claude/skills/working-on-backend/references/knowledge/typeorm-patterns.md)
+- **[Minor]** `up()` で `COMMENT ON COLUMN` を付けたら、`down()` でも対称に戻している → [typeorm-patterns.md](../../.claude/skills/working-on-backend/references/knowledge/typeorm-patterns.md)
 
-## JSONB/配列デフォルト
+**指摘しないこと:**
 
-- 4. JSONB / 配列列のデフォルト
-
-  **なぜ危険か**: 既定値リテラルの書式を誤ると `migration:generate` の出力とズレてスタイル不一致になる。実績ある書式に揃える。
-
-  ```js
-  await queryRunner.query(`ALTER TABLE "user_profile" ADD "room" jsonb NOT NULL DEFAULT '{}'`);          // オブジェクト
-  await queryRunner.query(`ALTER TABLE "bubble_game_record" ADD "logs" jsonb NOT NULL DEFAULT '[]'`);     // 配列(JSON)
-  await queryRunner.query(`ALTER TABLE "meta" ADD "pinnedUsers" character varying(256) array NOT NULL DEFAULT '{}'::varchar[]`); // PG 配列型
-  ```
-  (出典: [typeorm-patterns.md](../../.claude/skills/working-on-backend/references/knowledge/typeorm-patterns.md?plain=1#L135-L143))
-
-## enum
-
-- 2. enum 型の値の追加・変更
-
-  **なぜ危険か**: PostgreSQL の enum は **値を削除できない** (`ALTER TYPE ... DROP VALUE` は存在しない) ため、`ADD VALUE` した変更を素直に巻き戻せない。さらに Misskey はデフォルトで migration 全体を 1 トランザクションにまとめる (`migrationsTransactionMode: 'all'`) ので、`ADD VALUE` で足した値を同一トランザクション内で使う処理もエラーになる。そこで TypeORM `migration:generate` は **「旧型を rename → 新型を CREATE → 列を新型へ ALTER (USING キャスト) → 旧型を DROP」** という巻き戻し可能な手順を出す。手書きでもこの形に従うこと。
-  (出典: [typeorm-patterns.md](../../.claude/skills/working-on-backend/references/knowledge/typeorm-patterns.md?plain=1#L96-L98))
-- 要点: ①列がデフォルトを持つ場合は ALTER 前に `DROP DEFAULT`、ALTER 後に `SET DEFAULT` を挟む。②配列列 (`mutingNotificationTypes` 等) は `TYPE "..."[] USING "col"::"text"::"..."[]` と配列キャストにする。③**`down` の落とし穴**: 削除する値を既存行が使っていると `USING` キャストが「該当 enum に存在しない」で失敗する。新値を追加しただけの直後の巻き戻しは安全だが、運用後に使われた値を消す巻き戻しは本質的に危うい — その場合は down で先に `UPDATE ... SET "type" = '<代替値>' WHERE "type" = '<消す値>'` で退避してからキャストする。 (出典: [typeorm-patterns.md](../../.claude/skills/working-on-backend/references/knowledge/typeorm-patterns.md?plain=1#L116))
-- enumの削除は気をつける
-  enumの列挙の内容の削除は、その値をもつレコードを全て削除しないといけない
-
-  削除が重たかったり不可能だったりする場合は、削除しないでおく
-  (出典: [backend.md](../contributing/backend.md?plain=1#L192-L195))
-
-## 列変更
-
-- 6. 列リネーム
-
-  `migration:generate` はエンティティのプロパティ名変更を **「DROP 旧列 + ADD 新列」** と解釈しがちで、これだと **データが消える**。意図がリネームなら生成 SQL を捨て、手書きで `ALTER TABLE "t" RENAME COLUMN "old" TO "new"` (down は逆) に直す。生成結果を鵜呑みにしないこと。
-  (出典: [typeorm-patterns.md](../../.claude/skills/working-on-backend/references/knowledge/typeorm-patterns.md?plain=1#L158-L160))
-
-## NOT NULL列追加
-
-- 1. NOT NULL 列の追加
-
-  **なぜ危険か**: 既存行があるテーブルに `NOT NULL` 列を `DEFAULT` 無しで足すと、既存行を埋められず `ALTER TABLE` が失敗する。
-  (出典: [typeorm-patterns.md](../../.claude/skills/working-on-backend/references/knowledge/typeorm-patterns.md?plain=1#L77-L79))
-- **行ごとに計算した値で埋めたい / 既定値を後で外したい場合** — 3 段に分ける: ①nullable で追加 → ②`UPDATE` でバックフィル (ケース 3 参照) → ③`ALTER COLUMN ... SET NOT NULL`。`down` は `DROP COLUMN` で良い。巨大テーブルでは ② の `UPDATE` と ③ の `SET NOT NULL` (全行スキャン) が長時間ロックし得る点に注意 (出典: [typeorm-patterns.md](../../.claude/skills/working-on-backend/references/knowledge/typeorm-patterns.md?plain=1#L92))
-
-## DROP
-
-- **DROP の冪等性**: 状況により対象が無いことがある DROP は `IF EXISTS` を付ける (`DROP INDEX IF EXISTS "..."`)。ただし `migration:generate` は通常 `IF EXISTS` を付けない素の DDL を出すので、手で足すのは「条件付きで存在する」と分かっている時だけにする (無闇に付けると本来検出すべき不整合を隠す) (出典: [typeorm-patterns.md](../../.claude/skills/working-on-backend/references/knowledge/typeorm-patterns.md?plain=1#L149))
-
-## COMMENT
-
-- **COMMENT ON COLUMN**: Misskey は denormalize した列に `'[Denormalized]'` コメントを付ける慣習がある。エンティティの `@Column({ comment: '[Denormalized]' })` に対応して `migration:generate` が `COMMENT ON COLUMN` を出す。`up` で付与したら `down` でも対称に書く (出典: [typeorm-patterns.md](../../.claude/skills/working-on-backend/references/knowledge/typeorm-patterns.md?plain=1#L150))
-
-## CONCURRENTLY
-
-- 大規模テーブルへの `CREATE INDEX` は本番で長時間ロックする恐れがある。`CONCURRENTLY` で発行するときは migration class に **「この migration は transaction を張らない」と指示する** 必要がある。PostgreSQL は `CREATE INDEX CONCURRENTLY` を transaction 内で実行できないため。 (出典: [typeorm-patterns.md](../../.claude/skills/working-on-backend/references/knowledge/typeorm-patterns.md?plain=1#L39))
-- **`transaction = isConcurrentIndexMigrationEnabled ? false : undefined;`** が必須。これがないと `CREATE INDEX CONCURRENTLY` が transaction 内で実行されて `ERROR: CREATE INDEX CONCURRENTLY cannot run inside a transaction block` で失敗 (出典: [typeorm-patterns.md](../../.claude/skills/working-on-backend/references/knowledge/typeorm-patterns.md?plain=1#L67))
-- 環境変数 `MISSKEY_MIGRATION_CREATE_INDEX_CONCURRENTLY=1` がデフォルト OFF。OFF のときは普通の `CREATE INDEX` (transaction 内) で動く必要がある。`up`/`down` 双方を環境変数で分岐させる (出典: [typeorm-patterns.md](../../.claude/skills/working-on-backend/references/knowledge/typeorm-patterns.md?plain=1#L68))
-- 大規模テーブルへの `CREATE INDEX` は本番で長時間ロックする恐れがある。`CONCURRENTLY` で発行するときは migration class に `transaction = false` 等の対応が必要。詳細は [knowledge/typeorm-patterns.md §CONCURRENTLY](../../.claude/skills/working-on-backend/references/knowledge/typeorm-patterns.md) を参照。 (出典: [creating-migration.md](../../.claude/skills/working-on-backend/references/tasks/creating-migration.md?plain=1#L123))
-
-## データ移行
-
-- 3. データ移行 (UPDATE バックフィル)
-
-  **なぜ危険か**: migration 内の `UPDATE` は本番の全行を触る可能性がある。大量行では長時間ロック・トランザクション肥大を招く。
-  (出典: [typeorm-patterns.md](../../.claude/skills/working-on-backend/references/knowledge/typeorm-patterns.md?plain=1#L120-L122))
-- 既定値を入れるだけなら `UPDATE ... WHERE col IS NULL` で冪等に書く。複数回流れても安全な形にする (出典: [typeorm-patterns.md](../../.claude/skills/working-on-backend/references/knowledge/typeorm-patterns.md?plain=1#L124))
-- 巨大テーブルの全行更新は避けるのが基本。どうしても必要なら CONCURRENTLY 同様にバッチ分割や別運用を検討し、PR で相談する (出典: [typeorm-patterns.md](../../.claude/skills/working-on-backend/references/knowledge/typeorm-patterns.md?plain=1#L125))
-
-## migration生成
-
-- 作成されたスクリプトは不必要な変更を含むため除去してください (出典: [backend.md](../contributing/backend.md?plain=1#L204))
-
-## migration形式
-
-- **`-o --esm` について**: `-o` (`--outputJs`) は「TS ではなく JS を出力する」オプション、`--esm` は「ESM 形式 (`export class ...`) で出力する」オプション。Misskey の既存 migration はすべて ESM JS であるため **両方が必須**。`--esm` を省略すると CommonJS 形式の JS が生成されスタイルが揃わない。 (出典: [creating-migration.md](../../.claude/skills/working-on-backend/references/tasks/creating-migration.md?plain=1#L62))
-- **注意:** `-o --esm` を **必ず付ける**。これが無いと `<UnixMs>-<PascalName>.ts` (CommonJS / TS 出力) が生成されるが、Misskey の `ormconfig.js` は `migration/*.js` だけを読み、既存の他 migration も全て `export class ... { async up(queryRunner) {...} }` の ESM JS 形式なので、後で手作業で変換が必要になる。`-o --esm` を付ければそのまま `.js` ESM で出る。 (出典: [creating-migration.md](../../.claude/skills/working-on-backend/references/tasks/creating-migration.md?plain=1#L90))
-- ただし `migration:create` の雛形は **`name = '...'` プロパティを出力しない**ので、後段の SPDX 付与に加えて `name = '<PascalName><ms>'` を手で足し、`up`/`down` を埋める必要がある。雛形冒頭の `@typedef` / `@implements MigrationInterface` JSDoc は既存ファイルに無いので消して house style に揃える。 (出典: [creating-migration.md](../../.claude/skills/working-on-backend/references/tasks/creating-migration.md?plain=1#L92))
-- `-o` (`--outputJs`) で JS 形式、`--esm` で ESM 形式に生成する。Misskey の既存 migration はすべて ESM JS なので両方のオプションが必要 (出典: [backend.md](../contributing/backend.md?plain=1#L205))
-
-## migration命名
-
-- ファイル名のタイムスタンプ部分を後から書き換えない (順序が壊れる) (出典: [creating-migration.md](../../.claude/skills/working-on-backend/references/tasks/creating-migration.md?plain=1#L8))
-- **クラス名は PascalCase + 13 桁タイムスタンプ** (例: `class BirthdayIndex1767169026317`)
-  - **`name` プロパティもクラス名と同一文字列** にする (`name = 'BirthdayIndex1767169026317'`)
-  (出典: [creating-migration.md](../../.claude/skills/working-on-backend/references/tasks/creating-migration.md?plain=1#L28-L29))
-- [ ] `export class <PascalName><ms>` と `name = '<PascalName><ms>'` の **文字列が完全一致** している (PascalCase + 13 桁タイムスタンプ) (出典: [creating-migration.md](../../.claude/skills/working-on-backend/references/tasks/creating-migration.md?plain=1#L169))
-
-## migration down
-
-- 共通の鉄則: `down()` は `up()` の **完全な巻き戻し**。下記ケースは「単純な逆 SQL では戻らない」ものが多い。 (出典: [typeorm-patterns.md](../../.claude/skills/working-on-backend/references/knowledge/typeorm-patterns.md?plain=1#L75))
-- `down` で元値に戻せないデータ移行 (情報が失われる変換) は、`down` に戻せない旨をコメントで明示し、最低限スキーマだけは巻き戻す (出典: [typeorm-patterns.md](../../.claude/skills/working-on-backend/references/knowledge/typeorm-patterns.md?plain=1#L126))
-- `up()` の各ステートメントに対し、`down()` で完全に巻き戻せること
-  - 列追加 (`ADD COLUMN`) ↔ 列削除 (`DROP COLUMN`)、テーブル作成 ↔ テーブル削除、FK 追加 ↔ FK 削除、インデックス作成 ↔ インデックス削除 を必ずペアで書く
-  (出典: [creating-migration.md](../../.claude/skills/working-on-backend/references/tasks/creating-migration.md?plain=1#L115-L116))
-- **単純な逆 SQL では戻らない難ケース** (enum 値の追加・変更 / NOT NULL 列追加 / データ移行 UPDATE / JSONB・配列デフォルト / 列リネーム / 安全な DROP・COMMENT) は [knowledge/typeorm-patterns.md §migration 難ケース](../../.claude/skills/working-on-backend/references/knowledge/typeorm-patterns.md) を必ず参照。特に **enum 変更** と **列リネーム** は `migration:generate` の出力をそのまま使うと巻き戻せない / データが消えるので要注意。 (出典: [creating-migration.md](../../.claude/skills/working-on-backend/references/tasks/creating-migration.md?plain=1#L119))
-- [ ] `up()` の各文に対応する巻き戻しが `down()` にあり、**`down()` が空でない** (難ケースは [knowledge/typeorm-patterns.md](../../.claude/skills/working-on-backend/references/knowledge/typeorm-patterns.md) を確認済み) (出典: [creating-migration.md](../../.claude/skills/working-on-backend/references/tasks/creating-migration.md?plain=1#L170))
-- [ ] (可能なら) `pnpm migrate` → `pnpm revert` → `pnpm migrate` が通る (出典: [creating-migration.md](../../.claude/skills/working-on-backend/references/tasks/creating-migration.md?plain=1#L172))
-
-## その他
-
-- 迷ったら **まずエンティティを変更 → `migration:generate`** が原則。既存 migration (`packages/backend/migration/*.js`) のほぼすべてが `queryRunner.query(\`SQL...\`)` の raw SQL なので、CLI 出力でも手書きでもスタイルは揃う。 (出典: [creating-migration.md](../../.claude/skills/working-on-backend/references/tasks/creating-migration.md?plain=1#L20))
-- 新規ファイルを書くときは、変更パターンが近い既存ファイルを **必ずひとつ開いて並べて書く**。スタイルが激しくズレた PR は差し戻されやすい。 (出典: [creating-migration.md](../../.claude/skills/working-on-backend/references/tasks/creating-migration.md?plain=1#L153))
+- 「nullable で追加 → バックフィル → `SET NOT NULL`」や JSONB / 配列列の追加の `down()` が `DROP COLUMN` だけであること
+- 新しい enum 値を追加しただけの migration の `down()` で、旧い値集合への載せ替えの前に退避用の `UPDATE` が無いこと
