@@ -10,7 +10,7 @@ Misskey の backend は NestJS 11 + Fastify 5 + TypeORM 1 (PostgreSQL) + Redis �
 
 ## エンドポイント内での DI
 
-API endpoint は `Endpoint<typeof meta, typeof paramDef>` を extends するクラスとして書く。`@Injectable()` を付けてコンストラクタで Repository / Service を `@Inject(DI.xxx)` で注入する。
+API endpoint は `Endpoint<typeof meta, typeof paramDef>` を extends するクラスとして書く。`@Injectable()` を付けてコンストラクタで依存を注入する。Repository など DI トークンを持つものは `@Inject(DI.xxx)` で、Service は型をそのまま指定して注入する (後述)。
 
 ```ts
 import { Inject, Injectable } from '@nestjs/common';

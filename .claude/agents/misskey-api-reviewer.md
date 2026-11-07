@@ -35,7 +35,7 @@ BASE=$(git merge-base origin/develop HEAD)
 
 ## チェックリスト
 
-1. [docs/review/backend.md](../../docs/review/backend.md) を Read し、「## API エンドポイント」節と「## テスト」節を適用する。加えて [docs/review/general.md](../../docs/review/general.md) も Read して適用する
+1. [docs/review/backend.md](../../docs/review/backend.md) を Read し、「## API エンドポイント」節・「## Nest DI」節・「## テスト」節を適用する。加えて [docs/review/general.md](../../docs/review/general.md) も Read して適用する。SQL / TypeORM (クエリ・entity・migration) に触れる変更なら [docs/review/database.md](../../docs/review/database.md) も Read して適用する
 2. レビュー対象ファイルに関係する項目だけを適用する
 3. 重大度は項目の `[Critical]` / `[Major]` / `[Minor]` ラベルに従う。同じ違反に複数の項目が当たる場合は、最も高いラベルで 1 回だけ報告する。ラベルが無い項目だけが当たる場合は「重大度未設定」と明記し、検出した問題の影響 (セキュリティ・データ損失・動作不能など) に応じて報告する欄を選ぶ
 
