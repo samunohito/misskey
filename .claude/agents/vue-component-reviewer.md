@@ -20,7 +20,7 @@ Misskey フロントエンド (`packages/frontend`) の Vue 3 SFC 変更を機�
 BASE=$(git merge-base origin/develop HEAD)
 { git diff --name-only "$BASE"...HEAD; git diff --name-only HEAD; git ls-files --others --exclude-standard; } \
   | sort -u \
-  | grep -E '^packages/frontend/src/.*\.vue$|^locales/.*\.yml$|^packages/frontend/src/components/.*\.(stories\.impl|stories\.meta|msw)\.ts$'
+  | grep -E '^packages/frontend/src/.*\.vue$|^locales/.*\.yml$|^packages/frontend/src/.*\.(stories\.impl|stories\.meta|msw)\.ts$'
 ```
 
 `origin/develop` が無い環境では `develop` または `master` にフォールバックする。
@@ -28,7 +28,7 @@ BASE=$(git merge-base origin/develop HEAD)
 `.ts` を一律で含めると本エージェントの守備範囲外 (composable / store / service 層) まで巻き込んで誤検知が増えるため、`.vue` のほかは locale と Storybook の観点を適用する次のファイルだけを対象にする:
 
 - `locales/*.yml` (とくに `ja-JP.yml` 以外の変更は即 Critical)
-- `packages/frontend/src/components/**/*.{stories.impl,stories.meta,msw}.ts`
+- `packages/frontend/src/**/*.{stories.impl,stories.meta,msw}.ts`
 
 これらのいずれも差分に無い場合だけ「レビュー対象の変更なし」と短く報告して終了する。
 
