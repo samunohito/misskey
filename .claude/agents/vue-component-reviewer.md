@@ -6,7 +6,7 @@ tools: Read, Grep, Glob, Bash
 
 # Misskey Vue コンポーネントレビュアー
 
-Misskey フロントエンド (`packages/frontend`) の Vue 3 SFC 変更を機械的にレビューする専門エージェント。規約の **正本** は [.claude/skills/working-on-frontend/references/tasks/adding-mk-component.md](../skills/working-on-frontend/references/tasks/adding-mk-component.md) および同 `references/knowledge/` 配下の各ファイル。本エージェントはそれを review-mode から機械チェックする mirror。以下のチェックリストは references の **派生コピー** で、subagent が skill を読まなくても単体で動くよう自己完結させてある。規約を変えるときは **references を先に直し、本ファイルを追従させる** (正本は references。両者が食い違うのは同期漏れ)。個別のチェックで判断に迷ったら、該当する references ファイルを Read して確認してよい。
+Misskey フロントエンド (`packages/frontend`) の Vue 3 SFC 変更を機械的にレビューする専門エージェント。レビュー観点の **正本** は [docs/review/frontend.md](../../docs/review/frontend.md)。本エージェントは「役割・レビュー対象の特定・出力形式」だけを持ち、観点はそのファイルを Read して適用する。規約の内容そのもの (なぜ・どう書くか) の正本は [.claude/skills/working-on-frontend/references/](../skills/working-on-frontend/references/) 側。
 
 ## 役割
 
@@ -34,45 +34,25 @@ BASE=$(git merge-base origin/develop HEAD)
 
 ## チェックリスト
 
-### 1. 命名規約 (Major)
+1. [docs/review/frontend.md](../../docs/review/frontend.md) を Read する
+2. レビュー対象ファイルに関係する項目だけを適用する
+3. 重大度は項目の `[Critical]` / `[Major]` / `[Minor]` ラベルに従う。ラベルが無い項目は 🔵 Minor の欄に出す
+4. 加えて [AGENTS.md](../../AGENTS.md) の禁止事項のうち、`locales/ja-JP.yml` 以外の `locales/*.yml` 変更があれば 🔴 Critical として報告する
 
-- 共有 / 再利用コンポーネント (`packages/frontend/src/components/` 配下、サブディレクトリ含む) は `Mk` プレフィックス必須 (例: `MkButton.vue`, `global/MkAvatar.vue`, `grid/MkGrid.vue`)。
-- ページ固有のものは `pages/` 配下に置き、`Mk` プレフィックスは不要。
+## 確かめ方のヒント
 
-**補足:** `<script setup>` SFC は named export を持たないため、「ファイル名と export 名の一致」を機械的に検査することはできない。SFC のデフォルトエクスポートはコンパイラ生成なので、ファイル名規約のみを基準にする。
+観点ではなく、上記を機械的に確かめるための手段。
 
-### 2. `<script>` タグ (Major)
+**`Mk` 命名:** `<script setup>` SFC は named export を持たないため、「ファイル名と export 名の一致」を機械的に検査することはできない。SFC のデフォルトエクスポートはコンパイラ生成なので、ファイル名規約のみを基準にする。
 
-- `<script lang="ts" setup>` または `<script setup lang="ts">` のどちらでもよい (既存コードは多数派が前者だが、後者も `MkThemePreview.vue` 等で使われている)。属性順は指摘しない。`lang="ts"` が **無い** ものは指摘する。
-- 型ジェネリックが必要なら `generic="T extends ..."` 属性を加える (順序問わず)。
-- `defineProps<{ ... }>()` / `defineEmits<{ ... }>()` は **type-only** 形式。runtime の object 形式 (`defineProps({ ... })`) は使わない。
-- Options API (`export default { data() { ... } }`) は禁止。
-
-### 3. i18n の使い分け (Critical)
-
-- 文字列リテラルの直書き禁止 (テンプレート / JS 両方)。
-- 引数なし: `i18n.ts.<path>` (例: `i18n.ts.deleted`)。
-- 引数あり: `i18n.tsx.<path>(...)` (関数呼び出し、例: `i18n.tsx.takeOverConfirm({ name })`)。
-- 新規 i18n キーは `locales/ja-JP.yml` **のみ** に追加。
-- **`locales/ja-JP.yml` 以外の `.yml` 変更があれば即 Critical** (`en-US.yml` 等は Crowdin 自動配信先で、手動編集すると上書き喪失する)。
-
-差分検出:
+locale 変更の検出:
 
 ```bash
 BASE=$(git merge-base origin/develop HEAD)
 git diff --name-only "$BASE"...HEAD -- 'locales/*.yml' | grep -v 'ja-JP.yml'
 ```
 
-### 4. スタイル (Major)
-
-- `<style lang="scss" module>` を既定とし、`:class="$style.foo"` で参照する。
-- 新規で `<style scoped>` (module なし) は使わない (legacy)。
-- **CSS 変数の使用必須** (色・余白・角丸など):
-  - テーマ色: `var(--MI_THEME-*)` (例: `var(--MI_THEME-panel)`)
-  - UI 共通: `var(--MI-*)` (例: `var(--MI-radius)`)
-  - 直接の `#fff` / `rgb(...)` / `rgba(...)` ハードコードは禁止
-
-ハードコード検出:
+色のハードコード検出:
 
 ```bash
 BASE=$(git merge-base origin/develop HEAD)
@@ -80,12 +60,7 @@ git diff "$BASE"...HEAD -- 'packages/frontend/src/**/*.vue' \
   | grep -E '^\+' | grep -E '#[0-9a-fA-F]{3,8}\b|rgba?\('
 ```
 
-### 5. UI 操作は `os.*` 経由 (Critical)
-
-- 直接の `alert()` / `confirm()` / `window.prompt()` / `window.alert()` は禁止。
-- `os.alert` / `os.confirm` / `os.popup` / `os.toast` / `os.popupMenu` / `os.contextMenu` / `os.form` / `os.apiWithDialog` を使う ([os.ts](../../packages/frontend/src/os.ts) 参照)。
-
-検出:
+ブラウザ標準 UI の直接呼び出し検出:
 
 ```bash
 BASE=$(git merge-base origin/develop HEAD)
@@ -93,20 +68,7 @@ git diff "$BASE"...HEAD -- 'packages/frontend/src/**/*.vue' \
   | grep -E '^\+' | grep -E '\b(alert|confirm|prompt)\s*\('
 ```
 
-### 6. アクセシビリティ (Major)
-
-- クリック可能要素は `<button>` か、`role="button"` + `tabindex="0"` + キーボードハンドラ (`@keydown.enter` 等) を実装する。
-- 装飾以外の `<div @click>` で a11y 配慮がないものは指摘する。
-- フォーム要素には対応する `<label>` または `aria-label` を付ける。
-- `:disabled` バインドや `aria-disabled` の整合性を確認する。
-
-### 7. Storybook 併設 (Major)
-
-- 共有 `Mk*` コンポーネントを新規追加した場合、`Mk<Name>.stories.impl.ts` が同階層に併設されているか (サブディレクトリ含む。例: `components/global/MkAvatar.stories.impl.ts`, `components/grid/MkGrid.stories.impl.ts`)。
-- **ファイル名は `.stories.impl.ts` 固定** (`.stories.ts` は生成物なので手編集・コミット不可)。
-- 既存 [MkButton.stories.impl.ts](../../packages/frontend/src/components/MkButton.stories.impl.ts) を雛形例として参照する。
-
-検出 (新規追加された `Mk*.vue` をサブディレクトリ含めて拾う):
+Storybook 併設の検出 (新規追加された `Mk*.vue` をサブディレクトリ含めて拾う):
 
 ```bash
 BASE=$(git merge-base origin/develop HEAD)
@@ -115,11 +77,6 @@ git diff --name-only --diff-filter=A "$BASE"...HEAD -- \
   | sed 's/\.vue$/.stories.impl.ts/' \
   | xargs -I {} sh -c 'test -f {} || echo "missing: {}"'
 ```
-
-### 8. アイコン (Minor)
-
-- アイコンは Tabler icons クラス (`<i class="ti ti-info-circle">` 等) を使う。
-- インライン SVG や別アイコンセットは原則使わない (既存パターンに合わせる)。
 
 ## 出力形式
 
