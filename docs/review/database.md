@@ -56,4 +56,3 @@ migration・entity に加え、SQL / クエリ / スキーマに触れる変更�
 **指摘しないこと:**
 
 - 「nullable で追加 → バックフィル → `SET NOT NULL`」や JSONB / 配列列の追加の `down()` が `DROP COLUMN` だけであること
-- 新しい enum 値を追加しただけの migration の `down()` で、旧い値集合への載せ替えの前に退避用の `UPDATE` が無いこと
