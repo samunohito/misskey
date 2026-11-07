@@ -8,7 +8,12 @@
 
 ### meta
 
-- [Major] `tags`: OpenAPI タグ (機能領域)。 (出典: [misskey-api-reviewer.md](https://github.com/misskey-dev/misskey/blob/3ad3e56c5da931073e1939c99c2e51f00f04fda1/.claude/agents/misskey-api-reviewer.md#L42))
+- [Major] 1. `meta` の必須・推奨フィールド (Major)
+
+  [endpoints.ts の型定義](../../packages/backend/src/server/api/endpoints.ts) を真とする。
+
+  - `tags`: OpenAPI タグ (機能領域)。
+  (出典: [misskey-api-reviewer.md](https://github.com/misskey-dev/misskey/blob/3ad3e56c5da931073e1939c99c2e51f00f04fda1/.claude/agents/misskey-api-reviewer.md#L38-L42))
 - [Major] `requireCredential`: 明示必須 (boolean)。 (出典: [misskey-api-reviewer.md](https://github.com/misskey-dev/misskey/blob/3ad3e56c5da931073e1939c99c2e51f00f04fda1/.claude/agents/misskey-api-reviewer.md#L43))
 - [Major] `kind`: OAuth scope。`requireCredential: true` のとき必須 (`read:account` / `write:notes` 等)。 (出典: [misskey-api-reviewer.md](https://github.com/misskey-dev/misskey/blob/3ad3e56c5da931073e1939c99c2e51f00f04fda1/.claude/agents/misskey-api-reviewer.md#L44))
 - [Major] `requireModerator` / `requireAdmin`: 権限制限が要るか。 (出典: [misskey-api-reviewer.md](https://github.com/misskey-dev/misskey/blob/3ad3e56c5da931073e1939c99c2e51f00f04fda1/.claude/agents/misskey-api-reviewer.md#L45))
@@ -105,11 +110,6 @@
 - **`meta` / `paramDef` / `res` を変えたら misskey-js 再生成が必須**。`pnpm build-misskey-js-with-types` を忘れると CI の `check-misskey-js-autogen` で必ず落ちる (出典: [adding-api-endpoint.md](../../.claude/skills/working-on-backend/references/tasks/adding-api-endpoint.md#L8))
 - PR に `packages/misskey-js/src/autogen/` 配下の差分が含まれていないと CI の `check-misskey-js-autogen` で必ず落ちる (最頻ミス)。詳細手順は [shipping-misskey-change/references/tasks/regenerate-misskey-js.md](../../.claude/skills/shipping-misskey-change/references/tasks/regenerate-misskey-js.md)。 (出典: [adding-api-endpoint.md](../../.claude/skills/working-on-backend/references/tasks/adding-api-endpoint.md#L252))
 - **CI `check-misskey-js-autogen` で落ちる** → `pnpm build-misskey-js-with-types` 忘れ (出典: [adding-api-endpoint.md](../../.claude/skills/working-on-backend/references/tasks/adding-api-endpoint.md#L261))
-- Misskey.jsの型生成
-  ```bash
-  pnpm build-misskey-js-with-types
-  ```
-  (出典: [backend.md](../contributing/backend.md#L99-L102))
 
 ### kind
 
@@ -155,12 +155,11 @@
 - Service 系 (例: `NoteCreateService`, `RoleService`, `UserEntityService`) は **トークン経由ではなく型をそのまま inject** する: (出典: [nestjs-di.md](../../.claude/skills/working-on-backend/references/knowledge/nestjs-di.md#L50))
 - 新規 Service を追加する場合は **module 側の `providers` 配列にも追加** する必要がある。既存 Service が `CoreModule` に登録されているか確認するのが手っ取り早い。 (出典: [nestjs-di.md](../../.claude/skills/working-on-backend/references/knowledge/nestjs-di.md#L80))
 - 新規 endpoint 追加時に module への明示的な登録は不要 ([knowledge/endpoint-list.md](../../.claude/skills/working-on-backend/references/knowledge/endpoint-list.md) 参照)。新規 Service 追加時は CoreModule (または該当 module) に provider 登録が必要。 (出典: [nestjs-di.md](../../.claude/skills/working-on-backend/references/knowledge/nestjs-di.md#L91))
-- forwardRef
+- Nest Service Circular dependency / Nestでサービスの循環参照でエラーが起きた場合
+
+  #### forwardRef
   まずは簡単に`forwardRef`を試してみる
-  (出典: [backend.md](../contributing/backend.md#L11-L12))
-- OnModuleInit
-  できなければ`OnModuleInit`を使う
-  (出典: [backend.md](../contributing/backend.md#L24-L25))
+  (出典: [backend.md](../contributing/backend.md#L9-L12))
 
 ## ActivityPub
 
@@ -176,7 +175,11 @@
 
 - [Major] [test/e2e/endpoints.ts](../../packages/backend/test/e2e/endpoints.ts) または `test/e2e/<area>.ts` (`note.ts`, `users.ts` 等) 配下に、対応する `api('<category>/<name>', ...)` 呼び出しを含む `test(...)` ケースが追加されているか確認する。複雑な分岐 (権限チェック・エラーケース) の網羅も確認する。 (出典: [misskey-api-reviewer.md](https://github.com/misskey-dev/misskey/blob/3ad3e56c5da931073e1939c99c2e51f00f04fda1/.claude/agents/misskey-api-reviewer.md#L112))
 - [Major] **describe ラベルの形式は問わない**: 既存テストは `describe('Note', () => { test('投稿できる', ...) })` のように人間可読ラベルで構造化されており、`<category>/<name>` 形式の describe は使われていない。describe 名の規約違反としては指摘しない。 (出典: [misskey-api-reviewer.md](https://github.com/misskey-dev/misskey/blob/3ad3e56c5da931073e1939c99c2e51f00f04fda1/.claude/agents/misskey-api-reviewer.md#L114))
-- **原因**: `.config/test.yml` が無い (出典: [api-meta-paramdef.md](../../.claude/skills/working-on-backend/references/knowledge/api-meta-paramdef.md#L367))
+- 13. e2e テストが起動しない
+
+  - **症状**: `pnpm --filter backend test:e2e` 実行直後にこける / DB 接続エラー
+  - **原因**: `.config/test.yml` が無い
+  (出典: [api-meta-paramdef.md](../../.claude/skills/working-on-backend/references/knowledge/api-meta-paramdef.md#L364-L367))
 - **`admin.ts` は存在しない**。admin 系エンドポイントの e2e は `api.ts` (API レイヤ挙動として) または `endpoints.ts` (雑多枠) に置くのが現実的。 (出典: [backend-testing.md](../../.claude/skills/working-on-backend/references/knowledge/backend-testing.md#L62))
 - 判断ルール
 
@@ -189,6 +192,3 @@
   - どのファイルにも合わないなら `test/e2e/endpoints.ts` に追加
   - `describe` 名は **人間可読 OK**
   (出典: [adding-api-endpoint.md](../../.claude/skills/working-on-backend/references/tasks/adding-api-endpoint.md#L207-L209))
-- Service Unit Test
-  テストで`onModuleInit`を呼び出す必要がある
-  (出典: [backend.md](../contributing/backend.md#L51-L52))

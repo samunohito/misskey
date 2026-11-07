@@ -50,31 +50,82 @@
 - **既存キーの再利用が第一**。新キー追加が必要に見えても、まず `locales/ja-JP.yml` を grep して `deleteAreYouSure({ x })` のような汎用キー (`x` プレースホルダ) が転用可能でないか確認する。新キー追加は [tasks/adding-i18n-key.md](../../.claude/skills/working-on-frontend/references/tasks/adding-i18n-key.md)。他言語ファイルは Crowdin の自動配信先なので絶対に手で触らない (出典: [i18n-usage.md](../../.claude/skills/working-on-frontend/references/knowledge/i18n-usage.md#L31))
 - HTML を含むキー値は **必ずダブルクォート** で囲む (YAML パース失敗回避) (出典: [i18n-usage.md](../../.claude/skills/working-on-frontend/references/knowledge/i18n-usage.md#L80))
 - `v-html` 越しの XSS リスクが無いことを必ず確認する。パラメータ側にユーザー入力をそのまま渡すと事故る。安全な静的文字列か、別途エスケープ済の値だけにする (出典: [i18n-usage.md](../../.claude/skills/working-on-frontend/references/knowledge/i18n-usage.md#L81))
-- **呼び出し側で候補キー全体に必要な全パラメータの superset を 1 つの引数オブジェクトで渡す**。各キーの内部実装は受け取ったオブジェクトから自分が必要なものだけ拾う (出典: [i18n-usage.md](../../.claude/skills/working-on-frontend/references/knowledge/i18n-usage.md#L115))
-- 新規キー追加時は **lowerCamelCase を守れば不要**。 (出典: [i18n-usage.md](../../.claude/skills/working-on-frontend/references/knowledge/i18n-usage.md#L127))
-- 単純な「旧キー削除 → 新キー追加」を 1 PR で行うと、すべての言語の旧キー翻訳が失われる。以下のように分割する。 (出典: [i18n-usage.md](../../.claude/skills/working-on-frontend/references/knowledge/i18n-usage.md#L177))
+- 識別子として無効なキー名 (ブラケット記法)
+
+  キー名が数字始まりや予約語の場合、ドット記法ではアクセスできずブラケット記法を使う。
+
+  出典: [packages/frontend/src/components/MkSignin.totp.vue](../../packages/frontend/src/components/MkSignin.totp.vue)
+
+  ```vue
+  <div :class="$style.totpDescription">{{ i18n.ts['2fa'] }}</div>
+  ```
+
+  新規キー追加時は **lowerCamelCase を守れば不要**。
+  (出典: [i18n-usage.md](../../.claude/skills/working-on-frontend/references/knowledge/i18n-usage.md#L117-L127))
+- 既存キーをリネームしたい時 (3 段階)
+
+  単純な「旧キー削除 → 新キー追加」を 1 PR で行うと、すべての言語の旧キー翻訳が失われる。以下のように分割する。
+  (出典: [i18n-usage.md](../../.claude/skills/working-on-frontend/references/knowledge/i18n-usage.md#L175-L177))
 - ja-JP.yml だけで旧キー削除 + 新キー追加してしまった場合は、PR を分割するか、上記 3 段階に組み直す。**マージ前なら間に合う** (出典: [i18n-usage.md](../../.claude/skills/working-on-frontend/references/knowledge/i18n-usage.md#L217))
-- **原因**: ja-JP.yml にキーは追加したが、`packages/i18n` の型生成 (`autogen/locale.ts`) が再生成されていない。 (出典: [i18n-usage.md](../../.claude/skills/working-on-frontend/references/knowledge/i18n-usage.md#L243))
+- 型エラー: `Property '<key>' does not exist on type 'Locale'`
+
+  **症状**:
+  ```
+  packages/frontend/src/components/MkXxx.vue
+  > i18n.ts.newKey
+    Property 'newKey' does not exist on type 'Locale'.
+  ```
+
+  **原因**: ja-JP.yml にキーは追加したが、`packages/i18n` の型生成 (`autogen/locale.ts`) が再生成されていない。
+  (出典: [i18n-usage.md](../../.claude/skills/working-on-frontend/references/knowledge/i18n-usage.md#L234-L243))
 - | yml の値 | ts | tsx |
   |---|---|---|
   | `"保存"` | `i18n.ts.save` ✅ | (キー存在せず) ❌ |
   | `"{name}のフォローを解除しますか？"` | `i18n.ts.unfollowConfirm` → `{name}` 未置換の文字列のまま ❌ | `i18n.tsx.unfollowConfirm({ name })` ✅ |
   (出典: [i18n-usage.md](../../.claude/skills/working-on-frontend/references/knowledge/i18n-usage.md#L271-L274))
-- **対処**: ja-JP.yml に該当キーを追加するか、参照側のタイポを直す。 (出典: [i18n-usage.md](../../.claude/skills/working-on-frontend/references/knowledge/i18n-usage.md#L282))
+- 実行時警告: `Unexpected locale key: <key>`
+
+  **症状**: 開発モードのコンソールに出る。
+
+  **原因**: dev mode の Proxy が ja-JP.yml に存在しないキーへのアクセスを検知 ([packages/frontend-shared/js/i18n.ts](../../packages/frontend-shared/js/i18n.ts) の dev 用 Proxy)。
+
+  **対処**: ja-JP.yml に該当キーを追加するか、参照側のタイポを直す。
+  (出典: [i18n-usage.md](../../.claude/skills/working-on-frontend/references/knowledge/i18n-usage.md#L276-L282))
 - **対処**: yml と呼び出し側でパラメータ名を一致させる。yml 側のキー名を変更したら、呼び出し側 (frontend 全体) を grep で揃える。 (出典: [i18n-usage.md](../../.claude/skills/working-on-frontend/references/knowledge/i18n-usage.md#L295))
 - **原因**: 値に YAML の特殊文字 (`<` `>` `:` `'` `&` `*` `|` `>` `#`) を含むのに **クォートしていない**。 (出典: [i18n-usage.md](../../.claude/skills/working-on-frontend/references/knowledge/i18n-usage.md#L301))
-- **対処**: 新規キーは別名にする。 (出典: [i18n-usage.md](../../.claude/skills/working-on-frontend/references/knowledge/i18n-usage.md#L324))
+- キー名衝突: `_lang_` を上書きしてしまう
+
+  **症状**: 各言語ファイルの先頭にある `_lang_` (例: ja-JP は `"日本語"`) を別用途で使おうとして上書き。
+
+  **原因**: `_lang_` は **言語自身の表記** に予約されている ([packages/i18n/src/autogen/locale.ts](../../packages/i18n/src/autogen/locale.ts) の先頭キー)。
+
+  **対処**: 新規キーは別名にする。
+  (出典: [i18n-usage.md](../../.claude/skills/working-on-frontend/references/knowledge/i18n-usage.md#L318-L324))
 - [packages/i18n/scripts/generateLocaleInterface.ts](../../packages/i18n/scripts/generateLocaleInterface.ts) の正規表現は `/\{(\w+)\}/g`。つまり受け付けるのは **`{paramName}` 形式の単純置換のみ**。 (出典: [i18n-usage.md](../../.claude/skills/working-on-frontend/references/knowledge/i18n-usage.md#L341))
-- UI の言語切替プルダウンなどで参照される。**新規キーには使わない**。 (出典: [i18n-usage.md](../../.claude/skills/working-on-frontend/references/knowledge/i18n-usage.md#L380))
+- 予約キー `_lang_`
+
+  各 yml ファイルの **トップレベル先頭** に置かれ、その言語自身の表記名を持つ。
+
+  ```yaml
+  # locales/ja-JP.yml (トップレベル先頭)
+  _lang_: "日本語"
+  ```
+
+  UI の言語切替プルダウンなどで参照される。**新規キーには使わない**。
+  (出典: [i18n-usage.md](../../.claude/skills/working-on-frontend/references/knowledge/i18n-usage.md#L371-L380))
 - i18n は frontend (および一部の SSR されるエラーページ) でのみ使われる。`packages/backend` 配下から `import { i18n }` するパターンは原則無く、API エラー文言は別ルート (`ApiError` の i18n 化されていないメッセージ + frontend 側で翻訳) で扱う。 (出典: [i18n-usage.md](../../.claude/skills/working-on-frontend/references/knowledge/i18n-usage.md#L394))
-- Vue 側で表示時に `white-space: pre-wrap` などを当てる必要あり。 (出典: [i18n-usage.md](../../.claude/skills/working-on-frontend/references/knowledge/i18n-usage.md#L400))
+- 改行の扱い
+
+  ダブルクォート値の中で `\n` は実際の改行になる。block scalar (`|`) でも可だが、HTML タグやプレースホルダ混在では扱いづらい。慣習はダブルクォート + `\n`。
+
+  Vue 側で表示時に `white-space: pre-wrap` などを当てる必要あり。
+  (出典: [i18n-usage.md](../../.claude/skills/working-on-frontend/references/knowledge/i18n-usage.md#L396-L400))
 - 文字列リテラルを SFC に直書きしない (`<span>こんにちは</span>` 等)。必ず `i18n.ts.<key>` を経由する (出典: [adding-i18n-key.md](../../.claude/skills/working-on-frontend/references/tasks/adding-i18n-key.md#L8))
 - 既存キーの破壊的リネームは Crowdin 翻訳資産を失わせる。**追加 → 移行 → 旧キー削除** の 3 段階に分割する。詳細手順と誤編集の復旧は [knowledge/i18n-usage.md §Crowdin 安全策](../../.claude/skills/working-on-frontend/references/knowledge/i18n-usage.md) (出典: [adding-i18n-key.md](../../.claude/skills/working-on-frontend/references/tasks/adding-i18n-key.md#L9))
 - 単純キー: lowerCamelCase (例: `saveChanges`, `confirmDelete`) (出典: [adding-i18n-key.md](../../.claude/skills/working-on-frontend/references/tasks/adding-i18n-key.md#L31))
 - カテゴリ: アンダースコア接頭辞 (例: `_settings`, `_abuseUserReport`) (出典: [adding-i18n-key.md](../../.claude/skills/working-on-frontend/references/tasks/adding-i18n-key.md#L32))
 - 既存セクション内に追加する場合は **周辺の既存配置・意味グループに合わせる** (例えば `_settings` は機能ブロック順に並んでおりアルファベット順ではない)。新セクション全体を末尾に追加するのは可 (出典: [adding-i18n-key.md](../../.claude/skills/working-on-frontend/references/tasks/adding-i18n-key.md#L33))
 - **HTML タグ (`<b>` `<br>` `<strong>` 等) や `:` `'` `&` を含む値は必ずダブルクォートで囲む** (未クォートだと YAML パース失敗) (出典: [adding-i18n-key.md](../../.claude/skills/working-on-frontend/references/tasks/adding-i18n-key.md#L34))
-- これを実行せずに frontend 側で `i18n.ts.<newKey>` を参照すると、`Locale` インターフェースに追加されていないため typecheck で `Property '<newKey>' does not exist on type 'Locale'` というエラーになる (`pnpm --filter frontend lint` で発覚)。型エラー・実行時警告 (`Unexpected locale key`, `Missing locale parameters`) と対処は → [knowledge/i18n-usage.md §トラブルシュート](../../.claude/skills/working-on-frontend/references/knowledge/i18n-usage.md)。 (出典: [adding-i18n-key.md](../../.claude/skills/working-on-frontend/references/tasks/adding-i18n-key.md#L56))
 - [Critical] **文字列リテラルの直書き禁止** — テンプレート / JS どちらでも、ユーザーに見せる文言は必ず `i18n.ts.<key>` か `i18n.tsx.<key>(...)` 経由 → [knowledge/i18n-usage.md](../../.claude/skills/working-on-frontend/references/knowledge/i18n-usage.md) (出典: [adding-mk-component.md](../../.claude/skills/working-on-frontend/references/tasks/adding-mk-component.md#L10))
 - 引数なし → `i18n.ts.<key>` / 引数あり → `i18n.tsx.<key>(...)`。詳細は → [knowledge/i18n-usage.md](../../.claude/skills/working-on-frontend/references/knowledge/i18n-usage.md)。 (出典: [adding-mk-component.md](../../.claude/skills/working-on-frontend/references/tasks/adding-mk-component.md#L136))
 
@@ -101,7 +152,16 @@
   (出典: [scss-modules.md](../../.claude/skills/working-on-frontend/references/knowledge/scss-modules.md#L49-L53))
 - `packages/frontend/src/style.scss` に定義されたグローバル class。`<style module>` 内のクラスと **併用** する (`:class="[$style.root, '_button']"` ではなく、HTML の `class="_button"` 属性で直接書く)。 (出典: [scss-modules.md](../../.claude/skills/working-on-frontend/references/knowledge/scss-modules.md#L57))
 - `<style lang="scss" module>` 内に書いたクラス名はビルド時にハッシュ化されて他コンポーネントから参照できなくなる。これを意図的に外したい (子コンポーネント側の特定クラスや外部ライブラリのクラスにスタイルを当てたい) 場合のみ `:global(...)` を使う: (出典: [scss-modules.md](../../.claude/skills/working-on-frontend/references/knowledge/scss-modules.md#L102))
-- これも頻用しない (子コンポーネントを直接修正する方が望ましい)。 (出典: [scss-modules.md](../../.claude/skills/working-on-frontend/references/knowledge/scss-modules.md#L122))
+- `:deep(...)` で子コンポーネント内部を狙う
+
+  ```scss
+  .root :deep(.child-internal-class) {
+  	color: var(--MI_THEME-accent);
+  }
+  ```
+
+  これも頻用しない (子コンポーネントを直接修正する方が望ましい)。
+  (出典: [scss-modules.md](../../.claude/skills/working-on-frontend/references/knowledge/scss-modules.md#L114-L122))
 - module class は **camelCase** が慣習 (`root` / `inputCore` / `headerText`) (出典: [scss-modules.md](../../.claude/skills/working-on-frontend/references/knowledge/scss-modules.md#L126))
 - BEM 風の `block__element--modifier` は使わない (CSS Modules でハッシュ化されるので名前衝突を心配する必要が無い) (出典: [scss-modules.md](../../.claude/skills/working-on-frontend/references/knowledge/scss-modules.md#L127))
 - 状態 modifier は `&.active` / `&.disabled` のようにネストする (出典: [scss-modules.md](../../.claude/skills/working-on-frontend/references/knowledge/scss-modules.md#L128))
@@ -128,7 +188,16 @@
 - [`packages/frontend/src/os.ts`](../../packages/frontend/src/os.ts) で公開されている UI 操作 API の一覧。**ブラウザ標準の `window.alert()` / `window.confirm()` / `window.prompt()` を直接呼ばない**。これらは Misskey のテーマ / アクセシビリティ / モーダルレイヤと整合しないため。 (出典: [os-api.md](../../.claude/skills/working-on-frontend/references/knowledge/os-api.md#L3))
 - カスタムダイアログを開く場合は、コンポーネント (props / emits) を `os.popup` で起動する。`dispose()` で閉じる。 (出典: [os-api.md](../../.claude/skills/working-on-frontend/references/knowledge/os-api.md#L69))
 - 通常の `misskeyApi(...)` だと自前でエラーダイアログ表示が必要だが、`apiWithDialog` は失敗時に自動で `os.alert({ type: 'error', ... })` を表示してくれる。ただし返す promise は元の `misskeyApi(...)` と同一で **reject される** ([os.ts](../../packages/frontend/src/os.ts) で `return promise`)。`await` する場合は依然 try/catch が要る (ダイアログ表示後に後続処理を止めたいだけなら catch して握りつぶす)。 (出典: [os-api.md](../../.claude/skills/working-on-frontend/references/knowledge/os-api.md#L81))
-- 代わりに `os.alert` / `os.confirm` / `os.form` / `os.popup` を使う。 (出典: [os-api.md](../../.claude/skills/working-on-frontend/references/knowledge/os-api.md#L91))
+- なぜブラウザ標準 UI を使わないか
+
+  - `window.alert()` は Misskey のテーマ (ダークモード / カスタムテーマ) に追従しない
+  - `window.confirm()` はキーボード操作・focus trap・i18n のいずれも Misskey の規約と整合しない
+  - `window.prompt()` の入力 UI も同じ
+  - ブラウザ依存の表示揺れ (Firefox / Safari / Chrome で見た目が違う)
+  - vue-component-reviewer から指摘される
+
+  代わりに `os.alert` / `os.confirm` / `os.form` / `os.popup` を使う。
+  (出典: [os-api.md](../../.claude/skills/working-on-frontend/references/knowledge/os-api.md#L83-L91))
 - [Critical] **ブラウザ標準 UI を直接呼ばない** — `alert()` / `confirm()` / `window.prompt()` は禁止、必ず `os.alert` / `os.confirm` / `os.popup` 経由 → [knowledge/os-api.md](../../.claude/skills/working-on-frontend/references/knowledge/os-api.md) (出典: [adding-mk-component.md](../../.claude/skills/working-on-frontend/references/tasks/adding-mk-component.md#L11))
 - `os.alert` / `os.confirm` / `os.popup` 等 UI ヘルパー (ブラウザ標準 `alert()` 直呼びは禁止) → [references/knowledge/os-api.md](../../.claude/skills/working-on-frontend/references/knowledge/os-api.md) (出典: [SKILL.md](../../.claude/skills/working-on-frontend/SKILL.md#L28))
 
@@ -140,7 +209,22 @@
 - [Major] `:disabled` バインドや `aria-disabled` の整合性を確認する。 (出典: [vue-component-reviewer.md](https://github.com/misskey-dev/misskey/blob/3ad3e56c5da931073e1939c99c2e51f00f04fda1/.claude/agents/vue-component-reviewer.md#L101))
 - `<button>` はデフォルトで `tabindex` / Enter / Space / `aria-disabled` の挙動とブラウザ標準のフォーカスリングを持つので、追加の ARIA を書かなくてよい (出典: [component-conventions.md](../../.claude/skills/working-on-frontend/references/knowledge/component-conventions.md#L259))
 - form の中で意図せず submit させたくない場合は `type="button"` を明示する (省略時は `type="submit"` 扱い) (出典: [component-conventions.md](../../.claude/skills/working-on-frontend/references/knowledge/component-conventions.md#L260))
-- 装飾やレイアウト都合で `<button>` が使えないときは、**4 点セット** を必ず揃える。 (出典: [component-conventions.md](../../.claude/skills/working-on-frontend/references/knowledge/component-conventions.md#L264))
+- 装飾やレイアウト都合で `<button>` が使えないときは、**4 点セット** を必ず揃える。
+
+  ```vue
+  <div
+  	role="button"
+  	tabindex="0"
+  	:aria-disabled="disabled"
+  	:class="$style.fakeButton"
+  	@click="onClick"
+  	@keydown.enter="onClick"
+  	@keydown.space.prevent="onClick"
+  >
+  	<slot></slot>
+  </div>
+  ```
+  (出典: [component-conventions.md](../../.claude/skills/working-on-frontend/references/knowledge/component-conventions.md#L264-L278))
 - `@keydown.enter` を忘れて click だけ付けるのが最頻出ミス。 (出典: [component-conventions.md](../../.claude/skills/working-on-frontend/references/knowledge/component-conventions.md#L288))
 - `<a>` をボタン代わりに使うのは原則禁止
 
@@ -172,15 +256,25 @@
 - 共有 `Mk*` コンポーネントには `Mk<Name>.stories.impl.ts` を **同階層** に併設するのが慣習。 (出典: [storybook.md](../../.claude/skills/working-on-frontend/references/knowledge/storybook.md#L3))
 - **ファイル名は `.stories.impl.ts` 固定** (`.stories.ts` は `packages/frontend/.storybook/generate.tsx` による生成物で手編集・コミット不可) (出典: [storybook.md](../../.claude/skills/working-on-frontend/references/knowledge/storybook.md#L7))
 - 同階層に置く (`components/MkButton.stories.impl.ts`、`components/global/MkAvatar.stories.impl.ts` 等) (出典: [storybook.md](../../.claude/skills/working-on-frontend/references/knowledge/storybook.md#L8))
-- 上 2 つの `eslint-disable` は Storybook のお作法で必須 (render の関数が return type を明示しないため / `default export` ではないため) (出典: [storybook.md](../../.claude/skills/working-on-frontend/references/knowledge/storybook.md#L47))
 - `satisfies StoryObj<typeof MkColoredTag>` が無いと `args` の型補完が効かなくなる (出典: [storybook.md](../../.claude/skills/working-on-frontend/references/knowledge/storybook.md#L48))
 - `layout` を変えるだけで Storybook 上の見え方が大きく変わる。レイアウト依存のコンポーネント (sticky header 等) なら `'fullscreen'` を選ぶ。 (出典: [storybook.md](../../.claude/skills/working-on-frontend/references/knowledge/storybook.md#L155))
-- ただし `label` を component の props にしてしまうのは禁物 (slot で受け取る方針なら slot のままにする)。Storybook 上だけで使う表示用文字列として扱う。 (出典: [storybook.md](../../.claude/skills/working-on-frontend/references/knowledge/storybook.md#L180))
 - 新規コンポーネントの stories が Sidebar に出ない場合、多くは [generate.tsx](../../packages/frontend/.storybook/generate.tsx) の生成対象 **allowlist** に入っていないため。`src/{components,pages,...}/**/*.vue` の全体 glob はコメントアウトされており、対象は `globSync('src/components/global/Mk*.vue')` / `globSync('src/components/Mk[B-E]*.vue')` などの**明示列挙**になっている。`.stories.impl.ts` を併設しただけでは自動では出ないことがあるので、対象外なら generate.tsx に 1 行追加する。加えて、ファイル名 (`.stories.impl.ts`) と SPDX ヘッダー以降に構文エラーが無いかも確認する。 (出典: [storybook.md](../../.claude/skills/working-on-frontend/references/knowledge/storybook.md#L189))
 - ストーリーが必要 (= ほぼ常に必要) なら、同階層に `Mk<Name>.stories.impl.ts` も作る → [knowledge/storybook.md](../../.claude/skills/working-on-frontend/references/knowledge/storybook.md)。 (出典: [adding-mk-component.md](../../.claude/skills/working-on-frontend/references/tasks/adding-mk-component.md#L24))
 - 共有 `Mk*` コンポーネントには `Mk<Name>.stories.impl.ts` を **同階層** に併設する (サブディレクトリ含む)。詳細は → [knowledge/storybook.md](../../.claude/skills/working-on-frontend/references/knowledge/storybook.md)。 (出典: [adding-mk-component.md](../../.claude/skills/working-on-frontend/references/tasks/adding-mk-component.md#L156))
 - 大きな機能なら Storybook で各バリエーション (variant / size / disabled / loading) を網羅する (出典: [adding-mk-component.md](../../.claude/skills/working-on-frontend/references/tasks/adding-mk-component.md#L181))
-- Don't forget to re-run the `.storybook/generate.js` script after adding, editing, or removing the above files. (出典: [frontend.md](../contributing/frontend.md#L135))
+- Also, you can use msw to mock API requests in the storybook. Creating a `MyComponent.stories.msw.ts` file to define the mock handlers.
+
+  ```ts
+  import { HttpResponse, http } from 'msw';
+  export const handlers = [
+  	http.post('/api/notes/timeline', ({ request }) => {
+  		return HttpResponse.json([]);
+  	}),
+  ];
+  ```
+
+  Don't forget to re-run the `.storybook/generate.js` script after adding, editing, or removing the above files.
+  (出典: [frontend.md](../contributing/frontend.md#L124-L135))
 
 ## アイコン
 
