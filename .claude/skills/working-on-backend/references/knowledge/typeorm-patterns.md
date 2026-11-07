@@ -158,3 +158,5 @@ await queryRunner.query(`ALTER TABLE "meta" ADD "pinnedUsers" character varying(
 ### 6. 列リネーム
 
 `migration:generate` はエンティティのプロパティ名変更を **「DROP 旧列 + ADD 新列」** と解釈しがちで、これだと **データが消える**。意図がリネームなら生成 SQL を捨て、手書きで `ALTER TABLE "t" RENAME COLUMN "old" TO "new"` (down は逆) に直す。生成結果を鵜呑みにしないこと。
+
+> レビュー観点の一覧は [docs/review/database.md](../../../../../docs/review/database.md) を参照。

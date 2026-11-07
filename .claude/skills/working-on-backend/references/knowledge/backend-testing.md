@@ -206,3 +206,5 @@ docker compose -f compose.local-db.yml up -d
 ```
 
 `compose.local-db.yml` は開発向け (標準ポート `5432` / `6379`) で、テスト用 DB (`test-misskey` / ポート `54312` / `56312`) とは別物。CI (`.github/workflows/test-backend.yml`) は docker compose ではなく GitHub Actions の `services:` で同じテスト用ポートの postgres / redis コンテナを立ててから走る。
+
+> レビュー観点の一覧は [docs/review/backend.md](../../../../../docs/review/backend.md) を参照。

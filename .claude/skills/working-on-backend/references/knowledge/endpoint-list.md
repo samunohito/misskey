@@ -48,3 +48,5 @@ grep -F "'<category>/<name>'" packages/backend/src/server/api/endpoint-list.ts
 
 - 新規 endpoint 追加の全手順 → [tasks/adding-api-endpoint.md](../tasks/adding-api-endpoint.md)
 - NestJS DI / module 構造 → [nestjs-di.md](nestjs-di.md)
+
+> レビュー観点の一覧は [docs/review/backend.md](../../../../../docs/review/backend.md) を参照。
