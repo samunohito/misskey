@@ -29,7 +29,7 @@
 - `[Critical]` / `[Major]` / `[Minor]` の重大度ラベルは、出典に重大度が明記されているものだけを転記しています。ラベルが無い項目は、出典に重大度の記載が無いものです
 - 同じ観点が複数の出典にある場合は、統合せずに出典ごとに並べています。出典間で重大度や記述が食い違っていても、そのまま残しています
 - 背景・手順の詳細は出典 (`docs/contributing/` や `.claude/skills/` の references) にあります
-- 出典の無い項目は、元の場所 (旧 Maintainer guide の Review perspective、旧 reviewer agent のチェックリスト) から移設され、ここに統合されたものです
+- 出典の無い項目は、元の場所 (旧 Maintainer guide の Review perspective、旧 reviewer agent のチェックリスト、旧 `.coderabbit.yaml` の `path_instructions`) から移設され、ここに統合されたものです
 
 ## 正本の範囲
 
