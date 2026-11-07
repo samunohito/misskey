@@ -102,11 +102,11 @@
 
 ### misskey-js 再生成
 
-- [Critical] `meta` / `paramDef` / `res` を変更したら、PR / ブランチに `packages/misskey-js/src/autogen/` 配下の差分が含まれているか確認する:
-- [Critical] 差分ゼロなら `pnpm build-misskey-js-with-types` の実行漏れ。CI の `check-misskey-js-autogen` ワークフローで必ず落ちるため Critical 扱い。
+- [Critical] `meta` / `paramDef` / `res` を変更したら、生成結果に影響する変更 (エンドポイント追加・スキーマ変更など) で `packages/misskey-js/src/autogen/` 配下の差分が PR / ブランチに含まれているか確認する。
+- [Critical] 生成結果に影響する変更なのに autogen の差分が無いなら `pnpm build-misskey-js-with-types` の実行漏れ。CI の `check-misskey-js-autogen` ワークフロー (生成結果とコミット済みの autogen を比較する) で落ちるため Critical 扱い。生成結果が変わらない変更 (例: `limit` だけの変更) なら差分が無くてもよい。
 - **原因**: `meta` / `paramDef` / `res` を変えたのに misskey-js の自動生成物を再生成していない (出典: [api-meta-paramdef.md](../../.claude/skills/working-on-backend/references/knowledge/api-meta-paramdef.md#L294))
-- **`meta` / `paramDef` / `res` を変えたら misskey-js 再生成が必須**。`pnpm build-misskey-js-with-types` を忘れると CI の `check-misskey-js-autogen` で必ず落ちる (出典: [adding-api-endpoint.md](../../.claude/skills/working-on-backend/references/tasks/adding-api-endpoint.md#L8))
-- PR に `packages/misskey-js/src/autogen/` 配下の差分が含まれていないと CI の `check-misskey-js-autogen` で必ず落ちる (最頻ミス)。詳細手順は [shipping-misskey-change/references/tasks/regenerate-misskey-js.md](../../.claude/skills/shipping-misskey-change/references/tasks/regenerate-misskey-js.md)。 (出典: [adding-api-endpoint.md](../../.claude/skills/working-on-backend/references/tasks/adding-api-endpoint.md#L252))
+- **`meta` / `paramDef` / `res` を変えたら misskey-js 再生成が必須**。生成結果が変わる変更で `pnpm build-misskey-js-with-types` を忘れると CI の `check-misskey-js-autogen` で落ちる (出典: [adding-api-endpoint.md](../../.claude/skills/working-on-backend/references/tasks/adding-api-endpoint.md#L8))
+- CI の `check-misskey-js-autogen` は、現在のコードから生成した結果とコミット済みの `packages/misskey-js/src/autogen/` を比較し、差分があると落ちる (最頻ミス)。生成結果が変わらない変更 (例: `limit` だけの変更) なら autogen の差分が無くてもよい。詳細手順は [shipping-misskey-change/references/tasks/regenerate-misskey-js.md](../../.claude/skills/shipping-misskey-change/references/tasks/regenerate-misskey-js.md)。 (出典: [adding-api-endpoint.md](../../.claude/skills/working-on-backend/references/tasks/adding-api-endpoint.md#L252))
 - **CI `check-misskey-js-autogen` で落ちる** → `pnpm build-misskey-js-with-types` 忘れ (出典: [adding-api-endpoint.md](../../.claude/skills/working-on-backend/references/tasks/adding-api-endpoint.md#L261))
 
 ### kind
@@ -121,11 +121,11 @@
 
 ### requiredRolePolicy
 
-- **`requiredRolePolicy: 'canCreateChannel'`** — 特定のロールポリシーが許可されているユーザーだけに絞る。**`requireCredential: true` 必須**: [ApiCallService.ts](../../packages/backend/src/server/api/ApiCallService.ts) が `requiredRolePolicy` 分岐で `user!.id` を非null前提アクセスするため、匿名許可と組み合わせると TypeError で 500 になる。匿名も許したいなら、`meta` ではなく実行時に `RoleService.getUserPolicies(me ? me.id : null)` で判定する ([endpoints/notes/global-timeline.ts](../../packages/backend/src/server/api/endpoints/notes/global-timeline.ts) のパターン)。ポリシーの一覧は [`RolePolicies`](../../packages/backend/src/core/RoleService.ts) を参照 (出典: [api-meta-paramdef.md](../../.claude/skills/working-on-backend/references/knowledge/api-meta-paramdef.md#L55))
-- **原因**: [ApiCallService.ts](../../packages/backend/src/server/api/ApiCallService.ts) が `requiredRolePolicy` ありのエンドポイントで `user!.id` を非null前提でアクセス
-  - **修正**: 静的に必須ポリシーを宣言するなら `requireCredential: true` と必ず併用する。匿名ユーザーにも違うポリシーセットを適用したいなら、実行時に `RoleService.getUserPolicies(me ? me.id : null)` で判定 ([notes/global-timeline.ts](../../packages/backend/src/server/api/endpoints/notes/global-timeline.ts) パターン)
+- **`requiredRolePolicy: 'canCreateChannel'`** — 特定のロールポリシーが許可されているユーザーだけに絞る。未ログイン時は [ApiCallService.ts](../../packages/backend/src/server/api/ApiCallService.ts) が既定ポリシー (`RoleService.getUserPolicies(null)`) で判定し、許可されていなければ `ROLE_PERMISSION_DENIED` を返す。匿名で使わせない API なら `requireCredential: true` も付ける。ポリシーの一覧は [`RolePolicies`](../../packages/backend/src/core/RoleService.ts) を参照 (出典: [api-meta-paramdef.md](../../.claude/skills/working-on-backend/references/knowledge/api-meta-paramdef.md#L55))
+- **原因**: [ApiCallService.ts](../../packages/backend/src/server/api/ApiCallService.ts) は未ログイン時、`requiredRolePolicy` を既定ポリシー (`getUserPolicies(null)`) で判定する
+  - **修正**: 匿名で使わせない API なら `requireCredential: true` を併用する。匿名にも使わせる API なら、既定ポリシーの値が意図どおりかを確認する
   (出典: [api-meta-paramdef.md](../../.claude/skills/working-on-backend/references/knowledge/api-meta-paramdef.md#L361-L362))
-- **`requiredRolePolicy` で匿名アクセスが 500 になる** → `ApiCallService` が `user!.id` を非null前提で参照するため `requireCredential: true` 必須 (出典: [adding-api-endpoint.md](../../.claude/skills/working-on-backend/references/tasks/adding-api-endpoint.md#L267))
+- **`requiredRolePolicy` の匿名アクセス** → `ApiCallService` は未ログイン時に既定ポリシー (`getUserPolicies(null)`) で判定し、許可されていなければ `ROLE_PERMISSION_DENIED` を返す (500 にはならない)。匿名で使わせない API なら `requireCredential: true` を併用する (出典: [adding-api-endpoint.md](../../.claude/skills/working-on-backend/references/tasks/adding-api-endpoint.md#L267))
 
 ### res
 

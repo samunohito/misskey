@@ -2,7 +2,7 @@
 
 backend の API endpoint やスキーマ (`meta` / `paramDef` / `res`) を変更した後、`packages/misskey-js/src/autogen/` の自動生成型を最新化するための手順。
 
-**忘れると CI の `check-misskey-js-autogen` で必ず落ちる**。最頻ミスのひとつ。
+**生成結果が変わる変更で再生成を忘れると、CI の `check-misskey-js-autogen` で落ちる**。最頻ミスのひとつ。
 
 ## いつ実行するか
 
