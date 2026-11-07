@@ -13,15 +13,14 @@
   [endpoints.ts の型定義](../../packages/backend/src/server/api/endpoints.ts) を真とする。
 
   - `tags`: OpenAPI タグ (機能領域)。
-  (出典: [misskey-api-reviewer.md](https://github.com/misskey-dev/misskey/blob/3ad3e56c5da931073e1939c99c2e51f00f04fda1/.claude/agents/misskey-api-reviewer.md#L38-L42))
-- [Major] `requireCredential`: 明示必須 (boolean)。 (出典: [misskey-api-reviewer.md](https://github.com/misskey-dev/misskey/blob/3ad3e56c5da931073e1939c99c2e51f00f04fda1/.claude/agents/misskey-api-reviewer.md#L43))
-- [Major] `kind`: OAuth scope。`requireCredential: true` のとき必須 (`read:account` / `write:notes` 等)。 (出典: [misskey-api-reviewer.md](https://github.com/misskey-dev/misskey/blob/3ad3e56c5da931073e1939c99c2e51f00f04fda1/.claude/agents/misskey-api-reviewer.md#L44))
-- [Major] `requireModerator` / `requireAdmin`: 権限制限が要るか。 (出典: [misskey-api-reviewer.md](https://github.com/misskey-dev/misskey/blob/3ad3e56c5da931073e1939c99c2e51f00f04fda1/.claude/agents/misskey-api-reviewer.md#L45))
-- [Major] `prohibitMoved`: 移行済アカウントを拒否するか (write 系で要検討)。 (出典: [misskey-api-reviewer.md](https://github.com/misskey-dev/misskey/blob/3ad3e56c5da931073e1939c99c2e51f00f04fda1/.claude/agents/misskey-api-reviewer.md#L46))
-- [Major] `limit`: レート制限 `{ duration, max, key?, minInterval? }`。書き込み系 / コスト高い処理で未指定なら指摘。 (出典: [misskey-api-reviewer.md](https://github.com/misskey-dev/misskey/blob/3ad3e56c5da931073e1939c99c2e51f00f04fda1/.claude/agents/misskey-api-reviewer.md#L47))
-- [Major] `errors`: エラー定義。各要素に `message` / `code` / `id` (UUID v4) が揃っているか。 (出典: [misskey-api-reviewer.md](https://github.com/misskey-dev/misskey/blob/3ad3e56c5da931073e1939c99c2e51f00f04fda1/.claude/agents/misskey-api-reviewer.md#L48))
-- [Major] `res`: JSON Schema または `ref: '<EntityName>'`。各プロパティに `optional` / `nullable` が **明示** されているか。 (出典: [misskey-api-reviewer.md](https://github.com/misskey-dev/misskey/blob/3ad3e56c5da931073e1939c99c2e51f00f04fda1/.claude/agents/misskey-api-reviewer.md#L49))
-- [Major] `requireFile` / `secure` / `allowGet` / `cacheSec` / `description`: 該当するエンドポイントで使い分けているか。 (出典: [misskey-api-reviewer.md](https://github.com/misskey-dev/misskey/blob/3ad3e56c5da931073e1939c99c2e51f00f04fda1/.claude/agents/misskey-api-reviewer.md#L50))
+- [Major] `requireCredential`: 明示必須 (boolean)。
+- [Major] `kind`: OAuth scope。`requireCredential: true` のとき必須 (`read:account` / `write:notes` 等)。
+- [Major] `requireModerator` / `requireAdmin`: 権限制限が要るか。
+- [Major] `prohibitMoved`: 移行済アカウントを拒否するか (write 系で要検討)。
+- [Major] `limit`: レート制限 `{ duration, max, key?, minInterval? }`。書き込み系 / コスト高い処理で未指定なら指摘。
+- [Major] `errors`: エラー定義。各要素に `message` / `code` / `id` (UUID v4) が揃っているか。
+- [Major] `res`: JSON Schema または `ref: '<EntityName>'`。各プロパティに `optional` / `nullable` が **明示** されているか。
+- [Major] `requireFile` / `secure` / `allowGet` / `cacheSec` / `description`: 該当するエンドポイントで使い分けているか。
 
 ### errors
 
@@ -29,7 +28,6 @@
 
   1. UUID v4 形式 (`xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx`) か
   2. 既存エンドポイントの `id` と重複していないか
-  (出典: [misskey-api-reviewer.md](https://github.com/misskey-dev/misskey/blob/3ad3e56c5da931073e1939c99c2e51f00f04fda1/.claude/agents/misskey-api-reviewer.md#L54-L57))
 - 	noSuchNote: {                                            // ← キーは camelCase
   		message: 'No such note.',                            // ← 英語ハードコード (バックエンドに i18n 機構なし)
   		code: 'NO_SUCH_NOTE',                                // ← code は SCREAMING_SNAKE_CASE
@@ -61,10 +59,10 @@
 
 ### paramDef
 
-- [Major] JSON Schema 形式 (`type: 'object'`, `properties`, `required`) (出典: [misskey-api-reviewer.md](https://github.com/misskey-dev/misskey/blob/3ad3e56c5da931073e1939c99c2e51f00f04fda1/.claude/agents/misskey-api-reviewer.md#L69))
-- [Major] ID 文字列は `format: 'misskey:id'` (出典: [misskey-api-reviewer.md](https://github.com/misskey-dev/misskey/blob/3ad3e56c5da931073e1939c99c2e51f00f04fda1/.claude/agents/misskey-api-reviewer.md#L70))
-- [Major] `required` 配列で必須プロパティを明示 (出典: [misskey-api-reviewer.md](https://github.com/misskey-dev/misskey/blob/3ad3e56c5da931073e1939c99c2e51f00f04fda1/.claude/agents/misskey-api-reviewer.md#L71))
-- [Major] `as const` または `as const satisfies Schema` で型推論を効かせる (既存実装は前者多数。`as const` 自体が無く `Schema` 型注釈もない場合のみ指摘) (出典: [misskey-api-reviewer.md](https://github.com/misskey-dev/misskey/blob/3ad3e56c5da931073e1939c99c2e51f00f04fda1/.claude/agents/misskey-api-reviewer.md#L72))
+- [Major] JSON Schema 形式 (`type: 'object'`, `properties`, `required`)
+- [Major] ID 文字列は `format: 'misskey:id'`
+- [Major] `required` 配列で必須プロパティを明示
+- [Major] `as const` または `as const satisfies Schema` で型推論を効かせる (既存実装は前者多数。`as const` 自体が無く `Schema` 型注釈もない場合のみ指摘)
 - `as const` を必ず付ける。これで `SchemaType<typeof paramDef>` が型推論される。 (出典: [api-meta-paramdef.md](../../.claude/skills/working-on-backend/references/knowledge/api-meta-paramdef.md#L160))
 - 7. `paramDef` に `policies` を書く
 
@@ -76,19 +74,19 @@
 
 ### 実装
 
-- [Major] `Endpoint<typeof meta, typeof paramDef>` を継承しているか。 (出典: [misskey-api-reviewer.md](https://github.com/misskey-dev/misskey/blob/3ad3e56c5da931073e1939c99c2e51f00f04fda1/.claude/agents/misskey-api-reviewer.md#L76))
-- [Major] `@Injectable()` デコレータ + `export default class` 形式か (`// eslint-disable-line import/no-default-export` が必要)。 (出典: [misskey-api-reviewer.md](https://github.com/misskey-dev/misskey/blob/3ad3e56c5da931073e1939c99c2e51f00f04fda1/.claude/agents/misskey-api-reviewer.md#L77))
-- [Major] DI は `@Inject(DI.xxx)` 形式か。 (出典: [misskey-api-reviewer.md](https://github.com/misskey-dev/misskey/blob/3ad3e56c5da931073e1939c99c2e51f00f04fda1/.claude/agents/misskey-api-reviewer.md#L78))
-- [Major] **クライアントに返すべき API エラーは `throw new ApiError(meta.errors.<key>)`** ([error.ts](../../packages/backend/src/server/api/error.ts) 参照)。`meta.errors` で定義したエラーケースを `throw new Error(...)` で投げているなら指摘する。 (出典: [misskey-api-reviewer.md](https://github.com/misskey-dev/misskey/blob/3ad3e56c5da931073e1939c99c2e51f00f04fda1/.claude/agents/misskey-api-reviewer.md#L79))
-- [Major] 防御的アサーション・「起きるはずがない」内部不整合・テスト用 ENV ガード等の **想定外フェイルファスト** は `throw new Error('...')` で構わない。既存実装でも `admin/reset-password.ts` などが採用しているパターン (例: `cannot reset password of root`)。`meta.errors` に対応がない `throw new Error` を一律で指摘しない。 (出典: [misskey-api-reviewer.md](https://github.com/misskey-dev/misskey/blob/3ad3e56c5da931073e1939c99c2e51f00f04fda1/.claude/agents/misskey-api-reviewer.md#L80))
-- [Major] 同期 `throw` は許容。非同期処理での例外伝搬を確認する。 (出典: [misskey-api-reviewer.md](https://github.com/misskey-dev/misskey/blob/3ad3e56c5da931073e1939c99c2e51f00f04fda1/.claude/agents/misskey-api-reviewer.md#L81))
+- [Major] `Endpoint<typeof meta, typeof paramDef>` を継承しているか。
+- [Major] `@Injectable()` デコレータ + `export default class` 形式か (`// eslint-disable-line import/no-default-export` が必要)。
+- [Major] DI は `@Inject(DI.xxx)` 形式か。
+- [Major] **クライアントに返すべき API エラーは `throw new ApiError(meta.errors.<key>)`** ([error.ts](../../packages/backend/src/server/api/error.ts) 参照)。`meta.errors` で定義したエラーケースを `throw new Error(...)` で投げているなら指摘する。
+- [Major] 防御的アサーション・「起きるはずがない」内部不整合・テスト用 ENV ガード等の **想定外フェイルファスト** は `throw new Error('...')` で構わない。既存実装でも `admin/reset-password.ts` などが採用しているパターン (例: `cannot reset password of root`)。`meta.errors` に対応がない `throw new Error` を一律で指摘しない。
+- [Major] 同期 `throw` は許容。非同期処理での例外伝搬を確認する。
 - API endpoint は `Endpoint<typeof meta, typeof paramDef>` を extends するクラスとして書く。`@Injectable()` を付けてコンストラクタで Repository / Service を `@Inject(DI.xxx)` で注入する。 (出典: [nestjs-di.md](../../.claude/skills/working-on-backend/references/knowledge/nestjs-di.md#L13))
 - `// eslint-disable-line import/no-default-export` は Endpoint のお約束 (NestJS が default export を要求する一方で、ESLint ルールでは制約されているため)。 (出典: [nestjs-di.md](../../.claude/skills/working-on-backend/references/knowledge/nestjs-di.md#L35))
 
 ### endpoint-list
 
-- [Critical] 最も忘れやすい。**忘れると 404**。[endpoint-list.ts](../../packages/backend/src/server/api/endpoint-list.ts) に 1 行追加されているか: (出典: [misskey-api-reviewer.md](https://github.com/misskey-dev/misskey/blob/3ad3e56c5da931073e1939c99c2e51f00f04fda1/.claude/agents/misskey-api-reviewer.md#L85))
-- [Critical] **並び順の補足**: ファイル全体は厳密なアルファベット順では並んでおらず、同カテゴリ内 (`admin/queue/*` など) でも追加された経緯どおりの順になっている箇所が多い。**順序逸脱は指摘根拠にしない** (誤検知の元)。「行が存在するか」のみを Critical 観点として扱う。 (出典: [misskey-api-reviewer.md](https://github.com/misskey-dev/misskey/blob/3ad3e56c5da931073e1939c99c2e51f00f04fda1/.claude/agents/misskey-api-reviewer.md#L97))
+- [Critical] 最も忘れやすい。**忘れると 404**。[endpoint-list.ts](../../packages/backend/src/server/api/endpoint-list.ts) に 1 行追加されているか:
+- [Critical] **並び順の補足**: ファイル全体は厳密なアルファベット順では並んでおらず、同カテゴリ内 (`admin/queue/*` など) でも追加された経緯どおりの順になっている箇所が多い。**順序逸脱は指摘根拠にしない** (誤検知の元)。「行が存在するか」のみを Critical 観点として扱う。
 - **原因**: [endpoint-list.ts](../../packages/backend/src/server/api/endpoint-list.ts) への登録漏れ。エンドポイントは glob 自動収集されない (出典: [api-meta-paramdef.md](../../.claude/skills/working-on-backend/references/knowledge/api-meta-paramdef.md#L288))
 - 新規 API endpoint を追加する際の **最大の落とし穴**。エンドポイントは glob 自動収集されないため、ここへの 1 行追加を忘れると 404 になる。 (出典: [endpoint-list.md](../../.claude/skills/working-on-backend/references/knowledge/endpoint-list.md#L3))
 - **並び順は厳密ではない**。同じディレクトリ (例: `admin/queue/*`) の中でも、アルファベット順ではなく追加された経緯どおりの順になっている箇所が多い。
@@ -104,8 +102,8 @@
 
 ### misskey-js 再生成
 
-- [Critical] `meta` / `paramDef` / `res` を変更したら、PR / ブランチに `packages/misskey-js/src/autogen/` 配下の差分が含まれているか確認する: (出典: [misskey-api-reviewer.md](https://github.com/misskey-dev/misskey/blob/3ad3e56c5da931073e1939c99c2e51f00f04fda1/.claude/agents/misskey-api-reviewer.md#L101))
-- [Critical] 差分ゼロなら `pnpm build-misskey-js-with-types` の実行漏れ。CI の `check-misskey-js-autogen` ワークフローで必ず落ちるため Critical 扱い。 (出典: [misskey-api-reviewer.md](https://github.com/misskey-dev/misskey/blob/3ad3e56c5da931073e1939c99c2e51f00f04fda1/.claude/agents/misskey-api-reviewer.md#L108))
+- [Critical] `meta` / `paramDef` / `res` を変更したら、PR / ブランチに `packages/misskey-js/src/autogen/` 配下の差分が含まれているか確認する:
+- [Critical] 差分ゼロなら `pnpm build-misskey-js-with-types` の実行漏れ。CI の `check-misskey-js-autogen` ワークフローで必ず落ちるため Critical 扱い。
 - **原因**: `meta` / `paramDef` / `res` を変えたのに misskey-js の自動生成物を再生成していない (出典: [api-meta-paramdef.md](../../.claude/skills/working-on-backend/references/knowledge/api-meta-paramdef.md#L294))
 - **`meta` / `paramDef` / `res` を変えたら misskey-js 再生成が必須**。`pnpm build-misskey-js-with-types` を忘れると CI の `check-misskey-js-autogen` で必ず落ちる (出典: [adding-api-endpoint.md](../../.claude/skills/working-on-backend/references/tasks/adding-api-endpoint.md#L8))
 - PR に `packages/misskey-js/src/autogen/` 配下の差分が含まれていないと CI の `check-misskey-js-autogen` で必ず落ちる (最頻ミス)。詳細手順は [shipping-misskey-change/references/tasks/regenerate-misskey-js.md](../../.claude/skills/shipping-misskey-change/references/tasks/regenerate-misskey-js.md)。 (出典: [adding-api-endpoint.md](../../.claude/skills/working-on-backend/references/tasks/adding-api-endpoint.md#L252))
@@ -179,8 +177,8 @@
 
 ## テスト
 
-- [Major] [test/e2e/endpoints.ts](../../packages/backend/test/e2e/endpoints.ts) または `test/e2e/<area>.ts` (`note.ts`, `users.ts` 等) 配下に、対応する `api('<category>/<name>', ...)` 呼び出しを含む `test(...)` ケースが追加されているか確認する。複雑な分岐 (権限チェック・エラーケース) の網羅も確認する。 (出典: [misskey-api-reviewer.md](https://github.com/misskey-dev/misskey/blob/3ad3e56c5da931073e1939c99c2e51f00f04fda1/.claude/agents/misskey-api-reviewer.md#L112))
-- [Major] **describe ラベルの形式は問わない**: 既存テストは `describe('Note', () => { test('投稿できる', ...) })` のように人間可読ラベルで構造化されており、`<category>/<name>` 形式の describe は使われていない。describe 名の規約違反としては指摘しない。 (出典: [misskey-api-reviewer.md](https://github.com/misskey-dev/misskey/blob/3ad3e56c5da931073e1939c99c2e51f00f04fda1/.claude/agents/misskey-api-reviewer.md#L114))
+- [Major] [test/e2e/endpoints.ts](../../packages/backend/test/e2e/endpoints.ts) または `test/e2e/<area>.ts` (`note.ts`, `users.ts` 等) 配下に、対応する `api('<category>/<name>', ...)` 呼び出しを含む `test(...)` ケースが追加されているか確認する。複雑な分岐 (権限チェック・エラーケース) の網羅も確認する。
+- [Major] **describe ラベルの形式は問わない**: 既存テストは `describe('Note', () => { test('投稿できる', ...) })` のように人間可読ラベルで構造化されており、`<category>/<name>` 形式の describe は使われていない。describe 名の規約違反としては指摘しない。
 - 13. e2e テストが起動しない
 
   - **症状**: `pnpm --filter backend test:e2e` 実行直後にこける / DB 接続エラー

@@ -6,8 +6,8 @@
 
 ## 命名
 
-- [Major] 共有 / 再利用コンポーネント (`packages/frontend/src/components/` 配下、サブディレクトリ含む) は `Mk` プレフィックス必須 (例: `MkButton.vue`, `global/MkAvatar.vue`, `grid/MkGrid.vue`)。 (出典: [vue-component-reviewer.md](https://github.com/misskey-dev/misskey/blob/3ad3e56c5da931073e1939c99c2e51f00f04fda1/.claude/agents/vue-component-reviewer.md#L39))
-- [Major] ページ固有のものは `pages/` 配下に置き、`Mk` プレフィックスは不要。 (出典: [vue-component-reviewer.md](https://github.com/misskey-dev/misskey/blob/3ad3e56c5da931073e1939c99c2e51f00f04fda1/.claude/agents/vue-component-reviewer.md#L40))
+- [Major] 共有 / 再利用コンポーネント (`packages/frontend/src/components/` 配下、サブディレクトリ含む) は `Mk` プレフィックス必須 (例: `MkButton.vue`, `global/MkAvatar.vue`, `grid/MkGrid.vue`)。
+- [Major] ページ固有のものは `pages/` 配下に置き、`Mk` プレフィックスは不要。
 - [Critical] **`Mk` プレフィックス必須** — 共有コンポーネントは `MkButton.vue` / `global/MkAvatar.vue` のように `Mk` で始める。ページ固有 UI は `Mk` を付けず `pages/` 側に置く (出典: [adding-mk-component.md](../../.claude/skills/working-on-frontend/references/tasks/adding-mk-component.md#L8))
 - | 配置先 | 用途 | 命名 |
   |---|---|---|
@@ -21,10 +21,10 @@
 
 ## script
 
-- [Major] `<script lang="ts" setup>` または `<script setup lang="ts">` のどちらでもよい (既存コードは多数派が前者だが、後者も `MkThemePreview.vue` 等で使われている)。属性順は指摘しない。`lang="ts"` が **無い** ものは指摘する。 (出典: [vue-component-reviewer.md](https://github.com/misskey-dev/misskey/blob/3ad3e56c5da931073e1939c99c2e51f00f04fda1/.claude/agents/vue-component-reviewer.md#L46))
-- [Major] 型ジェネリックが必要なら `generic="T extends ..."` 属性を加える (順序問わず)。 (出典: [vue-component-reviewer.md](https://github.com/misskey-dev/misskey/blob/3ad3e56c5da931073e1939c99c2e51f00f04fda1/.claude/agents/vue-component-reviewer.md#L47))
-- [Major] `defineProps<{ ... }>()` / `defineEmits<{ ... }>()` は **type-only** 形式。runtime の object 形式 (`defineProps({ ... })`) は使わない。 (出典: [vue-component-reviewer.md](https://github.com/misskey-dev/misskey/blob/3ad3e56c5da931073e1939c99c2e51f00f04fda1/.claude/agents/vue-component-reviewer.md#L48))
-- [Major] Options API (`export default { data() { ... } }`) は禁止。 (出典: [vue-component-reviewer.md](https://github.com/misskey-dev/misskey/blob/3ad3e56c5da931073e1939c99c2e51f00f04fda1/.claude/agents/vue-component-reviewer.md#L49))
+- [Major] `<script lang="ts" setup>` または `<script setup lang="ts">` のどちらでもよい (既存コードは多数派が前者だが、後者も `MkThemePreview.vue` 等で使われている)。属性順は指摘しない。`lang="ts"` が **無い** ものは指摘する。
+- [Major] 型ジェネリックが必要なら `generic="T extends ..."` 属性を加える (順序問わず)。
+- [Major] `defineProps<{ ... }>()` / `defineEmits<{ ... }>()` は **type-only** 形式。runtime の object 形式 (`defineProps({ ... })`) は使わない。
+- [Major] Options API (`export default { data() { ... } }`) は禁止。
 - | 項目 | 規約 | 新規不可 |
   |---|---|---|
   | `<script>` 開始タグ | `<script lang="ts" setup>` または `<script setup lang="ts">` (順序不問) | `<script>` (lang 無し) / Options API (`export default { data() {...} }`) |
@@ -61,9 +61,9 @@
 
 ## i18n
 
-- [Critical] 文字列リテラルの直書き禁止 (テンプレート / JS 両方)。 (出典: [vue-component-reviewer.md](https://github.com/misskey-dev/misskey/blob/3ad3e56c5da931073e1939c99c2e51f00f04fda1/.claude/agents/vue-component-reviewer.md#L53))
-- [Critical] 引数なし: `i18n.ts.<path>` (例: `i18n.ts.deleted`)。 (出典: [vue-component-reviewer.md](https://github.com/misskey-dev/misskey/blob/3ad3e56c5da931073e1939c99c2e51f00f04fda1/.claude/agents/vue-component-reviewer.md#L54))
-- [Critical] 引数あり: `i18n.tsx.<path>(...)` (関数呼び出し、例: `i18n.tsx.takeOverConfirm({ name })`)。 (出典: [vue-component-reviewer.md](https://github.com/misskey-dev/misskey/blob/3ad3e56c5da931073e1939c99c2e51f00f04fda1/.claude/agents/vue-component-reviewer.md#L55))
+- [Critical] 文字列リテラルの直書き禁止 (テンプレート / JS 両方)。
+- [Critical] 引数なし: `i18n.ts.<path>` (例: `i18n.ts.deleted`)。
+- [Critical] 引数あり: `i18n.tsx.<path>(...)` (関数呼び出し、例: `i18n.tsx.takeOverConfirm({ name })`)。
 - 文言は **必ず** [i18n.ts](../../packages/frontend/src/i18n.ts) 経由で参照する。引数の有無で **使う変数名そのものが変わる**。間違えると、非パラメータキーを `i18n.tsx` で呼ぶ場合は型エラーになるが、パラメータキーを `i18n.ts` で参照する場合は型エラーにならず `{name}` 等が未展開のまま画面に出る (後述のトラブルシュート参照)。 (出典: [i18n-usage.md](../../.claude/skills/working-on-frontend/references/knowledge/i18n-usage.md#L15))
 -   YAML 側に `{name}` 形式のプレースホルダが含まれているキーは **`i18n.tsx`** からしか呼べない。誤って `i18n.ts.unfollowConfirm` と書くと値がフォーマット前の関数になってそのまま表示される。 (出典: [i18n-usage.md](../../.claude/skills/working-on-frontend/references/knowledge/i18n-usage.md#L29))
 - **既存キーの再利用が第一**。新キー追加が必要に見えても、まず `locales/ja-JP.yml` を grep して `deleteAreYouSure({ x })` のような汎用キー (`x` プレースホルダ) が転用可能でないか確認する。新キー追加は [tasks/adding-i18n-key.md](../../.claude/skills/working-on-frontend/references/tasks/adding-i18n-key.md)。他言語ファイルは Crowdin の自動配信先なので絶対に手で触らない (出典: [i18n-usage.md](../../.claude/skills/working-on-frontend/references/knowledge/i18n-usage.md#L31))
@@ -150,13 +150,12 @@
 
 ## スタイル
 
-- [Major] `<style lang="scss" module>` を既定とし、`:class="$style.foo"` で参照する。 (出典: [vue-component-reviewer.md](https://github.com/misskey-dev/misskey/blob/3ad3e56c5da931073e1939c99c2e51f00f04fda1/.claude/agents/vue-component-reviewer.md#L68))
-- [Major] 新規で `<style scoped>` (module なし) は使わない (legacy)。 (出典: [vue-component-reviewer.md](https://github.com/misskey-dev/misskey/blob/3ad3e56c5da931073e1939c99c2e51f00f04fda1/.claude/agents/vue-component-reviewer.md#L69))
+- [Major] `<style lang="scss" module>` を既定とし、`:class="$style.foo"` で参照する。
+- [Major] 新規で `<style scoped>` (module なし) は使わない (legacy)。
 - [Major] **CSS 変数の使用必須** (色・余白・角丸など):
     - テーマ色: `var(--MI_THEME-*)` (例: `var(--MI_THEME-panel)`)
     - UI 共通: `var(--MI-*)` (例: `var(--MI-radius)`)
     - 直接の `#fff` / `rgb(...)` / `rgba(...)` ハードコードは禁止
-  (出典: [vue-component-reviewer.md](https://github.com/misskey-dev/misskey/blob/3ad3e56c5da931073e1939c99c2e51f00f04fda1/.claude/agents/vue-component-reviewer.md#L70-L73))
 - `_panel` / `_button` / `_buttonPrimary` は global utility class なので、自前で同じスタイルを書かない (出典: [component-conventions.md](../../.claude/skills/working-on-frontend/references/knowledge/component-conventions.md#L241))
 - [Major] Misskey のテーマシステムは 2 系統の CSS 変数で構成される。新規のスタイルは **必ず変数経由** にする。直接の `#fff` / `rgb()` / `rgba()` ハードコードは vue-component-reviewer から Major 指摘される。 (出典: [scss-modules.md](../../.claude/skills/working-on-frontend/references/knowledge/scss-modules.md#L7))
 - `var(--MI-radius)` を使うとアプリ全体で角丸の大きさが揃う。`border-radius: 12px;` のように直書きすると、後から角丸を変える要件が来たときに全件直すことになる。 (出典: [scss-modules.md](../../.claude/skills/working-on-frontend/references/knowledge/scss-modules.md#L45))
@@ -196,8 +195,8 @@
 
 ## os-api
 
-- [Critical] 直接の `alert()` / `confirm()` / `window.prompt()` / `window.alert()` は禁止。 (出典: [vue-component-reviewer.md](https://github.com/misskey-dev/misskey/blob/3ad3e56c5da931073e1939c99c2e51f00f04fda1/.claude/agents/vue-component-reviewer.md#L85))
-- [Critical] `os.alert` / `os.confirm` / `os.popup` / `os.toast` / `os.popupMenu` / `os.contextMenu` / `os.form` / `os.apiWithDialog` を使う ([os.ts](../../packages/frontend/src/os.ts) 参照)。 (出典: [vue-component-reviewer.md](https://github.com/misskey-dev/misskey/blob/3ad3e56c5da931073e1939c99c2e51f00f04fda1/.claude/agents/vue-component-reviewer.md#L86))
+- [Critical] 直接の `alert()` / `confirm()` / `window.prompt()` / `window.alert()` は禁止。
+- [Critical] `os.alert` / `os.confirm` / `os.popup` / `os.toast` / `os.popupMenu` / `os.contextMenu` / `os.form` / `os.apiWithDialog` を使う ([os.ts](../../packages/frontend/src/os.ts) 参照)。
 - [`packages/frontend/src/os.ts`](../../packages/frontend/src/os.ts) で公開されている UI 操作 API の一覧。**ブラウザ標準の `window.alert()` / `window.confirm()` / `window.prompt()` を直接呼ばない**。これらは Misskey のテーマ / アクセシビリティ / モーダルレイヤと整合しないため。 (出典: [os-api.md](../../.claude/skills/working-on-frontend/references/knowledge/os-api.md#L3))
 - カスタムダイアログを開く場合は、コンポーネント (props / emits) を `os.popup` で起動する。`dispose()` で閉じる。 (出典: [os-api.md](../../.claude/skills/working-on-frontend/references/knowledge/os-api.md#L69))
 - 通常の `misskeyApi(...)` だと自前でエラーダイアログ表示が必要だが、`apiWithDialog` は失敗時に自動で `os.alert({ type: 'error', ... })` を表示してくれる。ただし返す promise は元の `misskeyApi(...)` と同一で **reject される** ([os.ts](../../packages/frontend/src/os.ts) で `return promise`)。`await` する場合は依然 try/catch が要る (ダイアログ表示後に後続処理を止めたいだけなら catch して握りつぶす)。 (出典: [os-api.md](../../.claude/skills/working-on-frontend/references/knowledge/os-api.md#L81))
@@ -216,10 +215,10 @@
 
 ## a11y
 
-- [Major] クリック可能要素は `<button>` か、`role="button"` + `tabindex="0"` + キーボードハンドラ (`@keydown.enter` 等) を実装する。 (出典: [vue-component-reviewer.md](https://github.com/misskey-dev/misskey/blob/3ad3e56c5da931073e1939c99c2e51f00f04fda1/.claude/agents/vue-component-reviewer.md#L98))
-- [Major] 装飾以外の `<div @click>` で a11y 配慮がないものは指摘する。 (出典: [vue-component-reviewer.md](https://github.com/misskey-dev/misskey/blob/3ad3e56c5da931073e1939c99c2e51f00f04fda1/.claude/agents/vue-component-reviewer.md#L99))
-- [Major] フォーム要素には対応する `<label>` または `aria-label` を付ける。 (出典: [vue-component-reviewer.md](https://github.com/misskey-dev/misskey/blob/3ad3e56c5da931073e1939c99c2e51f00f04fda1/.claude/agents/vue-component-reviewer.md#L100))
-- [Major] `:disabled` バインドや `aria-disabled` の整合性を確認する。 (出典: [vue-component-reviewer.md](https://github.com/misskey-dev/misskey/blob/3ad3e56c5da931073e1939c99c2e51f00f04fda1/.claude/agents/vue-component-reviewer.md#L101))
+- [Major] クリック可能要素は `<button>` か、`role="button"` + `tabindex="0"` + キーボードハンドラ (`@keydown.enter` 等) を実装する。
+- [Major] 装飾以外の `<div @click>` で a11y 配慮がないものは指摘する。
+- [Major] フォーム要素には対応する `<label>` または `aria-label` を付ける。
+- [Major] `:disabled` バインドや `aria-disabled` の整合性を確認する。
 - `<button>` はデフォルトで `tabindex` / Enter / Space / `aria-disabled` の挙動とブラウザ標準のフォーカスリングを持つので、追加の ARIA を書かなくてよい (出典: [component-conventions.md](../../.claude/skills/working-on-frontend/references/knowledge/component-conventions.md#L259))
 - form の中で意図せず submit させたくない場合は `type="button"` を明示する (省略時は `type="submit"` 扱い) (出典: [component-conventions.md](../../.claude/skills/working-on-frontend/references/knowledge/component-conventions.md#L260))
 - 装飾やレイアウト都合で `<button>` が使えないときは、**4 点セット** を必ず揃える。
@@ -262,9 +261,9 @@
 
 ## storybook
 
-- [Major] 共有 `Mk*` コンポーネントを新規追加した場合、`Mk<Name>.stories.impl.ts` が同階層に併設されているか (サブディレクトリ含む。例: `components/global/MkAvatar.stories.impl.ts`, `components/grid/MkGrid.stories.impl.ts`)。 (出典: [vue-component-reviewer.md](https://github.com/misskey-dev/misskey/blob/3ad3e56c5da931073e1939c99c2e51f00f04fda1/.claude/agents/vue-component-reviewer.md#L105))
-- [Major] **ファイル名は `.stories.impl.ts` 固定** (`.stories.ts` は生成物なので手編集・コミット不可)。 (出典: [vue-component-reviewer.md](https://github.com/misskey-dev/misskey/blob/3ad3e56c5da931073e1939c99c2e51f00f04fda1/.claude/agents/vue-component-reviewer.md#L106))
-- [Major] 既存 [MkButton.stories.impl.ts](../../packages/frontend/src/components/MkButton.stories.impl.ts) を雛形例として参照する。 (出典: [vue-component-reviewer.md](https://github.com/misskey-dev/misskey/blob/3ad3e56c5da931073e1939c99c2e51f00f04fda1/.claude/agents/vue-component-reviewer.md#L107))
+- [Major] 共有 `Mk*` コンポーネントを新規追加した場合、`Mk<Name>.stories.impl.ts` が同階層に併設されているか (サブディレクトリ含む。例: `components/global/MkAvatar.stories.impl.ts`, `components/grid/MkGrid.stories.impl.ts`)。
+- [Major] **ファイル名は `.stories.impl.ts` 固定** (`.stories.ts` は生成物なので手編集・コミット不可)。
+- [Major] 既存 [MkButton.stories.impl.ts](../../packages/frontend/src/components/MkButton.stories.impl.ts) を雛形例として参照する。
 - 各コンポーネント横に `*.stories.impl.ts` を併設する慣習 (例: `MkButton.stories.impl.ts`)。Chromatic (`pnpm --filter frontend chromatic`) で視覚回帰チェック。 (出典: [frontend-testing.md](../../.claude/skills/working-on-frontend/references/knowledge/frontend-testing.md#L50))
 - 共有 `Mk*` コンポーネントには `Mk<Name>.stories.impl.ts` を **同階層** に併設するのが慣習。 (出典: [storybook.md](../../.claude/skills/working-on-frontend/references/knowledge/storybook.md#L3))
 - **ファイル名は `.stories.impl.ts` 固定** (`.stories.ts` は `packages/frontend/.storybook/generate.tsx` による生成物で手編集・コミット不可) (出典: [storybook.md](../../.claude/skills/working-on-frontend/references/knowledge/storybook.md#L7))
@@ -291,8 +290,8 @@
 
 ## アイコン
 
-- [Minor] アイコンは Tabler icons クラス (`<i class="ti ti-info-circle">` 等) を使う。 (出典: [vue-component-reviewer.md](https://github.com/misskey-dev/misskey/blob/3ad3e56c5da931073e1939c99c2e51f00f04fda1/.claude/agents/vue-component-reviewer.md#L121))
-- [Minor] インライン SVG や別アイコンセットは原則使わない (既存パターンに合わせる)。 (出典: [vue-component-reviewer.md](https://github.com/misskey-dev/misskey/blob/3ad3e56c5da931073e1939c99c2e51f00f04fda1/.claude/agents/vue-component-reviewer.md#L122))
+- [Minor] アイコンは Tabler icons クラス (`<i class="ti ti-info-circle">` 等) を使う。
+- [Minor] インライン SVG や別アイコンセットは原則使わない (既存パターンに合わせる)。
 - **アイコンを動的に設定する際には、 `ti-${someVal}` のような、アイコン名のみを動的に変化させる実装を行わないでください。**
   必ず `ti-xxx` のような完全なクラス名を含めるようにしてください。
   (出典: [frontend.md](../contributing/frontend.md#L16-L17))

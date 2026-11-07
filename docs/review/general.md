@@ -10,20 +10,17 @@
 - Scope
   	- Are the goals of the PR clear?
   	- Is the granularity of the PR appropriate?
-  (出典: [maintainer-guide.md](https://github.com/misskey-dev/misskey/blob/3ad3e56c5da931073e1939c99c2e51f00f04fda1/docs/contributing/maintainer-guide.md#L29-L31))
 
 ## Security
 
 - Security
   	- Does merging this PR create a vulnerability?
-  (出典: [maintainer-guide.md](https://github.com/misskey-dev/misskey/blob/3ad3e56c5da931073e1939c99c2e51f00f04fda1/docs/contributing/maintainer-guide.md#L32-L33))
 
 ## Performance
 
 - Performance
   	- Will merging this PR cause unexpected performance degradation?
   	- Is there a more efficient way?
-  (出典: [maintainer-guide.md](https://github.com/misskey-dev/misskey/blob/3ad3e56c5da931073e1939c99c2e51f00f04fda1/docs/contributing/maintainer-guide.md#L34-L36))
 
 ## Testing
 
@@ -32,7 +29,6 @@
   	- Does the test ensure the expected behavior?
   	- Are there any omissions or gaps?
   	- Does it check for anomalies?
-  (出典: [maintainer-guide.md](https://github.com/misskey-dev/misskey/blob/3ad3e56c5da931073e1939c99c2e51f00f04fda1/docs/contributing/maintainer-guide.md#L37-L40))
 
 ## スコープ外
 
