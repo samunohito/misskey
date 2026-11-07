@@ -9,8 +9,13 @@
 - [Major] 共有 / 再利用コンポーネント (`packages/frontend/src/components/` 配下、サブディレクトリ含む) は `Mk` プレフィックス必須 (例: `MkButton.vue`, `global/MkAvatar.vue`, `grid/MkGrid.vue`)。 (出典: [vue-component-reviewer.md](https://github.com/misskey-dev/misskey/blob/3ad3e56c5da931073e1939c99c2e51f00f04fda1/.claude/agents/vue-component-reviewer.md#L39))
 - [Major] ページ固有のものは `pages/` 配下に置き、`Mk` プレフィックスは不要。 (出典: [vue-component-reviewer.md](https://github.com/misskey-dev/misskey/blob/3ad3e56c5da931073e1939c99c2e51f00f04fda1/.claude/agents/vue-component-reviewer.md#L40))
 - [Critical] **`Mk` プレフィックス必須** — 共有コンポーネントは `MkButton.vue` / `global/MkAvatar.vue` のように `Mk` で始める。ページ固有 UI は `Mk` を付けず `pages/` 側に置く (出典: [adding-mk-component.md](../../.claude/skills/working-on-frontend/references/tasks/adding-mk-component.md#L8))
-- | `packages/frontend/src/components/global/Mk<Name>.vue` | `components/index.ts` で Vue グローバルコンポーネント登録 (`app.component`) され、import 無しで全テンプレートから使える基本部品 (`MkA` / `MkAvatar` / `MkAcct` 等) | `Mk<Name>.vue` (サブディレクトリ内でも `Mk` prefix 必須) | (出典: [adding-mk-component.md](../../.claude/skills/working-on-frontend/references/tasks/adding-mk-component.md#L18))
-- | `packages/frontend/src/pages/<Name>.vue` | 単一ページ専用の UI (再利用しない) | `Mk` prefix **不要** | (出典: [adding-mk-component.md](../../.claude/skills/working-on-frontend/references/tasks/adding-mk-component.md#L20))
+- | 配置先 | 用途 | 命名 |
+  |---|---|---|
+  | `packages/frontend/src/components/Mk<Name>.vue` | 通常の共有 UI コンポーネント | `Mk<Name>.vue` |
+  | `packages/frontend/src/components/global/Mk<Name>.vue` | `components/index.ts` で Vue グローバルコンポーネント登録 (`app.component`) され、import 無しで全テンプレートから使える基本部品 (`MkA` / `MkAvatar` / `MkAcct` 等) | `Mk<Name>.vue` (サブディレクトリ内でも `Mk` prefix 必須) |
+  | `packages/frontend/src/components/grid/Mk<Name>.vue` | テーブル/グリッド系の部品セット | 同上 |
+  | `packages/frontend/src/pages/<Name>.vue` | 単一ページ専用の UI (再利用しない) | `Mk` prefix **不要** |
+  (出典: [adding-mk-component.md](../../.claude/skills/working-on-frontend/references/tasks/adding-mk-component.md#L15-L20))
 - 迷ったら「他の `Mk*.vue` から import される可能性があるか?」で判定する。Yes なら `components/`、No なら `pages/`。 (出典: [adding-mk-component.md](../../.claude/skills/working-on-frontend/references/tasks/adding-mk-component.md#L22))
 - 似た用途の既存 `Mk*` を 1-2 個読んで、props 命名 (`primary` / `danger` / `small` 等の形容詞、`onClose` ではなく `emit('close')` 等) を揃える (出典: [adding-mk-component.md](../../.claude/skills/working-on-frontend/references/tasks/adding-mk-component.md#L179))
 
@@ -20,14 +25,28 @@
 - [Major] 型ジェネリックが必要なら `generic="T extends ..."` 属性を加える (順序問わず)。 (出典: [vue-component-reviewer.md](https://github.com/misskey-dev/misskey/blob/3ad3e56c5da931073e1939c99c2e51f00f04fda1/.claude/agents/vue-component-reviewer.md#L47))
 - [Major] `defineProps<{ ... }>()` / `defineEmits<{ ... }>()` は **type-only** 形式。runtime の object 形式 (`defineProps({ ... })`) は使わない。 (出典: [vue-component-reviewer.md](https://github.com/misskey-dev/misskey/blob/3ad3e56c5da931073e1939c99c2e51f00f04fda1/.claude/agents/vue-component-reviewer.md#L48))
 - [Major] Options API (`export default { data() { ... } }`) は禁止。 (出典: [vue-component-reviewer.md](https://github.com/misskey-dev/misskey/blob/3ad3e56c5da931073e1939c99c2e51f00f04fda1/.claude/agents/vue-component-reviewer.md#L49))
-- | `<script>` 開始タグ | `<script lang="ts" setup>` または `<script setup lang="ts">` (順序不問) | `<script>` (lang 無し) / Options API (`export default { data() {...} }`) | (出典: [component-conventions.md](../../.claude/skills/working-on-frontend/references/knowledge/component-conventions.md#L48))
-- | Props 定義 | `defineProps<{ ... }>()` (type-only) | runtime object 形式 `defineProps({ name: { type: String } })` | (出典: [component-conventions.md](../../.claude/skills/working-on-frontend/references/knowledge/component-conventions.md#L49))
-- | Emits 定義 | `defineEmits<{ (ev: 'click'): void }>()` (type-only) | runtime array 形式 `defineEmits(['click'])` | (出典: [component-conventions.md](../../.claude/skills/working-on-frontend/references/knowledge/component-conventions.md#L50))
-- | 型ジェネリック | `<script setup lang="ts" generic="T extends ...">` 属性で渡す。複雑な型宣言が必要なら **2 ブロック構成** ([generic パターン](../../.claude/skills/working-on-frontend/references/knowledge/component-conventions.md#generic--2-ブロック-script)) | — | (出典: [component-conventions.md](../../.claude/skills/working-on-frontend/references/knowledge/component-conventions.md#L51))
+- | 項目 | 規約 | 新規不可 |
+  |---|---|---|
+  | `<script>` 開始タグ | `<script lang="ts" setup>` または `<script setup lang="ts">` (順序不問) | `<script>` (lang 無し) / Options API (`export default { data() {...} }`) |
+  | Props 定義 | `defineProps<{ ... }>()` (type-only) | runtime object 形式 `defineProps({ name: { type: String } })` |
+  | Emits 定義 | `defineEmits<{ (ev: 'click'): void }>()` (type-only) | runtime array 形式 `defineEmits(['click'])` |
+  | 型ジェネリック | `<script setup lang="ts" generic="T extends ...">` 属性で渡す。複雑な型宣言が必要なら **2 ブロック構成** ([generic パターン](../../.claude/skills/working-on-frontend/references/knowledge/component-conventions.md#generic--2-ブロック-script)) | — |
+  | `<style>` 開始タグ | `<style lang="scss" module>`、参照は `:class="$style.foo"` | `<style scoped>` (module なし) は新規不可 (legacy 混在) |
+  | CSS 値 | `var(--MI_THEME-...)` (テーマ) / `var(--MI-...)` (UI 共通定数) を使う | `#fff` / `rgb(...)` / `rgba(...)` のハードコード ([scss-modules.md](../../.claude/skills/working-on-frontend/references/knowledge/scss-modules.md)) |
+  | グローバル class | `_button` / `_panel` / `_selectable` / `_buttonPrimary` 等の global utility class を活用 | — |
+  | アイコン | Tabler icons クラス `<i class="ti ti-info-circle">` | インライン SVG / 別アイコンセット |
+  (出典: [component-conventions.md](../../.claude/skills/working-on-frontend/references/knowledge/component-conventions.md#L46-L55))
 - デフォルト値が必要なら `withDefaults(defineProps<{...}>(), { ... })` を使う (type-only のまま既定値を渡せる) (出典: [component-conventions.md](../../.claude/skills/working-on-frontend/references/knowledge/component-conventions.md#L110))
-- | `<script>` 開始タグ | `<script lang="ts" setup>` または `<script setup lang="ts">` | `<script>` (lang 無し) / Options API | (出典: [adding-mk-component.md](../../.claude/skills/working-on-frontend/references/tasks/adding-mk-component.md#L124))
-- | Props 定義 | `defineProps<{ ... }>()` (type-only) | runtime object 形式 | (出典: [adding-mk-component.md](../../.claude/skills/working-on-frontend/references/tasks/adding-mk-component.md#L125))
-- | Emits 定義 | `defineEmits<{ (ev: 'click'): void }>()` (type-only) | runtime array 形式 | (出典: [adding-mk-component.md](../../.claude/skills/working-on-frontend/references/tasks/adding-mk-component.md#L126))
+- | 項目 | 規約 | 新規不可 |
+  |---|---|---|
+  | `<script>` 開始タグ | `<script lang="ts" setup>` または `<script setup lang="ts">` | `<script>` (lang 無し) / Options API |
+  | Props 定義 | `defineProps<{ ... }>()` (type-only) | runtime object 形式 |
+  | Emits 定義 | `defineEmits<{ (ev: 'click'): void }>()` (type-only) | runtime array 形式 |
+  | `<style>` 開始タグ | `<style lang="scss" module>`、参照は `:class="$style.foo"` | `<style scoped>` (module なし) |
+  | CSS 値 | `var(--MI_THEME-...)` / `var(--MI-...)` | `#fff` / `rgb(...)` のハードコード |
+  | グローバル class | `_button` / `_panel` / `_selectable` 等を活用 | — |
+  | アイコン | Tabler icons クラス `<i class="ti ti-info-circle">` | インライン SVG / 別アイコンセット |
+  (出典: [adding-mk-component.md](../../.claude/skills/working-on-frontend/references/tasks/adding-mk-component.md#L122-L130))
 
 ## vue
 
@@ -138,9 +157,6 @@
     - UI 共通: `var(--MI-*)` (例: `var(--MI-radius)`)
     - 直接の `#fff` / `rgb(...)` / `rgba(...)` ハードコードは禁止
   (出典: [vue-component-reviewer.md](https://github.com/misskey-dev/misskey/blob/3ad3e56c5da931073e1939c99c2e51f00f04fda1/.claude/agents/vue-component-reviewer.md#L70-L73))
-- | `<style>` 開始タグ | `<style lang="scss" module>`、参照は `:class="$style.foo"` | `<style scoped>` (module なし) は新規不可 (legacy 混在) | (出典: [component-conventions.md](../../.claude/skills/working-on-frontend/references/knowledge/component-conventions.md#L52))
-- | CSS 値 | `var(--MI_THEME-...)` (テーマ) / `var(--MI-...)` (UI 共通定数) を使う | `#fff` / `rgb(...)` / `rgba(...)` のハードコード ([scss-modules.md](../../.claude/skills/working-on-frontend/references/knowledge/scss-modules.md)) | (出典: [component-conventions.md](../../.claude/skills/working-on-frontend/references/knowledge/component-conventions.md#L53))
-- | グローバル class | `_button` / `_panel` / `_selectable` / `_buttonPrimary` 等の global utility class を活用 | — | (出典: [component-conventions.md](../../.claude/skills/working-on-frontend/references/knowledge/component-conventions.md#L54))
 - `_panel` / `_button` / `_buttonPrimary` は global utility class なので、自前で同じスタイルを書かない (出典: [component-conventions.md](../../.claude/skills/working-on-frontend/references/knowledge/component-conventions.md#L241))
 - [Major] Misskey のテーマシステムは 2 系統の CSS 変数で構成される。新規のスタイルは **必ず変数経由** にする。直接の `#fff` / `rgb()` / `rgba()` ハードコードは vue-component-reviewer から Major 指摘される。 (出典: [scss-modules.md](../../.claude/skills/working-on-frontend/references/knowledge/scss-modules.md#L7))
 - `var(--MI-radius)` を使うとアプリ全体で角丸の大きさが揃う。`border-radius: 12px;` のように直書きすると、後から角丸を変える要件が来たときに全件直すことになる。 (出典: [scss-modules.md](../../.claude/skills/working-on-frontend/references/knowledge/scss-modules.md#L45))
@@ -169,9 +185,6 @@
 - `<style scoped>` で書いている (module ではない) → `<style lang="scss" module>` に直し、`:class="$style.foo"` で参照する (出典: [scss-modules.md](../../.claude/skills/working-on-frontend/references/knowledge/scss-modules.md#L133))
 - 自前で `border-radius: 8px; padding: 14px;` を書いている → `_panel` global class 使えば不要 (出典: [scss-modules.md](../../.claude/skills/working-on-frontend/references/knowledge/scss-modules.md#L134))
 - 自前で button styling を書いている → `_button` global class を base に乗せる (出典: [scss-modules.md](../../.claude/skills/working-on-frontend/references/knowledge/scss-modules.md#L135))
-- | `<style>` 開始タグ | `<style lang="scss" module>`、参照は `:class="$style.foo"` | `<style scoped>` (module なし) | (出典: [adding-mk-component.md](../../.claude/skills/working-on-frontend/references/tasks/adding-mk-component.md#L127))
-- | CSS 値 | `var(--MI_THEME-...)` / `var(--MI-...)` | `#fff` / `rgb(...)` のハードコード | (出典: [adding-mk-component.md](../../.claude/skills/working-on-frontend/references/tasks/adding-mk-component.md#L128))
-- | グローバル class | `_button` / `_panel` / `_selectable` 等を活用 | — | (出典: [adding-mk-component.md](../../.claude/skills/working-on-frontend/references/tasks/adding-mk-component.md#L129))
 - グローバル utility class (`_button` / `_panel` / `_selectable` / `_gaps_m`) を使えば独自スタイルを書かずに済む → [knowledge/scss-modules.md](../../.claude/skills/working-on-frontend/references/knowledge/scss-modules.md) (出典: [adding-mk-component.md](../../.claude/skills/working-on-frontend/references/tasks/adding-mk-component.md#L180))
 - コンポーネントのスタイル定義でmarginを持たせない
   コンポーネント自身がmarginを設定するのは問題の元となることはよく知られている
@@ -280,8 +293,6 @@
 
 - [Minor] アイコンは Tabler icons クラス (`<i class="ti ti-info-circle">` 等) を使う。 (出典: [vue-component-reviewer.md](https://github.com/misskey-dev/misskey/blob/3ad3e56c5da931073e1939c99c2e51f00f04fda1/.claude/agents/vue-component-reviewer.md#L121))
 - [Minor] インライン SVG や別アイコンセットは原則使わない (既存パターンに合わせる)。 (出典: [vue-component-reviewer.md](https://github.com/misskey-dev/misskey/blob/3ad3e56c5da931073e1939c99c2e51f00f04fda1/.claude/agents/vue-component-reviewer.md#L122))
-- | アイコン | Tabler icons クラス `<i class="ti ti-info-circle">` | インライン SVG / 別アイコンセット | (出典: [component-conventions.md](../../.claude/skills/working-on-frontend/references/knowledge/component-conventions.md#L55))
-- | アイコン | Tabler icons クラス `<i class="ti ti-info-circle">` | インライン SVG / 別アイコンセット | (出典: [adding-mk-component.md](../../.claude/skills/working-on-frontend/references/tasks/adding-mk-component.md#L130))
 - **アイコンを動的に設定する際には、 `ti-${someVal}` のような、アイコン名のみを動的に変化させる実装を行わないでください。**
   必ず `ti-xxx` のような完全なクラス名を含めるようにしてください。
   (出典: [frontend.md](../contributing/frontend.md#L16-L17))

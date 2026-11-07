@@ -36,7 +36,7 @@ BASE=$(git merge-base origin/develop HEAD)
 
 1. [docs/review/frontend.md](../../docs/review/frontend.md) を Read する
 2. レビュー対象ファイルに関係する項目だけを適用する
-3. 重大度は項目の `[Critical]` / `[Major]` / `[Minor]` ラベルに従う。ラベルが無い項目は 🔵 Minor の欄に出す
+3. 重大度は項目の `[Critical]` / `[Major]` / `[Minor]` ラベルに従う。同じ違反に複数の項目が当たる場合は、最も高いラベルで 1 回だけ報告する。ラベルが無い項目だけが当たる場合は 🔵 Minor の欄に「重大度未設定」と明記して出す
 4. 加えて [AGENTS.md](../../AGENTS.md) の禁止事項のうち、`locales/ja-JP.yml` 以外の `locales/*.yml` 変更があれば 🔴 Critical として報告する
 
 ## 確かめ方のヒント

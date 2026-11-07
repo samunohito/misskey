@@ -6,7 +6,7 @@
 
 ## Scope
 
-- Also, make sure that the granularity of this PR is appropriate. Please do not include more than one type of change or interest in a single PR. (出典: [CONTRIBUTING.md](../../CONTRIBUTING.md#L58))
+- Also, make sure that the granularity of this PR is appropriate. Please do not include more than one type of change or interest in a single PR. (出典: [CONTRIBUTING.md](../../CONTRIBUTING.md#L59))
 - Scope
   	- Are the goals of the PR clear?
   	- Is the granularity of the PR appropriate?
@@ -27,7 +27,7 @@
 
 ## Testing
 
-- If you have added a feature or fixed a bug, please add a test case if possible. (出典: [CONTRIBUTING.md](../../CONTRIBUTING.md#L62))
+- If you have added a feature or fixed a bug, please add a test case if possible. (出典: [CONTRIBUTING.md](../../CONTRIBUTING.md#L63))
 - Testing
   	- Does the test ensure the expected behavior?
   	- Are there any omissions or gaps?
@@ -123,11 +123,12 @@
 
 - If possible, prefix the title with a keyword that identifies the type of this PR, as shown below.
   	- `fix` / `refactor` / `feat` / `enhance` / `perf` / `chore` etc
-  (出典: [CONTRIBUTING.md](../../CONTRIBUTING.md#L56-L57))
-- If there is an Issue which will be resolved by this PR, please include a reference to the Issue in the text. (出典: [CONTRIBUTING.md](../../CONTRIBUTING.md#L59))
-- Check if there are any documents that need to be created or updated due to this change. (出典: [CONTRIBUTING.md](../../CONTRIBUTING.md#L61))
-- Please make sure that tests and Lint are passed in advance. (出典: [CONTRIBUTING.md](../../CONTRIBUTING.md#L63))
-- If this PR includes UI changes, please attach a screenshot in the text. (出典: [CONTRIBUTING.md](../../CONTRIBUTING.md#L65))
+  (出典: [CONTRIBUTING.md](../../CONTRIBUTING.md#L57-L58))
+- If there is an Issue which will be resolved by this PR, please include a reference to the Issue in the text. (出典: [CONTRIBUTING.md](../../CONTRIBUTING.md#L60))
+- Check if there are any documents that need to be created or updated due to this change. (出典: [CONTRIBUTING.md](../../CONTRIBUTING.md#L62))
+- Please make sure that tests and Lint are passed in advance. (出典: [CONTRIBUTING.md](../../CONTRIBUTING.md#L64))
+- If this PR includes UI changes, please attach a screenshot in the text. (出典: [CONTRIBUTING.md](../../CONTRIBUTING.md#L66))
+
 ## AGENTS.md の禁止事項
 
 絶対にやってはいけない事は [AGENTS.md](../../AGENTS.md#絶対にやってはいけない事) を参照。

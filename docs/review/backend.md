@@ -139,7 +139,14 @@
   - **修正**: null チェックを入れるか、認証必須なら `requireCredential: true` に変更
   (出典: [api-meta-paramdef.md](../../.claude/skills/working-on-backend/references/knowledge/api-meta-paramdef.md#L313-L314))
 - 			// 実装。me は MiLocalUser | null (requireCredential: false のため null チェック必須) (出典: [adding-api-endpoint.md](../../.claude/skills/working-on-backend/references/tasks/adding-api-endpoint.md#L89))
-- | `me` | `MiLocalUser` (requireCredential: true) / `MiLocalUser \| null` (false) | ローカルユーザー。`requireCredential: false` のとき必ず null チェック | (出典: [adding-api-endpoint.md](../../.claude/skills/working-on-backend/references/tasks/adding-api-endpoint.md#L164))
+- | 引数 | 型 | 用途 |
+  |---|---|---|
+  | `ps` | `SchemaType<typeof paramDef>` | AJV 検証済の入力 |
+  | `me` | `MiLocalUser` (requireCredential: true) / `MiLocalUser \| null` (false) | ローカルユーザー。`requireCredential: false` のとき必ず null チェック |
+  | `token` | `MiAccessToken \| null` | OAuth トークン (アプリ識別が要るとき) |
+  | `file` | `{ name, path } \| undefined` | `requireFile: true` のときのみ確実に渡る。エンドポイント基底クラスが既に null チェック済 |
+  | `cleanup` | `() => any \| undefined` | アップロードされた一時ファイルを削除するコールバック。**基底クラスが自動で呼ぶのは AJV バリデーション失敗時だけ**。正常終了や endpoint 内例外時は **呼ばれない** ので、`try { ... } finally { cleanup!(); }` で必ず呼ぶ責務がある ([drive/files/create.ts](../../packages/backend/src/server/api/endpoints/drive/files/create.ts) の `finally { cleanup!(); }` が手本) |
+  (出典: [adding-api-endpoint.md](../../.claude/skills/working-on-backend/references/tasks/adding-api-endpoint.md#L161-L167))
 - **`me.id` で TypeError** → `requireCredential: false` で null チェックを忘れた (出典: [adding-api-endpoint.md](../../.claude/skills/working-on-backend/references/tasks/adding-api-endpoint.md#L264))
 
 ### requireFile cleanup
@@ -147,7 +154,6 @@
 - **原因**: [endpoint-base.ts](../../packages/backend/src/server/api/endpoint-base.ts) が `cleanup` を自動で呼ぶのは **AJV バリデーション失敗時のみ**
   - **修正**: `try { ... } finally { cleanup!(); }` で囲む ([drive/files/create.ts](../../packages/backend/src/server/api/endpoints/drive/files/create.ts) の `finally { cleanup!(); }` が手本)
   (出典: [api-meta-paramdef.md](../../.claude/skills/working-on-backend/references/knowledge/api-meta-paramdef.md#L355-L356))
-- | `cleanup` | `() => any \| undefined` | アップロードされた一時ファイルを削除するコールバック。**基底クラスが自動で呼ぶのは AJV バリデーション失敗時だけ**。正常終了や endpoint 内例外時は **呼ばれない** ので、`try { ... } finally { cleanup!(); }` で必ず呼ぶ責務がある ([drive/files/create.ts](../../packages/backend/src/server/api/endpoints/drive/files/create.ts) の `finally { cleanup!(); }` が手本) | (出典: [adding-api-endpoint.md](../../.claude/skills/working-on-backend/references/tasks/adding-api-endpoint.md#L167))
 - **一時ファイルが残る** → `requireFile: true` で `cleanup!()` を `finally` で呼び忘れた (出典: [adding-api-endpoint.md](../../.claude/skills/working-on-backend/references/tasks/adding-api-endpoint.md#L266))
 
 ## Nest DI

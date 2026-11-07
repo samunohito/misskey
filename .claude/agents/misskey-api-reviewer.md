@@ -37,7 +37,7 @@ BASE=$(git merge-base origin/develop HEAD)
 
 1. [docs/review/backend.md](../../docs/review/backend.md) を Read し、「## API エンドポイント」節と「## テスト」節を適用する
 2. レビュー対象ファイルに関係する項目だけを適用する
-3. 重大度は項目の `[Critical]` / `[Major]` / `[Minor]` ラベルに従う。ラベルが無い項目は 🔵 Minor の欄に出す
+3. 重大度は項目の `[Critical]` / `[Major]` / `[Minor]` ラベルに従う。同じ違反に複数の項目が当たる場合は、最も高いラベルで 1 回だけ報告する。ラベルが無い項目だけが当たる場合は 🔵 Minor の欄に「重大度未設定」と明記して出す
 
 ## 確かめ方のヒント
 
