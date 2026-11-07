@@ -37,7 +37,7 @@ BASE=$(git merge-base origin/develop HEAD)
 1. [docs/review/frontend.md](../../docs/review/frontend.md) と [docs/review/general.md](../../docs/review/general.md) を Read する (`pull-request.md` は PR のタイトルや説明文が前提なので適用しない)
 2. レビュー対象ファイルに関係する項目だけを適用する
 3. 重大度は項目の `[Critical]` / `[Major]` / `[Minor]` ラベルに従う。同じ違反に複数の項目が当たる場合は、最も高いラベルで 1 回だけ報告する。項目同士の記述が食い違う場合 (一方は指摘せよ、他方は指摘しない等) は、指摘せずに食い違いとして 1 行だけ併記する。各節の「指摘しないこと」に当たるものは報告しない。ラベルが無い項目だけが当たる場合は「重大度未設定」と明記し、検出した問題の影響 (セキュリティ・データ損失・動作不能など) に応じて報告する欄を選ぶ
-4. 加えて [AGENTS.md](../../AGENTS.md) の禁止事項 (`locales/ja-JP.yml` 以外の locale YAML の手動編集) として、`locales/ja-JP.yml` 以外の `locales/*.yml` 変更があれば 🔴 Critical として報告する。ただし、Crowdin が作成した翻訳同期の PR (タイトルが `New Crowdin updates`) をレビューしている場合は報告しない。由来を判断できない場合は、「Crowdin による同期であれば問題ない」と添えて報告する
+4. 加えて [AGENTS.md](../../AGENTS.md) の禁止事項 (`locales/ja-JP.yml` 以外の locale YAML の手動編集) として、`locales/ja-JP.yml` 以外の `locales/*.yml` 変更があれば 🔴 Critical として報告する。ただし、Crowdin が作成した翻訳同期の PR (タイトルが `New Crowdin updates`) のうち、Crowdin による同期コミットの変更は報告しない。同じ PR でも、未コミットの変更や Crowdin 以外が作成したコミットの変更は報告する。由来を判断できない場合は、「Crowdin による同期であれば問題ない」と添えて報告する
 
 ## 確かめ方のヒント
 
