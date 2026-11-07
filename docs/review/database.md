@@ -12,13 +12,13 @@ migration・entity に加え、SQL / クエリ / スキーマに触れる変更�
 
 - INSERTするときにはsaveではなくinsertを使用する
   #6441
-  (出典: [backend.md](../contributing/backend.md#L106-L107))
+  (出典: [backend.md](../contributing/backend.md#L115-L116))
 
 ## placeholder
 
 - placeholder
   SQLをクエリビルダで組み立てる際、使用するプレースホルダは重複してはならない
-  (出典: [backend.md](../contributing/backend.md#L109-L110))
+  (出典: [backend.md](../contributing/backend.md#L118-L119))
 
 ## NULL
 
@@ -35,26 +35,26 @@ migration・entity に加え、SQL / クエリ / スキーマに触れる変更�
   	bar: Not(IsNull())
   });
   ```
-  (出典: [backend.md](../contributing/backend.md#L130-L142))
+  (出典: [backend.md](../contributing/backend.md#L139-L151))
 - `null` in SQL
   SQLを発行する際、パラメータが`null`になる可能性のある場合はSQL文を出し分けなければならない
-  (出典: [backend.md](../contributing/backend.md#L144-L145))
+  (出典: [backend.md](../contributing/backend.md#L153-L154))
 - null IN
   nullが含まれる可能性のあるカラムにINするときは、そのままだとおかしくなるのでORなどでnullのハンドリングをしよう。
-  (出典: [backend.md](../contributing/backend.md#L180-L181))
+  (出典: [backend.md](../contributing/backend.md#L189-L190))
 
 ## IN
 
 - `[]` in SQL
   SQLを発行する際、`IN`のパラメータが`[]`(空の配列)になる可能性のある場合はSQL文を出し分けなければならない
-  (出典: [backend.md](../contributing/backend.md#L160-L161))
+  (出典: [backend.md](../contributing/backend.md#L169-L170))
 
 ## 配列
 
 - 配列のインデックス in SQL
   SQLでは配列のインデックスは**1始まり**。
   `[a, b, c]`の `a`にアクセスしたいなら`[0]`ではなく`[1]`と書く
-  (出典: [backend.md](../contributing/backend.md#L176-L178))
+  (出典: [backend.md](../contributing/backend.md#L185-L187))
 
 ## JSONB/配列デフォルト
 
@@ -81,7 +81,7 @@ migration・entity に加え、SQL / クエリ / スキーマに触れる変更�
   enumの列挙の内容の削除は、その値をもつレコードを全て削除しないといけない
 
   削除が重たかったり不可能だったりする場合は、削除しないでおく
-  (出典: [backend.md](../contributing/backend.md#L183-L186))
+  (出典: [backend.md](../contributing/backend.md#L192-L195))
 
 ## 列変更
 
@@ -124,14 +124,14 @@ migration・entity に加え、SQL / クエリ / スキーマに触れる変更�
 
 ## migration生成
 
-- 作成されたスクリプトは不必要な変更を含むため除去してください (出典: [backend.md](../contributing/backend.md#L195))
+- 作成されたスクリプトは不必要な変更を含むため除去してください (出典: [backend.md](../contributing/backend.md#L204))
 
 ## migration形式
 
 - **`-o --esm` について**: `-o` (`--outputJs`) は「TS ではなく JS を出力する」オプション、`--esm` は「ESM 形式 (`export class ...`) で出力する」オプション。Misskey の既存 migration はすべて ESM JS であるため **両方が必須**。`--esm` を省略すると CommonJS 形式の JS が生成されスタイルが揃わない。 (出典: [creating-migration.md](../../.claude/skills/working-on-backend/references/tasks/creating-migration.md#L62))
 - **注意:** `-o --esm` を **必ず付ける**。これが無いと `<UnixMs>-<PascalName>.ts` (CommonJS / TS 出力) が生成されるが、Misskey の `ormconfig.js` は `migration/*.js` だけを読み、既存の他 migration も全て `export class ... { async up(queryRunner) {...} }` の ESM JS 形式なので、後で手作業で変換が必要になる。`-o --esm` を付ければそのまま `.js` ESM で出る。 (出典: [creating-migration.md](../../.claude/skills/working-on-backend/references/tasks/creating-migration.md#L90))
 - ただし `migration:create` の雛形は **`name = '...'` プロパティを出力しない**ので、後段の SPDX 付与に加えて `name = '<PascalName><ms>'` を手で足し、`up`/`down` を埋める必要がある。雛形冒頭の `@typedef` / `@implements MigrationInterface` JSDoc は既存ファイルに無いので消して house style に揃える。 (出典: [creating-migration.md](../../.claude/skills/working-on-backend/references/tasks/creating-migration.md#L92))
-- `-o` (`--outputJs`) で JS 形式、`--esm` で ESM 形式に生成する。Misskey の既存 migration はすべて ESM JS なので両方のオプションが必要 (出典: [backend.md](../contributing/backend.md#L196))
+- `-o` (`--outputJs`) で JS 形式、`--esm` で ESM 形式に生成する。Misskey の既存 migration はすべて ESM JS なので両方のオプションが必要 (出典: [backend.md](../contributing/backend.md#L205))
 
 ## migration命名
 

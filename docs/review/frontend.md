@@ -54,10 +54,10 @@
 - 新規ファイルの v-model 連動は原則として `defineModel` を使う (`props.modelValue` + `emit` の手書きは既存コードに残るのみ) (出典: [component-conventions.md](../../.claude/skills/working-on-frontend/references/knowledge/component-conventions.md#L202))
 - `emit('ok')` 等の単純 emit は中継するだけにし、`os.confirm` などの実際の確認 UI 起動は呼び出し元の責務にする (テスト・差し替えしやすくするため) (出典: [component-conventions.md](../../.claude/skills/working-on-frontend/references/knowledge/component-conventions.md#L242))
 - Use TypeScript. (出典: [frontend.md](../contributing/frontend.md#L9))
-- **When creating a new component, please use the Composition API (with [setup sugar](https://v3.vuejs.org/api/sfc-script-setup.html) and [ref sugar](https://github.com/vuejs/rfcs/discussions/369)) instead of the Options API.** (出典: [frontend.md](../contributing/frontend.md#L10))
+- **When creating a new component, please use the Composition API (with [`<script setup>`](https://vuejs.org/api/sfc-script-setup.html), [`ref`](https://vuejs.org/guide/essentials/reactivity-fundamentals.html), and [`computed`](https://vuejs.org/guide/essentials/computed.html)) instead of the Options API.** (出典: [frontend.md](../contributing/frontend.md#L10))
 - コネクションには`markRaw`せよ
   **Vueのコンポーネントのdataオプションとして**misskey.jsのコネクションを設定するとき、必ず`markRaw`でラップしてください。インスタンスが不必要にリアクティブ化されることで、misskey.js内の処理で不具合が発生するとともに、パフォーマンス上の問題にも繋がる。なお、Composition APIを使う場合はこの限りではない(リアクティブ化はマニュアルなため)。
-  (出典: [frontend.md](../contributing/frontend.md#L137-L138))
+  (出典: [frontend.md](../contributing/frontend.md#L138-L139))
 
 ## i18n
 
@@ -188,10 +188,10 @@
 - コンポーネントのスタイル定義でmarginを持たせない
   コンポーネント自身がmarginを設定するのは問題の元となることはよく知られている
   marginはそのコンポーネントを使う側が設定する
-  (出典: [frontend.md](../contributing/frontend.md#L140-L142))
+  (出典: [frontend.md](../contributing/frontend.md#L141-L143))
 - HTMLのクラス名で follow という単語は使わない
   広告ブロッカーで誤ってブロックされる
-  (出典: [frontend.md](../contributing/frontend.md#L144-L145))
+  (出典: [frontend.md](../contributing/frontend.md#L145-L146))
 
 ## os-api
 
@@ -285,8 +285,8 @@
   ];
   ```
 
-  Don't forget to re-run the `.storybook/generate.js` script after adding, editing, or removing the above files.
-  (出典: [frontend.md](../contributing/frontend.md#L124-L135))
+  After changing the allowlist or adding, editing, or removing the above files, run `pnpm --filter frontend build-storybook-pre` from the repository root to compile and run the generator again.
+  (出典: [frontend.md](../contributing/frontend.md#L125-L136))
 
 ## アイコン
 
