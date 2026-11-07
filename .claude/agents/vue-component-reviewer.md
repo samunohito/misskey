@@ -25,10 +25,10 @@ BASE=$(git merge-base origin/develop HEAD)
 
 `origin/develop` が無い環境では `develop` または `master` にフォールバックする。
 
-`.ts` を一律で含めると本エージェントの守備範囲外 (composable / store / service 層) まで巻き込んで誤検知が増えるため、対象は `.vue` のみとし、Storybook 併設チェックのために以下を **別リスト** として追加する:
+`.ts` を一律で含めると本エージェントの守備範囲外 (composable / store / service 層) まで巻き込んで誤検知が増えるため、対象は `.vue` のみとし、locale と Storybook の観点を適用するために以下を **別リスト** として追加する:
 
 - `locales/*.yml` (とくに `ja-JP.yml` 以外の変更は即 Critical)
-- `packages/frontend/src/components/**/*.stories.impl.ts`
+- `packages/frontend/src/components/**/*.{stories.impl,stories.meta,msw}.ts`
 
 差分対象が空なら「レビュー対象の Vue コンポーネント変更なし」と短く報告して終了。
 
@@ -74,9 +74,9 @@ git diff "$BASE"...HEAD -- 'packages/frontend/src/**/*.vue' \
 
 ```
 ## 🔴 Critical
-- packages/frontend/src/components/MkFoo.vue:42
-  ブラウザ組み込みの `alert()` を直接呼んでいる。
-  `os.alert()` を使用すること。
+- locales/ja-JP.yml:123
+  i18n キー `oldFooTitle` を `fooTitle` にリネームし、同じ PR で旧キーを削除している (全言語の翻訳が失われる)。
+  旧キーの削除は Crowdin で新キーの翻訳が揃ってから別 PR で行うこと。
 
 ## 🟡 Major
 - ...

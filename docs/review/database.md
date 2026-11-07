@@ -12,7 +12,7 @@ migration・entity に加え、SQL / クエリ / スキーマに触れる変更�
 ## SQL / TypeORM のクエリ
 
 - **[Major]** 新しい行の追加に Repository の `save()` ではなく `insert()` を使っている (#6441) → [backend.md](../contributing/backend.md)
-- **[Major]** クエリビルダで同じ名前のプレースホルダを複数回使っていない。ループ内で `orWhere(':type = ...', { type })` のように同名を使い回すと最後の値で上書きされ、結果がおかしくなる。`type${i}` のように添字で一意にする → [backend.md](../contributing/backend.md)
+- **[Major]** クエリビルダで、異なる値を同じ名前のプレースホルダに渡していない (同じ値を複数箇所で参照するのは問題ない)。ループ内で `orWhere(':type = ...', { type })` のように同名を使い回すと最後の値で上書きされ、結果がおかしくなる。`type${i}` のように添字で一意にする → [backend.md](../contributing/backend.md)
 - **[Major]** 「NULL でない」の条件は `Not(null)` ではなく `Not(IsNull())` で書いている。`Not(null)` は期待どおりに動かない → [backend.md](../contributing/backend.md)
 - **[Major]** `null` になり得るパラメータを `col = :param` に渡していない。`col = NULL` はどの行にも一致しないので、`null` のときは `col IS NULL` に SQL を出し分ける → [backend.md](../contributing/backend.md)
 - **[Major]** raw SQL やクエリビルダの文字列条件で `IN (:...ids)` に空配列が渡り得る箇所では、空のときにクエリを発行しない (または SQL を出し分ける) 分岐がある。`IN ()` は不正な SQL になる (TypeORM の `In([])` は `0=1` に変換されるので対象外) → [backend.md](../contributing/backend.md)
@@ -45,10 +45,11 @@ migration・entity に加え、SQL / クエリ / スキーマに触れる変更�
 
 ## migration の down()
 
-- **[Critical]** `down()` が空でなく、`up()` のスキーマ変更を逆順に巻き戻している (列追加 ↔ 列削除、テーブル作成 ↔ 削除、FK 追加 ↔ 削除、インデックス作成 ↔ 削除、残る列に付けた `COMMENT ON COLUMN` の復元が対になっている)。`pnpm migrate` → `pnpm revert` → `pnpm migrate` が通る状態である → [creating-migration.md](../../.claude/skills/working-on-backend/references/tasks/creating-migration.md)
+- **[Critical]** スキーマを変更する migration の `down()` が、`up()` のスキーマ変更を逆順に巻き戻している (列追加 ↔ 列削除、テーブル作成 ↔ 削除、FK 追加 ↔ 削除、インデックス作成 ↔ 削除、残る列に付けた `COMMENT ON COLUMN` の復元が対になっている)。`pnpm migrate` → `pnpm revert` → `pnpm migrate` が通る状態である → [creating-migration.md](../../.claude/skills/working-on-backend/references/tasks/creating-migration.md)
 - **[Major]** enum から値を外す方向の `down()` は、その値を使う既存行を先に `UPDATE ... SET "type" = '<代替値>' WHERE "type" = '<消す値>'` で退避してから型を載せ替えている。退避しないと `USING` キャストが失敗し巻き戻せない → [typeorm-patterns.md](../../.claude/skills/working-on-backend/references/knowledge/typeorm-patterns.md)
 - **[Major]** 元の値に戻せないデータ移行 (情報が失われる変換) では、`down()` に戻せない旨のコメントがあり、少なくともスキーマは巻き戻している → [typeorm-patterns.md](../../.claude/skills/working-on-backend/references/knowledge/typeorm-patterns.md)
 
 **指摘しないこと:**
 
 - 「nullable で追加 → バックフィル → `SET NOT NULL`」や JSONB / 配列列の追加の `down()` が `DROP COLUMN` だけであること
+- スキーマを変更せずデータだけを不可逆に修復する migration で、`down()` が戻せない理由のコメントだけであること

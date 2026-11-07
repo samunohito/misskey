@@ -32,7 +32,7 @@
 
 **指摘しないこと:**
 
-- 防御的アサーション・「起きるはずがない」内部不整合・テスト用 ENV ガードなど想定外のフェイルファストを `throw new Error('...')` で投げていること (例: `admin/reset-password.ts`)。`meta.errors` に対応の無い `throw new Error` を一律に指摘しない
+- 防御的アサーション・「起きるはずがない」内部不整合・テスト用 ENV ガードなど想定外のフェイルファストを `throw new Error('...')` で投げていること (例: `reset-db.ts` の `NODE_ENV` ガード、`hashtags/users.ts` の `safeForSql` チェック)。`meta.errors` に対応の無い `throw new Error` を一律に指摘しない
 
 ### paramDef
 
@@ -82,6 +82,7 @@
 
 **指摘しないこと:**
 
+- 循環依存を解消するための `@Inject(forwardRef(() => XxxService))` (例: `ApNoteService`、`DriveFileEntityService`)
 - 新規エンドポイントを module に登録していないこと (`EndpointsModule` が `endpoint-list.ts` から provider を自動生成する)
 
 ## ActivityPub
@@ -94,8 +95,10 @@
 
 ## テスト
 
-- **[Minor]** 新規エンドポイントや挙動を変えたエンドポイントに、変更に近いテスト (`packages/backend/test/e2e/` の `api('<category>/<name>', ...)`、または endpoint を直接実行する unit テスト) があり、権限チェックやエラーケースなどの分岐も確かめている。 → [backend-testing.md](../../.claude/skills/working-on-backend/references/knowledge/backend-testing.md)
+テストの要否と重大度は [general.md](general.md) の Testing に従う。
 
 **指摘しないこと:**
 
+- テストの種類 (`packages/backend/test/e2e/` の `api('<category>/<name>', ...)` か、endpoint を直接実行する unit テストか)
+- e2e テストの無い既存エンドポイントを変更した PR で、変更していない既存の挙動のテストが無いこと
 - `describe` のラベルが `<category>/<name>` 形式でないこと (既存テストは `describe('Note', ...)` や `describe('管理者操作', ...)` のような人間可読ラベル)

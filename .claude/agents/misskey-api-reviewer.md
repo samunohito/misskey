@@ -74,9 +74,9 @@ git diff --name-only "$BASE"...HEAD -- packages/misskey-js/src/autogen/
 
 ```
 ## 🔴 Critical
-- packages/backend/src/server/api/endpoints/foo/bar.ts:23
-  meta.errors.fooError.id が UUID v4 形式ではない (実値: 'xxx-xxx')。
-  `node -e "console.log(crypto.randomUUID())"` で再生成すること。
+- packages/backend/src/server/api/endpoints/foo/bar.ts:1
+  新規エンドポイント `foo/bar` が endpoint-list.ts に登録されていない (404 になる)。
+  `export * as 'foo/bar' from './endpoints/foo/bar.js';` を追加すること。
 
 ## 🟡 Major
 - ...
