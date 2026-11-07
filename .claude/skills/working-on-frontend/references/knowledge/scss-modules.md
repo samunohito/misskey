@@ -133,3 +133,5 @@ Misskey のテーマシステムは 2 系統の CSS 変数で構成される。�
 - `<style scoped>` で書いている (module ではない) → `<style lang="scss" module>` に直し、`:class="$style.foo"` で参照する
 - 自前で `border-radius: 8px; padding: 14px;` を書いている → `_panel` global class 使えば不要
 - 自前で button styling を書いている → `_button` global class を base に乗せる
+
+> レビュー観点の一覧は [docs/review/frontend.md](../../../../../docs/review/frontend.md) を参照。

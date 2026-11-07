@@ -57,3 +57,5 @@ frontend のテスト種別で DB / Redis の要否が違う:
 - **Playwright (E2E)** — テストサーバー (`pnpm start:test`) 経由で backend に繋ぐため DB / Redis が必要。**テスト用ポートの [packages/backend/test/compose.yml](../../../../../packages/backend/test/compose.yml)** を使う (上記 Playwright E2E の手順を参照)
 
 開発用の `compose.local-db.yml` (db `5432` / redis `6379`) は **テストには使わない**。テスト用の `packages/backend/test/compose.yml` (`54312` / `56312`) とはポートが異なり、混同すると接続できない。
+
+> レビュー観点の一覧は [docs/review/frontend.md](../../../../../docs/review/frontend.md) を参照。

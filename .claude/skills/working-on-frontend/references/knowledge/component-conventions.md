@@ -355,3 +355,5 @@ function onClick() {
 - アイコンだけのボタンに `aria-label` が無い (Tabler icon 自体には意味情報が無い)
 - `disabled` スタイルだけ付けて `aria-disabled` / ハンドラ抑止が無い
 - フォーカスリング (`:focus-visible` / `outline`) を `outline: none` で消したまま放置
+
+> レビュー観点の一覧は [docs/review/frontend.md](../../../../../docs/review/frontend.md) を参照。

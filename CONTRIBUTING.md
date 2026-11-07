@@ -19,6 +19,7 @@ Choose the guide for your task.
 | Change the frontend | [Frontend](docs/contributing/frontend.md) |
 | Change the backend or database | [Backend](docs/contributing/backend.md) |
 | Change ActivityPub payloads | [ActivityPub](docs/contributing/activitypub.md) |
+| Review changes | [Review guidelines](docs/review/README.md) |
 | Triage issues, review changes, deploy or release | [Maintainer guide](docs/contributing/maintainer-guide.md) |
 
 ## Roadmap
