@@ -75,8 +75,7 @@ migration・entity に加え、SQL / クエリ / スキーマに触れる変更�
 
   **なぜ危険か**: PostgreSQL の enum は **値を削除できない** (`ALTER TYPE ... DROP VALUE` は存在しない) ため、`ADD VALUE` した変更を素直に巻き戻せない。さらに Misskey はデフォルトで migration 全体を 1 トランザクションにまとめる (`migrationsTransactionMode: 'all'`) ので、`ADD VALUE` で足した値を同一トランザクション内で使う処理もエラーになる。そこで TypeORM `migration:generate` は **「旧型を rename → 新型を CREATE → 列を新型へ ALTER (USING キャスト) → 旧型を DROP」** という巻き戻し可能な手順を出す。手書きでもこの形に従うこと。
   (出典: [typeorm-patterns.md](../../.claude/skills/working-on-backend/references/knowledge/typeorm-patterns.md?plain=1#L96-L98))
-- 要点: ①列がデフォルトを持つ場合は ALTER 前に `DROP DEFAULT`、ALTER 後に `SET DEFAULT` を挟む。②配列列 (`mutingNotificationTypes` 等) は `TYPE "..."[] USING "col"::"text"::"..."[]` と配列キャストにする。 (出典: [typeorm-patterns.md](../../.claude/skills/working-on-backend/references/knowledge/typeorm-patterns.md?plain=1#L116))
-- ③**`down` の落とし穴**: 削除する値を既存行が使っていると `USING` キャストが「該当 enum に存在しない」で失敗する。新値を追加しただけの直後の巻き戻しは安全だが、運用後に使われた値を消す巻き戻しは本質的に危うい — その場合は down で先に `UPDATE ... SET "type" = '<代替値>' WHERE "type" = '<消す値>'` で退避してからキャストする。 (出典: [typeorm-patterns.md](../../.claude/skills/working-on-backend/references/knowledge/typeorm-patterns.md?plain=1#L116))
+- 要点: ①列がデフォルトを持つ場合は ALTER 前に `DROP DEFAULT`、ALTER 後に `SET DEFAULT` を挟む。②配列列 (`mutingNotificationTypes` 等) は `TYPE "..."[] USING "col"::"text"::"..."[]` と配列キャストにする。③**`down` の落とし穴**: 削除する値を既存行が使っていると `USING` キャストが「該当 enum に存在しない」で失敗する。新値を追加しただけの直後の巻き戻しは安全だが、運用後に使われた値を消す巻き戻しは本質的に危うい — その場合は down で先に `UPDATE ... SET "type" = '<代替値>' WHERE "type" = '<消す値>'` で退避してからキャストする。 (出典: [typeorm-patterns.md](../../.claude/skills/working-on-backend/references/knowledge/typeorm-patterns.md?plain=1#L116))
 - enumの削除は気をつける
   enumの列挙の内容の削除は、その値をもつレコードを全て削除しないといけない
 

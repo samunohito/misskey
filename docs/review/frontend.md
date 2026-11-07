@@ -1,6 +1,6 @@
 # Frontend review guidelines
 
-フロントエンド (`packages/frontend/**`、`locales/**`) の変更をレビューする人 (人間・AI) 向け。
+フロントエンド (`packages/frontend/**`、`packages/frontend-embed/**`、`packages/frontend-shared/**`、`packages/i18n/**`、`locales/**`) の変更をレビューする人 (人間・AI) 向け。
 
 [Review guidelines](README.md)
 
@@ -19,7 +19,7 @@
 - 迷ったら「他の `Mk*.vue` から import される可能性があるか?」で判定する。Yes なら `components/`、No なら `pages/`。 (出典: [adding-mk-component.md](../../.claude/skills/working-on-frontend/references/tasks/adding-mk-component.md?plain=1#L22))
 - 似た用途の既存 `Mk*` を 1-2 個読んで、props 命名 (`primary` / `danger` / `small` 等の形容詞、`onClose` ではなく `emit('close')` 等) を揃える (出典: [adding-mk-component.md](../../.claude/skills/working-on-frontend/references/tasks/adding-mk-component.md?plain=1#L179))
 
-## script
+## `<script>`
 
 - [Major] `<script lang="ts" setup>` または `<script setup lang="ts">` のどちらでもよい (既存コードは多数派が前者だが、後者も `MkThemePreview.vue` 等で使われている)。属性順は指摘しない。`lang="ts"` が **無い** ものは指摘する。
 - [Major] 型ジェネリックが必要なら `generic="T extends ..."` 属性を加える (順序問わず)。
@@ -48,7 +48,7 @@
   | アイコン | Tabler icons クラス `<i class="ti ti-info-circle">` | インライン SVG / 別アイコンセット |
   (出典: [adding-mk-component.md](../../.claude/skills/working-on-frontend/references/tasks/adding-mk-component.md?plain=1#L122-L130))
 
-## vue
+## Vue
 
 - Composition API + `<script setup lang="ts">` を基本とする (Options API は新規導入しない)。型宣言や module スコープのユーティリティを置きたい時は、setup ブロックと **併用** する形で追加の `<script lang="ts">` ブロックを置いて構わない (例: [MkInput.vue](../../packages/frontend/src/components/MkInput.vue) は `SupportedTypes` 型を別ブロックで宣言してから setup を書いている)。SCSS は **CSS Modules** で書き、`<style lang="scss" module>` を使う。 (出典: [component-conventions.md](../../.claude/skills/working-on-frontend/references/knowledge/component-conventions.md?plain=1#L18))
 - 新規ファイルの v-model 連動は原則として `defineModel` を使う (`props.modelValue` + `emit` の手書きは既存コードに残るのみ) (出典: [component-conventions.md](../../.claude/skills/working-on-frontend/references/knowledge/component-conventions.md?plain=1#L202))
@@ -65,7 +65,7 @@
 - [Critical] 引数なし: `i18n.ts.<path>` (例: `i18n.ts.deleted`)。
 - [Critical] 引数あり: `i18n.tsx.<path>(...)` (関数呼び出し、例: `i18n.tsx.takeOverConfirm({ name })`)。
 - 文言は **必ず** [i18n.ts](../../packages/frontend/src/i18n.ts) 経由で参照する。引数の有無で **使う変数名そのものが変わる**。間違えると、非パラメータキーを `i18n.tsx` で呼ぶ場合は型エラーになるが、パラメータキーを `i18n.ts` で参照する場合は型エラーにならず `{name}` 等が未展開のまま画面に出る (後述のトラブルシュート参照)。 (出典: [i18n-usage.md](../../.claude/skills/working-on-frontend/references/knowledge/i18n-usage.md?plain=1#L15))
--   YAML 側に `{name}` 形式のプレースホルダが含まれているキーは **`i18n.tsx`** からしか呼べない。誤って `i18n.ts.unfollowConfirm` と書くと値がフォーマット前の関数になってそのまま表示される。 (出典: [i18n-usage.md](../../.claude/skills/working-on-frontend/references/knowledge/i18n-usage.md?plain=1#L29))
+- YAML 側に `{name}` 形式のプレースホルダが含まれているキーは **`i18n.tsx`** からしか呼べない。誤って `i18n.ts.unfollowConfirm` と書くと値がフォーマット前の関数になってそのまま表示される。 (出典: [i18n-usage.md](../../.claude/skills/working-on-frontend/references/knowledge/i18n-usage.md?plain=1#L29))
 - **既存キーの再利用が第一**。新キー追加が必要に見えても、まず `locales/ja-JP.yml` を grep して `deleteAreYouSure({ x })` のような汎用キー (`x` プレースホルダ) が転用可能でないか確認する。新キー追加は [tasks/adding-i18n-key.md](../../.claude/skills/working-on-frontend/references/tasks/adding-i18n-key.md)。他言語ファイルは Crowdin の自動配信先なので絶対に手で触らない (出典: [i18n-usage.md](../../.claude/skills/working-on-frontend/references/knowledge/i18n-usage.md?plain=1#L31))
 - HTML を含むキー値は **必ずダブルクォート** で囲む (YAML パース失敗回避) (出典: [i18n-usage.md](../../.claude/skills/working-on-frontend/references/knowledge/i18n-usage.md?plain=1#L80))
 - `v-html` 越しの XSS リスクが無いことを必ず確認する。パラメータ側にユーザー入力をそのまま渡すと事故る。安全な静的文字列か、別途エスケープ済の値だけにする (出典: [i18n-usage.md](../../.claude/skills/working-on-frontend/references/knowledge/i18n-usage.md?plain=1#L81))
@@ -84,7 +84,31 @@
 - 既存キーをリネームしたい時 (3 段階)
 
   単純な「旧キー削除 → 新キー追加」を 1 PR で行うと、すべての言語の旧キー翻訳が失われる。以下のように分割する。
-  (出典: [i18n-usage.md](../../.claude/skills/working-on-frontend/references/knowledge/i18n-usage.md?plain=1#L175-L177))
+
+  #### Step 1: 新キー追加 (PR A)
+
+  旧キーを残したまま、新キー (同等の意味の日本語) を ja-JP.yml に追加する。
+
+  ```yaml
+  # 旧キー (まだ残す)
+  _settings:
+    theme: "テーマ"
+  # 新キー (追加)
+    appearance: "外観"
+  ```
+
+  参照箇所も新キーに移行 (frontend の全 grep + 置換)。
+
+  #### Step 2: マージ → Crowdin 翻訳が来るのを待つ
+
+  Crowdin の自動 PR で他言語にも `appearance` が追加され、翻訳が入る。`update_option: update_as_unapproved` のため、初回は unapproved 状態。プロジェクト管理者が approve するまで本番には載らない (フォールバックで日本語が出る)。
+
+  通常は数日〜数週間。急ぐ場合は Crowdin プロジェクト管理者に依頼。
+
+  #### Step 3: 旧キー削除 (PR B)
+
+  新キーの翻訳が十分埋まった後、別 PR で旧キー (`theme`) を ja-JP.yml から削除。次の Crowdin 同期で他言語からも消える。
+  (出典: [i18n-usage.md](../../.claude/skills/working-on-frontend/references/knowledge/i18n-usage.md?plain=1#L175-L201))
 - ja-JP.yml だけで旧キー削除 + 新キー追加してしまった場合は、PR を分割するか、上記 3 段階に組み直す。**マージ前なら間に合う** (出典: [i18n-usage.md](../../.claude/skills/working-on-frontend/references/knowledge/i18n-usage.md?plain=1#L217))
 - 型エラー: `Property '<key>' does not exist on type 'Locale'`
 
@@ -96,7 +120,15 @@
   ```
 
   **原因**: ja-JP.yml にキーは追加したが、`packages/i18n` の型生成 (`autogen/locale.ts`) が再生成されていない。
-  (出典: [i18n-usage.md](../../.claude/skills/working-on-frontend/references/knowledge/i18n-usage.md?plain=1#L234-L243))
+
+  **対処**:
+
+  - `pnpm dev` を起動中なら、`packages/i18n` の watch (`nodemon ... tsx ./build.ts --watch`) が自動再生成するので、yml 保存後に typecheck をやり直す
+  - 一回だけ手動再生成したいなら: `pnpm --filter i18n generate` (実体は `tsx scripts/generateLocaleInterface.ts`)
+  - 検出経路: `pnpm --filter frontend lint`
+
+  実装根拠: [packages/i18n/scripts/generateLocaleInterface.ts](../../packages/i18n/scripts/generateLocaleInterface.ts) (パラメータ抽出の正規表現 `/\{(\w+)\}/g`)。
+  (出典: [i18n-usage.md](../../.claude/skills/working-on-frontend/references/knowledge/i18n-usage.md?plain=1#L234-L251))
 - | yml の値 | ts | tsx |
   |---|---|---|
   | `"保存"` | `i18n.ts.save` ✅ | (キー存在せず) ❌ |
@@ -110,8 +142,40 @@
 
   **対処**: ja-JP.yml に該当キーを追加するか、参照側のタイポを直す。
   (出典: [i18n-usage.md](../../.claude/skills/working-on-frontend/references/knowledge/i18n-usage.md?plain=1#L276-L282))
-- **対処**: yml と呼び出し側でパラメータ名を一致させる。yml 側のキー名を変更したら、呼び出し側 (frontend 全体) を grep で揃える。 (出典: [i18n-usage.md](../../.claude/skills/working-on-frontend/references/knowledge/i18n-usage.md?plain=1#L295))
-- **原因**: 値に YAML の特殊文字 (`<` `>` `:` `'` `&` `*` `|` `>` `#`) を含むのに **クォートしていない**。 (出典: [i18n-usage.md](../../.claude/skills/working-on-frontend/references/knowledge/i18n-usage.md?plain=1#L301))
+- 実行時警告: `Missing locale parameters: <param> at <key>`
+
+  **症状**: dev mode コンソール。
+
+  **原因**:
+
+  - yml 側 `{name}` に対し、呼び出し側で `{ user: ... }` のように **キー名が違う**
+  - あるいは引数オブジェクトに値が含まれていない
+
+  実装根拠: [packages/frontend-shared/js/i18n.ts](../../packages/frontend-shared/js/i18n.ts) (`Object.hasOwn(arg, expressions[i])` チェック)。
+
+  **対処**: yml と呼び出し側でパラメータ名を一致させる。yml 側のキー名を変更したら、呼び出し側 (frontend 全体) を grep で揃える。
+  (出典: [i18n-usage.md](../../.claude/skills/working-on-frontend/references/knowledge/i18n-usage.md?plain=1#L284-L295))
+- YAML パース失敗
+
+  **症状**: `pnpm --filter i18n generate` 実行時に `YAMLException: ...`、または `pnpm dev` の watch ログにエラー。
+
+  **原因**: 値に YAML の特殊文字 (`<` `>` `:` `'` `&` `*` `|` `>` `#`) を含むのに **クォートしていない**。
+
+  **対処**: 値全体を `"..."` (ダブルクォート) で囲む。
+
+  ```yaml
+  # OK: HTML タグを含む
+  poweredByMisskeyDescription: "{name}は、...プラットフォーム<b>Misskey</b>のサーバーのひとつです。"
+
+  # OK: コロン・シングルクォート・角括弧を含む URL 説明
+  objectStorageBaseUrlDesc: "参照に使用するURL。CDNやProxyを使用している場合はそのURL、S3: 'https://<bucket>.s3.amazonaws.com'、GCS等: 'https://storage.googleapis.com/<bucket>'。"
+
+  # OK: 改行をリテラルで埋め込む
+  driveAboutTip: "ドライブでは、過去にアップロードしたファイルの...<br>\nノートに添付する際に..."
+  ```
+
+  YAML の block scalar (`|` / `>`) も使えるが、HTML タグ + プレースホルダ混在では **ダブルクォート + `\n` エスケープ** の方が安定する。
+  (出典: [i18n-usage.md](../../.claude/skills/working-on-frontend/references/knowledge/i18n-usage.md?plain=1#L297-L316))
 - キー名衝突: `_lang_` を上書きしてしまう
 
   **症状**: 各言語ファイルの先頭にある `_lang_` (例: ja-JP は `"日本語"`) を別用途で使おうとして上書き。
@@ -166,7 +230,16 @@
   - アイコンサイズ等、CSS 変数化されていない数値定数 (`font-size: 14px;` 等は OK)
   (出典: [scss-modules.md](../../.claude/skills/working-on-frontend/references/knowledge/scss-modules.md?plain=1#L49-L53))
 - `packages/frontend/src/style.scss` に定義されたグローバル class。`<style module>` 内のクラスと **併用** する (`:class="[$style.root, '_button']"` ではなく、HTML の `class="_button"` 属性で直接書く)。 (出典: [scss-modules.md](../../.claude/skills/working-on-frontend/references/knowledge/scss-modules.md?plain=1#L57))
-- `<style lang="scss" module>` 内に書いたクラス名はビルド時にハッシュ化されて他コンポーネントから参照できなくなる。これを意図的に外したい (子コンポーネント側の特定クラスや外部ライブラリのクラスにスタイルを当てたい) 場合のみ `:global(...)` を使う: (出典: [scss-modules.md](../../.claude/skills/working-on-frontend/references/knowledge/scss-modules.md?plain=1#L102))
+- `<style lang="scss" module>` 内に書いたクラス名はビルド時にハッシュ化されて他コンポーネントから参照できなくなる。これを意図的に外したい (子コンポーネント側の特定クラスや外部ライブラリのクラスにスタイルを当てたい) 場合のみ `:global(...)` を使う:
+
+  ```scss
+  .root {
+  	:global(.someThirdPartyClass) {
+  		color: var(--MI_THEME-fg);
+  	}
+  }
+  ```
+  (出典: [scss-modules.md](../../.claude/skills/working-on-frontend/references/knowledge/scss-modules.md?plain=1#L102-L110))
 - `:deep(...)` で子コンポーネント内部を狙う
 
   ```scss
@@ -193,7 +266,7 @@
   広告ブロッカーで誤ってブロックされる
   (出典: [frontend.md](../contributing/frontend.md?plain=1#L145-L146))
 
-## os-api
+## `os.*` API
 
 - [Critical] 直接の `alert()` / `confirm()` / `window.prompt()` / `window.alert()` は禁止。
 - [Critical] `os.alert` / `os.confirm` / `os.popup` / `os.toast` / `os.popupMenu` / `os.contextMenu` / `os.form` / `os.apiWithDialog` を使う ([os.ts](../../packages/frontend/src/os.ts) 参照)。
@@ -213,7 +286,7 @@
 - [Critical] **ブラウザ標準 UI を直接呼ばない** — `alert()` / `confirm()` / `window.prompt()` は禁止、必ず `os.alert` / `os.confirm` / `os.popup` 経由 → [knowledge/os-api.md](../../.claude/skills/working-on-frontend/references/knowledge/os-api.md) (出典: [adding-mk-component.md](../../.claude/skills/working-on-frontend/references/tasks/adding-mk-component.md?plain=1#L11))
 - `os.alert` / `os.confirm` / `os.popup` 等 UI ヘルパー (ブラウザ標準 `alert()` 直呼びは禁止) → [references/knowledge/os-api.md](../../.claude/skills/working-on-frontend/references/knowledge/os-api.md) (出典: [SKILL.md](../../.claude/skills/working-on-frontend/SKILL.md?plain=1#L28))
 
-## a11y
+## アクセシビリティ
 
 - [Major] クリック可能要素は `<button>` か、`role="button"` + `tabindex="0"` + キーボードハンドラ (`@keydown.enter` 等) を実装する。
 - [Major] 装飾以外の `<div @click>` で a11y 配慮がないものは指摘する。
@@ -242,10 +315,25 @@
 
   URL に飛ばない `<a href="#" @click.prevent>` は a11y / SEO 両面で良くない。リンクなら `<MkA>` ([MkA.vue](../../packages/frontend/src/components/global/MkA.vue))、アクションなら `<button>` を使う。
   (出典: [component-conventions.md](../../.claude/skills/working-on-frontend/references/knowledge/component-conventions.md?plain=1#L290-L292))
-- slot や label を見せたくない (アイコンのみのボタンなど) 場合は `aria-label`: (出典: [component-conventions.md](../../.claude/skills/working-on-frontend/references/knowledge/component-conventions.md?plain=1#L314))
+- slot や label を見せたくない (アイコンのみのボタンなど) 場合は `aria-label`:
+
+  ```vue
+  <button class="_button" :aria-label="i18n.ts.close" @click="emit('close')">
+  	<i class="ti ti-x"></i>
+  </button>
+  ```
+  (出典: [component-conventions.md](../../.claude/skills/working-on-frontend/references/knowledge/component-conventions.md?plain=1#L314-L320))
 - `aria-label` の値も i18n 経由にする (英語直書きは禁止)。 (出典: [component-conventions.md](../../.claude/skills/working-on-frontend/references/knowledge/component-conventions.md?plain=1#L322))
 - **実情:** 現状コードベースでは `aria-label` の使用例自体が乏しい (アイコンの hover ヒントには `:title="i18n.ts..."` が使われるが、`title` は tooltip でありスクリーンリーダー向けラベルの代替にはならない)。このため aria-label は確立した慣習というより a11y 上の推奨ベストプラクティスとして書いている。新規でアイコンのみのボタンを足すなら付けるのが望ましい。 (出典: [component-conventions.md](../../.claude/skills/working-on-frontend/references/knowledge/component-conventions.md?plain=1#L324))
-- 本物の `<button :disabled>` ならブラウザが click を抑止するが、`<div role="button">` は止めてくれない。`aria-disabled` を付けるだけでなく、**ハンドラ側でも早期 return** する: (出典: [component-conventions.md](../../.claude/skills/working-on-frontend/references/knowledge/component-conventions.md?plain=1#L328))
+- 本物の `<button :disabled>` ならブラウザが click を抑止するが、`<div role="button">` は止めてくれない。`aria-disabled` を付けるだけでなく、**ハンドラ側でも早期 return** する:
+
+  ```ts
+  function onClick() {
+  	if (props.disabled) return; // ← これが無いと disabled でも発火する
+  	// ...
+  }
+  ```
+  (出典: [component-conventions.md](../../.claude/skills/working-on-frontend/references/knowledge/component-conventions.md?plain=1#L328-L335))
 - Tab で全ての操作可能要素にたどり着けること (`tabindex="-1"` を不用意に付けない) (出典: [component-conventions.md](../../.claude/skills/working-on-frontend/references/knowledge/component-conventions.md?plain=1#L339))
 - モーダル / popup を開いたら focus trap を考える ([MkModal.vue](../../packages/frontend/src/components/MkModal.vue) のような既存コンポーネントは内部で対応している) (出典: [component-conventions.md](../../.claude/skills/working-on-frontend/references/knowledge/component-conventions.md?plain=1#L340))
 - リスト中の項目は矢印キー操作も考慮する。Space / Enter で開く・確定する UI は `MkSelect.vue` の `@keydown.space.enter`(メニューを開く) パターンを参考にする (出典: [component-conventions.md](../../.claude/skills/working-on-frontend/references/knowledge/component-conventions.md?plain=1#L341))
@@ -259,7 +347,7 @@
 - **キーボードのみで完結**できるか確認 (Tab で focus 移動できる / Enter で確定できる) (出典: [adding-mk-component.md](../../.claude/skills/working-on-frontend/references/tasks/adding-mk-component.md?plain=1#L149))
 - ARIA 属性は最小限 (出典: [adding-mk-component.md](../../.claude/skills/working-on-frontend/references/tasks/adding-mk-component.md?plain=1#L150))
 
-## storybook
+## Storybook
 
 - [Major] 共有 `Mk*` コンポーネントを新規追加した場合、`Mk<Name>.stories.impl.ts` が同階層に併設されているか (サブディレクトリ含む。例: `components/global/MkAvatar.stories.impl.ts`, `components/grid/MkGrid.stories.impl.ts`)。
 - [Major] **ファイル名は `.stories.impl.ts` 固定** (`.stories.ts` は生成物なので手編集・コミット不可)。

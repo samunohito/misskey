@@ -4,13 +4,6 @@
 
 [Review guidelines](README.md)
 
-## Scope
-
-- Also, make sure that the granularity of this PR is appropriate. Please do not include more than one type of change or interest in a single PR. (出典: [CONTRIBUTING.md](../../CONTRIBUTING.md?plain=1#L61))
-- Scope
-  	- Are the goals of the PR clear?
-  	- Is the granularity of the PR appropriate?
-
 ## Security
 
 - Security
@@ -30,16 +23,9 @@
   	- Are there any omissions or gaps?
   	- Does it check for anomalies?
 
-## スコープ外
+## 静的解析で検出できる問題
 
-- プルリクエストで変更されていない部分において、プルリクエストのタイトルや説明文に照らしてスコープ外であるが修正すべき点を見つけた場合は、このプルリクエストで修正させるのではなく、別のプルリクエストを開いてそれを修正するように指示してください。\
-  なお、当該プルリクエストで行が追加/削除されたことによりスコープ外の問題が起こりうる場合は、例外的にこのプルリクエストで修正させてください。
-- プルリクエストのタイトルや説明文に照らしてスコープ外の変更が含まれていないかをレビューしてください。なお、明らかにスコープ外であると確信できるもの（例: 全く関係ないファイルを編集している等）のみを対象とし、スコープ外かどうかの判断に困る場合は指摘しないでください。\
-  スコープ外の変更が含まれていた場合は指摘し、その部分について、このプルリクエストに含めずに別のプルリクエストを開いて変更するように指示してください。
-
-## レビュー対象外
-
-- フォーマット違反、型エラー、SPDXヘッダーの記載漏れ等、静的解析で検出可能な問題については、別Workflow（CI/CD）でチェックされるため、レビュー対象外として無視してください。
+- フォーマット違反、型エラー、SPDXヘッダーの記載漏れ等、静的解析で検出可能な問題は別Workflow（CI/CD）でチェックされます。指摘する場合も、CIの通過を確認するよう促す程度の軽い指摘（nitpick）にとどめてください。
 
 ## 命名
 
@@ -112,16 +98,6 @@
 
   AIにとって分かりやすいコードは、結果的に人間にとっても分かりやすいコードに繋がります。
   (出典: [coding-guidelines.md](../contributing/coding-guidelines.md?plain=1#L123-L127))
-
-## PR
-
-- If possible, prefix the title with a keyword that identifies the type of this PR, as shown below.
-  	- `fix` / `refactor` / `feat` / `enhance` / `perf` / `chore` etc
-  (出典: [CONTRIBUTING.md](../../CONTRIBUTING.md?plain=1#L59-L60))
-- If there is an Issue which will be resolved by this PR, please include a reference to the Issue in the text. (出典: [CONTRIBUTING.md](../../CONTRIBUTING.md?plain=1#L62))
-- Check if there are any documents that need to be created or updated due to this change. (出典: [CONTRIBUTING.md](../../CONTRIBUTING.md?plain=1#L64))
-- Please make sure that tests and Lint are passed in advance. (出典: [CONTRIBUTING.md](../../CONTRIBUTING.md?plain=1#L66))
-- If this PR includes UI changes, please attach a screenshot in the text. (出典: [CONTRIBUTING.md](../../CONTRIBUTING.md?plain=1#L68))
 
 ## AGENTS.md の禁止事項
 
