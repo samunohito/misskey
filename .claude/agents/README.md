@@ -22,7 +22,7 @@ Misskey 固有規約の機械チェックは本 agent、一般品質は pr-revie
 - `tools` は **編集権限なし** (Edit/Write を渡さない) に絞り、PR baseline (`git merge-base origin/develop HEAD`) との差分から自動的にレビュー対象を抽出する設計
 - 差分抽出は `git merge-base origin/develop HEAD` を baseline にする (PR / ブランチ全体を見るため)。`git diff HEAD` 単体は **未コミット差分しか取れず、コミット済の PR では空になって誤判定する** ので使わない
 - `description` は呼び出し判断の手がかりであると同時に、(呼ばれなくても) Task ツール起動のたびに常時ロードされる。**他で代替できない高シグナルなトリガー語に絞って簡潔に** 書く (汎用 reviewer と被る語や冗長な列挙は context-budget 上の overhead になるだけで発見性に寄与しない)。健全性は [/harness-audit](../commands/harness-audit.md) / [context-budget skill](../skills/context-budget/SKILL.md) で確認できる
-- 規約の **正本は `.claude/skills/*/references/` 側**。agent の checklist はその **派生コピー** (subagent が skill を読まなくても動くよう自己完結させる)。規約を変えるときは references を先に直し agent を追従させる ── 両者の食い違いは同期漏れなので references を正とする
+- レビュー観点の **正本は [docs/review/](../../docs/review/README.md)**。agent は役割・レビュー対象の特定・出力形式を持ち、観点はそのファイルを Read して適用する。規約の内容そのもの (なぜ・どう書くか) の正本は規約文書 (`.claude/skills/*/references/` / `docs/contributing/`) 側
 
 ## 新規エージェントを追加する場合
 

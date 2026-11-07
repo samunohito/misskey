@@ -32,3 +32,16 @@ reviews:
   path_filters:
     - "!CHANGELOG.md"
     - "!**/__snapshots__/**"
+knowledge_base:
+  code_guidelines:
+    filePatterns:
+      - files: "docs/review/README.md"
+        applyTo: "**"
+      - files: "docs/review/general.md"
+        applyTo: "**"
+      - files: "docs/review/frontend.md"
+        applyTo: "packages/frontend/**,locales/**"
+      - files: "docs/review/backend.md"
+        applyTo: "packages/backend/**"
+      - files: "docs/review/database.md"
+        applyTo: "packages/backend/migration/**,packages/backend/src/models/**,packages/backend/src/**"
