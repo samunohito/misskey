@@ -45,7 +45,7 @@ BASE=$(git merge-base origin/develop HEAD)
 
 **`meta`:** [endpoints.ts の型定義](../../packages/backend/src/server/api/endpoints.ts) を真とする。
 
-**`meta.errors` の UUID 重複検査:** 新規エンドポイントの全 `id` を抽出して衝突を確認する。
+**`meta.errors` の `id` の衝突検査:** 新しく定義したエラーの `id` を検索し、ヒットした既存エラーが別の意味 (`code` が異なる) でないか確認する。同じエラーの使い回しは問題ない。
 
 ```bash
 grep -rn "id: '<生成された UUID>'" packages/backend/src/server/api/endpoints/

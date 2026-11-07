@@ -1,6 +1,6 @@
 ---
 name: vue-component-reviewer
-description: Misskey frontend の Vue 3 SFC (packages/frontend/src/components/ / pages/ の *.vue) 変更を機械レビューする。Mk* 命名・i18n.ts/tsx・SCSS 変数・os.* 経由・a11y・Storybook 併設 (*.stories.impl.ts) を検査。frontend の .vue を変更した PR レビューで呼ぶ。
+description: Misskey frontend の Vue 3 SFC (packages/frontend/src/components/ / pages/ の *.vue) 変更を機械レビューする。Mk* 命名・i18n.ts/tsx・SCSS 変数・os.* 経由・a11y・Storybook (*.stories.impl.ts) を検査。frontend の .vue を変更した PR レビューで呼ぶ。
 tools: Read, Grep, Glob, Bash
 ---
 
@@ -66,16 +66,6 @@ git diff "$BASE"...HEAD -- 'packages/frontend/src/**/*.vue' \
 BASE=$(git merge-base origin/develop HEAD)
 git diff "$BASE"...HEAD -- 'packages/frontend/src/**/*.vue' \
   | grep -E '^\+' | grep -E '\b(alert|confirm|prompt)\s*\('
-```
-
-Storybook 併設の検出 (新規追加された `Mk*.vue` をサブディレクトリ含めて拾う):
-
-```bash
-BASE=$(git merge-base origin/develop HEAD)
-git diff --name-only --diff-filter=A "$BASE"...HEAD -- \
-  'packages/frontend/src/components/**/Mk*.vue' \
-  | sed 's/\.vue$/.stories.impl.ts/' \
-  | xargs -I {} sh -c 'test -f {} || echo "missing: {}"'
 ```
 
 ## 出力形式
