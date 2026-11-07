@@ -61,7 +61,7 @@ export * as '<category>/<name>' from './endpoints/<category>/<name>.js';
 grep -F "'<category>/<name>'" packages/backend/src/server/api/endpoint-list.ts
 ```
 
-**`misskey-js` 再生成:** `packages/misskey-js/src/autogen/` 配下の差分の有無。差分が無い場合は、変更が生成結果に影響するか (エンドポイント追加・`paramDef` / `res` のスキーマ変更など) を確かめ、影響する変更なのに差分が無いときだけ再生成漏れとして指摘する:
+**`misskey-js` 再生成:** `packages/misskey-js/src/autogen/` 配下の差分の有無:
 
 ```bash
 BASE=$(git merge-base origin/develop HEAD)

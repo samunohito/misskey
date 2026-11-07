@@ -52,7 +52,7 @@
 
 加えて以下も使える:
 
-- **`requiredRolePolicy: 'canCreateChannel'`** — 特定のロールポリシーが許可されているユーザーだけに絞る。未ログイン時は [ApiCallService.ts](../../../../../packages/backend/src/server/api/ApiCallService.ts) が既定ポリシー (`RoleService.getUserPolicies(null)`) で判定し、許可されていなければ `ROLE_PERMISSION_DENIED` を返す。匿名で使わせない API なら `requireCredential: true` も付ける。ポリシーの一覧は [`RolePolicies`](../../../../../packages/backend/src/core/RoleService.ts) を参照
+- **`requiredRolePolicy: 'canCreateChannel'`** — 特定のロールポリシーが許可されているユーザーだけに絞る。**`requireCredential: true` 必須**: [ApiCallService.ts](../../../../../packages/backend/src/server/api/ApiCallService.ts) が `requiredRolePolicy` 分岐で `user!.id` を非null前提アクセスするため、匿名許可と組み合わせると TypeError で 500 になる。匿名も許したいなら、`meta` ではなく実行時に `RoleService.getUserPolicies(me ? me.id : null)` で判定する ([endpoints/notes/global-timeline.ts](../../../../../packages/backend/src/server/api/endpoints/notes/global-timeline.ts) のパターン)。ポリシーの一覧は [`RolePolicies`](../../../../../packages/backend/src/core/RoleService.ts) を参照
 - **`secure: true`** — Misskey 本体フロントエンドからしか叩けないようにする (OAuth トークンで叩けなくなる)。上記の通り `kind` は不要
 
 ## `kind` の値
@@ -125,7 +125,7 @@ res: {
 },
 ```
 
-各プロパティに `optional` / `nullable` を応答の契約に合わせて **必ず明示する** (常に `false` とは限らない。例: `User.host` は `nullable: true`)。省略すると schema が緩くなり、生成される misskey-js 型も曖昧になる。
+各プロパティに `optional: false, nullable: false` を **必ず明示する**。省略すると schema が緩くなり、生成される misskey-js 型も曖昧になる。
 
 ## `paramDef` (AJV) 実用パターン
 
@@ -300,9 +300,9 @@ PR レビューで頻発するミスを「**症状 → 原因 → 修正**」で
 - **原因**: 新規 `.ts` ファイルに SPDX ヘッダーが無い
 - **修正**: ファイル冒頭に SPDX を貼る。注: `packages/misskey-js/` 配下は MIT 別ライセンスなので SPDX 不要
 
-### 4. エラーが misskey-js の型に出てこない
+### 4. クライアントが 500 + error 型不在 を受け取る
 
-- **症状**: フロントエンド側で `result.error.code` を分岐したいが、misskey-js の型に出てこない。`ApiError` 以外の例外を投げた場合はレスポンスが 500 になる (`ApiError` の HTTP ステータスは `kind` / `httpStatusCode` で決まり、既定は 400)
+- **症状**: フロントエンド側で `result.error.code` を分岐したいが、misskey-js の型に出てこない。レスポンスは 500
 - **原因**: `meta.errors` に列挙していないエラーを `throw new ApiError({...})` または `throw new Error(...)` した
 - **修正**: 業務エラーは必ず `meta.errors` に登録してから `throw new ApiError(meta.errors.<key>)`
 - **逆方向の罠**: 「想定外バグまで全部 `ApiError` で包む」のもダメ。`endpoints/notes/create.ts` の `catch` 節末尾の `throw err;` が手本
@@ -349,17 +349,17 @@ PR レビューで頻発するミスを「**症状 → 原因 → 修正**」で
 - **修正**: 適切な OAuth スコープを `kind` に設定する
 - **例外**: `secure: true` (Misskey 本体専用) のエンドポイントは [endpoints.ts](../../../../../packages/backend/src/server/api/endpoints.ts) の別 union variant 扱いで `kind` 不要
 
-### 11. `requireFile: true` の cleanup を endpoint 側で呼んでいない
+### 11. `requireFile: true` の cleanup を呼び忘れて一時ファイルが残る
 
-- **症状**: `ApiCallService` の HTTP multipart 経路以外から呼ばれた場合、エンドポイントが正常終了/例外終了しても一時ファイルが残りうる
-- **原因**: [endpoint-base.ts](../../../../../packages/backend/src/server/api/endpoint-base.ts) が `cleanup` を自動で呼ぶのは **AJV バリデーション失敗時のみ**。HTTP の multipart 経路では [ApiCallService.ts](../../../../../packages/backend/src/server/api/ApiCallService.ts) も `finally` で解放する
+- **症状**: アップロード後にエンドポイントが正常終了/例外終了しても OS の一時ディレクトリにファイルが残り続け、ディスクが埋まる
+- **原因**: [endpoint-base.ts](../../../../../packages/backend/src/server/api/endpoint-base.ts) が `cleanup` を自動で呼ぶのは **AJV バリデーション失敗時のみ**
 - **修正**: `try { ... } finally { cleanup!(); }` で囲む ([drive/files/create.ts](../../../../../packages/backend/src/server/api/endpoints/drive/files/create.ts) の `finally { cleanup!(); }` が手本)
 
-### 12. `requiredRolePolicy` と匿名アクセスの組み合わせを確かめていない
+### 12. `requiredRolePolicy` だけで匿名許可してしまう
 
-- **症状**: 匿名で叩くと `ROLE_PERMISSION_DENIED` になる、または既定ポリシーが許可しているため匿名でも通ってしまう
-- **原因**: [ApiCallService.ts](../../../../../packages/backend/src/server/api/ApiCallService.ts) は未ログイン時、`requiredRolePolicy` を既定ポリシー (`getUserPolicies(null)`) で判定する
-- **修正**: 匿名で使わせない API なら `requireCredential: true` を併用する。匿名にも使わせる API なら、既定ポリシーの値が意図どおりかを確認する
+- **症状**: API を匿名で叩くと 500 + `TypeError: Cannot read properties of null (reading 'id')`
+- **原因**: [ApiCallService.ts](../../../../../packages/backend/src/server/api/ApiCallService.ts) が `requiredRolePolicy` ありのエンドポイントで `user!.id` を非null前提でアクセス
+- **修正**: 静的に必須ポリシーを宣言するなら `requireCredential: true` と必ず併用する。匿名ユーザーにも違うポリシーセットを適用したいなら、実行時に `RoleService.getUserPolicies(me ? me.id : null)` で判定 ([notes/global-timeline.ts](../../../../../packages/backend/src/server/api/endpoints/notes/global-timeline.ts) パターン)
 
 ### 13. e2e テストが起動しない
 

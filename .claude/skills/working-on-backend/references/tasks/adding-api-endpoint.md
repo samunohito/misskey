@@ -5,7 +5,7 @@
 ## 最重要事実 (見落とすと CI / 本番が壊れる)
 
 1. **エンドポイントは glob 自動収集されない**。[endpoint-list.ts](../../../../../packages/backend/src/server/api/endpoint-list.ts) への 1 行追加が必須 → [knowledge/endpoint-list.md](../knowledge/endpoint-list.md)
-2. **`meta` / `paramDef` / `res` を変えたら misskey-js 再生成が必須**。生成結果が変わる変更で `pnpm build-misskey-js-with-types` を忘れると CI の `check-misskey-js-autogen` で落ちる
+2. **`meta` / `paramDef` / `res` を変えたら misskey-js 再生成が必須**。`pnpm build-misskey-js-with-types` を忘れると CI の `check-misskey-js-autogen` で必ず落ちる
 3. **`meta.errors` の各 `id` は UUID v4 で、リポジトリ内で一意**。`crypto.randomUUID()` で生成し、`grep -r "id: '<UUID>'" packages/backend/src/server/api/endpoints/` で衝突確認
 
 ## ワークフロー全体図
@@ -176,7 +176,7 @@ async (ps, me, token, file, cleanup, ip, headers) => { ... }
 
 ### 2.6 エラー throw のバランス
 
-**クライアントに返すべき業務エラー** は必ず `meta.errors` に列挙して `throw new ApiError(meta.errors.<key>)` する。これを守らないと misskey-js 側の型に出ない (HTTP ステータスは `kind` / `httpStatusCode` で決まり、既定は 400)。第 2 引数で追加情報を渡せる:
+**クライアントに返すべき業務エラー** は必ず `meta.errors` に列挙して `throw new ApiError(meta.errors.<key>)` する。これを守らないと misskey-js 側の型に出ず、レスポンスも 500 になる。第 2 引数で追加情報を渡せる:
 
 ```ts
 throw new ApiError(meta.errors.invalidParam, { reason: 'too short' });
@@ -249,7 +249,7 @@ pnpm --filter backend lint
 pnpm build-misskey-js-with-types
 ```
 
-CI の `check-misskey-js-autogen` は、現在のコードから生成した結果とコミット済みの `packages/misskey-js/src/autogen/` を比較し、差分があると落ちる (最頻ミス)。生成結果が変わらない変更 (例: `limit` だけの変更) なら autogen の差分が無くてもよい。詳細手順は [shipping-misskey-change/references/tasks/regenerate-misskey-js.md](../../../shipping-misskey-change/references/tasks/regenerate-misskey-js.md)。
+PR に `packages/misskey-js/src/autogen/` 配下の差分が含まれていないと CI の `check-misskey-js-autogen` で必ず落ちる (最頻ミス)。詳細手順は [shipping-misskey-change/references/tasks/regenerate-misskey-js.md](../../../shipping-misskey-change/references/tasks/regenerate-misskey-js.md)。
 
 ---
 
@@ -260,11 +260,11 @@ CI の `check-misskey-js-autogen` は、現在のコードから生成した結�
 - **404 になる** → `endpoint-list.ts` 登録漏れ
 - **CI `check-misskey-js-autogen` で落ちる** → `pnpm build-misskey-js-with-types` 忘れ
 - **CI `spdx` で落ちる** → SPDX ヘッダー欠落
-- **error が misskey-js の型に出てこない** → `meta.errors` 列挙なしに `throw new ApiError(...)` した (`ApiError` 以外の例外を投げた場合はレスポンスが 500 になる)
+- **クライアントが 500 と error 型不在を受け取る** → `meta.errors` 列挙なしに `throw new ApiError(...)` した
 - **`me.id` で TypeError** → `requireCredential: false` で null チェックを忘れた
 - **UUID 重複** → 衝突確認グレップを忘れた
-- **一時ファイルが残る** → `requireFile: true` で `cleanup!()` を `finally` で呼び忘れた (HTTP の multipart 経路では `ApiCallService` も `finally` で解放するが、基底クラスは AJV 失敗時にしか呼ばないため endpoint 側でも呼ぶ)
-- **`requiredRolePolicy` の匿名アクセス** → `ApiCallService` は未ログイン時に既定ポリシー (`getUserPolicies(null)`) で判定し、許可されていなければ `ROLE_PERMISSION_DENIED` を返す (500 にはならない)。匿名で使わせない API なら `requireCredential: true` を併用する
+- **一時ファイルが残る** → `requireFile: true` で `cleanup!()` を `finally` で呼び忘れた
+- **`requiredRolePolicy` で匿名アクセスが 500 になる** → `ApiCallService` が `user!.id` を非null前提で参照するため `requireCredential: true` 必須
 
 ---
 

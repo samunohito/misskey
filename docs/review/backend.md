@@ -52,9 +52,9 @@
   			code: 'NO_SUCH_NOTE',                // ← code は SCREAMING_SNAKE_CASE
   			id: '17a0e0fa-3f3e-4f3e-9f3e-3f3e3f3e3f3e', // ← crypto.randomUUID() で生成し衝突確認
   (出典: [adding-api-endpoint.md](../../.claude/skills/working-on-backend/references/tasks/adding-api-endpoint.md?plain=1#L114-L117))
-- **クライアントに返すべき業務エラー** は必ず `meta.errors` に列挙して `throw new ApiError(meta.errors.<key>)` する。これを守らないと misskey-js 側の型に出ない (HTTP ステータスは `kind` / `httpStatusCode` で決まり、既定は 400)。第 2 引数で追加情報を渡せる: (出典: [adding-api-endpoint.md](../../.claude/skills/working-on-backend/references/tasks/adding-api-endpoint.md?plain=1#L179))
+- **クライアントに返すべき業務エラー** は必ず `meta.errors` に列挙して `throw new ApiError(meta.errors.<key>)` する。これを守らないと misskey-js 側の型に出ず、レスポンスも 500 になる。第 2 引数で追加情報を渡せる: (出典: [adding-api-endpoint.md](../../.claude/skills/working-on-backend/references/tasks/adding-api-endpoint.md?plain=1#L179))
 - 一方で **想定外の例外 (DB 不整合 / 下層 service の bug / 防御的アサーション)** は `throw new Error('...')` のままで構わない。すべての例外を `ApiError` で包むと、未知のバグが client error として隠蔽されてしまう。`endpoints/notes/create.ts` の `catch` 節末尾の `throw err;` がこの二段構えの典型。 (出典: [adding-api-endpoint.md](../../.claude/skills/working-on-backend/references/tasks/adding-api-endpoint.md?plain=1#L185))
-- **error が misskey-js の型に出てこない** → `meta.errors` 列挙なしに `throw new ApiError(...)` した (`ApiError` 以外の例外を投げた場合はレスポンスが 500 になる) (出典: [adding-api-endpoint.md](../../.claude/skills/working-on-backend/references/tasks/adding-api-endpoint.md?plain=1#L263))
+- **クライアントが 500 と error 型不在を受け取る** → `meta.errors` 列挙なしに `throw new ApiError(...)` した (出典: [adding-api-endpoint.md](../../.claude/skills/working-on-backend/references/tasks/adding-api-endpoint.md?plain=1#L263))
 - **UUID 重複** → 衝突確認グレップを忘れた (出典: [adding-api-endpoint.md](../../.claude/skills/working-on-backend/references/tasks/adding-api-endpoint.md?plain=1#L265))
 
 ### paramDef
@@ -76,11 +76,11 @@
 
 - [Major] `Endpoint<typeof meta, typeof paramDef>` を継承しているか。
 - [Major] `@Injectable()` デコレータ + `export default class` 形式か (`// eslint-disable-line import/no-default-export` が必要)。
-- [Major] DI は、Repository など DI トークンを持つものが `@Inject(DI.xxx)` 形式か。Service は型をそのまま指定して注入してよい。
+- [Major] DI は `@Inject(DI.xxx)` 形式か。
 - [Major] **クライアントに返すべき API エラーは `throw new ApiError(meta.errors.<key>)`** ([error.ts](../../packages/backend/src/server/api/error.ts) 参照)。`meta.errors` で定義したエラーケースを `throw new Error(...)` で投げているなら指摘する。
 - [Major] 防御的アサーション・「起きるはずがない」内部不整合・テスト用 ENV ガード等の **想定外フェイルファスト** は `throw new Error('...')` で構わない。既存実装でも `admin/reset-password.ts` などが採用しているパターン (例: `cannot reset password of root`)。`meta.errors` に対応がない `throw new Error` を一律で指摘しない。
 - [Major] 同期 `throw` は許容。非同期処理での例外伝搬を確認する。
-- API endpoint は `Endpoint<typeof meta, typeof paramDef>` を extends するクラスとして書く。`@Injectable()` を付けてコンストラクタで依存を注入する。Repository など DI トークンを持つものは `@Inject(DI.xxx)` で、Service は型をそのまま指定して注入する (後述)。 (出典: [nestjs-di.md](../../.claude/skills/working-on-backend/references/knowledge/nestjs-di.md?plain=1#L13))
+- API endpoint は `Endpoint<typeof meta, typeof paramDef>` を extends するクラスとして書く。`@Injectable()` を付けてコンストラクタで Repository / Service を `@Inject(DI.xxx)` で注入する。 (出典: [nestjs-di.md](../../.claude/skills/working-on-backend/references/knowledge/nestjs-di.md?plain=1#L13))
 - `// eslint-disable-line import/no-default-export` は Endpoint のお約束 (NestJS が default export を要求する一方で、ESLint ルールでは制約されているため)。 (出典: [nestjs-di.md](../../.claude/skills/working-on-backend/references/knowledge/nestjs-di.md?plain=1#L35))
 
 ### endpoint-list
@@ -102,11 +102,11 @@
 
 ### misskey-js 再生成
 
-- [Critical] `meta` / `paramDef` / `res` を変更したら、生成結果に影響する変更 (エンドポイント追加・スキーマ変更など) で `packages/misskey-js/src/autogen/` 配下の差分が PR / ブランチに含まれているか確認する。
-- [Critical] 生成結果に影響する変更なのに autogen の差分が無いなら `pnpm build-misskey-js-with-types` の実行漏れ。CI の `check-misskey-js-autogen` ワークフロー (生成結果とコミット済みの autogen を比較する) で落ちるため Critical 扱い。生成結果が変わらない変更 (例: `limit` だけの変更) なら差分が無くてもよい。
+- [Critical] `meta` / `paramDef` / `res` を変更したら、PR / ブランチに `packages/misskey-js/src/autogen/` 配下の差分が含まれているか確認する:
+- [Critical] 差分ゼロなら `pnpm build-misskey-js-with-types` の実行漏れ。CI の `check-misskey-js-autogen` ワークフローで必ず落ちるため Critical 扱い。
 - **原因**: `meta` / `paramDef` / `res` を変えたのに misskey-js の自動生成物を再生成していない (出典: [api-meta-paramdef.md](../../.claude/skills/working-on-backend/references/knowledge/api-meta-paramdef.md?plain=1#L294))
-- **`meta` / `paramDef` / `res` を変えたら misskey-js 再生成が必須**。生成結果が変わる変更で `pnpm build-misskey-js-with-types` を忘れると CI の `check-misskey-js-autogen` で落ちる (出典: [adding-api-endpoint.md](../../.claude/skills/working-on-backend/references/tasks/adding-api-endpoint.md?plain=1#L8))
-- CI の `check-misskey-js-autogen` は、現在のコードから生成した結果とコミット済みの `packages/misskey-js/src/autogen/` を比較し、差分があると落ちる (最頻ミス)。生成結果が変わらない変更 (例: `limit` だけの変更) なら autogen の差分が無くてもよい。詳細手順は [shipping-misskey-change/references/tasks/regenerate-misskey-js.md](../../.claude/skills/shipping-misskey-change/references/tasks/regenerate-misskey-js.md)。 (出典: [adding-api-endpoint.md](../../.claude/skills/working-on-backend/references/tasks/adding-api-endpoint.md?plain=1#L252))
+- **`meta` / `paramDef` / `res` を変えたら misskey-js 再生成が必須**。`pnpm build-misskey-js-with-types` を忘れると CI の `check-misskey-js-autogen` で必ず落ちる (出典: [adding-api-endpoint.md](../../.claude/skills/working-on-backend/references/tasks/adding-api-endpoint.md?plain=1#L8))
+- PR に `packages/misskey-js/src/autogen/` 配下の差分が含まれていないと CI の `check-misskey-js-autogen` で必ず落ちる (最頻ミス)。詳細手順は [shipping-misskey-change/references/tasks/regenerate-misskey-js.md](../../.claude/skills/shipping-misskey-change/references/tasks/regenerate-misskey-js.md)。 (出典: [adding-api-endpoint.md](../../.claude/skills/working-on-backend/references/tasks/adding-api-endpoint.md?plain=1#L252))
 - **CI `check-misskey-js-autogen` で落ちる** → `pnpm build-misskey-js-with-types` 忘れ (出典: [adding-api-endpoint.md](../../.claude/skills/working-on-backend/references/tasks/adding-api-endpoint.md?plain=1#L261))
 
 ### kind
@@ -121,15 +121,15 @@
 
 ### requiredRolePolicy
 
-- **`requiredRolePolicy: 'canCreateChannel'`** — 特定のロールポリシーが許可されているユーザーだけに絞る。未ログイン時は [ApiCallService.ts](../../packages/backend/src/server/api/ApiCallService.ts) が既定ポリシー (`RoleService.getUserPolicies(null)`) で判定し、許可されていなければ `ROLE_PERMISSION_DENIED` を返す。匿名で使わせない API なら `requireCredential: true` も付ける。ポリシーの一覧は [`RolePolicies`](../../packages/backend/src/core/RoleService.ts) を参照 (出典: [api-meta-paramdef.md](../../.claude/skills/working-on-backend/references/knowledge/api-meta-paramdef.md?plain=1#L55))
-- **原因**: [ApiCallService.ts](../../packages/backend/src/server/api/ApiCallService.ts) は未ログイン時、`requiredRolePolicy` を既定ポリシー (`getUserPolicies(null)`) で判定する
-  - **修正**: 匿名で使わせない API なら `requireCredential: true` を併用する。匿名にも使わせる API なら、既定ポリシーの値が意図どおりかを確認する
+- **`requiredRolePolicy: 'canCreateChannel'`** — 特定のロールポリシーが許可されているユーザーだけに絞る。**`requireCredential: true` 必須**: [ApiCallService.ts](../../packages/backend/src/server/api/ApiCallService.ts) が `requiredRolePolicy` 分岐で `user!.id` を非null前提アクセスするため、匿名許可と組み合わせると TypeError で 500 になる。匿名も許したいなら、`meta` ではなく実行時に `RoleService.getUserPolicies(me ? me.id : null)` で判定する ([endpoints/notes/global-timeline.ts](../../packages/backend/src/server/api/endpoints/notes/global-timeline.ts) のパターン)。ポリシーの一覧は [`RolePolicies`](../../packages/backend/src/core/RoleService.ts) を参照 (出典: [api-meta-paramdef.md](../../.claude/skills/working-on-backend/references/knowledge/api-meta-paramdef.md?plain=1#L55))
+- **原因**: [ApiCallService.ts](../../packages/backend/src/server/api/ApiCallService.ts) が `requiredRolePolicy` ありのエンドポイントで `user!.id` を非null前提でアクセス
+  - **修正**: 静的に必須ポリシーを宣言するなら `requireCredential: true` と必ず併用する。匿名ユーザーにも違うポリシーセットを適用したいなら、実行時に `RoleService.getUserPolicies(me ? me.id : null)` で判定 ([notes/global-timeline.ts](../../packages/backend/src/server/api/endpoints/notes/global-timeline.ts) パターン)
   (出典: [api-meta-paramdef.md](../../.claude/skills/working-on-backend/references/knowledge/api-meta-paramdef.md?plain=1#L361-L362))
-- **`requiredRolePolicy` の匿名アクセス** → `ApiCallService` は未ログイン時に既定ポリシー (`getUserPolicies(null)`) で判定し、許可されていなければ `ROLE_PERMISSION_DENIED` を返す (500 にはならない)。匿名で使わせない API なら `requireCredential: true` を併用する (出典: [adding-api-endpoint.md](../../.claude/skills/working-on-backend/references/tasks/adding-api-endpoint.md?plain=1#L267))
+- **`requiredRolePolicy` で匿名アクセスが 500 になる** → `ApiCallService` が `user!.id` を非null前提で参照するため `requireCredential: true` 必須 (出典: [adding-api-endpoint.md](../../.claude/skills/working-on-backend/references/tasks/adding-api-endpoint.md?plain=1#L267))
 
 ### res
 
-- 各プロパティに `optional` / `nullable` を応答の契約に合わせて **必ず明示する** (常に `false` とは限らない。例: `User.host` は `nullable: true`)。省略すると schema が緩くなり、生成される misskey-js 型も曖昧になる。 (出典: [api-meta-paramdef.md](../../.claude/skills/working-on-backend/references/knowledge/api-meta-paramdef.md?plain=1#L128))
+- 各プロパティに `optional: false, nullable: false` を **必ず明示する**。省略すると schema が緩くなり、生成される misskey-js 型も曖昧になる。 (出典: [api-meta-paramdef.md](../../.claude/skills/working-on-backend/references/knowledge/api-meta-paramdef.md?plain=1#L128))
 
 ### me null チェック
 
@@ -149,10 +149,10 @@
 
 ### requireFile cleanup
 
-- **原因**: [endpoint-base.ts](../../packages/backend/src/server/api/endpoint-base.ts) が `cleanup` を自動で呼ぶのは **AJV バリデーション失敗時のみ**。HTTP の multipart 経路では [ApiCallService.ts](../../packages/backend/src/server/api/ApiCallService.ts) も `finally` で解放する
+- **原因**: [endpoint-base.ts](../../packages/backend/src/server/api/endpoint-base.ts) が `cleanup` を自動で呼ぶのは **AJV バリデーション失敗時のみ**
   - **修正**: `try { ... } finally { cleanup!(); }` で囲む ([drive/files/create.ts](../../packages/backend/src/server/api/endpoints/drive/files/create.ts) の `finally { cleanup!(); }` が手本)
   (出典: [api-meta-paramdef.md](../../.claude/skills/working-on-backend/references/knowledge/api-meta-paramdef.md?plain=1#L355-L356))
-- **一時ファイルが残る** → `requireFile: true` で `cleanup!()` を `finally` で呼び忘れた (HTTP の multipart 経路では `ApiCallService` も `finally` で解放するが、基底クラスは AJV 失敗時にしか呼ばないため endpoint 側でも呼ぶ) (出典: [adding-api-endpoint.md](../../.claude/skills/working-on-backend/references/tasks/adding-api-endpoint.md?plain=1#L266))
+- **一時ファイルが残る** → `requireFile: true` で `cleanup!()` を `finally` で呼び忘れた (出典: [adding-api-endpoint.md](../../.claude/skills/working-on-backend/references/tasks/adding-api-endpoint.md?plain=1#L266))
 
 ## Nest DI
 
