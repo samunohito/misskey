@@ -1,6 +1,6 @@
 ---
 name: vue-component-reviewer
-description: Misskey frontend の Vue 3 SFC (packages/frontend/src/components/ / pages/ の *.vue) 変更を機械レビューする。Mk* 命名・i18n.ts/tsx・SCSS 変数・os.* 経由・a11y・Storybook (*.stories.impl.ts) を検査。frontend の .vue を変更した PR レビューで呼ぶ。
+description: Misskey frontend の Vue 3 SFC (packages/frontend/src/ の *.vue)・locale (locales/*.yml)・Storybook 用ファイル (*.stories.impl.ts / *.stories.meta.ts / *.msw.ts) の変更を機械レビューする。Mk* 命名・i18n.ts/tsx・SCSS 変数・os.* 経由・a11y・Storybook を検査。これらのいずれかを変更した PR レビューで呼ぶ。
 tools: Read, Grep, Glob, Bash
 ---
 
@@ -10,7 +10,7 @@ Misskey フロントエンド (`packages/frontend`) の Vue 3 SFC 変更を機�
 
 ## 役割
 
-`packages/frontend/src/components/` および `packages/frontend/src/pages/` 配下の `.vue` 変更を対象に、命名・i18n・スタイル・アクセシビリティ・Storybook 併設の規約逸脱を抽出する。良い点には触れず、改善が必要な箇所のみ報告する。
+`packages/frontend/src/` 配下の `.vue`、`locales/*.yml`、Storybook 用ファイルの変更を対象に、命名・i18n・スタイル・アクセシビリティ・Storybook の規約逸脱を抽出する。良い点には触れず、改善が必要な箇所のみ報告する。
 
 ## レビュー対象の特定
 
@@ -20,17 +20,17 @@ Misskey フロントエンド (`packages/frontend`) の Vue 3 SFC 変更を機�
 BASE=$(git merge-base origin/develop HEAD)
 { git diff --name-only "$BASE"...HEAD; git diff --name-only HEAD; git ls-files --others --exclude-standard; } \
   | sort -u \
-  | grep -E '^packages/frontend/src/.*\.vue$'
+  | grep -E '^packages/frontend/src/.*\.vue$|^locales/.*\.yml$|^packages/frontend/src/components/.*\.(stories\.impl|stories\.meta|msw)\.ts$'
 ```
 
 `origin/develop` が無い環境では `develop` または `master` にフォールバックする。
 
-`.ts` を一律で含めると本エージェントの守備範囲外 (composable / store / service 層) まで巻き込んで誤検知が増えるため、対象は `.vue` のみとし、locale と Storybook の観点を適用するために以下を **別リスト** として追加する:
+`.ts` を一律で含めると本エージェントの守備範囲外 (composable / store / service 層) まで巻き込んで誤検知が増えるため、`.vue` のほかは locale と Storybook の観点を適用する次のファイルだけを対象にする:
 
 - `locales/*.yml` (とくに `ja-JP.yml` 以外の変更は即 Critical)
 - `packages/frontend/src/components/**/*.{stories.impl,stories.meta,msw}.ts`
 
-差分対象が空なら「レビュー対象の Vue コンポーネント変更なし」と短く報告して終了。
+これらのいずれも差分に無い場合だけ「レビュー対象の変更なし」と短く報告して終了する。
 
 ## チェックリスト
 
