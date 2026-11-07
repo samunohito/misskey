@@ -6,7 +6,7 @@ UI 文言の追加・変更を行う際の手順。**手動編集して良いの
 
 - **`locales/<lang>.yml` (ja-JP.yml 以外) の編集は禁止**。これらは Crowdin の自動配信先で、手動編集すると次の同期で上書き喪失する ([locales/README.md](../../../../../locales/README.md), [crowdin.yml](../../../../../crowdin.yml))
 - 文字列リテラルを SFC に直書きしない (`<span>こんにちは</span>` 等)。必ず `i18n.ts.<key>` を経由する
-- 既存キーの破壊的リネームは Crowdin 翻訳資産を失わせる。**追加 → 移行 → 旧キー削除** の 3 段階に分割する。詳細手順と誤編集の復旧は [knowledge/i18n-usage.md §Crowdin 安全策](../knowledge/i18n-usage.md)
+- 既存キーの破壊的リネームは Crowdin 翻訳資産を失わせる。**追加 → 移行 → 旧キー削除** の 3 段階に分割する。旧キーは新キーの Crowdin 翻訳が揃うまで削除せず、翻訳完了後の別 PR で削除する。詳細手順と誤編集の復旧は [knowledge/i18n-usage.md §Crowdin 安全策](../knowledge/i18n-usage.md)
 
 ## ステップ 1: ja-JP.yml にキーを追加
 

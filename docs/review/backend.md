@@ -52,9 +52,9 @@
   			code: 'NO_SUCH_NOTE',                // ← code は SCREAMING_SNAKE_CASE
   			id: '17a0e0fa-3f3e-4f3e-9f3e-3f3e3f3e3f3e', // ← crypto.randomUUID() で生成し衝突確認
   (出典: [adding-api-endpoint.md](../../.claude/skills/working-on-backend/references/tasks/adding-api-endpoint.md?plain=1#L114-L117))
-- **クライアントに返すべき業務エラー** は必ず `meta.errors` に列挙して `throw new ApiError(meta.errors.<key>)` する。これを守らないと misskey-js 側の型に出ず、レスポンスも 500 になる。第 2 引数で追加情報を渡せる: (出典: [adding-api-endpoint.md](../../.claude/skills/working-on-backend/references/tasks/adding-api-endpoint.md?plain=1#L179))
+- **クライアントに返すべき業務エラー** は必ず `meta.errors` に列挙して `throw new ApiError(meta.errors.<key>)` する。これを守らないと misskey-js 側の型に出ない (HTTP ステータスは `kind` / `httpStatusCode` で決まり、既定は 400)。第 2 引数で追加情報を渡せる: (出典: [adding-api-endpoint.md](../../.claude/skills/working-on-backend/references/tasks/adding-api-endpoint.md?plain=1#L179))
 - 一方で **想定外の例外 (DB 不整合 / 下層 service の bug / 防御的アサーション)** は `throw new Error('...')` のままで構わない。すべての例外を `ApiError` で包むと、未知のバグが client error として隠蔽されてしまう。`endpoints/notes/create.ts` の `catch` 節末尾の `throw err;` がこの二段構えの典型。 (出典: [adding-api-endpoint.md](../../.claude/skills/working-on-backend/references/tasks/adding-api-endpoint.md?plain=1#L185))
-- **クライアントが 500 と error 型不在を受け取る** → `meta.errors` 列挙なしに `throw new ApiError(...)` した (出典: [adding-api-endpoint.md](../../.claude/skills/working-on-backend/references/tasks/adding-api-endpoint.md?plain=1#L263))
+- **error が misskey-js の型に出てこない** → `meta.errors` 列挙なしに `throw new ApiError(...)` した (`ApiError` 以外の例外を投げた場合はレスポンスが 500 になる) (出典: [adding-api-endpoint.md](../../.claude/skills/working-on-backend/references/tasks/adding-api-endpoint.md?plain=1#L263))
 - **UUID 重複** → 衝突確認グレップを忘れた (出典: [adding-api-endpoint.md](../../.claude/skills/working-on-backend/references/tasks/adding-api-endpoint.md?plain=1#L265))
 
 ### paramDef
@@ -129,7 +129,7 @@
 
 ### res
 
-- 各プロパティに `optional: false, nullable: false` を **必ず明示する**。省略すると schema が緩くなり、生成される misskey-js 型も曖昧になる。 (出典: [api-meta-paramdef.md](../../.claude/skills/working-on-backend/references/knowledge/api-meta-paramdef.md?plain=1#L128))
+- 各プロパティに `optional` / `nullable` を応答の契約に合わせて **必ず明示する** (常に `false` とは限らない。例: `User.host` は `nullable: true`)。省略すると schema が緩くなり、生成される misskey-js 型も曖昧になる。 (出典: [api-meta-paramdef.md](../../.claude/skills/working-on-backend/references/knowledge/api-meta-paramdef.md?plain=1#L128))
 
 ### me null チェック
 
@@ -149,10 +149,10 @@
 
 ### requireFile cleanup
 
-- **原因**: [endpoint-base.ts](../../packages/backend/src/server/api/endpoint-base.ts) が `cleanup` を自動で呼ぶのは **AJV バリデーション失敗時のみ**
+- **原因**: [endpoint-base.ts](../../packages/backend/src/server/api/endpoint-base.ts) が `cleanup` を自動で呼ぶのは **AJV バリデーション失敗時のみ**。HTTP の multipart 経路では [ApiCallService.ts](../../packages/backend/src/server/api/ApiCallService.ts) も `finally` で解放する
   - **修正**: `try { ... } finally { cleanup!(); }` で囲む ([drive/files/create.ts](../../packages/backend/src/server/api/endpoints/drive/files/create.ts) の `finally { cleanup!(); }` が手本)
   (出典: [api-meta-paramdef.md](../../.claude/skills/working-on-backend/references/knowledge/api-meta-paramdef.md?plain=1#L355-L356))
-- **一時ファイルが残る** → `requireFile: true` で `cleanup!()` を `finally` で呼び忘れた (出典: [adding-api-endpoint.md](../../.claude/skills/working-on-backend/references/tasks/adding-api-endpoint.md?plain=1#L266))
+- **一時ファイルが残る** → `requireFile: true` で `cleanup!()` を `finally` で呼び忘れた (HTTP の multipart 経路では `ApiCallService` も `finally` で解放するが、基底クラスは AJV 失敗時にしか呼ばないため endpoint 側でも呼ぶ) (出典: [adding-api-endpoint.md](../../.claude/skills/working-on-backend/references/tasks/adding-api-endpoint.md?plain=1#L266))
 
 ## Nest DI
 

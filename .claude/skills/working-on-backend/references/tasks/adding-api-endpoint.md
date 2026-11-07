@@ -176,7 +176,7 @@ async (ps, me, token, file, cleanup, ip, headers) => { ... }
 
 ### 2.6 エラー throw のバランス
 
-**クライアントに返すべき業務エラー** は必ず `meta.errors` に列挙して `throw new ApiError(meta.errors.<key>)` する。これを守らないと misskey-js 側の型に出ず、レスポンスも 500 になる。第 2 引数で追加情報を渡せる:
+**クライアントに返すべき業務エラー** は必ず `meta.errors` に列挙して `throw new ApiError(meta.errors.<key>)` する。これを守らないと misskey-js 側の型に出ない (HTTP ステータスは `kind` / `httpStatusCode` で決まり、既定は 400)。第 2 引数で追加情報を渡せる:
 
 ```ts
 throw new ApiError(meta.errors.invalidParam, { reason: 'too short' });
@@ -260,10 +260,10 @@ CI の `check-misskey-js-autogen` は、現在のコードから生成した結�
 - **404 になる** → `endpoint-list.ts` 登録漏れ
 - **CI `check-misskey-js-autogen` で落ちる** → `pnpm build-misskey-js-with-types` 忘れ
 - **CI `spdx` で落ちる** → SPDX ヘッダー欠落
-- **クライアントが 500 と error 型不在を受け取る** → `meta.errors` 列挙なしに `throw new ApiError(...)` した
+- **error が misskey-js の型に出てこない** → `meta.errors` 列挙なしに `throw new ApiError(...)` した (`ApiError` 以外の例外を投げた場合はレスポンスが 500 になる)
 - **`me.id` で TypeError** → `requireCredential: false` で null チェックを忘れた
 - **UUID 重複** → 衝突確認グレップを忘れた
-- **一時ファイルが残る** → `requireFile: true` で `cleanup!()` を `finally` で呼び忘れた
+- **一時ファイルが残る** → `requireFile: true` で `cleanup!()` を `finally` で呼び忘れた (HTTP の multipart 経路では `ApiCallService` も `finally` で解放するが、基底クラスは AJV 失敗時にしか呼ばないため endpoint 側でも呼ぶ)
 - **`requiredRolePolicy` の匿名アクセス** → `ApiCallService` は未ログイン時に既定ポリシー (`getUserPolicies(null)`) で判定し、許可されていなければ `ROLE_PERMISSION_DENIED` を返す (500 にはならない)。匿名で使わせない API なら `requireCredential: true` を併用する
 
 ---

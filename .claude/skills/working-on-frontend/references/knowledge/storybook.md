@@ -45,7 +45,7 @@ export const Default = {
 ポイント:
 
 - 上 2 つの `eslint-disable` は Storybook のお作法で必須 (render の関数が return type を明示しないため / `default export` ではないため)
-- `satisfies StoryObj<typeof MkColoredTag>` が無いと `args` の型補完が効かなくなる
+- `satisfies StoryObj<typeof 対象コンポーネント>` (この例では架空の `MkColoredTag`) が無いと `args` の型補完が効かなくなる
 
 ## 複数 story (variant 別)
 
