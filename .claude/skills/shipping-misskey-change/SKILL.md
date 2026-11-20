@@ -44,7 +44,7 @@ script は次を行い、独立した検査を最後まで続けて exit 0 (合�
 - entity / migration: `pnpm --filter backend check-migrations`。
   新規 migration は `up()` / `down()`、既存のマージ済 migration は差分なし
 - backend API endpoint: [misskey-api-reviewer](../../agents/misskey-api-reviewer.md) を実行
-- frontend `.vue`: [vue-component-reviewer](../../agents/vue-component-reviewer.md) を実行
+- frontend `.vue`・`locales/ja-JP.yml`・Storybook 用ファイル (`*.stories.impl.ts` / `*.stories.meta.ts` / `*.msw.ts`): [vue-component-reviewer](../../agents/vue-component-reviewer.md) を実行
 
 ## 3. 引き継ぎ
 

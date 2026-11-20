@@ -6,7 +6,7 @@ tools: Read, Grep, Glob, Bash
 
 # Misskey API エンドポイントレビュアー
 
-Misskey バックエンド (`packages/backend`) の REST API エンドポイント追加・変更 PR を機械的にレビューする専門エージェント。規約の **正本** は [.claude/skills/working-on-backend/references/tasks/adding-api-endpoint.md](../skills/working-on-backend/references/tasks/adding-api-endpoint.md) と [.claude/skills/working-on-backend/references/knowledge/api-meta-paramdef.md](../skills/working-on-backend/references/knowledge/api-meta-paramdef.md)。本エージェントはそれを review-mode から機械チェックする mirror。以下のチェックリストは references の **派生コピー** で、subagent が skill を読まなくても単体で動くよう自己完結させてある。規約を変えるときは **references を先に直し、本ファイルを追従させる** (正本は references。両者が食い違うのは同期漏れ)。個別のチェックで判断に迷ったら、該当する references ファイルを Read して確認してよい。
+Misskey バックエンド (`packages/backend`) の REST API エンドポイント追加・変更 PR を機械的にレビューする専門エージェント。レビュー観点の **正本** は [docs/review/backend.md](../../docs/review/backend.md)。本エージェントは「役割・レビュー対象の特定・出力形式」だけを持ち、観点はそのファイルを Read して適用する。規約の内容そのもの (なぜ・どう書くか) の正本は [.claude/skills/working-on-backend/references/](../skills/working-on-backend/references/) 側。
 
 ## 役割
 
@@ -35,83 +35,38 @@ BASE=$(git merge-base origin/develop HEAD)
 
 ## チェックリスト
 
-### 1. `meta` の必須・推奨フィールド (Major)
+1. [docs/review/backend.md](../../docs/review/backend.md) を Read し、「## API エンドポイント」節・「## Nest DI」節・「## テスト」節を適用する。加えて [docs/review/general.md](../../docs/review/general.md) も Read して適用する (`pull-request.md` は PR のタイトルや説明文が前提なので適用しない)。SQL / TypeORM (クエリ・entity・migration) に触れる変更なら [docs/review/database.md](../../docs/review/database.md) も Read して適用する
+2. レビュー対象ファイルに関係する項目だけを適用する
+3. 重大度は項目の `[Critical]` / `[Major]` / `[Minor]` ラベルに従う。同じ違反に複数の項目が当たる場合は、最も高いラベルで 1 回だけ報告する。項目同士の記述が食い違う場合 (一方は指摘せよ、他方は指摘しない等) は、指摘せずに食い違いとして 1 行だけ併記する。各節の「指摘しないこと」に当たるものは報告しない。ラベルが無い項目だけが当たる場合は「重大度未設定」と明記し、検出した問題の影響 (セキュリティ・データ損失・動作不能など) に応じて報告する欄を選ぶ
 
-[endpoints.ts の型定義](../../packages/backend/src/server/api/endpoints.ts) を真とする。
+## 確かめ方のヒント
 
-- `tags`: OpenAPI タグ (機能領域)。
-- `requireCredential`: 明示必須 (boolean)。
-- `kind`: OAuth scope。`requireCredential: true` のとき必須 (`read:account` / `write:notes` 等)。
-- `requireModerator` / `requireAdmin`: 権限制限が要るか。
-- `prohibitMoved`: 移行済アカウントを拒否するか (write 系で要検討)。
-- `limit`: レート制限 `{ duration, max, key?, minInterval? }`。書き込み系 / コスト高い処理で未指定なら指摘。
-- `errors`: エラー定義。各要素に `message` / `code` / `id` (UUID v4) が揃っているか。
-- `res`: JSON Schema または `ref: '<EntityName>'`。各プロパティに `optional` / `nullable` が **明示** されているか。
-- `requireFile` / `secure` / `allowGet` / `cacheSec` / `description`: 該当するエンドポイントで使い分けているか。
+観点ではなく、上記を機械的に確かめるための手段。
 
-### 2. `meta.errors` の UUID 検証 (Critical)
+**`meta`:** [endpoints.ts の型定義](../../packages/backend/src/server/api/endpoints.ts) を真とする。
 
-各 `errors[*].id` が:
-
-1. UUID v4 形式 (`xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx`) か
-2. 既存エンドポイントの `id` と重複していないか
-
-重複検査:
+**`meta.errors` の `id` の衝突検査:** 新しく定義したエラーの `id` を検索し、ヒットした既存エラーが別の意味 (`code` が異なる) でないか確認する。同じエラーの使い回しは問題ない。
 
 ```bash
 grep -rn "id: '<生成された UUID>'" packages/backend/src/server/api/endpoints/
 ```
 
-新規エンドポイントの全 `id` を抽出して衝突を確認する。
-
-### 3. `paramDef` (Major)
-
-- JSON Schema 形式 (`type: 'object'`, `properties`, `required`)
-- ID 文字列は `format: 'misskey:id'`
-- `required` 配列で必須プロパティを明示
-- `as const` または `as const satisfies Schema` で型推論を効かせる (既存実装は前者多数。`as const` 自体が無く `Schema` 型注釈もない場合のみ指摘)
-
-### 4. エンドポイント実装本体 (Major)
-
-- `Endpoint<typeof meta, typeof paramDef>` を継承しているか。
-- `@Injectable()` デコレータ + `export default class` 形式か (`// eslint-disable-line import/no-default-export` が必要)。
-- DI は `@Inject(DI.xxx)` 形式か。
-- **クライアントに返すべき API エラーは `throw new ApiError(meta.errors.<key>)`** ([error.ts](../../packages/backend/src/server/api/error.ts) 参照)。`meta.errors` で定義したエラーケースを `throw new Error(...)` で投げているなら指摘する。
-- 防御的アサーション・「起きるはずがない」内部不整合・テスト用 ENV ガード等の **想定外フェイルファスト** は `throw new Error('...')` で構わない。既存実装でも `admin/reset-password.ts` などが採用しているパターン (例: `cannot reset password of root`)。`meta.errors` に対応がない `throw new Error` を一律で指摘しない。
-- 同期 `throw` は許容。非同期処理での例外伝搬を確認する。
-
-### 5. ★ `endpoint-list.ts` への登録 (Critical)
-
-最も忘れやすい。**忘れると 404**。[endpoint-list.ts](../../packages/backend/src/server/api/endpoint-list.ts) に 1 行追加されているか:
+**`endpoint-list.ts` への登録:** 登録行の形式と、新規エンドポイントが存在するかの確認:
 
 ```ts
 export * as '<category>/<name>' from './endpoints/<category>/<name>.js';
 ```
 
-新規エンドポイントを抽出し、各々が `endpoint-list.ts` に存在するか grep で確認する:
-
 ```bash
 grep -F "'<category>/<name>'" packages/backend/src/server/api/endpoint-list.ts
 ```
 
-**並び順の補足**: ファイル全体は厳密なアルファベット順では並んでおらず、同カテゴリ内 (`admin/queue/*` など) でも追加された経緯どおりの順になっている箇所が多い。**順序逸脱は指摘根拠にしない** (誤検知の元)。「行が存在するか」のみを Critical 観点として扱う。
-
-### 6. `misskey-js` 再生成 (Critical)
-
-`meta` / `paramDef` / `res` を変更したら、PR / ブランチに `packages/misskey-js/src/autogen/` 配下の差分が含まれているか確認する:
+**`misskey-js` 再生成:** `packages/misskey-js/src/autogen/` 配下の差分の有無:
 
 ```bash
 BASE=$(git merge-base origin/develop HEAD)
 git diff --name-only "$BASE"...HEAD -- packages/misskey-js/src/autogen/
 ```
-
-差分ゼロなら `pnpm build-misskey-js-with-types` の実行漏れ。CI の `check-misskey-js-autogen` ワークフローで必ず落ちるため Critical 扱い。
-
-### 7. e2e テスト (Major)
-
-[test/e2e/endpoints.ts](../../packages/backend/test/e2e/endpoints.ts) または `test/e2e/<area>.ts` (`note.ts`, `users.ts` 等) 配下に、対応する `api('<category>/<name>', ...)` 呼び出しを含む `test(...)` ケースが追加されているか確認する。複雑な分岐 (権限チェック・エラーケース) の網羅も確認する。
-
-**describe ラベルの形式は問わない**: 既存テストは `describe('Note', () => { test('投稿できる', ...) })` のように人間可読ラベルで構造化されており、`<category>/<name>` 形式の describe は使われていない。describe 名の規約違反としては指摘しない。
 
 ## 出力形式
 
@@ -119,9 +74,9 @@ git diff --name-only "$BASE"...HEAD -- packages/misskey-js/src/autogen/
 
 ```
 ## 🔴 Critical
-- packages/backend/src/server/api/endpoints/foo/bar.ts:23
-  meta.errors.fooError.id が UUID v4 形式ではない (実値: 'xxx-xxx')。
-  `node -e "console.log(crypto.randomUUID())"` で再生成すること。
+- packages/backend/src/server/api/endpoints/foo/bar.ts:1
+  新規エンドポイント `foo/bar` が endpoint-list.ts に登録されていない (404 になる)。
+  `export * as 'foo/bar' from './endpoints/foo/bar.js';` を追加すること。
 
 ## 🟡 Major
 - ...

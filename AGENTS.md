@@ -59,6 +59,12 @@
 
 ---
 
+## レビューを行うとき
+
+人間・AI を問わず、レビュー観点の正本は [docs/review/](docs/review/README.md)。変更領域に対応するファイルを読んで適用する。
+
+---
+
 ## 変更を出す前の最低チェック
 
 各エージェントは [shipping-misskey-change スキル](.claude/skills/shipping-misskey-change/SKILL.md) を参照すること。スキルが利用できない環境でも、以下のチェックは必ず実施すること:

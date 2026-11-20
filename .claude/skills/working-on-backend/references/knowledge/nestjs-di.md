@@ -95,3 +95,5 @@ export class MyService {
 - [endpoints/notes/create.ts](../../../../../packages/backend/src/server/api/endpoints/notes/create.ts) — Service を型注入 (`NoteEntityService` / `NoteCreateService`) + `meta.errors` + `try/catch` で業務エラー変換 + 末尾 `throw err;` の二段構え
 - [endpoints/i/pin.ts](../../../../../packages/backend/src/server/api/endpoints/i/pin.ts) — `.catch(err => { ... throw err; })` で同様にエラー変換
 - [endpoints/notes/global-timeline.ts](../../../../../packages/backend/src/server/api/endpoints/notes/global-timeline.ts) — `RoleService.getUserPolicies()` で動的ポリシー判定
+
+> レビュー観点の一覧は [docs/review/backend.md](../../../../../docs/review/backend.md) を参照。

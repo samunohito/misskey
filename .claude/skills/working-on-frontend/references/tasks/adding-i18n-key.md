@@ -120,3 +120,5 @@ git diff --name-only develop -- 'locales/*.yml' | grep -v '^locales/ja-JP\.yml$'
 - [packages/i18n/build.ts](../../../../../packages/i18n/build.ts)
 - [packages/i18n/src/autogen/locale.ts (生成物)](../../../../../packages/i18n/src/autogen/locale.ts)
 - [packages/frontend/src/i18n.ts](../../../../../packages/frontend/src/i18n.ts)
+
+> レビュー観点の一覧は [docs/review/frontend.md](../../../../../docs/review/frontend.md) を参照。

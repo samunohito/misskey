@@ -94,3 +94,5 @@ const result = await os.apiWithDialog('notes/create', {
 
 - [packages/frontend/src/os.ts](../../../../../packages/frontend/src/os.ts) — 全 API の実装
 - 既存のダイアログ系コンポーネント: `MkDialog.vue` (alert / confirm はこれを再利用)、`MkFormDialog.vue` 等
+
+> レビュー観点の一覧は [docs/review/frontend.md](../../../../../docs/review/frontend.md) を参照。

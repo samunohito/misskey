@@ -190,3 +190,5 @@ pnpm --filter frontend test
 - [MkButton.stories.impl.ts](../../../../../packages/frontend/src/components/MkButton.stories.impl.ts) — 複数 story Storybook 雛形
 - [packages/frontend/src/os.ts](../../../../../packages/frontend/src/os.ts) — UI 操作 API 一覧
 - [packages/frontend/src/i18n.ts](../../../../../packages/frontend/src/i18n.ts) — `i18n.ts` / `i18n.tsx` 実装
+
+> レビュー観点の一覧は [docs/review/frontend.md](../../../../../docs/review/frontend.md) を参照。

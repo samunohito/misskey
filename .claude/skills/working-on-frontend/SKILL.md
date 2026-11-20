@@ -34,3 +34,5 @@ SKILL.md 本体は references への索引だけ。具体的な手順や規約�
 frontend の変更を commit / PR にする前に、必ず [shipping-misskey-change](../shipping-misskey-change/SKILL.md) の最終チェックリストに従う。
 
 `.vue` を追加・変更したなら、その出口で [vue-component-reviewer](../../agents/vue-component-reviewer.md) agent (この skill の規約を review-mode から機械チェックする専門 reviewer) を Task で起動すると、命名・i18n・SCSS 変数・a11y・Storybook 併設の逸脱を取りこぼしにくい。
+
+> レビュー観点の一覧は [docs/review/frontend.md](../../../docs/review/frontend.md) を参照。

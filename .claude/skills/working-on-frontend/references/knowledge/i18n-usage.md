@@ -398,3 +398,5 @@ i18n は frontend (および一部の SSR されるエラーページ) でのみ
 ダブルクォート値の中で `\n` は実際の改行になる。block scalar (`|`) でも可だが、HTML タグやプレースホルダ混在では扱いづらい。慣習はダブルクォート + `\n`。
 
 Vue 側で表示時に `white-space: pre-wrap` などを当てる必要あり。
+
+> レビュー観点の一覧は [docs/review/frontend.md](../../../../../docs/review/frontend.md) を参照。

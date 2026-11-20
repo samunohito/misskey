@@ -26,18 +26,7 @@ Be willing to comment on the good points and not just the things you want fixed 
 - https://konifar-zatsu.hatenadiary.jp/entry/2024/11/05/192421
 
 ### Review perspective
-- Scope
-	- Are the goals of the PR clear?
-	- Is the granularity of the PR appropriate?
-- Security
-	- Does merging this PR create a vulnerability?
-- Performance
-	- Will merging this PR cause unexpected performance degradation?
-	- Is there a more efficient way?
-- Testing
-	- Does the test ensure the expected behavior?
-	- Are there any omissions or gaps?
-	- Does it check for anomalies?
+See [Review guidelines](../review/README.md).
 
 ## Security Advisory
 

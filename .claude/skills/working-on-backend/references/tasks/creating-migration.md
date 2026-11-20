@@ -170,3 +170,5 @@ pnpm migrate
 - [ ] `up()` の各文に対応する巻き戻しが `down()` にあり、**`down()` が空でない** (難ケースは [knowledge/typeorm-patterns.md](../knowledge/typeorm-patterns.md) を確認済み)
 - [ ] `pnpm --filter backend check-migrations` が **0 件 (pending DDL なし)** で通る
 - [ ] (可能なら) `pnpm migrate` → `pnpm revert` → `pnpm migrate` が通る
+
+> レビュー観点の一覧は [docs/review/database.md](../../../../../docs/review/database.md) を参照。

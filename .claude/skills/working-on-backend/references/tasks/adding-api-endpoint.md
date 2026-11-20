@@ -282,3 +282,5 @@ PR に `packages/misskey-js/src/autogen/` 配下の差分が含まれていな�
 - [test/e2e/endpoints.ts (テスト例)](../../../../../packages/backend/test/e2e/endpoints.ts)
 - [test/utils.ts (api/signup/post 等のヘルパー)](../../../../../packages/backend/test/utils.ts)
 - [scripts/generate_api_json.js (misskey-js 生成元)](../../../../../packages/backend/scripts/generate_api_json.js)
+
+> レビュー観点の一覧は [docs/review/backend.md](../../../../../docs/review/backend.md) を参照。
