@@ -1923,14 +1923,12 @@ describe('Timelines', () => {
 				assert.strictEqual(res.body.some(note => note.id === q1.id), true);
 			});
 
-			test('FTT: sinceId は Redis から返り、Redis にしか無い返信が含まれる (欠陥2)', async () => {
+			test('FTT: sinceId は Redis に新着が無ければ DB に行かず、新着があれば DB から返る (欠陥2)', async () => {
 				if (!enableFanoutTimeline) return;
 
-				const [alice, bob, carol] = await Promise.all([signup(), signup(), signup()]);
+				const [alice, bob] = await Promise.all([signup(), signup()]);
 
-				const carolNote = await post(carol, { text: 'c' });
 				await api('following/create', { userId: bob.id }, alice);
-				await api('following/update', { userId: bob.id, withReplies: true }, alice);
 
 				// B0 の push で HTL を作り、水位 (B0 の push 時点の ID) が付くのを待つ
 				await post(bob, { text: 'b0' });
@@ -1950,15 +1948,69 @@ describe('Timelines', () => {
 				const sinceId = first.body[0].id;
 				assert.ok(sinceId >= b1.id);
 
-				// フォローしていないユーザーへの返信は DB フォールバックでは除外されるが、
-				// withReplies のフォローで HTL には入る
-				const reply = await post(bob, { text: 'r', replyId: carolNote.id });
+				// A は DB にはあるが、ファンアウト中でまだ Redis に載っていない状態を作る
+				const a = await post(bob, { text: 'a' });
+				await vi.waitFor(async () => {
+					const htl = await redisForTimelines.lrange(`list:homeTimeline:${alice.id}`, 0, -1);
+					assert.ok(htl.includes(a.id));
+					const ltl = await redisForTimelines.lrange('list:localTimeline', 0, -1);
+					assert.ok(ltl.includes(a.id));
+				}, waitForPushToTlOptions);
+				await redisForTimelines.lrem(`list:homeTimeline:${alice.id}`, 0, a.id);
+				await redisForTimelines.lrem('list:localTimeline', 0, a.id);
 
+				// Redis に新着が無いので DB には行かない (DB に行けば A が返る)
+				const none = await api('notes/hybrid-timeline', { limit: 100, sinceId }, alice);
+				assert.deepStrictEqual(none.body.map(note => note.id), []);
+
+				// 新着 C が Redis に載ると DB から返るので、A も含まれる (クライアントの sinceId が A を追い越さない)
+				const c = await post(bob, { text: 'c' });
 				await vi.waitFor(async () => {
 					const res = await api('notes/hybrid-timeline', { limit: 100, sinceId }, alice);
 
-					assert.strictEqual(res.body.some(note => note.id === reply.id), true);
+					assert.strictEqual(res.body.some(note => note.id === c.id), true);
+					assert.strictEqual(res.body.some(note => note.id === a.id), true);
 				}, waitForPushToTlOptions);
+			});
+
+			test('FTT: hybrid の sinceId で、localTimelineWithReplyTo だけが sinceId まで遡れていても DB に行く', async () => {
+				if (!enableFanoutTimeline) return;
+
+				const [alice, carol] = await Promise.all([signup(), signup()]);
+
+				// HTL の水位 (作成時点) を R より古くするため、P0 の push を待ってから R を投稿する
+				const p0 = await post(alice, { text: 'p0' });
+				await vi.waitFor(async () => {
+					const htl = await redisForTimelines.lrange(`list:homeTimeline:${alice.id}`, 0, -1);
+					assert.ok(htl.includes(p0.id));
+				}, waitForPushToTlOptions);
+
+				const r = await post(carol, { text: 'r', replyId: p0.id });
+				const d = await post(carol, { text: 'd' });
+				await vi.waitFor(async () => {
+					const replyTo = await redisForTimelines.lrange(`list:localTimelineWithReplyTo:${alice.id}`, 0, -1);
+					assert.ok(replyTo.includes(r.id));
+					const ltl = await redisForTimelines.lrange('list:localTimeline', 0, -1);
+					assert.ok(ltl.includes(d.id));
+				}, waitForPushToTlOptions);
+
+				// 境界に含めるキー (HTL / LTL) が sinceId まで遡れておらず、Redis に新着も無い状態を作る。
+				// LTL はグローバルなので、退避して後続のテストのために元に戻す
+				await redisForTimelines.del(`list:homeTimeline:${alice.id}`);
+				const prevWatermark = await redisForTimelines.get('listwm:localTimeline');
+				await redisForTimelines.rename('list:localTimeline', 'list:localTimeline:e2e-backup');
+				await redisForTimelines.del('listwm:localTimeline');
+				try {
+					// 返信のキー (境界に含めない) で「sinceId まで遡れている」と判定すると、DB に行かず [] になる
+					const res = await api('notes/hybrid-timeline', { limit: 100, sinceId: r.id }, alice);
+
+					assert.strictEqual(res.body.some(note => note.id === d.id), true);
+				} finally {
+					await redisForTimelines.rename('list:localTimeline:e2e-backup', 'list:localTimeline');
+					if (prevWatermark != null) {
+						await redisForTimelines.set('listwm:localTimeline', prevWatermark);
+					}
+				}
 			});
 
 			describe('Channel', () => {

@@ -168,34 +168,59 @@ describe('FanoutTimelineMerger', () => {
 		expect(ids(res)).toEqual([75, 72, 70].map(id));
 	});
 
-	test('ascending is served from Redis when sinceId >= H and a boundary key reaches sinceId', async () => {
-		const db = fakeDb([100, 95, 90, 85, 80, 70]);
+	test('ascending reads new notes from DB when Redis has candidates newer than sinceId', async () => {
+		// n088 は DB にだけある (ファンアウト中で、まだ Redis に載っていない)
+		const db = fakeDb([100, 95, 90, 88, 85, 80, 70]);
 		const f = fakeFetch();
-		const entries = [
-			entry('homeTimeline:a', [95, 85]),
+		const res = await mergeFanoutTimeline([
+			entry('homeTimeline:a', [95, 85, 75]),
 			entry('localTimeline', [100, 90, 80], 70),
-		];
+		], params({ sinceId: id(80) }), { fetchAndFilter: f.fetchAndFilter, dbFallback: db.dbFallback });
 
-		const res = await mergeFanoutTimeline(entries, params({ sinceId: id(80) }), { fetchAndFilter: f.fetchAndFilter, dbFallback: db.dbFallback });
-		expect(ids(res)).toEqual([85, 90, 95, 100].map(id));
+		expect(ids(res)).toEqual([85, 88, 90, 95, 100].map(id));
+		expect(db.calls).toEqual([[null, id(80), 10]]);
+		expect(f.calls).toEqual([]);
+	});
 
-		// 新着 0 件でも DB には行かない
-		const empty = await mergeFanoutTimeline(entries, params({ sinceId: id(100) }), { fetchAndFilter: f.fetchAndFilter, dbFallback: db.dbFallback });
-		expect(empty).toEqual([]);
+	test('ascending returns [] without DB when Redis has nothing newer than sinceId', async () => {
+		// n105 はファンアウト中。Redis に載ってから次のポーリングで DB 経由で返る
+		const db = fakeDb([105, 100, 95, 90, 85, 80, 70]);
+		const f = fakeFetch();
+		const res = await mergeFanoutTimeline([
+			entry('homeTimeline:a', [95, 85, 75]),
+			entry('localTimeline', [100, 90, 80], 70),
+		], params({ sinceId: id(100) }), { fetchAndFilter: f.fetchAndFilter, dbFallback: db.dbFallback });
 
+		expect(res).toEqual([]);
+		expect(db.calls).toEqual([]);
+		expect(f.calls).toEqual([]);
+	});
+
+	test('ascending with sinceId exactly equal to H trusts Redis', async () => {
+		// n075 は DB にだけあるが、sinceId (= H) より新しい範囲に Redis の候補が無いので DB には行かない
+		const db = fakeDb([75, 65, 60]);
+		const f = fakeFetch();
+		const res = await mergeFanoutTimeline([
+			entry('homeTimeline:a', [65, 60]),
+			entry('localTimeline', [], 70),
+		], params({ sinceId: id(70) }), { fetchAndFilter: f.fetchAndFilter, dbFallback: db.dbFallback });
+
+		expect(res).toEqual([]);
 		expect(db.calls).toEqual([]);
 	});
 
-	test('ascending with sinceId exactly equal to H is served from Redis', async () => {
-		const db = fakeDb([100, 95, 90, 75, 70, 65]);
+	test('ascending falls back to DB when a boundary key without watermark does not reach sinceId', async () => {
+		// どちらも水位が無い。k0 は黙って trim されていて (n018 を捨てた)、sinceId まで遡れていない
+		const db = fakeDb([30, 29, 28, 23, 20, 18, 17]);
 		const f = fakeFetch();
 		const res = await mergeFanoutTimeline([
-			entry('homeTimeline:a', [95, 75, 65]),
-			entry('localTimeline', [100, 90], 70),
-		], params({ sinceId: id(70) }), { fetchAndFilter: f.fetchAndFilter, dbFallback: db.dbFallback });
+			entry('localTimeline', [29, 28, 23, 20]),
+			entry('localTimelineWithReplies', [30, 17]),
+		], params({ sinceId: id(17) }), { fetchAndFilter: f.fetchAndFilter, dbFallback: db.dbFallback });
 
-		expect(ids(res)).toEqual([75, 90, 95, 100].map(id));
-		expect(db.calls).toEqual([]);
+		expect(db.calls).toEqual([[null, id(17), 10]]);
+		expect(ids(res)).toContain(id(18));
+		expect(ids(res)).toEqual([18, 20, 23, 28, 29, 30].map(id));
 	});
 
 	test('ascending falls back to DB when sinceId < H', async () => {
@@ -212,15 +237,16 @@ describe('FanoutTimelineMerger', () => {
 	});
 
 	test('ascending falls back to DB when only a non-boundary key reaches sinceId', async () => {
-		const db = fakeDb([100, 90, 80, 70]);
+		// Redis には sinceId より新しい候補が無いが、境界に含めるキーは sinceId まで遡れていないので DB に行く
+		const db = fakeDb([70, 50]);
 		const f = fakeFetch();
 		const res = await mergeFanoutTimeline([
-			entry('localTimeline', [100, 90]),
-			entry('localTimelineWithReplyTo:a', [95, 50], null, false),
+			entry('localTimeline', []),
+			entry('localTimelineWithReplyTo:a', [50], null, false),
 		], params({ sinceId: id(60) }), { fetchAndFilter: f.fetchAndFilter, dbFallback: db.dbFallback });
 
 		expect(db.calls).toEqual([[null, id(60), 10]]);
-		expect(ids(res)).toEqual([70, 80, 90, 100].map(id));
+		expect(ids(res)).toEqual([70].map(id));
 	});
 
 	test('useDbFallback=false ignores H and never calls dbFallback', async () => {
@@ -265,6 +291,35 @@ describe('FanoutTimelineMerger', () => {
 		expect(db.calls).toEqual([[id(90), id(60), 8]]);
 		expect(ids(res)).toEqual([95, 90, 80, 75, 70, 65, 62].map(id));
 		expect(ids(res).every(x => x > id(60))).toBe(true);
+	});
+
+	test('untilId and sinceId: Redis range never returns notes at or below sinceId', async () => {
+		// H (n050) < sinceId なので、Redis 区間の下端は sinceId で決まる
+		const db = fakeDb([100, 95, 90, 75, 65, 62, 55, 45]);
+		const f = fakeFetch();
+		const res = await mergeFanoutTimeline([
+			entry('homeTimeline:a', [95, 75, 65, 62, 55, 45]),
+			entry('localTimeline', [100, 90], 50),
+		], params({ untilId: id(98), sinceId: id(60) }), { fetchAndFilter: f.fetchAndFilter, dbFallback: db.dbFallback });
+
+		expect(ids(res)).toEqual([95, 90, 75, 65, 62].map(id));
+		expect(ids(res).every(x => x > id(60))).toBe(true);
+		expect(f.calls.flat().every(x => x > id(60))).toBe(true);
+		expect(db.calls).toEqual([[id(62), id(60), 5]]);
+	});
+
+	test('untilId and sinceId: falls back to DB when a boundary key without watermark does not reach sinceId', async () => {
+		// k0 は水位が無いまま黙って trim されていて、n025 は DB にだけある
+		const db = fakeDb([30, 29, 28, 25, 23, 20, 17]);
+		const f = fakeFetch();
+		const res = await mergeFanoutTimeline([
+			entry('localTimeline', [29, 28, 23, 20]),
+			entry('localTimelineWithReplies', [30, 17, 15]),
+		], params({ untilId: id(31), sinceId: id(17), limit: 5 }), { fetchAndFilter: f.fetchAndFilter, dbFallback: db.dbFallback });
+
+		expect(db.calls).toEqual([[id(31), id(17), 5]]);
+		expect(f.calls).toEqual([]);
+		expect(ids(res)).toEqual([30, 29, 28, 25, 23].map(id));
 	});
 
 	test('empty snapshot falls back exactly like today', async () => {
