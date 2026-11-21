@@ -10,6 +10,8 @@ import { DI } from '@/di-symbols.js';
 import { bindThis } from '@/decorators.js';
 import { SystemWebhookService } from '@/core/SystemWebhookService.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
+import { FanoutTimelineService } from '@/core/FanoutTimelineService.js';
+import { IdService } from '@/core/IdService.js';
 
 @Injectable()
 export class UserService {
@@ -20,6 +22,8 @@ export class UserService {
 		private followingsRepository: FollowingsRepository,
 		private systemWebhookService: SystemWebhookService,
 		private userEntityService: UserEntityService,
+		private fanoutTimelineService: FanoutTimelineService,
+		private idService: IdService,
 	) {
 	}
 
@@ -46,6 +50,11 @@ export class UserService {
 				}, {
 					isFollowerHibernated: false,
 				});
+				// 休眠中は HTL へのファンアウトが止まっていたので、復帰時点より古い範囲は DB と合わせて返すよう水位を引き上げる。
+				// 呼び出し元は待たないので、Redis のエラーで unhandled rejection にならないよう握りつぶす
+				const now = this.idService.gen();
+				this.fanoutTimelineService.raiseWatermark(`homeTimeline:${user.id}`, now).catch(() => {});
+				this.fanoutTimelineService.raiseWatermark(`homeTimelineWithFiles:${user.id}`, now).catch(() => {});
 			}
 		} else {
 			this.usersRepository.update(user.id, {
