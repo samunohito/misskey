@@ -198,6 +198,84 @@ describe('FanoutTimelineService', () => {
 		expect(await redis.lrange('list:' + tl, 0, -1)).toEqual([id]);
 	});
 
+	describe('late path rejects a push', () => {
+		/** 末尾 tail のキーに、遅着の id を push する (拒否される前提)。引き上げの完了まで待つ */
+		async function pushRejected(tl: FanoutTimelineName, id: string) {
+			const raiseSpy = vi.spyOn(service, 'raiseWatermark');
+			const p = redis.pipeline();
+			service.push(tl, id, 10, p);
+			await p.exec();
+			await vi.waitFor(() => {
+				expect(raiseSpy).toHaveBeenCalledTimes(1);
+			});
+			await raiseSpy.mock.results[0].value;
+		}
+
+		test('raises watermark to the tail id when the rejected id is older than the tail', async () => {
+			const tl = uniqueName(s => `homeTimeline:${s}` as const);
+			const base = Date.now() - 1000 * 60 * 60;
+			const tail = idService.gen(base);
+			const head = idService.gen(base + 1000);
+			await redis.rpush('list:' + tl, head, tail);
+			await redis.set('listwm:' + tl, idService.gen(base - 1000 * 60));
+
+			const rejected = idService.gen(base - 1000);
+			await pushRejected(tl, rejected);
+
+			expect(await redis.get('listwm:' + tl)).toBe(tail);
+			expect(await redis.lrange('list:' + tl, 0, -1)).toEqual([head, tail]);
+		});
+
+		test('raises watermark to the rejected id when it is newer than the tail in the same ms', async () => {
+			const tl = uniqueName(s => `homeTimeline:${s}` as const);
+			const t = Date.now() - 1000 * 60 * 60;
+			// 同じ時刻の ID を 2 つ作り、小さい方を末尾にする (時刻が同じなので大きい方も拒否される)
+			let a = idService.gen(t);
+			let b = idService.gen(t);
+			while (a === b) b = idService.gen(t);
+			if (a > b) [a, b] = [b, a];
+			await redis.rpush('list:' + tl, a);
+
+			await pushRejected(tl, b);
+
+			expect(await redis.get('listwm:' + tl)).toBe(b);
+			expect(await redis.lrange('list:' + tl, 0, -1)).toEqual([a]);
+		});
+
+		test('does not lower an existing watermark', async () => {
+			const tl = uniqueName(s => `homeTimeline:${s}` as const);
+			const base = Date.now() - 1000 * 60 * 60;
+			await redis.rpush('list:' + tl, idService.gen(base));
+			await redis.set('listwm:' + tl, 'zzzz');
+
+			await pushRejected(tl, idService.gen(base - 1000));
+
+			expect(await redis.get('listwm:' + tl)).toBe('zzzz');
+		});
+
+		test('does not record watermark for keys without watermark', async () => {
+			const tl = uniqueName(s => `localTimelineWithReplyTo:${s}` as const);
+			const base = Date.now() - 1000 * 60 * 60;
+			const tail = idService.gen(base);
+			await redis.rpush('list:' + tl, tail);
+
+			const lindexSpy = vi.spyOn(redis, 'lindex');
+			const raiseSpy = vi.spyOn(service, 'raiseWatermark');
+			const p = redis.pipeline();
+			service.push(tl, idService.gen(base - 1000), 10, p);
+			await p.exec();
+			await vi.waitFor(() => {
+				expect(lindexSpy).toHaveBeenCalledTimes(1);
+			});
+			await lindexSpy.mock.results[0].value;
+			await new Promise(r => setTimeout(r, 50));
+
+			expect(raiseSpy).not.toHaveBeenCalled();
+			expect(await redis.exists('listwm:' + tl)).toBe(0);
+			expect(await redis.lrange('list:' + tl, 0, -1)).toEqual([tail]);
+		});
+	});
+
 	test('every pushed id above the watermark stays in the list (random pushes with late ids)', async () => {
 		const tl = uniqueName(s => `homeTimeline:${s}` as const);
 
@@ -212,47 +290,63 @@ describe('FanoutTimelineService', () => {
 		};
 		vi.spyOn(Math, 'random').mockImplementation(rand);
 
-		// 作成時の引き上げで水位が「今」まで上がると検査が素通りになるので、キーは先に作っておく。
-		// 末尾を遅着のノートより古くして、遅着の経路でも push されるようにする
-		const initial = genIdsDesc(5, 1000 * 60 * 30);
+		// 時間の経過を模擬する。通常のノートは 60 秒に 1 件、その時点で 3 分以内の ID で push する。
+		// LIST は maxlen 20 で 20 分ほどにまたがるので、遅れ幅がそれより小さい遅着ノートは、
+		// LIST に入るか、末尾より古くて拒否される。拒否されたものは、水位を引き上げないと穴になりうる
+		let clock = Date.now() - 1000 * 60 * 60 * 10;
+		vi.spyOn(Date, 'now').mockImplementation(() => clock);
+
+		// 作成時の引き上げで水位が「今」まで上がると検査が素通りになるので、キーは先に作っておく
+		const initial = Array.from({ length: 5 }, (_, k) => idService.gen(clock - 1000 * 60 * 60 - k));
 		await redis.rpush('list:' + tl, ...initial);
 
-		// 遅着の経路は push の呼び出し元を待たずに LINDEX → LPUSH するので、spy で実際の LPUSH を拾う
-		const lindexSpy = vi.spyOn(redis, 'lindex');
+		// 遅着の経路は push の呼び出し元を待たずに LINDEX → LPUSH (拒否なら水位の引き上げ) をするので、
+		// spy でその完了を待つ。拒否したものも push したものとして数える
 		const lpushSpy = vi.spyOn(redis, 'lpush');
+		const raiseSpy = vi.spyOn(service, 'raiseWatermark');
 		const pushed = new Set<string>(initial);
 		let lateCount = 0;
+		// 拒否した時点で水位より新しかった遅着の数 (水位を引き上げないと穴になるもの)
+		let rejectedAboveWatermark = 0;
+		let checkedWithWatermark = 0;
 
-		// 通常のノートは時間とともに新しくなる (少し前後する)。全体で 3 分以内に収める
-		const base = Date.now() - 1000 * 60 * 2.5;
 		for (let i = 0; i < 400; i++) {
-			const late = rand() < 0.2;
+			const late = rand() < 0.3;
+			if (!late) clock += 1000 * 60;
 			const id = late
-				? idService.gen(base - 1000 * 60 - Math.floor(rand() * 1000 * 60 * 10))
-				: idService.gen(base + i * 100 - Math.floor(rand() * 1000));
-			if (late) lateCount++;
-			else pushed.add(id);
+				? idService.gen(clock - 1000 * 60 * 3 - Math.floor(rand() * 1000 * 60 * 27))
+				: idService.gen(clock - Math.floor(rand() * 1000));
+			pushed.add(id);
 
+			const wmBefore = await redis.get('listwm:' + tl);
+			const raiseCallsBefore = raiseSpy.mock.calls.length;
 			const p = redis.pipeline();
 			service.push(tl, id, 20, p);
 			await p.exec();
+			if (late) {
+				lateCount++;
+				await vi.waitFor(() => {
+					expect(lpushSpy.mock.calls.length + raiseSpy.mock.calls.length).toBe(lateCount);
+				});
+				await Promise.all(lpushSpy.mock.results.map(r => r.value));
+				await Promise.all(raiseSpy.mock.results.map(r => r.value));
+				if (raiseSpy.mock.calls.length > raiseCallsBefore && wmBefore != null && id > wmBefore) {
+					rejectedAboveWatermark++;
+				}
+			}
+
+			// push のたびに「水位より新しい ID で push したものは LIST にある」を確かめる
+			const [snapshot] = await service.getSnapshot([tl]);
+			if (snapshot.watermark == null) continue;
+			checkedWithWatermark++;
+			const list = new Set(snapshot.ids);
+			const missing = [...pushed].filter(x => x > snapshot.watermark! && !list.has(x));
+			expect(missing).toEqual([]);
 		}
 
-		await Promise.all(lindexSpy.mock.results.map(r => r.value));
-		await Promise.all(lpushSpy.mock.results.map(r => r.value));
-		for (const call of lpushSpy.mock.calls) pushed.add(call[1] as string);
-
-		const [snapshot] = await service.getSnapshot([tl]);
-		const watermark = snapshot.watermark;
-		expect(lateCount).toBeGreaterThan(0);
 		expect(lpushSpy).toHaveBeenCalled(); // 遅着のうち、実際に push されたものがある
-		expect(watermark).not.toBeNull(); // trim が起きている
-
-		const list = new Set(snapshot.ids);
-		const missing = [...pushed].filter(id => id > watermark! && !list.has(id));
-		expect(missing).toEqual([]);
-		// 水位は捨てたものから決まるので、水位より上のものがいくつか残っているはず (検査が素通りでない)
-		expect([...pushed].filter(id => id > watermark!).length).toBeGreaterThan(0);
+		expect(rejectedAboveWatermark).toBeGreaterThan(0); // 引き上げが無いと穴になる拒否が起きている (検査が素通りでない)
+		expect(checkedWithWatermark).toBeGreaterThan(0);
 	});
 
 	test('raiseWatermark does not lower an existing watermark', async () => {

@@ -151,6 +151,12 @@ export class FanoutTimelineService {
 				if (lastId == null || (this.idService.parse(id).date.getTime() > this.idService.parse(lastId).date.getTime())) {
 					return this.redisForTimelines.lpush(listKey, id).then(raiseIfCreated);
 				}
+				// 拒否したノートは LIST に入らないので、水位を max(このノートの ID, 末尾の ID) まで引き上げる。
+				// 「水位より新しい ID で push したものは LIST にある」という前提を保つため。
+				// 末尾の時刻以前に遅れて届くノートはこれからも拒否されるので、末尾までは Redis で網羅できない
+				if (lastId != null && recordsWatermark) {
+					return this.raiseWatermark(tl, id > lastId ? id : lastId);
+				}
 				return undefined;
 			}).catch(() => {});
 		}
