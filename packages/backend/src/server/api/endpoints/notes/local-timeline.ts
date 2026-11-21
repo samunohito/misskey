@@ -118,7 +118,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				redisTimelines:
 					ps.withFiles ? ['localTimelineWithFiles']
 					: ps.withReplies ? ['localTimeline', 'localTimelineWithReplies']
-					: me ? ['localTimeline', `localTimelineWithReplyTo:${me.id}`]
+					// DB フォールバックは他人への返信を除外するので、localTimelineWithReplyTo の内容を再現できない。境界に含めない
+					: me ? ['localTimeline', { name: `localTimelineWithReplyTo:${me.id}`, boundary: false }]
 					: ['localTimeline'],
 				alwaysIncludeMyNotes: true,
 				excludePureRenotes: !ps.withRenotes,

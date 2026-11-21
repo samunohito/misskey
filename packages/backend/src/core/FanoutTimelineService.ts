@@ -209,27 +209,6 @@ export class FanoutTimelineService {
 	}
 
 	@bindThis
-	public getMulti(name: FanoutTimelineName[], untilId?: string | null, sinceId?: string | null): Promise<string[][]> {
-		const pipeline = this.redisForTimelines.pipeline();
-		for (const n of name) {
-			pipeline.lrange('list:' + n, 0, -1);
-		}
-		return pipeline.exec().then(res => {
-			if (res == null) return [];
-			const tls = res.map(r => r[1] as string[]);
-			return tls.map(ids =>
-				(untilId && sinceId)
-					? ids.filter(id => id < untilId && id > sinceId).sort((a, b) => a > b ? -1 : 1)
-					: untilId
-						? ids.filter(id => id < untilId).sort((a, b) => a > b ? -1 : 1)
-						: sinceId
-							? ids.filter(id => id > sinceId).sort((a, b) => a < b ? -1 : 1)
-							: ids.sort((a, b) => a > b ? -1 : 1),
-			);
-		});
-	}
-
-	@bindThis
 	public purge(name: FanoutTimelineName) {
 		return this.redisForTimelines.del('list:' + name, 'listwm:' + name);
 	}

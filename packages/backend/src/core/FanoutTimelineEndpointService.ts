@@ -21,8 +21,16 @@ import { isReply } from '@/misc/is-reply.js';
 import { isInstanceMuted } from '@/misc/is-instance-muted.js';
 import { ChannelMutingService } from '@/core/ChannelMutingService.js';
 import { isChannelRelated } from '@/misc/is-channel-related.js';
+import { mergeFanoutTimeline } from '@/core/FanoutTimelineMerger.js';
+import type { FanoutTimelineMergeEntry } from '@/core/FanoutTimelineMerger.js';
 
 type NoteFilter = (note: MiNote) => boolean;
+
+/**
+ * 合成するキーの指定。文字列は境界に含める (`boundary: true`) とみなす。
+ * DB フォールバックで内容を再現できないキーは `boundary: false` にする。
+ */
+export type FanoutTimelineSource = FanoutTimelineName | { name: FanoutTimelineName; boundary: boolean };
 
 type TimelineOptions = {
 	untilId: string | null,
@@ -31,7 +39,7 @@ type TimelineOptions = {
 	allowPartial: boolean,
 	me?: { id: MiUser['id'] } | undefined | null,
 	useDbFallback: boolean,
-	redisTimelines: FanoutTimelineName[],
+	redisTimelines: FanoutTimelineSource[],
 	noteFilter?: NoteFilter,
 	alwaysIncludeMyNotes?: boolean;
 	ignoreAuthorFromBlock?: boolean;
@@ -69,150 +77,123 @@ export class FanoutTimelineEndpointService {
 
 	@bindThis
 	async getMiNotes(ps: TimelineOptions): Promise<MiNote[]> {
-		// 呼び出し元と以下の処理をシンプルにするためにdbFallbackを置き換える
-		if (!ps.useDbFallback) ps.dbFallback = () => Promise.resolve([]);
-
 		const ascending = ps.sinceId && !ps.untilId;
 		const idCompare: (a: string, b: string) => number = ascending ? (a, b) => a < b ? -1 : 1 : (a, b) => a > b ? -1 : 1;
 
-		const redisResult = await this.fanoutTimelineService.getMulti(ps.redisTimelines, ps.untilId, ps.sinceId);
+		// 文字列で指定されたキーは境界に含める
+		const timelines = ps.redisTimelines.map(tl => typeof tl === 'string' ? { name: tl, boundary: true } : tl);
 
-		// TODO: いい感じにgetMulti内でソート済だからuniqするときにredisResultが全てソート済なのを利用して再ソートを避けたい
-		const redisResultIds = Array.from(new Set(redisResult.flat(1))).sort(idCompare);
+		const snapshot = await this.fanoutTimelineService.getSnapshot(timelines.map(tl => tl.name));
 
-		let noteIds = redisResultIds.slice(0, ps.limit);
-		const oldestNoteId = ascending ? redisResultIds[0] : redisResultIds[redisResultIds.length - 1];
-		const shouldFallbackToDb = noteIds.length === 0 || ps.sinceId != null && ps.sinceId < oldestNoteId;
+		// フィルタの組み立てはキャッシュを引くので、Redis の候補を読むときだけ行う (DB だけで返すときは不要)
+		let filter: Promise<NoteFilter> | null = null;
+		const getFilter = () => filter ??= this.buildFilter(ps);
 
-		if (!shouldFallbackToDb) {
-			let filter = ps.noteFilter ?? (_note => true) as NoteFilter;
+		const entries: FanoutTimelineMergeEntry[] = snapshot.map((s, i) => ({ ...s, boundary: timelines[i].boundary }));
 
-			if (ps.alwaysIncludeMyNotes && ps.me) {
-				const me = ps.me;
-				const parentFilter = filter;
-				filter = (note) => note.userId === me.id || parentFilter(note);
-			}
+		return await mergeFanoutTimeline(entries, {
+			untilId: ps.untilId,
+			sinceId: ps.sinceId,
+			limit: ps.limit,
+			allowPartial: ps.allowPartial,
+			useDbFallback: ps.useDbFallback,
+		}, {
+			fetchAndFilter: async ids => this.getAndFilterFromDb(ids, await getFilter(), idCompare),
+			dbFallback: ps.useDbFallback ? ps.dbFallback : () => Promise.resolve([]),
+		});
+	}
 
-			if (ps.excludeNoFiles) {
-				const parentFilter = filter;
-				filter = (note) => note.fileIds.length !== 0 && parentFilter(note);
-			}
+	private async buildFilter(ps: TimelineOptions): Promise<NoteFilter> {
+		let filter = ps.noteFilter ?? (_note => true) as NoteFilter;
 
-			if (ps.excludeReplies) {
-				const parentFilter = filter;
-				filter = (note) => !isReply(note, ps.me?.id) && parentFilter(note);
-			}
-
-			if (ps.excludePureRenotes) {
-				const parentFilter = filter;
-				filter = (note) => (!isRenote(note) || isQuote(note)) && parentFilter(note);
-			}
-
-			if (ps.me) {
-				const me = ps.me;
-				const [
-					userIdsWhoMeMuting,
-					userIdsWhoMeMutingRenotes,
-					userIdsWhoBlockingMe,
-					userMutedInstances,
-					userMutedChannels,
-				] = await Promise.all([
-					this.cacheService.userMutingsCache.fetch(ps.me.id),
-					this.cacheService.renoteMutingsCache.fetch(ps.me.id),
-					this.cacheService.userBlockedCache.fetch(ps.me.id),
-					this.cacheService.userProfileCache.fetch(me.id).then(p => new Set(p.mutedInstances)),
-					this.channelMutingService.mutingChannelsCache.fetch(me.id),
-				]);
-
-				const parentFilter = filter;
-				filter = (note) => {
-					if (isUserRelated(note, userIdsWhoBlockingMe, ps.ignoreAuthorFromBlock)) return false;
-					if (isUserRelated(note, userIdsWhoMeMuting, ps.ignoreAuthorFromMute)) return false;
-					if (isUserRelated(note.renote, userIdsWhoBlockingMe, ps.ignoreAuthorFromBlock)) return false;
-					if (isUserRelated(note.renote, userIdsWhoMeMuting, ps.ignoreAuthorFromMute)) return false;
-					if (!ps.ignoreAuthorFromMute && isRenote(note) && !isQuote(note) && userIdsWhoMeMutingRenotes.has(note.userId)) return false;
-					if (isInstanceMuted(note, userMutedInstances)) return false;
-					if (isChannelRelated(note, userMutedChannels, ps.ignoreAuthorChannelFromMute)) return false;
-
-					return parentFilter(note);
-				};
-			}
-
-			{
-				const parentFilter = filter;
-				filter = (note) => {
-					if (!ps.ignoreAuthorFromInstanceBlock) {
-						if (this.utilityService.isBlockedHost(this.meta.blockedHosts, note.userHost)) return false;
-					}
-					if (note.userId !== note.renoteUserId && this.utilityService.isBlockedHost(this.meta.blockedHosts, note.renoteUserHost)) return false;
-					if (note.userId !== note.replyUserId && this.utilityService.isBlockedHost(this.meta.blockedHosts, note.replyUserHost)) return false;
-
-					return parentFilter(note);
-				};
-			}
-
-			if (ps.me == null && this.meta.ugcVisibilityForVisitor !== 'all') {
-				const parentFilter = filter;
-				filter = (note) => {
-					if (this.meta.ugcVisibilityForVisitor === 'none') return false;
-					if (this.meta.ugcVisibilityForVisitor === 'local' && note.userHost != null) return false;
-
-					return parentFilter(note);
-				};
-			}
-
-			{
-				const parentFilter = filter;
-				filter = (note) => {
-					if (!ps.ignoreAuthorFromUserSuspension) {
-						if (note.user!.isSuspended) return false;
-					}
-					if (note.userId !== note.renoteUserId && note.renote?.user?.isSuspended) return false;
-					if (note.userId !== note.replyUserId && note.reply?.user?.isSuspended) return false;
-
-					return parentFilter(note);
-				};
-			}
-
-			const redisTimeline: MiNote[] = [];
-			let readFromRedis = 0;
-			let lastSuccessfulRate = 1; // rateをキャッシュする？
-
-			while ((redisResultIds.length - readFromRedis) !== 0) {
-				const remainingToRead = ps.limit - redisTimeline.length;
-
-				// DBからの取り直しを減らす初回と同じ割合以上で成功すると仮定するが、クエリの長さを考えて三倍まで
-				const countToGet = Math.ceil(remainingToRead * Math.min(1.1 / lastSuccessfulRate, 3));
-				noteIds = redisResultIds.slice(readFromRedis, readFromRedis + countToGet);
-
-				readFromRedis += noteIds.length;
-
-				const gotFromDb = await this.getAndFilterFromDb(noteIds, filter, idCompare);
-				redisTimeline.push(...gotFromDb);
-				lastSuccessfulRate = gotFromDb.length / noteIds.length;
-
-				if (ps.allowPartial ? redisTimeline.length !== 0 : redisTimeline.length >= ps.limit) {
-					// 十分Redisからとれた
-					return redisTimeline.slice(0, ps.limit);
-				}
-			}
-
-			// まだ足りない分はDBにフォールバック
-			const remainingToRead = ps.limit - redisTimeline.length;
-			let dbUntil: string | null;
-			let dbSince: string | null;
-			if (ascending) {
-				dbUntil = ps.untilId;
-				dbSince = noteIds[noteIds.length - 1];
-			} else {
-				dbUntil = noteIds[noteIds.length - 1];
-				dbSince = ps.sinceId;
-			}
-			const gotFromDb = await ps.dbFallback(dbUntil, dbSince, remainingToRead);
-			return [...redisTimeline, ...gotFromDb];
+		if (ps.alwaysIncludeMyNotes && ps.me) {
+			const me = ps.me;
+			const parentFilter = filter;
+			filter = (note) => note.userId === me.id || parentFilter(note);
 		}
 
-		return await ps.dbFallback(ps.untilId, ps.sinceId, ps.limit);
+		if (ps.excludeNoFiles) {
+			const parentFilter = filter;
+			filter = (note) => note.fileIds.length !== 0 && parentFilter(note);
+		}
+
+		if (ps.excludeReplies) {
+			const parentFilter = filter;
+			filter = (note) => !isReply(note, ps.me?.id) && parentFilter(note);
+		}
+
+		if (ps.excludePureRenotes) {
+			const parentFilter = filter;
+			filter = (note) => (!isRenote(note) || isQuote(note)) && parentFilter(note);
+		}
+
+		if (ps.me) {
+			const me = ps.me;
+			const [
+				userIdsWhoMeMuting,
+				userIdsWhoMeMutingRenotes,
+				userIdsWhoBlockingMe,
+				userMutedInstances,
+				userMutedChannels,
+			] = await Promise.all([
+				this.cacheService.userMutingsCache.fetch(ps.me.id),
+				this.cacheService.renoteMutingsCache.fetch(ps.me.id),
+				this.cacheService.userBlockedCache.fetch(ps.me.id),
+				this.cacheService.userProfileCache.fetch(me.id).then(p => new Set(p.mutedInstances)),
+				this.channelMutingService.mutingChannelsCache.fetch(me.id),
+			]);
+
+			const parentFilter = filter;
+			filter = (note) => {
+				if (isUserRelated(note, userIdsWhoBlockingMe, ps.ignoreAuthorFromBlock)) return false;
+				if (isUserRelated(note, userIdsWhoMeMuting, ps.ignoreAuthorFromMute)) return false;
+				if (isUserRelated(note.renote, userIdsWhoBlockingMe, ps.ignoreAuthorFromBlock)) return false;
+				if (isUserRelated(note.renote, userIdsWhoMeMuting, ps.ignoreAuthorFromMute)) return false;
+				if (!ps.ignoreAuthorFromMute && isRenote(note) && !isQuote(note) && userIdsWhoMeMutingRenotes.has(note.userId)) return false;
+				if (isInstanceMuted(note, userMutedInstances)) return false;
+				if (isChannelRelated(note, userMutedChannels, ps.ignoreAuthorChannelFromMute)) return false;
+
+				return parentFilter(note);
+			};
+		}
+
+		{
+			const parentFilter = filter;
+			filter = (note) => {
+				if (!ps.ignoreAuthorFromInstanceBlock) {
+					if (this.utilityService.isBlockedHost(this.meta.blockedHosts, note.userHost)) return false;
+				}
+				if (note.userId !== note.renoteUserId && this.utilityService.isBlockedHost(this.meta.blockedHosts, note.renoteUserHost)) return false;
+				if (note.userId !== note.replyUserId && this.utilityService.isBlockedHost(this.meta.blockedHosts, note.replyUserHost)) return false;
+
+				return parentFilter(note);
+			};
+		}
+
+		if (ps.me == null && this.meta.ugcVisibilityForVisitor !== 'all') {
+			const parentFilter = filter;
+			filter = (note) => {
+				if (this.meta.ugcVisibilityForVisitor === 'none') return false;
+				if (this.meta.ugcVisibilityForVisitor === 'local' && note.userHost != null) return false;
+
+				return parentFilter(note);
+			};
+		}
+
+		{
+			const parentFilter = filter;
+			filter = (note) => {
+				if (!ps.ignoreAuthorFromUserSuspension) {
+					if (note.user!.isSuspended) return false;
+				}
+				if (note.userId !== note.renoteUserId && note.renote?.user?.isSuspended) return false;
+				if (note.userId !== note.replyUserId && note.reply?.user?.isSuspended) return false;
+
+				return parentFilter(note);
+			};
+		}
+
+		return filter;
 	}
 
 	private async getAndFilterFromDb(noteIds: string[], noteFilter: NoteFilter, idCompare: (a: string, b: string) => number): Promise<MiNote[]> {

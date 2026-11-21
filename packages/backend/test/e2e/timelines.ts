@@ -1831,6 +1831,136 @@ describe('Timelines', () => {
 				}, waitForPushToTlOptions);
 			}, 1000 * 10);
 
+			test('FTT: LTL の水位より古い範囲のノートが hybrid に出る (欠陥1)', async () => {
+				if (!enableFanoutTimeline) return;
+
+				const [alice, bob, carol] = await Promise.all([signup(), signup(), signup()]);
+
+				await api('following/create', { userId: bob.id }, alice);
+				const b1 = await post(bob, { text: 'b1', visibility: 'followers' });
+				const n = await post(carol, { text: 'n' });
+				const b2 = await post(bob, { text: 'b2', visibility: 'followers' });
+
+				// push が終わってから N を LTL から取り除く (後から push されて戻らないように)
+				await vi.waitFor(async () => {
+					const ltl = await redisForTimelines.lrange('list:localTimeline', 0, -1);
+					assert.ok(ltl.includes(n.id));
+					const htl = await redisForTimelines.lrange(`list:homeTimeline:${alice.id}`, 0, -1);
+					assert.ok(htl.includes(b1.id));
+					assert.ok(htl.includes(b2.id));
+				}, waitForPushToTlOptions);
+
+				// グローバルな LTL の水位を書き換えるので、後続のテストのために元に戻す
+				const prevWatermark = await redisForTimelines.get('listwm:localTimeline');
+				try {
+					// N が trim された状態を作る
+					await redisForTimelines.lrem('list:localTimeline', 0, n.id);
+					await redisForTimelines.set('listwm:localTimeline', n.id);
+
+					const res = await api('notes/hybrid-timeline', { limit: 100 }, alice);
+					const ids = res.body.map(note => note.id);
+
+					assert.ok(ids.includes(n.id), 'N should be included');
+					assert.ok(ids.includes(b1.id) && ids.includes(b2.id), 'B1 and B2 should be included');
+					assert.ok(ids.indexOf(b2.id) < ids.indexOf(n.id), 'N should come after B2');
+					assert.ok(ids.indexOf(n.id) < ids.indexOf(b1.id), 'N should come before B1');
+				} finally {
+					if (prevWatermark == null) {
+						await redisForTimelines.del('listwm:localTimeline');
+					} else {
+						await redisForTimelines.set('listwm:localTimeline', prevWatermark);
+					}
+				}
+			});
+
+			test('FTT: フォロー直後でも、フォロー前のフォロー先のノートが hybrid に出る', async () => {
+				if (!enableFanoutTimeline) return;
+
+				const [alice, bob, carol] = await Promise.all([signup(), signup(), signup()]);
+
+				await post(carol, { text: 'l1' });
+				const pOld = await post(bob, { text: 'p_old', visibility: 'followers' });
+				await api('following/create', { userId: bob.id }, alice);
+				const pNew = await post(bob, { text: 'p_new', visibility: 'followers' });
+
+				// HTL が作られて、水位が作成時点 (>= P_new) まで上がるのを待つ
+				await vi.waitFor(async () => {
+					const wm = await redisForTimelines.get(`listwm:homeTimeline:${alice.id}`);
+					assert.ok(wm != null && wm >= pNew.id);
+				}, waitForPushToTlOptions);
+
+				const res = await api('notes/hybrid-timeline', { limit: 100 }, alice);
+
+				assert.strictEqual(res.body.some(note => note.id === pNew.id), true);
+				assert.strictEqual(res.body.some(note => note.id === pOld.id), true);
+			});
+
+			test('FTT: HTL の LIST が消えた後、次の push 以降は消えた区間のノートが hybrid に出る', async () => {
+				if (!enableFanoutTimeline) return;
+
+				const [alice, bob] = await Promise.all([signup(), signup()]);
+
+				await api('following/create', { userId: bob.id }, alice);
+				const q1 = await post(bob, { text: 'q1', visibility: 'followers' });
+
+				await vi.waitFor(async () => {
+					const htl = await redisForTimelines.lrange(`list:homeTimeline:${alice.id}`, 0, -1);
+					assert.ok(htl.includes(q1.id));
+				}, waitForPushToTlOptions);
+
+				await redisForTimelines.del(`list:homeTimeline:${alice.id}`);
+				const q2 = await post(bob, { text: 'q2', visibility: 'followers' });
+
+				// 作り直しで、水位が作成時点 (>= Q2) まで上がるのを待つ
+				await vi.waitFor(async () => {
+					const wm = await redisForTimelines.get(`listwm:homeTimeline:${alice.id}`);
+					assert.ok(wm != null && wm >= q2.id);
+				}, waitForPushToTlOptions);
+
+				const res = await api('notes/hybrid-timeline', { limit: 100 }, alice);
+
+				assert.strictEqual(res.body.some(note => note.id === q2.id), true);
+				assert.strictEqual(res.body.some(note => note.id === q1.id), true);
+			});
+
+			test('FTT: sinceId は Redis から返り、Redis にしか無い返信が含まれる (欠陥2)', async () => {
+				if (!enableFanoutTimeline) return;
+
+				const [alice, bob, carol] = await Promise.all([signup(), signup(), signup()]);
+
+				const carolNote = await post(carol, { text: 'c' });
+				await api('following/create', { userId: bob.id }, alice);
+				await api('following/update', { userId: bob.id, withReplies: true }, alice);
+
+				// B0 の push で HTL を作り、水位 (B0 の push 時点の ID) が付くのを待つ
+				await post(bob, { text: 'b0' });
+				await vi.waitFor(async () => {
+					const wm = await redisForTimelines.get(`listwm:homeTimeline:${alice.id}`);
+					assert.ok(wm != null);
+				}, waitForPushToTlOptions);
+
+				// B1 は水位より新しいので、既読位置 S が境界 H より新しくなる
+				const b1 = await post(bob, { text: 'b1' });
+				await vi.waitFor(async () => {
+					const htl = await redisForTimelines.lrange(`list:homeTimeline:${alice.id}`, 0, -1);
+					assert.ok(htl.includes(b1.id));
+				}, waitForPushToTlOptions);
+
+				const first = await api('notes/hybrid-timeline', { limit: 100 }, alice);
+				const sinceId = first.body[0].id;
+				assert.ok(sinceId >= b1.id);
+
+				// フォローしていないユーザーへの返信は DB フォールバックでは除外されるが、
+				// withReplies のフォローで HTL には入る
+				const reply = await post(bob, { text: 'r', replyId: carolNote.id });
+
+				await vi.waitFor(async () => {
+					const res = await api('notes/hybrid-timeline', { limit: 100, sinceId }, alice);
+
+					assert.strictEqual(res.body.some(note => note.id === reply.id), true);
+				}, waitForPushToTlOptions);
+			});
+
 			describe('Channel', () => {
 				test('チャンネル未フォロー　＋　ユーザ未フォロー　＝　TLに流れない', async () => {
 					const [alice, bob] = await Promise.all([signup(), signup()]);

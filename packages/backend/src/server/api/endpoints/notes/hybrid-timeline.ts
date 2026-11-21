@@ -13,11 +13,11 @@ import { DI } from '@/di-symbols.js';
 import { RoleService } from '@/core/RoleService.js';
 import { IdService } from '@/core/IdService.js';
 import { CacheService } from '@/core/CacheService.js';
-import { FanoutTimelineName } from '@/core/FanoutTimelineService.js';
 import { QueryService } from '@/core/QueryService.js';
 import { UserFollowingService } from '@/core/UserFollowingService.js';
 import { MiLocalUser } from '@/models/User.js';
 import { FanoutTimelineEndpointService } from '@/core/FanoutTimelineEndpointService.js';
+import type { FanoutTimelineSource } from '@/core/FanoutTimelineEndpointService.js';
 import { ChannelMutingService } from '@/core/ChannelMutingService.js';
 import { ChannelFollowingService } from '@/core/ChannelFollowingService.js';
 import { ApiError } from '../../error.js';
@@ -122,7 +122,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				return await this.noteEntityService.packMany(timeline, me);
 			}
 
-			let timelineConfig: FanoutTimelineName[];
+			let timelineConfig: FanoutTimelineSource[];
 
 			if (ps.withFiles) {
 				timelineConfig = [
@@ -139,7 +139,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				timelineConfig = [
 					`homeTimeline:${me.id}`,
 					'localTimeline',
-					`localTimelineWithReplyTo:${me.id}`,
+					// DB フォールバックは他人への返信を除外するので、このキーの内容を再現できない。境界に含めない
+					{ name: `localTimelineWithReplyTo:${me.id}`, boundary: false },
 				];
 			}
 
