@@ -121,11 +121,15 @@ export class FanoutTimelineService {
 		const recordsWatermark = fanoutTimelineRecordsWatermark(tl);
 
 		// LPUSH の戻り値が 1 ならキーが今作られた (初めての push か、消えていた)。
-		// それより古い範囲は Redis が把握していないので、水位をこのノートの ID まで引き上げる。
+		// 作成時点の Redis は、このノートより古い範囲だけでなく「今」までの範囲を把握していない
+		// (遅着のノートでキーが作られると、このノートより新しく DB にだけあるノートがありうる)。
+		// そのため、水位を max(このノートの ID, 今の ID) まで引き上げる。
+		// このノート自体は水位以下になるが、混合区間の Redis 残りとして返るので消えない。
 		// 引き上げに失敗しても「水位が無い = 境界なしの緩い扱い」になるだけなので、エラーは握りつぶす。
 		const raiseIfCreated = (len: number | null | undefined) => {
 			if (len === 1 && recordsWatermark) {
-				this.raiseWatermark(tl, id).catch(() => {});
+				const now = this.idService.gen();
+				this.raiseWatermark(tl, id > now ? id : now).catch(() => {});
 			}
 		};
 
@@ -140,13 +144,13 @@ export class FanoutTimelineService {
 			}
 		} else {
 			// 末尾のIDを取得
+			// 呼び出し元は待たないので、Redis のエラーで unhandled rejection にならないよう握りつぶす
 			this.redisForTimelines.lindex(listKey, -1).then(lastId => {
 				if (lastId == null || (this.idService.parse(id).date.getTime() > this.idService.parse(lastId).date.getTime())) {
-					this.redisForTimelines.lpush(listKey, id).then(raiseIfCreated);
-				} else {
-					Promise.resolve();
+					return this.redisForTimelines.lpush(listKey, id).then(raiseIfCreated);
 				}
-			});
+				return undefined;
+			}).catch(() => {});
 		}
 	}
 
