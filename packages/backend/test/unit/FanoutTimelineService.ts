@@ -67,6 +67,20 @@ describe('FanoutTimelineService', () => {
 		expect(await redis.get('listwm:' + tl)).toBe(maxOf(existing.slice(4)));
 	});
 
+	// 今は maxlen 0 が LTRIM 0 -1 (全件保持)、小数は LTRIM がエラーで trim されない。どちらもノートを捨てない側に揃える
+	test.each([0, 0.5, -3])('does not trim when floor(maxlen) <= 0 (maxlen = %s)', async (maxlen) => {
+		const tl = uniqueName(s => `homeTimeline:${s}` as const);
+		await redis.rpush('list:' + tl, ...genIdsDesc(10));
+
+		vi.spyOn(Math, 'random').mockReturnValue(0);
+		const p = redis.pipeline();
+		service.push(tl, idService.gen(), maxlen, p);
+		await p.exec();
+
+		expect(await redis.llen('list:' + tl)).toBe(11);
+		expect(await redis.exists('listwm:' + tl)).toBe(0);
+	});
+
 	test('popCap limits a single trim', async () => {
 		const tl = uniqueName(s => `homeTimeline:${s}` as const);
 		const existing = genIdsDesc(600);

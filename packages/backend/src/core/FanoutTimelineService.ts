@@ -139,7 +139,9 @@ export class FanoutTimelineService {
 			pipeline.lpush(listKey, id, (err, len) => {
 				if (err == null) raiseIfCreated(len);
 			});
-			if (Math.random() < 0.1) { // 10%の確率でトリム
+			// maxlen <= 0 は trim しない。今の LTRIM 0 maxlen-1 は 0 で全件保持 (LTRIM 0 -1) になり、
+			// floor で 0 になる小数 (例: 1 / 2) は LTRIM がエラーで trim されなかったので、ノートを捨てない側に揃える
+			if (maxlen > 0 && Math.random() < 0.1) { // 10%の確率でトリム
 				pipeline.fanoutTrim(listKey, 'listwm:' + tl, maxlen, FANOUT_TRIM_POP_CAP, recordsWatermark ? 1 : 0);
 			}
 		} else {
