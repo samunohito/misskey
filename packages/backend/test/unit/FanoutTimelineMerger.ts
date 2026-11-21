@@ -322,6 +322,32 @@ describe('FanoutTimelineMerger', () => {
 		expect(ids(res)).toEqual([30, 29, 28, 25, 23].map(id));
 	});
 
+	test('untilId and sinceId: falls back to DB like today when no key is a boundary key', async () => {
+		// users/notes (withReplies: false) のように境界キーが 1 本も無いと、Redis 区間の完全性を何も保証できない。
+		// 今と同じく全部 DB から返す (n030 は DB にだけある)
+		const db = fakeDb([30, 20]);
+		const f = fakeFetch();
+		const res = await mergeFanoutTimeline([
+			entry('userTimeline:a', [20], null, false),
+		], params({ untilId: id(40), sinceId: id(10), limit: 1 }), { fetchAndFilter: f.fetchAndFilter, dbFallback: db.dbFallback });
+
+		expect(db.calls).toEqual([[id(40), id(10), 1]]);
+		expect(f.calls).toEqual([]);
+		expect(ids(res)).toEqual([id(30)]);
+	});
+
+	test('untilId and sinceId: a boundary key alongside non-boundary keys keeps the Redis range', async () => {
+		const db = fakeDb([30, 20]);
+		const f = fakeFetch();
+		const res = await mergeFanoutTimeline([
+			entry('localTimeline', [20, 5], 15),
+			entry('localTimelineWithReplyTo:a', [25], null, false),
+		], params({ untilId: id(40), sinceId: id(10), limit: 1 }), { fetchAndFilter: f.fetchAndFilter, dbFallback: db.dbFallback });
+
+		expect(db.calls).toEqual([]);
+		expect(ids(res)).toEqual([id(25)]);
+	});
+
 	test('empty snapshot falls back exactly like today', async () => {
 		const db = fakeDb([100, 95, 90, 85, 80, 75, 70]);
 		const f = fakeFetch();

@@ -138,8 +138,9 @@ export async function mergeFanoutTimeline<T extends { id: string }>(
 	}
 
 	// 降順
-	// sinceId があるのに、水位の無い境界キーが sinceId まで遡れていなければ、Redis 区間の完全性を保証できないので全部 DB にする
-	if (useDbFallback && sinceId != null && !unwatermarkedKeysReachSinceId(entries, sinceId)) {
+	// sinceId があるのに、水位の無い境界キーが sinceId まで遡れていなければ、Redis 区間の完全性を保証できないので全部 DB にする。
+	// 境界キーが 1 本も無い (users/notes の withReplies: false など) ときも完全性を何も保証できないので、今と同じく全部 DB にする
+	if (useDbFallback && sinceId != null && (!entries.some(e => e.boundary) || !unwatermarkedKeysReachSinceId(entries, sinceId))) {
 		return await deps.dbFallback(untilId, sinceId, limit);
 	}
 
