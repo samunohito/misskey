@@ -66,6 +66,59 @@ describe('UserService', () => {
 			expect(fanoutTimeline.raiseWatermark).toHaveBeenCalledWith('homeTimelineWithFiles:user1', now);
 		});
 
+		test('takes the watermark id after the followings update completes', async () => {
+			stubQueryBuilder({ isHibernated: true });
+			let updateResolved = false;
+			followings.update.mockImplementation(async () => {
+				await new Promise(resolve => setImmediate(resolve));
+				updateResolved = true;
+				return { raw: [], affected: 0, generatedMaps: [] };
+			});
+			idService.gen.mockImplementation(() => {
+				expect(updateResolved).toBe(true);
+				return now;
+			});
+
+			await service.updateLastActiveDate({ id: 'user1', isHibernated: true } as MiUser);
+
+			expect(idService.gen).toHaveBeenCalledTimes(1);
+			expect(fanoutTimeline.raiseWatermark).toHaveBeenCalledWith('homeTimeline:user1', now);
+		});
+
+		test('swallows raiseWatermark failures because the caller does not await', async () => {
+			stubQueryBuilder({ isHibernated: true });
+			// vi.fn は返した Promise の結果を記録するために handler を付けるので、unhandled rejection を検出できない。素の関数で差し替える
+			let calls = 0;
+			const failingFanoutTimeline = {
+				raiseWatermark: () => {
+					calls++;
+					return Promise.reject(new Error('redis down'));
+				},
+			} as unknown as FanoutTimelineService;
+			service = new UserService(
+				users,
+				followings as unknown as FollowingsRepository, // 型推論が TS2590 (union type too complex) になるため unknown を経由する
+				systemWebhook,
+				userEntity,
+				failingFanoutTimeline,
+				idService,
+			);
+
+			const unhandled: unknown[] = [];
+			const onUnhandled = (reason: unknown) => unhandled.push(reason);
+			process.on('unhandledRejection', onUnhandled);
+			try {
+				await expect(service.updateLastActiveDate({ id: 'user1', isHibernated: true } as MiUser)).resolves.toBeUndefined();
+				// unhandledRejection はマイクロタスクが尽きた後に発火するので、1 周待つ
+				await new Promise(resolve => setImmediate(resolve));
+			} finally {
+				process.off('unhandledRejection', onUnhandled);
+			}
+
+			expect(calls).toBe(2);
+			expect(unhandled).toEqual([]);
+		});
+
 		test('does not touch watermarks when the user was not hibernated', async () => {
 			await service.updateLastActiveDate({ id: 'user1', isHibernated: false } as MiUser);
 
