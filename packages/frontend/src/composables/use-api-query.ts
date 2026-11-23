@@ -37,10 +37,7 @@ import type { Ref } from 'vue';
 import type { ApiFailure, ApiResult } from '@/utility/api/request.js';
 import type { ApiErrorOverrides, ApiGuidance } from '@/utility/api/guidance.js';
 import type { Cloneable } from '@/utility/clone.js';
-
-// TODO(api-error-types): Task 7 の `@/utility/api/types.js` の `JsonEndpoint` / `ApiResponse` に差し替える (仮置き)
-type JsonEndpoint = keyof Misskey.Endpoints;
-type ApiResponse<E extends keyof Misskey.Endpoints, P extends Misskey.Endpoints[E]['req']> = unknown;
+import type { ApiResponse, JsonEndpoint } from '@/utility/api/types.js';
 
 export type ApiQueryError = { guidance: ApiGuidance; failure: ApiFailure };
 

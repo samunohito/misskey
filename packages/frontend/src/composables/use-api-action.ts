@@ -48,10 +48,7 @@ import type * as Misskey from 'misskey-js';
 import type { Ref } from 'vue';
 import type { ApiFailure, ApiResult } from '@/utility/api/request.js';
 import type { ApiErrorOverrides } from '@/utility/api/guidance.js';
-
-// TODO(api-error-types): Task 7 の `@/utility/api/types.js` の `JsonEndpoint` / `ApiResponse` に差し替える (仮置き)
-type JsonEndpoint = keyof Misskey.Endpoints;
-type ApiResponse<E extends keyof Misskey.Endpoints, P extends Misskey.Endpoints[E]['req']> = unknown;
+import type { ApiResponse, JsonEndpoint } from '@/utility/api/types.js';
 
 export type ApiActionResult<T> =
 	| { status: 'success'; data: T }
@@ -155,7 +152,8 @@ export function useApiAction<E extends JsonEndpoint>(
 			const data = result.data;
 			if (!disposed && opts.onSuccess) {
 				const onSuccess = opts.onSuccess;
-				invokeCallback(() => onSuccess(data, params));
+				// `ApiResponse<E, P>` は `ApiResponse<E, req>` に含まれるが、型パラメータのままでは TS が示せないので広げる
+				invokeCallback(() => onSuccess(data as ApiResponse<E, Misskey.Endpoints[E]['req']>, params));
 			}
 			return { status: 'success', data };
 		}

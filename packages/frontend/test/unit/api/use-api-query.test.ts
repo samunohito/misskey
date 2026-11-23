@@ -6,6 +6,7 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { effectScope, reactive, ref } from 'vue';
 import { useApiGetQuery, useApiQuery } from '@/composables/use-api-query.js';
+import type * as Misskey from 'misskey-js';
 import type { EffectScope } from 'vue';
 import type { ApiFailure, ApiResult, RequestApiOptions } from '@/utility/api/request.js';
 
@@ -50,6 +51,11 @@ const apiFailure: ApiFailure = {
 
 function ok<T>(data: T): ApiResult<T> {
 	return { ok: true, data };
+}
+
+/** 応答の型に合わせるための、中身を省いたノート */
+function fakeNote(v: Record<string, unknown>): Misskey.entities.Note {
+	return v as unknown as Misskey.entities.Note;
 }
 
 function ng(failure: ApiFailure = apiFailure): ApiResult<never> {
@@ -325,7 +331,7 @@ describe('useApiQuery', () => {
 
 	test('initialData は enabled が初めて真になった時点で1回だけ採用し、その時点の取得を省く', async () => {
 		const enabled = ref(false);
-		const initialData = vi.fn(() => ({ id: 'init' }));
+		const initialData = vi.fn(() => fakeNote({ id: 'init' }));
 		const q = inScope(() => useApiQuery('notes/show', {
 			params: () => ({ noteId: 'a' }),
 			enabled: () => enabled.value,
@@ -367,7 +373,7 @@ describe('useApiQuery', () => {
 		const id = ref('a');
 		const q = inScope(() => useApiQuery('notes/show', {
 			params: () => ({ noteId: id.value }),
-			initialData: () => ({ id: 'init' }),
+			initialData: () => fakeNote({ id: 'init' }),
 		}));
 		expect(calls).toHaveLength(0);
 		expect(q.data.value).toEqual({ id: 'init' });
@@ -384,9 +390,9 @@ describe('useApiQuery', () => {
 		calls[0].respond(ok({ id: 'a', likes: 1 }));
 		await flush();
 
-		(q.data.value as { likes: number }).likes = 2;
+		(q.data.value as unknown as { likes: number }).likes = 2;
 		expect(q.data.value).toEqual({ id: 'a', likes: 2 });
-		q.data.value = { id: 'a', likes: 3 };
+		q.data.value = fakeNote({ id: 'a', likes: 3 });
 		expect(q.data.value).toEqual({ id: 'a', likes: 3 });
 
 		// 書き換えは表示中の対象への更新なので、同じ params の取り直しでは消えない
