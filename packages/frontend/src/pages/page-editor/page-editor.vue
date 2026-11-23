@@ -140,8 +140,6 @@ const { execute: updatePage, isPending: updating } = useApiAction('pages/update'
 	onSuccess: (_, params) => {
 		// name を送らなかった更新では、名前は変わっていない
 		if (params.name != null) currentName.value = params.name;
-		// 更新は成功しても画面が変わらないため、成功を示す
-		os.success();
 	},
 });
 // 失敗したときに題名と名前が書き換わったまま残らないよう、反映は成功してから行う
@@ -181,14 +179,16 @@ function getSaveOptions(): Misskey.entities.PagesCreateRequest {
 	};
 }
 
-function save() {
+async function save() {
 	const options = getSaveOptions();
 
 	if (pageId.value) {
-		updatePage({
+		const result = await updatePage({
 			pageId: pageId.value,
 			...options,
 		});
+		// 更新は成功しても画面が変わらないため成功を示す。保存は画面を離れても完了するので、通知は破棄後も出す (onSuccess は破棄後に呼ばれない)
+		if (result.status === 'success') os.success();
 	} else {
 		createPage(options);
 	}

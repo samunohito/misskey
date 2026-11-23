@@ -54,19 +54,22 @@ const comment = ref(props.initialComment ?? '');
 // 閉じたことの通知は、送信成功でも通常の閉じる操作でも MkWindow の closed の中継に一本化する。ここで別に emit すると二重に通知される。
 const { execute, isPending } = useApiAction('users/report-abuse', {
 	onSuccess: () => {
-		os.alert({
-			type: 'success',
-			text: i18n.ts.abuseReported,
-		});
 		uiWindow.value?.close();
 	},
 });
 
-function send() {
-	execute({
+async function send() {
+	const result = await execute({
 		userId: props.user.id,
 		comment: comment.value,
 	});
+	// 送信中にウィンドウを閉じても通報は届くので、成功の通知は画面の破棄後も出す (onSuccess は破棄後に呼ばれない)
+	if (result.status === 'success') {
+		os.alert({
+			type: 'success',
+			text: i18n.ts.abuseReported,
+		});
+	}
 }
 </script>
 

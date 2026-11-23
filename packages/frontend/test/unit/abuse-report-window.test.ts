@@ -78,6 +78,20 @@ describe('MkAbuseReportWindow', () => {
 		await waitFor(() => expect(button.disabled).toBe(false));
 	});
 
+	test('送信中にウィンドウを閉じても、成功したら成功のアラートを出す', async () => {
+		let resolve!: (v: unknown) => void;
+		requestApiMock.mockReturnValue(new Promise(r => { resolve = r; }));
+		const r = renderWindow();
+
+		await fireEvent.click(r.getByText(i18n.ts.send));
+		await fireEvent.keyDown(r.getByText(i18n.ts.send), { key: 'Escape', which: 27 });
+		await waitFor(() => expect(r.emitted('closed')).toHaveLength(1));
+		r.unmount();
+
+		resolve({ ok: true, data: null });
+		await waitFor(() => expect(alertMock).toHaveBeenCalledWith(expect.objectContaining({ type: 'success', text: i18n.ts.abuseReported })));
+	});
+
 	test('送信が失敗したら閉じない', async () => {
 		requestApiMock.mockResolvedValue({ ok: false, failure: { kind: 'api', error: { code: 'X', id: 'x', message: 'm' }, raw: {} } });
 		const r = renderWindow();
