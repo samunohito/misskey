@@ -22,7 +22,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				</MkTextarea>
 			</div>
 			<div class="">
-				<MkButton primary full :disabled="comment.length === 0" @click="send">{{ i18n.ts.send }}</MkButton>
+				<MkButton primary full :wait="isPending" :disabled="comment.length === 0 || isPending" @click="send">{{ i18n.ts.send }}</MkButton>
 			</div>
 		</div>
 	</div>
@@ -37,6 +37,7 @@ import MkTextarea from '@/components/MkTextarea.vue';
 import MkButton from '@/components/MkButton.vue';
 import * as os from '@/os.js';
 import { i18n } from '@/i18n.js';
+import { useApiAction } from '@/composables/use-api-action.js';
 
 const props = defineProps<{
 	user: Misskey.entities.UserLite;
@@ -50,17 +51,21 @@ const emit = defineEmits<{
 const uiWindow = useTemplateRef('uiWindow');
 const comment = ref(props.initialComment ?? '');
 
-function send() {
-	os.apiWithDialog('users/report-abuse', {
-		userId: props.user.id,
-		comment: comment.value,
-	}, undefined).then(res => {
+// 閉じたことの通知は、送信成功でも通常の閉じる操作でも MkWindow の closed の中継に一本化する。ここで別に emit すると二重に通知される。
+const { execute, isPending } = useApiAction('users/report-abuse', {
+	onSuccess: () => {
 		os.alert({
 			type: 'success',
 			text: i18n.ts.abuseReported,
 		});
 		uiWindow.value?.close();
-		emit('closed');
+	},
+});
+
+function send() {
+	execute({
+		userId: props.user.id,
+		comment: comment.value,
 	});
 }
 </script>
