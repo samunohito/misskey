@@ -38,8 +38,8 @@ type Call = {
 let calls: Call[] = [];
 let scopes: EffectScope[] = [];
 
-/** マイクロタスクを流しきる (watch の pre flush もここで走る) */
 async function flush() {
+	// 検査の前に、Vue の watch と応答後の状態更新が走るようマイクロタスクを進める。
 	for (let i = 0; i < 10; i++) await Promise.resolve();
 }
 
@@ -53,8 +53,8 @@ function ok<T>(data: T): ApiResult<T> {
 	return { ok: true, data };
 }
 
-/** 応答の型に合わせるための、中身を省いたノート */
 function fakeNote(v: Record<string, unknown>): Misskey.entities.Note {
+	// initialData などが要求する Note 型に、検査に使う項目だけのオブジェクトを渡す。
 	return v as unknown as Misskey.entities.Note;
 }
 
@@ -73,6 +73,7 @@ beforeEach(() => {
 	calls = [];
 	scopes = [];
 	requestApiMock.mockReset().mockImplementation((endpoint: string, params: Record<string, unknown>, opts: RequestApiOptions) => {
+		// 中断と応答の順序をテスト側で決めるため、signal では Promise を決着させない。
 		const d = deferred<ApiResult<unknown>>();
 		calls.push({ endpoint, params, opts, respond: d.resolve });
 		return d.promise;
@@ -150,6 +151,7 @@ describe('useApiQuery', () => {
 		calls[0].respond(ok({ id: 'a' }));
 		await flush();
 
+		// watch を再評価させつつ、params の中身は同じ値に保つ。
 		state.unrelated = 1;
 		await flush();
 		expect(calls).toHaveLength(1);
@@ -227,7 +229,6 @@ describe('useApiQuery', () => {
 		expect(calls).toHaveLength(2);
 		expect(calls[0].opts.signal?.aborted).toBe(true);
 
-		// 古い応答の成功
 		calls[0].respond(ok({ id: 'a' }));
 		await flush();
 		expect(q.data.value).toBeUndefined();
@@ -237,7 +238,6 @@ describe('useApiQuery', () => {
 		await flush();
 		expect(calls[1].opts.signal?.aborted).toBe(true);
 
-		// 古い応答の失敗
 		calls[1].respond(ng());
 		await flush();
 		expect(q.error.value).toBeNull();
@@ -261,7 +261,6 @@ describe('useApiQuery', () => {
 		expect(q.error.value).toBeNull();
 		expect(q.isPending.value).toBe(false);
 
-		// 一度取得して data と error を持たせてから偽にする
 		enabled.value = true;
 		await flush();
 		calls[0].respond(ok({ id: 'a' }));
@@ -310,8 +309,8 @@ describe('useApiQuery', () => {
 		await flush();
 		expect(q.data.value).toEqual({ id: 'a' });
 
-		// 偽→真の往復では同じ params でも取り直す
 		enabled.value = false;
+		// Vue が2回の変更をまとめないよう、無効になった時点で watch を走らせる。
 		await flush();
 		enabled.value = true;
 		await flush();
@@ -348,14 +347,12 @@ describe('useApiQuery', () => {
 		expect(calls).toHaveLength(0);
 		expect(q.isPending.value).toBe(false);
 
-		// 同じ params の refetch は初期値を残したまま取り直す
 		const p = q.refetch();
 		expect(q.data.value).toEqual({ id: 'init' });
 		calls[0].respond(ok({ id: 'a' }));
 		await p;
 		expect(q.data.value).toEqual({ id: 'a' });
 
-		// 2回目に真になったときは採用しない
 		enabled.value = false;
 		await flush();
 		enabled.value = true;
@@ -390,6 +387,7 @@ describe('useApiQuery', () => {
 		calls[0].respond(ok({ id: 'a', likes: 1 }));
 		await flush();
 
+		// 簡略化した応答の likes は Note 型にないため、テスト用の形に読み替える。
 		(q.data.value as unknown as { likes: number }).likes = 2;
 		expect(q.data.value).toEqual({ id: 'a', likes: 2 });
 		q.data.value = fakeNote({ id: 'a', likes: 3 });
@@ -410,7 +408,6 @@ describe('useApiQuery', () => {
 		await flush();
 		const target = q.data.value;
 
-		// 同じ params の取り直し中は同じ対象のまま
 		void q.refetch();
 		expect(q.data.value).toBe(target);
 
@@ -429,9 +426,9 @@ describe('useApiQuery', () => {
 		await flush();
 		expect(q.data.value).toEqual([{ id: 'a' }]);
 
+		// 同じ配列参照を変更し、保存した前回値との比較で差を検出できるか確かめる。
 		ids.push('b');
 		await flush();
-		// 比較用の値は前の値 (['a']) のまま残っているので、変化として扱い data を消して取り直す
 		expect(calls).toHaveLength(2);
 		expect(calls[1].params).toEqual({ userIds: ['a', 'b'] });
 		expect(q.data.value).toBeUndefined();
@@ -439,7 +436,6 @@ describe('useApiQuery', () => {
 		calls[1].respond(ok([{ id: 'a' }, { id: 'b' }]));
 		await flush();
 
-		// その場で書き換えても同じ値に戻したなら、比較用の値と同じなので data を残す
 		const p = q.refetch();
 		expect(q.data.value).toEqual([{ id: 'a' }, { id: 'b' }]);
 		calls[2].respond(ok([{ id: 'a' }, { id: 'b' }]));
@@ -470,16 +466,13 @@ describe('useApiQuery', () => {
 		expect(q.error.value?.failure).toEqual({ kind: 'other', raw: boom });
 		expect(q.error.value?.guidance.text).toBe('boom');
 
-		// 古い応答は無視する
 		calls[1].respond(ok({ id: 'a' }));
 		await flush();
 		expect(q.data.value).toBeUndefined();
 
-		// refetch でも同じく扱い、reject しない
 		await expect(q.refetch()).resolves.toBeUndefined();
 		expect(q.error.value?.failure).toEqual({ kind: 'other', raw: boom });
 
-		// 直れば取り直す
 		fail.value = false;
 		await flush();
 		expect(calls).toHaveLength(3);
@@ -511,14 +504,12 @@ describe('useApiQuery', () => {
 		expect(q.isPending.value).toBe(false);
 		expect(q.error.value?.failure).toEqual({ kind: 'other', raw: boom });
 
-		// refetch でも同じく扱い、同期的に throw も reject もしない
 		let p: Promise<void> | undefined;
 		expect(() => { p = q.refetch(); }).not.toThrow();
 		await expect(p).resolves.toBeUndefined();
 		expect(calls).toHaveLength(2);
 		expect(q.error.value?.failure).toEqual({ kind: 'other', raw: boom });
 
-		// 直れば取り直す
 		fail.value = false;
 		await flush();
 		expect(calls).toHaveLength(3);
@@ -561,17 +552,16 @@ describe('useApiQuery', () => {
 		const enabled = ref(true);
 		const q = inScope(() => useApiQuery('notes/show', { params: () => ({ noteId: id.value }), enabled: () => enabled.value }));
 
-		// 終了 (失敗) で解決する
 		const pFail = q.refetch();
 		calls[1].respond(ng());
 		await expect(pFail).resolves.toBeUndefined();
 
-		// requestApi が万一 reject しても reject しない
+		// 失敗を値で返す通常経路に加え、requestApi 自体の予期しない reject も試す。
 		requestApiMock.mockRejectedValueOnce(new Error('unexpected'));
 		await expect(q.refetch()).resolves.toBeUndefined();
 		expect(q.error.value?.failure.kind).toBe('other');
 
-		// 置き換えで解決する
+		// 応答を返さず、置き換えだけで待機中の呼び元が進めるか確かめる。
 		let replaced = false;
 		const pReplaced = q.refetch().then(() => { replaced = true; });
 		id.value = 'b';
@@ -579,7 +569,6 @@ describe('useApiQuery', () => {
 		expect(replaced).toBe(true);
 		await pReplaced;
 
-		// 中断で解決する
 		let aborted = false;
 		const pAborted = q.refetch().then(() => { aborted = true; });
 		enabled.value = false;
@@ -593,7 +582,7 @@ describe('useApiQuery', () => {
 		let settled = false;
 		const p = q.refetch().then(() => { settled = true; });
 
-		// 応答が届いた直後 (状態の更新より前) に破棄する
+		// 解決済みの応答も破棄後に反映されないよう、Promise の後続処理より先に scope を止める。
 		calls[1].respond(ok({ id: 'a' }));
 		q.scope.stop();
 		expect(calls[1].opts.signal?.aborted).toBe(true);
@@ -605,7 +594,6 @@ describe('useApiQuery', () => {
 		expect(q.data.value).toBeUndefined();
 		expect(q.error.value).toBeNull();
 
-		// 破棄後の失敗の応答も無視し、refetch も送らない
 		calls[0].respond(ng());
 		await flush();
 		expect(q.error.value).toBeNull();
@@ -619,7 +607,7 @@ describe('useApiQuery', () => {
 		expect(calls[0].params).toEqual(params);
 		expect(calls[0].params).not.toBe(params);
 
-		// 送信側がコピーに書き込んでも、呼び元にも比較用の値にも入らない
+		// 送信側で認証トークンを補う処理を再現する。
 		calls[0].params.i = 'token';
 		expect(params).toEqual({ noteId: 'a' });
 		calls[0].respond(ok({ id: 'a' }));

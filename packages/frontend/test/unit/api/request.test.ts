@@ -32,7 +32,7 @@ function abortError() {
 
 beforeEach(() => {
 	fetchMock.resetMocks();
-	// setup.unit.ts の mockIf (locale の取得だけを差し替える) を解除し、すべての fetch を差し替える
+	// resetMocks() 後も setup.unit.ts の locale 用の絞り込みが残るため、API の fetch も差し替え対象にする。
 	fetchMock.doMock();
 	iMock.value = null;
 });
@@ -100,6 +100,7 @@ describe('requestApi', () => {
 
 	test('signal で中断したら aborted (fetch 中)', async () => {
 		const controller = new AbortController();
+		// AbortError 以外でも signal の状態を優先することを確かめる。
 		const err = new TypeError('Failed to fetch');
 		fetchMock.mockImplementationOnce(async () => {
 			controller.abort();
@@ -121,6 +122,7 @@ describe('requestApi', () => {
 	test('本文の読み取り中に中断しても aborted', async () => {
 		const controller = new AbortController();
 		const err = abortError();
+		// 本文の読み取りで中断するため、status と json() だけを持つ応答を unknown 経由で渡す。
 		fetchMock.mockImplementationOnce(async () => ({
 			status: 200,
 			json: async () => {

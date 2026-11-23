@@ -3,9 +3,6 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-// misskeyApi / misskeyApiGet は約440箇所から呼ばれている。reject する値・同期 throw と reject の区別・
-// 渡した data への i の書き込み・pendingApiRequestsCount の増減を、実装を変えても保つための互換テスト。
-
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { apiUrl } from '@@/js/config.js';
 import { misskeyApi, misskeyApiGet, pendingApiRequestsCount } from '@/utility/misskey-api.js';
@@ -30,12 +27,11 @@ function lastFetchUrl(): string {
 
 beforeEach(() => {
 	fetchMock.resetMocks();
-	// setup.unit.ts の mockIf (locale の取得だけを差し替える) を解除し、すべての fetch を差し替える
+	// resetMocks() 後も setup.unit.ts の locale 用の絞り込みが残るため、API の fetch も差し替え対象にする。
 	fetchMock.doMock();
 	iMock.value = null;
 });
 
-// misskeyApi と misskeyApiGet で共通の、失敗時に reject する値の規則
 const rejectCases = (call: () => Promise<unknown>) => {
 	test('有効な error は error オブジェクトそのもので reject', async () => {
 		const error = { code: 'NO_SUCH_USER', id: 'x', message: 'm', kind: 'client' };
@@ -44,6 +40,7 @@ const rejectCases = (call: () => Promise<unknown>) => {
 	});
 
 	test('API エラーの構造を満たさない error もそのまま reject', async () => {
+		// 従来の呼び元には、新しい分類で invalid-response になる場合も元の error を返す。
 		fetchMock.mockResponseOnce('{"error":{}}', { status: 500 });
 		await expect(call()).rejects.toEqual({});
 	});
@@ -142,7 +139,7 @@ describe('misskeyApi の互換', () => {
 		const data: Record<string, unknown> = { a: 1 };
 		fetchMock.mockResponseOnce('{}');
 		const promise = misskeyApi('meta', data as any);
-		// 書き込みは呼んだ時点で同期的に起きる
+		// 従来の呼び元はリクエストの完了を待たずに data.i を参照できる。
 		expect(data.i).toBe('TOKEN');
 		await promise;
 		expect(JSON.parse(lastFetchInit().body as string)).toEqual({ a: 1, i: 'TOKEN' });
@@ -196,12 +193,14 @@ describe('misskeyApiGet の互換', () => {
 	});
 
 	test('エンドポイント名を検査しない', async () => {
+		// POST の検査を GET にも適用すると、従来どおり URL の一部として送れなくなる。
 		fetchMock.mockResponseOnce('{}');
 		await expect(misskeyApiGet('https://x' as any, {})).resolves.toEqual({});
 		expect(lastFetchUrl()).toBe(`${apiUrl}/https://x?`);
 	});
 
 	test('params をクエリ文字列にできなければ同期的に throw', () => {
+		// Symbol の文字列化を失敗させ、Promise を返す前に例外を捕まえられることを確かめる。
 		expect(() => misskeyApiGet('meta', { s: Symbol('x') } as any)).toThrow(TypeError);
 		expect(fetchMock).not.toHaveBeenCalled();
 	});

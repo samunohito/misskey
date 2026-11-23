@@ -35,8 +35,8 @@ function deferred<T>(): Deferred<T> {
 	return { promise, resolve };
 }
 
-/** マイクロタスクを流しきる */
 async function flush() {
+	// execute() が待たないコールバックや案内の Promise に、後続の処理が走る時間を与える。
 	for (let i = 0; i < 10; i++) await Promise.resolve();
 }
 
@@ -59,6 +59,7 @@ beforeEach(() => {
 	showApiGuidanceDialogMock.mockReset().mockResolvedValue(undefined);
 	reportApiCallbackErrorMock.mockReset();
 	resolveApiGuidanceSpy.fn?.mockClear();
+	// UI を開かず、実際の promiseDialog と同じように渡された Promise を返す。
 	osMock.promiseDialog.mockReset().mockImplementation((p: Promise<unknown>) => p);
 });
 
@@ -163,7 +164,6 @@ describe('useApiAction', () => {
 		expect(onSuccess).toHaveBeenCalledExactlyOnceWith({ id: 'u1' }, { userId: 'u1' });
 		expect(isPending.value).toBe(false);
 
-		// 完了後はまた送れる
 		requestApiMock.mockResolvedValueOnce(ok({ id: 'u3' }));
 		expect(await execute({ userId: 'u3' })).toEqual({ status: 'success', data: { id: 'u3' } });
 	});
@@ -244,16 +244,15 @@ describe('useApiAction', () => {
 		const scope = effectScope();
 		const { execute, isPending } = scope.run(() => useApiAction('users/show', { onSuccess, onError }))!;
 
-		// 成功
 		const d1 = deferred<ApiResult<unknown>>();
 		requestApiMock.mockReturnValueOnce(d1.promise);
 		const p1 = execute({ userId: 'u1' });
+		// 通信中に画面を離れた場合を再現するため、応答を返す前に scope を破棄する。
 		scope.stop();
 		d1.resolve(ok({ id: 'u1' }));
 		expect(await p1).toEqual({ status: 'success', data: { id: 'u1' } });
 		expect(isPending.value).toBe(false);
 
-		// 失敗
 		const d2 = deferred<ApiResult<unknown>>();
 		requestApiMock.mockReturnValueOnce(d2.promise);
 		const p2 = execute({ userId: 'u2' });
@@ -329,19 +328,18 @@ describe('useApiAction', () => {
 	});
 
 	test('waitingDialog を指定すると os.promiseDialog で待機を出し、失敗時にそのダイアログが別の案内を出さない', async () => {
-		// 成功: 内部の Promise は結果で解決する。onSuccess は既定 (null) でチェック表示に任せる
 		requestApiMock.mockResolvedValueOnce(ok({ id: 'u1' }));
 		const { execute } = useApiAction('users/show', { waitingDialog: { text: 'waiting...' } });
 		await execute({ userId: 'u1' });
 
 		expect(osMock.promiseDialog).toHaveBeenCalledOnce();
 		const [p1, onSuccess1, onFailure1, text1] = osMock.promiseDialog.mock.calls[0];
+		// null は promiseDialog の既定のチェック表示を使う指定。
 		expect(onSuccess1).toBeNull();
 		expect(typeof onFailure1).toBe('function');
 		expect(text1).toBe('waiting...');
 		await expect(p1).resolves.toEqual({ id: 'u1' });
 
-		// 失敗: 内部の Promise は reject し、onFailure は何もしない (案内は useApiAction が1回だけ出す)
 		requestApiMock.mockResolvedValueOnce(ng());
 		const { execute: execute2 } = useApiAction('users/show', { waitingDialog: true });
 		const result = await execute2({ userId: 'u2' });
@@ -351,6 +349,7 @@ describe('useApiAction', () => {
 		expect(onSuccess2).toBeNull();
 		expect(text2).toBeUndefined();
 		await expect(p2).rejects.toBe(apiFailure);
+		// モックは onFailure を呼ばないため、渡された関数を直接呼んで二重表示を検査する。
 		expect(onFailure2(apiFailure)).toBeUndefined();
 		expect(showApiGuidanceDialogMock).toHaveBeenCalledOnce();
 	});

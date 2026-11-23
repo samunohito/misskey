@@ -17,6 +17,7 @@ function apiFailure(code: string, extra: Partial<ApiErrorBody> = {}): ApiFailure
 }
 
 afterEach(() => {
+	// 翻訳の変更がほかのテストに残らないよう、setup.unit.ts の初期状態に戻す。
 	updateI18n(locales['en-US']);
 	vi.restoreAllMocks();
 });
@@ -126,22 +127,20 @@ describe('resolveApiGuidance', () => {
 		const defErr = new Error('def threw');
 		const throwingDefs: ApiErrorDefs = { 'notes/create': { NO_SUCH_NOTE: () => { throw defErr; } } };
 
-		// 上書きが throw → 定義表
 		expect(resolveApiGuidance('notes/create', apiFailure('NO_SUCH_NOTE'), {
 			overrides: { NO_SUCH_NOTE: () => { throw overrideErr; } },
 			defs: { 'notes/create': { NO_SUCH_NOTE: () => ({ title: 'd', text: 'def' }) } },
 		})).toEqual({ title: 'd', text: 'def' });
 		expect(reported).toHaveBeenLastCalledWith(overrideErr);
 
-		// 上書きも定義表も throw → 汎用表示
 		expect(resolveApiGuidance('notes/create', apiFailure('NO_SUCH_NOTE'), {
 			overrides: { NO_SUCH_NOTE: () => { throw overrideErr; } },
 			defs: throwingDefs,
 		})).toEqual({ text: 'error message\nerror-id' });
+		// 前の1件に加え、今回の上書きと定義表の例外もそれぞれ報告される。
 		expect(reported).toHaveBeenCalledTimes(3);
 		expect(reported).toHaveBeenLastCalledWith(defErr);
 
-		// 定義表が throw → TOO_MANY の案内
 		expect(resolveApiGuidance('antennas/create', apiFailure('TOO_MANY_ANTENNAS'), {
 			defs: { 'antennas/create': { TOO_MANY_ANTENNAS: () => { throw defErr; } } },
 		})).toEqual({ title: i18n.ts.youCannotCreateAnymore, text: `${i18n.ts.error}: error-id` });

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-// 型だけのテスト。Vitest では実行せず、`pnpm --filter frontend typecheck` (vue-tsc) で確かめる。
+// このファイルは vue-tsc の型検査で確かめる。
 
 import { expectTypeOf } from 'vitest';
 import type * as Misskey from 'misskey-js';
@@ -18,33 +18,29 @@ type SigninWithPasskeyInitResponse = Misskey.entities.SigninWithPasskeyInitRespo
 
 declare const flag: boolean;
 
-// 単体
 expectTypeOf<ApiResponse<'users/show', { userId: string }>>().toEqualTypeOf<UserDetailed>();
 expectTypeOf<ApiResponse<'users/show', { username: string; host?: string | null }>>().toEqualTypeOf<UserDetailed>();
-// 配列
 expectTypeOf<ApiResponse<'users/show', { userIds: string[] }>>().toEqualTypeOf<UserDetailed[]>();
-// 和を明示
 expectTypeOf<ApiResponse<'users/show', { userId: string } | { userIds: string[] }>>().toEqualTypeOf<UserDetailed | UserDetailed[]>();
-// 型注釈のない条件式
+// 条件式の推論で補われる省略可能なキーがあっても、両方の応答を残す。
 const p = flag ? { userId: 'a' } : { userIds: ['b'] };
 expectTypeOf<ApiResponse<'users/show', typeof p>>().toEqualTypeOf<UserDetailed | UserDetailed[]>();
-// userIds が省略可能
+// userIds の有無で応答が変わるため、型から有無が決まらない場合は両方を含める。
 expectTypeOf<ApiResponse<'users/show', { userId: string; userIds?: string[] }>>().toEqualTypeOf<UserDetailed | UserDetailed[]>();
-// req の型そのもの (どの形か決まらない)
 expectTypeOf<ApiResponse<'users/show', Misskey.Endpoints['users/show']['req']>>().toEqualTypeOf<UserDetailed | UserDetailed[]>();
-// 必須の条件を持つ case
+
 expectTypeOf<ApiResponse<'signin-with-passkey', { context: string }>>().toEqualTypeOf<SigninWithPasskeyResponse>();
 expectTypeOf<ApiResponse<'signin-with-passkey', { credential?: undefined }>>().toEqualTypeOf<SigninWithPasskeyInitResponse>();
+// context が認証結果を選ぶ条件なので、省略できる場合は初期化応答も候補に残る。
 expectTypeOf<ApiResponse<'signin-with-passkey', { context?: string }>>().toEqualTypeOf<SigninWithPasskeyResponse | SigninWithPasskeyInitResponse>();
-// SwitchCase でないエンドポイントは Endpoints[E]['res'] のまま
+
 expectTypeOf<ApiResponse<'i', Record<string, never>>>().toEqualTypeOf<Misskey.Endpoints['i']['res']>();
 
-// JSON エンドポイント
 expectTypeOf<'users/show'>().toExtend<JsonEndpoint>();
 // @ts-expect-error multipart は JsonEndpoint に含まれない
 const _x: JsonEndpoint = 'drive/files/create';
 
-// composable への組み込み (呼ばないので実行時には何もしない)
+// 呼び出し式の型だけを検査できるよう、composable は実行されない関数に置く。
 function _composables() {
 	const { execute } = useApiAction('users/show');
 	expectTypeOf(execute({ userIds: ['a'] })).resolves.toEqualTypeOf<ApiActionResult<UserDetailed[]>>();

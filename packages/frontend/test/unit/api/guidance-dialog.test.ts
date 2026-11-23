@@ -52,6 +52,7 @@ describe('showApiGuidanceDialog', () => {
 		osMock.alert.mockReturnValue(new Promise<void>((resolve) => { close = resolve; }));
 		let settled = false;
 		const p = showApiGuidanceDialog({ text: 'x' }).then(() => { settled = true; });
+		// 閉じるのを待たずに解決する実装なら、ここで then が実行される。
 		await Promise.resolve();
 		await Promise.resolve();
 		expect(settled).toBe(false);
