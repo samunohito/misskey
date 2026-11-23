@@ -41,7 +41,7 @@ import { i18n } from '@/i18n.js';
 import { instance } from '@/instance.js';
 import * as os from '@/os.js';
 import MkFoldableSection from '@/components/MkFoldableSection.vue';
-import { misskeyApi } from '@/utility/misskey-api.js';
+import { useApLookup } from '@/composables/use-ap-lookup.js';
 import { useRouter } from '@/router.js';
 import { Paginator } from '@/utility/paginator.js';
 
@@ -54,6 +54,7 @@ const props = withDefaults(defineProps<{
 });
 
 const router = useRouter();
+const { execute: lookupAndOpen } = useApLookup();
 
 const key = ref(0);
 const paginator = shallowRef<Paginator<'users/search'> | null>(null);
@@ -74,29 +75,7 @@ async function search() {
 			text: i18n.ts.lookupConfirm,
 		});
 		if (!confirm.canceled) {
-			const promise = misskeyApi('ap/show', {
-				uri: query,
-			});
-
-			os.promiseDialog(promise, null, null, i18n.ts.fetchingAsApObject);
-
-			const res = await promise;
-
-			if (res.type === 'User') {
-				router.push('/@:acct/:page?', {
-					params: {
-						acct: `${res.object.username}@${res.object.host}`,
-					},
-				});
-			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-			} else if (res.type === 'Note') {
-				router.push('/notes/:noteId/:initialTab?', {
-					params: {
-						noteId: res.object.id,
-					},
-				});
-			}
-
+			await lookupAndOpen(query);
 			return;
 		}
 	}
