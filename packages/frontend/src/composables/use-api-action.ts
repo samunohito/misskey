@@ -21,7 +21,7 @@ export type ApiActionResult<T> =
 	| { status: 'failure'; failure: ApiFailure }
 	| { status: 'busy' };
 
-export type UseApiActionOptions<E, P, T> = {
+export type UseApiActionOptions<E extends string, P, T> = {
 	/** 成功時に呼ぶ。同期例外や返した Promise の reject は報告し、完了は待たない。 */
 	onSuccess?: (data: T, params: P) => unknown;
 	/**
@@ -30,7 +30,7 @@ export type UseApiActionOptions<E, P, T> = {
 	 */
 	onError?: (failure: ApiFailure, ctx: { suppressDefault: () => void }) => unknown;
 	/** この操作で使うエラー案内を `code` ごとに上書きする。 */
-	errors?: ApiErrorOverrides;
+	errors?: ApiErrorOverrides<E>;
 	/** 実行中に待機ダイアログを出す。`text` で文言を指定できる。既定では表示しない。 */
 	waitingDialog?: boolean | { text?: string };
 };

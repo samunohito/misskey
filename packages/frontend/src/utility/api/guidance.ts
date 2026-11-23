@@ -14,9 +14,14 @@ export type ApiGuidanceText = { title?: string; text: string };
 /** エラーの案内。`copyInfo` があれば「エラー情報をコピー」の操作に使う。 */
 export type ApiGuidance = ApiGuidanceText & { copyInfo?: string };
 
-/** エラーの `code` ごとに、その呼び出しだけで使う案内を作る関数。 */
-// TODO(api-error-types): そのエンドポイントに存在する code だけを受け付ける型にする
-export type ApiErrorOverrides = Record<string, () => ApiGuidanceText>;
+/**
+ * エラーの `code` ごとに、その呼び出しだけで使う案内を作る関数。
+ *
+ * 型引数はエンドポイント名。今は使っておらず、どのエンドポイントでも任意の code を受け付ける。
+ * composable 側からは既にエンドポイント名を渡しているので、code の絞り込みはこの定義を直すだけで全体に効く。
+ */
+// TODO(api-error-types): misskey-js が生成するエラー型から、_E に存在する code だけを受け付ける型にする
+export type ApiErrorOverrides<_E extends string = string> = Record<string, () => ApiGuidanceText>;
 
 export type ResolveApiGuidanceOptions = {
 	/** 固定の共通案内に該当しない API エラーで、エンドポイント別の定義より優先する。 */

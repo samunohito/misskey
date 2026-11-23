@@ -18,7 +18,7 @@ import { requestApi } from '@/utility/api/request.js';
 
 export type ApiQueryError = { guidance: ApiGuidance; failure: ApiFailure };
 
-export type UseApiQueryOptions<P, T> = {
+export type UseApiQueryOptions<E extends string, P, T> = {
 	/** 取得条件を返す。入れ子まで監視する。有効時に評価が throw すると `error` に `other` の失敗を入れる。 */
 	params?: () => P;
 	/**
@@ -35,7 +35,7 @@ export type UseApiQueryOptions<P, T> = {
 	/** 真なら `refetch()` でだけ取得する。取得条件と対象の変化は引き続き監視する。 */
 	manual?: boolean;
 	/** この取得で使うエラー案内を `code` ごとに上書きする。 */
-	errors?: ApiErrorOverrides;
+	errors?: ApiErrorOverrides<E>;
 };
 
 export type UseApiQueryReturn<T> = {
@@ -60,7 +60,7 @@ function snapshotOf(params: unknown): JsonLike {
 	return deepClone(params as Cloneable) as JsonLike;
 }
 
-function useQuery<P, T>(method: 'POST' | 'GET', endpoint: string, opts: UseApiQueryOptions<P, T>): UseApiQueryReturn<T> {
+function useQuery<P, T>(method: 'POST' | 'GET', endpoint: string, opts: UseApiQueryOptions<string, P, T>): UseApiQueryReturn<T> {
 	// Vue が型に適用する Ref のアンラップを避け、呼び出し元の応答型 T を公開する。
 	const data = ref<T>() as Ref<T | undefined>;
 	const error = ref<ApiQueryError | null>(null);
@@ -278,7 +278,7 @@ function useQuery<P, T>(method: 'POST' | 'GET', endpoint: string, opts: UseApiQu
  */
 export function useApiQuery<E extends JsonEndpoint, P extends Misskey.Endpoints[E]['req']>(
 	endpoint: E,
-	opts: UseApiQueryOptions<P, ApiResponse<E, P>> = {},
+	opts: UseApiQueryOptions<E, P, ApiResponse<E, P>> = {},
 ): UseApiQueryReturn<ApiResponse<E, P>> {
 	return useQuery('POST', endpoint, opts);
 }
@@ -287,7 +287,7 @@ export function useApiQuery<E extends JsonEndpoint, P extends Misskey.Endpoints[
 // TODO(api-error-types): GET 可能な24件に絞る
 export function useApiGetQuery<E extends JsonEndpoint, P extends Misskey.Endpoints[E]['req']>(
 	endpoint: E,
-	opts: UseApiQueryOptions<P, ApiResponse<E, P>> = {},
+	opts: UseApiQueryOptions<E, P, ApiResponse<E, P>> = {},
 ): UseApiQueryReturn<ApiResponse<E, P>> {
 	return useQuery('GET', endpoint, opts);
 }
