@@ -144,21 +144,11 @@ async function save() {
 			...options,
 		};
 
-		await os.apiWithDialog('pages/update', updateOptions, undefined, {
-			'2298a392-d4a1-44c5-9ebb-ac1aeaa5a9ab': {
-				title: i18n.ts.somethingHappened,
-				text: i18n.ts._pages.nameAlreadyExists,
-			},
-		});
+		await os.apiWithDialog('pages/update', updateOptions);
 
 		currentName.value = name.value.trim();
 	} else {
-		const created = await os.apiWithDialog('pages/create', options, undefined, {
-			'4650348e-301c-499a-83c9-6aa988c66bc1': {
-				title: i18n.ts.somethingHappened,
-				text: i18n.ts._pages.nameAlreadyExists,
-			},
-		});
+		const created = await os.apiWithDialog('pages/create', options);
 
 		pageId.value = created.id;
 		currentName.value = name.value.trim();
@@ -191,12 +181,7 @@ async function duplicate() {
 	title.value = title.value + ' - copy';
 	name.value = name.value + '-copy';
 
-	const created = await os.apiWithDialog('pages/create', getSaveOptions(), undefined, {
-		'4650348e-301c-499a-83c9-6aa988c66bc1': {
-			title: i18n.ts.somethingHappened,
-			text: i18n.ts._pages.nameAlreadyExists,
-		},
-	});
+	const created = await os.apiWithDialog('pages/create', getSaveOptions());
 
 	pageId.value = created.id;
 	currentName.value = name.value.trim();
