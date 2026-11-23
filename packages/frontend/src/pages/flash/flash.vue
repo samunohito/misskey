@@ -18,8 +18,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 								<MkButton v-tooltip="i18n.ts.reload" class="button" rounded @click="reset"><i class="ti ti-reload"></i></MkButton>
 							</div>
 							<div class="items">
-								<MkButton v-if="flash.isLiked" v-tooltip="i18n.ts.unlike" asLike class="button" rounded primary @click="unlike()"><i class="ti ti-heart"></i><span v-if="flash?.likedCount && flash.likedCount > 0" style="margin-left: 6px;">{{ flash.likedCount }}</span></MkButton>
-								<MkButton v-else v-tooltip="i18n.ts.like" asLike class="button" rounded @click="like()"><i class="ti ti-heart"></i><span v-if="flash?.likedCount && flash.likedCount > 0" style="margin-left: 6px;">{{ flash.likedCount }}</span></MkButton>
+								<MkButton v-if="flash.isLiked" v-tooltip="i18n.ts.unlike" asLike class="button" rounded primary :disabled="likeBusy" @click="unlike()"><i class="ti ti-heart"></i><span v-if="flash?.likedCount && flash.likedCount > 0" style="margin-left: 6px;">{{ flash.likedCount }}</span></MkButton>
+								<MkButton v-else v-tooltip="i18n.ts.like" asLike class="button" rounded :disabled="likeBusy" @click="like()"><i class="ti ti-heart"></i><span v-if="flash?.likedCount && flash.likedCount > 0" style="margin-left: 6px;">{{ flash.likedCount }}</span></MkButton>
 								<MkButton v-tooltip="i18n.ts.copyLink" class="button" rounded @click="copyLink"><i class="ti ti-link ti-fw"></i></MkButton>
 								<MkButton v-tooltip="i18n.ts.share" class="button" rounded @click="share"><i class="ti ti-share ti-fw"></i></MkButton>
 								<MkButton v-if="$i && $i.id !== flash.user.id" class="button" rounded @mousedown="showMenu"><i class="ti ti-dots ti-fw"></i></MkButton>
@@ -53,7 +53,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<MkA v-if="$i && $i.id === flash.userId" :to="`/play/${flash.id}/edit`" style="color: var(--MI_THEME-accent);">{{ i18n.ts._play.editThisPage }}</MkA>
 				<MkAd :preferForms="['horizontal', 'horizontal-big']"/>
 			</div>
-			<MkError v-else-if="error" @retry="fetchFlash()"/>
+			<MkError v-else-if="error" :title="error.guidance.title" :text="error.guidance.text" @retry="refetch()"/>
 			<MkLoading v-else/>
 		</Transition>
 	</div>
@@ -61,8 +61,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { computed, nextTick, onDeactivated, onUnmounted, ref, watch, shallowRef, defineAsyncComponent } from 'vue';
-import * as Misskey from 'misskey-js';
+import { computed, nextTick, onDeactivated, onUnmounted, ref, shallowRef } from 'vue';
 import { utils } from '@syuilo/aiscript';
 import { compareVersions } from 'compare-versions';
 import { url } from '@@/js/config.js';
@@ -71,7 +70,8 @@ import type { MenuItem } from '@/types/menu.js';
 import type { Interpreter } from '@syuilo/aiscript';
 import MkButton from '@/components/MkButton.vue';
 import * as os from '@/os.js';
-import { misskeyApi } from '@/utility/misskey-api.js';
+import { useApiQuery } from '@/composables/use-api-query.js';
+import { useApiAction } from '@/composables/use-api-action.js';
 import { i18n } from '@/i18n.js';
 import { definePage } from '@/page.js';
 import MkAsUi from '@/components/MkAsUi.vue';
@@ -89,19 +89,26 @@ const props = defineProps<{
 	id: string;
 }>();
 
-const flash = ref<Misskey.entities.Flash | null>(null);
-const error = ref<any>(null);
+const { data: flash, error, refetch } = useApiQuery('flash/show', {
+	params: () => ({ flashId: props.id }),
+});
 
-function fetchFlash() {
-	flash.value = null;
-	misskeyApi('flash/show', {
-		flashId: props.id,
-	}).then(_flash => {
-		flash.value = _flash;
-	}).catch(err => {
-		error.value = err;
-	});
+// 応答を待つ間に別の Play へ移っていたら、移った先の表示を直さない。
+// 同じ Play を取り直した結果に既に反映されていることもあるので、数は状態が変わるときだけ動かす。
+function applyLiked(flashId: string, liked: boolean): void {
+	if (flash.value == null || flash.value.id !== flashId) return;
+	if (flash.value.isLiked === liked) return;
+	flash.value.isLiked = liked;
+	flash.value.likedCount += liked ? 1 : -1;
 }
+
+const { execute: likeFlash, isPending: liking } = useApiAction('flash/like', {
+	onSuccess: (_, params) => applyLiked(params.flashId, true),
+});
+const { execute: unlikeFlash, isPending: unliking } = useApiAction('flash/unlike', {
+	onSuccess: (_, params) => applyLiked(params.flashId, false),
+});
+const likeBusy = computed(() => liking.value || unliking.value);
 
 function share(ev: PointerEvent) {
 	if (!flash.value) return;
@@ -152,20 +159,18 @@ function shareWithNote() {
 
 async function like() {
 	if (!flash.value) return;
+	// ログインや確認のダイアログの間に表示が切り替わっても、押したときの Play を対象にする
+	const flashId = flash.value.id;
 
 	const isLoggedIn = await pleaseLogin();
 	if (!isLoggedIn) return;
 
-	os.apiWithDialog('flash/like', {
-		flashId: flash.value.id,
-	}).then(() => {
-		flash.value!.isLiked = true;
-		flash.value!.likedCount++;
-	});
+	likeFlash({ flashId });
 }
 
 async function unlike() {
 	if (!flash.value) return;
+	const flashId = flash.value.id;
 
 	const isLoggedIn = await pleaseLogin();
 	if (!isLoggedIn) return;
@@ -175,15 +180,8 @@ async function unlike() {
 		text: i18n.ts.unlikeConfirm,
 	});
 	if (confirm.canceled) return;
-	os.apiWithDialog('flash/unlike', {
-		flashId: flash.value.id,
-	}).then(() => {
-		flash.value!.isLiked = false;
-		flash.value!.likedCount--;
-	});
+	unlikeFlash({ flashId });
 }
-
-watch(() => props.id, fetchFlash, { immediate: true });
 
 const started = ref(false);
 const aiscript = shallowRef<Interpreter | null>(null);
