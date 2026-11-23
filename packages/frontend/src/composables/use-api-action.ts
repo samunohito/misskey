@@ -11,8 +11,7 @@ import type { ApiErrorOverrides } from '@/utility/api/guidance.js';
 import type { ApiResponse, JsonEndpoint } from '@/utility/api/types.js';
 import * as os from '@/os.js';
 import { requestApi } from '@/utility/api/request.js';
-import { resolveApiGuidance } from '@/utility/api/guidance.js';
-import { showApiGuidanceDialog } from '@/utility/api/guidance-dialog.js';
+import { showApiFailureGuidance } from '@/utility/api/failure-guidance.js';
 import { reportApiCallbackError } from '@/utility/api/report-error.js';
 
 /** 操作の実行結果。`busy` は同じ操作の実行中につき送信を見送ったことを表す。 */
@@ -97,16 +96,6 @@ export function useApiAction<E extends JsonEndpoint>(
 		return settle;
 	}
 
-	function showDefaultGuidance(failure: ApiFailure): void {
-		try {
-			const guidance = resolveApiGuidance(endpoint, failure, { overrides: opts.errors });
-			if (guidance == null) return;
-			showApiGuidanceDialog(guidance).catch(reportApiCallbackError);
-		} catch (err) {
-			reportApiCallbackError(err);
-		}
-	}
-
 	async function execute<P extends Misskey.Endpoints[E]['req']>(params: P, callOpts: ApiActionExecuteOptions = {}): Promise<ApiActionResult<ApiResponse<E, P>>> {
 		if (pending.value) return { status: 'busy' };
 		pending.value = true;
@@ -149,7 +138,7 @@ export function useApiAction<E extends JsonEndpoint>(
 			acceptsSuppress = false;
 		}
 
-		if (!suppressed) showDefaultGuidance(failure);
+		if (!suppressed) showApiFailureGuidance(endpoint, failure, { overrides: opts.errors });
 
 		return { status: 'failure', failure };
 	}

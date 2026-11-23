@@ -42,7 +42,7 @@ export function misskeyApi<
 
 /**
  * `misskeyApi` と同じ前処理 (同期 throw と `data.i` の書き換え) をしたうえで、失敗を種類つきで返す。
- * 失敗を元の値で reject しつつ案内には分類を使う `os.apiWithDialog` のためにある。
+ * 失敗を元の値で reject しつつ案内には分類を使う、`os.apiWithDialog` と `apLookup` の共通の本体 (`requestWithGuidanceDialog`) のためにある。
  *
  * @returns `misskeyApi` が reject する値は `failure.raw` に入る。
  * @throws エンドポイント名に `://` が含まれる場合に同期的に throw する。

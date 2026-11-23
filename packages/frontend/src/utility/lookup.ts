@@ -5,12 +5,8 @@
 
 import type * as Misskey from 'misskey-js';
 import type { Router } from '@/router.js';
-import type { ApiFailure } from '@/utility/api/request.js';
 import * as os from '@/os.js';
-import { misskeyApiResult } from '@/utility/misskey-api.js';
-import { resolveApiGuidance } from '@/utility/api/guidance.js';
-import { showApiGuidanceDialog } from '@/utility/api/guidance-dialog.js';
-import { reportApiCallbackError } from '@/utility/api/report-error.js';
+import { requestWithGuidanceDialog } from '@/utility/api/failure-guidance.js';
 import { i18n } from '@/i18n.js';
 import { mainRouter } from '@/router.js';
 import { acct } from '@@/js/user.js';
@@ -72,23 +68,7 @@ export function openApLookupResult(router: Router, res: Misskey.entities.ApShowR
  * @returns 成功時は `ap/show` の応答で解決する。失敗時は案内を出したうえで、`misskeyApi` と同じ元の値で reject する。
  */
 export async function apLookup(query: string): Promise<Misskey.entities.ApShowResponse> {
-	let failure: ApiFailure | null = null;
-	const promise = misskeyApiResult('ap/show', { uri: query }).then(r => {
-		if (r.ok) return r.data as Misskey.entities.ApShowResponse;
-		failure = r.failure;
-		throw r.failure.raw;
-	});
-
-	os.promiseDialog(promise, null, (err) => {
-		// requestApi は reject しない約束だが、万一 reject しても案内が出るよう「その他」として扱う。
-		try {
-			const guidance = resolveApiGuidance('ap/show', failure ?? { kind: 'other', raw: err });
-			if (guidance == null) return;
-			showApiGuidanceDialog(guidance).catch(reportApiCallbackError);
-		} catch (e) {
-			reportApiCallbackError(e);
-		}
-	}, i18n.ts.fetchingAsApObject);
-
-	return await promise;
+	return await requestWithGuidanceDialog('ap/show', { uri: query }, {
+		waitingText: i18n.ts.fetchingAsApObject,
+	}) as Misskey.entities.ApShowResponse;
 }

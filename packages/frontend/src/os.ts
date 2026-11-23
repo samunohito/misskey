@@ -19,11 +19,7 @@ import type { MkDialogReturnType } from '@/components/MkDialog.vue';
 import type { OverloadToUnion } from '@/types/overload-to-union.js';
 import type MkRoleSelectDialog_TypeReferenceOnly from '@/components/MkRoleSelectDialog.vue';
 import type MkEmojiPickerDialog_TypeReferenceOnly from '@/components/MkEmojiPickerDialog.vue';
-import type { ApiFailure } from '@/utility/api/request.js';
-import { misskeyApiResult } from '@/utility/misskey-api.js';
-import { resolveApiGuidance } from '@/utility/api/guidance.js';
-import { showApiGuidanceDialog } from '@/utility/api/guidance-dialog.js';
-import { reportApiCallbackError } from '@/utility/api/report-error.js';
+import { requestWithGuidanceDialog } from '@/utility/api/failure-guidance.js';
 import { prefer } from '@/preferences.js';
 import { i18n } from '@/i18n.js';
 import MkPostFormDialog from '@/components/MkPostFormDialog.vue';
@@ -56,35 +52,16 @@ export const apiWithDialog = (<E extends keyof Misskey.Endpoints>(
 	token?: string | null | undefined,
 	customErrors?: ApiWithDialogCustomErrors,
 ) => {
-	let failure: ApiFailure | null = null;
-	const promise = misskeyApiResult(endpoint, data, token).then(r => {
-		if (r.ok) return r.data as Misskey.api.SwitchCaseResponseType<E, Misskey.Endpoints[E]['req']>;
-		failure = r.failure;
-		throw r.failure.raw;
-	});
-
-	promiseDialog(promise, null, (err) => {
-		// requestApi は reject しない約束だが、万一 reject しても案内が出るよう「その他」として扱う。
-		showApiFailureGuidance(endpoint, failure ?? { kind: 'other', raw: err }, customErrors);
-	});
-
-	return promise;
-});
-
-function showApiFailureGuidance(endpoint: string, failure: ApiFailure, customErrors: ApiWithDialogCustomErrors | undefined) {
 	// 第4引数は code と id のどちらのキーかを区別せずに受け付けるため、同じ表を両方の上書きとして渡す。
 	// code (大文字のスネークケース) と UUID は形が違うので、取り違えは起きない。
 	const overrides = customErrors == null ? undefined : Object.fromEntries(
 		Object.entries(customErrors).map(([key, guidance]) => [key, () => guidance]),
 	);
-	try {
-		const guidance = resolveApiGuidance(endpoint, failure, { overrides, idOverrides: overrides });
-		if (guidance == null) return;
-		showApiGuidanceDialog(guidance).catch(reportApiCallbackError);
-	} catch (err) {
-		reportApiCallbackError(err);
-	}
-}
+	return requestWithGuidanceDialog(endpoint, data, {
+		token,
+		guidance: { overrides, idOverrides: overrides },
+	}) as Promise<Misskey.api.SwitchCaseResponseType<E, Misskey.Endpoints[E]['req']>>;
+});
 
 export function promiseDialog<T extends Promise<any>>(
 	promise: T,
