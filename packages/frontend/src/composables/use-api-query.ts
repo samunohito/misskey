@@ -3,32 +3,6 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-/*
- * 画面が1つの API の取得結果・失敗・再取得を状態として持つための composable。
- * 入口の選び方は `use-api-action.ts` の冒頭のコメントを参照。
- *
- * ## どこで使うか
- *
- * effect scope の中 (コンポーネントの setup か `effectScope()` の中) で呼ぶこと。
- * `params` / `enabled` の監視と、破棄時のリクエストの中断は scope に結びつく。
- * scope の外で呼ぶと監視が止まらず、破棄の扱いもない。
- *
- * ## 動き
- *
- * - 自動 (既定) は作成時に1回取得し、`params` が返す値 (入れ子を含む) が変わるたびに取り直す。
- *   `manual: true` なら自動では取得せず、`refetch()` でだけ取得する。
- * - 表示中の `data` が、どの `params` で取得した (または初期値として採用した) ものかを常に持つ。
- *   新しい取得の `params` がそれと同じなら `data` を残し、違えば取得開始時に消す。手動でも `params` が変わった時点で消す。
- * - `enabled` が偽の間は取得せず (`refetch()` も送らない)、進行中の取得を中断し、`data` と `error` を消す。
- * - `params` / `enabled` の評価が throw したら、新しい取得を始めたものとして扱い、`data` を消して「その他」の失敗を `error` にする。
- * - `initialData` は `enabled` が初めて真になった時点で1回だけ採用し、その時点の取得を省く。
- *   `initialData` が throw したら報告し、値がなかったものとして扱う。
- * - 失敗してもダイアログは出さず、`error` (案内と分類済みの失敗) を返す。中断は `error` にしない。
- * - `refetch()` は reject しない。その取得が終わるか、置き換えられるか、中断された時点で解決する。成否は `data` / `error` で見る。
- * - `data` は書き換えてよい (表示中の対象への更新として扱い、次の取得の成功で上書きされる)。
- *   画面の非同期処理の完了で `data` を直すときは、開始時の `data` と同じ対象かを確かめてから直す (例: 開始時の `data` と同一か比べる)。
- */
-
 import { computed, getCurrentScope, onScopeDispose, ref, watch } from 'vue';
 import { requestApi } from '@/utility/api/request.js';
 import { resolveApiGuidance } from '@/utility/api/guidance.js';
@@ -45,22 +19,35 @@ import type { ApiResponse, JsonEndpoint } from '@/utility/api/types.js';
 export type ApiQueryError = { guidance: ApiGuidance; failure: ApiFailure };
 
 export type UseApiQueryOptions<P, T> = {
-	/** 取得条件を返す。返す値 (入れ子を含む) を監視する */
+	/** 取得条件を返す。入れ子まで監視する。有効時に評価が throw すると `error` に `other` の失敗を入れる。 */
 	params?: () => P;
-	/** 真の間だけ取得する。省略時は常に真。throw したら「その他」の失敗を `error` にする */
+	/**
+	 * 真の間だけ取得する。偽になると進行中の取得を中断して `data` と `error` を消す。
+	 * 省略時は常に真。評価が throw すると `error` に `other` の失敗を入れる。
+	 */
 	enabled?: () => boolean;
-	/** 値を返したら、`enabled` が初めて真になった時点で `data` にし、その時点の取得を省く。throw したら報告し、値がなかったものとして扱う */
+	/**
+	 * 監視で有効になった時点に取得条件も評価できていれば、一度だけ呼ぶ。
+	 * `undefined` 以外を返すと `data` に採用し、その回の取得を省く。
+	 * 有効な状態で先に `refetch()` を呼んだ場合は使わない。throw したら報告して `undefined` と同じ扱いにする。
+	 */
 	initialData?: () => T | undefined;
-	/** 真なら自動では取得せず、`refetch()` でだけ取得する */
+	/** 真なら `refetch()` でだけ取得する。取得条件と対象の変化は引き続き監視する。 */
 	manual?: boolean;
-	/** この取得でだけの案内の上書き (code をキーにする) */
+	/** この取得で使うエラー案内を `code` ごとに上書きする。 */
 	errors?: ApiErrorOverrides;
 };
 
 export type UseApiQueryReturn<T> = {
+	/** 現在の取得条件に対応するデータ。書き換えでき、同じ条件での再取得中は直前の値を保持する。 */
 	data: Ref<T | undefined>;
+	/** 取得や条件の評価の失敗。中断時は案内を出す必要がないため失敗として保持しない。 */
 	error: Readonly<Ref<ApiQueryError | null>>;
 	isPending: Readonly<Ref<boolean>>;
+	/**
+	 * 現在の条件で取得する。取得の終了・置き換え・中断で解決し、取得の失敗は `error` に反映する。
+	 * 無効時や scope の破棄後は送信せずに解決する。
+	 */
 	refetch: () => Promise<void>;
 };
 
@@ -69,24 +56,23 @@ type EvalResult<V> = { ok: true; value: V } | { ok: false; error: unknown };
 type JsonLike = Parameters<typeof deepEqual>[0];
 
 function snapshotOf(params: unknown): JsonLike {
+	// JSON API の params を複製可能な値として扱い、比較用の型に合わせる。
 	return deepClone(params as Cloneable) as JsonLike;
 }
 
 function useQuery<P, T>(method: 'POST' | 'GET', endpoint: string, opts: UseApiQueryOptions<P, T>): UseApiQueryReturn<T> {
+	// Vue が型に適用する Ref のアンラップを避け、呼び出し元の応答型 T を公開する。
 	const data = ref<T>() as Ref<T | undefined>;
 	const error = ref<ApiQueryError | null>(null);
 	const pending = ref(false);
 
-	/** 最新の取得の世代。これと違う世代の取得の結果はすべて無視する */
+	// abort だけでは受信済みの応答を取り消せないため、世代番号でも結果の反映を制御する。
 	let generation = 0;
 	let controller: AbortController | null = null;
-	/** 進行中の取得を待っている `refetch()` を解決する */
 	let settleInflight: (() => void) | null = null;
-	/** 進行中の取得の params (複製)。進行中の取得がなければ null */
+	// 最後に評価した条件、通信中の条件、表示中データの条件はずれることがあるため個別に追跡する。
 	let inflightParams: { value: JsonLike } | null = null;
-	/** 表示中の data を取得した (または初期値として採用した) ときの params (複製)。data がなければ null */
 	let dataParams: { value: JsonLike } | null = null;
-	/** 最後に評価できた params (複製)。監視で変化を判定する。評価が throw したら null */
 	let seenParams: { value: JsonLike } | null = null;
 	let wasEnabled = false;
 	let initialDataChecked = false;
@@ -122,8 +108,8 @@ function useQuery<P, T>(method: 'POST' | 'GET', endpoint: string, opts: UseApiQu
 		return guidance == null ? null : { guidance, failure };
 	}
 
-	/** 世代を進めて進行中の取得を無効にしてから中断する。待っている `refetch()` は解決する */
 	function abortInflight(): void {
+		// 中断で応答が返ってきても反映されないよう、先に世代を進める。
 		generation++;
 		const c = controller;
 		const settle = settleInflight;
@@ -131,6 +117,7 @@ function useQuery<P, T>(method: 'POST' | 'GET', endpoint: string, opts: UseApiQu
 		settleInflight = null;
 		inflightParams = null;
 		c?.abort();
+		// 通信側の中断処理を待たずに、この取得を待っている refetch() を解決する。
 		settle?.();
 	}
 
@@ -144,8 +131,8 @@ function useQuery<P, T>(method: 'POST' | 'GET', endpoint: string, opts: UseApiQu
 		dataParams = null;
 	}
 
-	/** params / enabled の評価が throw した: 新しい取得を始めたものとして扱い、data を消して「その他」の失敗にする */
 	function failEvaluation(err: unknown): void {
+		// 現在の対象を確認できないため、前の条件の通信と表示データも無効にする。
 		cancelInflight();
 		clearData();
 		seenParams = null;
@@ -168,12 +155,11 @@ function useQuery<P, T>(method: 'POST' | 'GET', endpoint: string, opts: UseApiQu
 
 		return new Promise<void>((resolve) => {
 			settleInflight = resolve;
-			// 送信時に書き込まれる認証情報が呼び元の値にも比較用の値にも入らないよう、送信には別の複製を渡す
+			// 送信する値を呼び元や比較に使う複製から独立させ、認証情報の補完を取得条件に混ぜない。
 			requestApi<T>(endpoint, snapshotOf(params) as Record<string, unknown>, { method, signal: ac.signal })
 				// requestApi は reject しない約束だが、万一の reject も失敗として扱う
 				.catch((err: unknown): ApiResult<never> => ({ ok: false, failure: { kind: 'other', raw: err } }))
 				.then((result) => {
-					// 置き換え・中断・破棄のときは、その時点で resolve 済み
 					if (myGeneration !== generation) return;
 					controller = null;
 					settleInflight = null;
@@ -236,7 +222,7 @@ function useQuery<P, T>(method: 'POST' | 'GET', endpoint: string, opts: UseApiQu
 			return;
 		}
 
-		// 手動: 取得はしないが、前の対象の data と、前の対象の進行中の取得は捨てる
+		// 手動取得でも、条件が変わった画面に前の対象のデータや応答を出さないようにする。
 		if (dataParams != null && !deepEqual(dataParams.value, snapshot.value)) clearData();
 		if (inflightParams != null && !deepEqual(inflightParams.value, snapshot.value)) cancelInflight();
 	}
@@ -265,7 +251,7 @@ function useQuery<P, T>(method: 'POST' | 'GET', endpoint: string, opts: UseApiQu
 
 	if (getCurrentScope()) {
 		onScopeDispose(() => {
-			// 応答が届いていても状態を更新しないよう、世代を無効にしてから中断する
+			// 破棄前に渡した refetch() からの送信も止める。
 			disposed = true;
 			abortInflight();
 		}, true);
@@ -285,6 +271,11 @@ function useQuery<P, T>(method: 'POST' | 'GET', endpoint: string, opts: UseApiQu
 	};
 }
 
+/**
+ * POST で取得したデータと失敗を画面の状態として管理する。
+ * 既定では有効になったときと取得条件が変わったときに取得する。失敗はダイアログを出さず `error` に入る。
+ * `setup` などの effect scope 内で呼ぶ。scope の破棄時に監視を終了し、進行中の取得を中断する。
+ */
 export function useApiQuery<E extends JsonEndpoint, P extends Misskey.Endpoints[E]['req']>(
 	endpoint: E,
 	opts: UseApiQueryOptions<P, ApiResponse<E, P>> = {},
@@ -292,7 +283,7 @@ export function useApiQuery<E extends JsonEndpoint, P extends Misskey.Endpoints[
 	return useQuery('POST', endpoint, opts);
 }
 
-/** GET で取得する。ブラウザのキャッシュが効き、認証情報は送らない。それ以外は `useApiQuery` と同じ */
+/** GET で取得する `useApiQuery`。ブラウザの既定のキャッシュ設定を使い、認証トークンは補完しない。 */
 // TODO(api-error-types): GET 可能な24件に絞る
 export function useApiGetQuery<E extends JsonEndpoint, P extends Misskey.Endpoints[E]['req']>(
 	endpoint: E,

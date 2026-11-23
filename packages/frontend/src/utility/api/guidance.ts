@@ -11,28 +11,26 @@ import type { ApiErrorBody, ApiFailure } from '@/utility/api/request.js';
 
 export type ApiGuidanceText = { title?: string; text: string };
 
-/** `copyInfo` があれば、表示する側は「エラー情報をコピー」の操作を出す */
+/** エラーの案内。`copyInfo` があれば「エラー情報をコピー」の操作に使う。 */
 export type ApiGuidance = ApiGuidanceText & { copyInfo?: string };
 
-/** 呼び元が宣言的に渡す、その操作でだけの案内の上書き。code をキーにする */
+/** エラーの `code` ごとに、その呼び出しだけで使う案内を作る関数。 */
 // TODO(api-error-types): そのエンドポイントに存在する code だけを受け付ける型にする
 export type ApiErrorOverrides = Record<string, () => ApiGuidanceText>;
 
 export type ResolveApiGuidanceOptions = {
+	/** 固定の共通案内に該当しない API エラーで、エンドポイント別の定義より優先する。 */
 	overrides?: ApiErrorOverrides;
-	/** 省略時は `apiErrorDefs` */
+	/** API エラーのエンドポイント別の定義。省略時は `apiErrorDefs` を使う。 */
 	defs?: ApiErrorDefs;
 };
 
 function lookup(table: ApiErrorOverrides | undefined, code: string): (() => ApiGuidanceText) | undefined {
+	// code はサーバーから届くため、プロトタイプから継承した名前を案内として呼ばない。
 	if (table == null || !Object.hasOwn(table, code)) return undefined;
 	return table[code];
 }
 
-/**
- * 上書きや定義表の案内を作る。作る関数が throw したら報告して `null` を返し、次の優先順の案内に任せる
- * (失敗の案内が丸ごと消えないようにするため)
- */
 function invokeGuidance(fn: (() => ApiGuidanceText) | undefined): ApiGuidanceText | null {
 	if (fn == null) return null;
 	try {
@@ -50,7 +48,6 @@ function messageOf(raw: unknown): string {
 	return '';
 }
 
-/** 固定の共通の案内 (API エラーのうち、上書きや定義表より先に判定するもの) */
 function resolveFixedApiErrorGuidance(endpoint: string, error: ApiErrorBody): ApiGuidance | null {
 	switch (error.code) {
 		case 'INTERNAL_ERROR':
@@ -71,16 +68,12 @@ function resolveFixedApiErrorGuidance(endpoint: string, error: ApiErrorBody): Ap
 }
 
 /**
- * 失敗から案内を決める。表示はしない。中断 (`aborted`) は案内しないので `null` を返す。
+ * API 呼び出しの失敗から、表示に使う案内を同期的に組み立てる。
+ * API エラーでは固定の共通案内、呼び元の上書き、エンドポイント別の定義、`TOO_MANY` 系、汎用表示の順に探す。
+ * 上書きや定義の関数が throw したら報告し、案内が途切れないよう次の候補に進む。
  *
- * 優先順 (すべての入口で同じ):
- * 1. 固定の共通の案内 (API エラーでない失敗と、`INTERNAL_ERROR` / `RATE_LIMIT_EXCEEDED` / `INVALID_PARAM` / `ROLE_PERMISSION_DENIED`)
- * 2. 呼び元が渡した上書き (`overrides`)
- * 3. エラー定義表のエンドポイント別定義 (`defs`)
- * 4. `TOO_MANY` で始まる code の案内
- * 5. 汎用表示 (`message` と `id`)
- *
- * 2 と 3 の案内を作る関数が throw したら、`reportApiCallbackError` で報告して次の優先順へ進む。
+ * @returns 表示用の案内。中断は画面に出す必要がないため `null` を返す。
+ * @throws `INTERNAL_ERROR` のコピー用情報を JSON に変換できない場合。
  */
 export function resolveApiGuidance(endpoint: string, failure: ApiFailure, opts?: ResolveApiGuidanceOptions): ApiGuidance | null {
 	switch (failure.kind) {
@@ -98,6 +91,7 @@ export function resolveApiGuidance(endpoint: string, failure: ApiFailure, opts?:
 
 	const error = failure.error;
 
+	// サーバー障害や権限不足などは、どの呼び出し元でも同じ案内を出すため先に解決する。
 	const fixed = resolveFixedApiErrorGuidance(endpoint, error);
 	if (fixed != null) return fixed;
 

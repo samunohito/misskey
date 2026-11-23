@@ -3,41 +3,6 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-/*
- * 1回のユーザー操作で1つの API を呼ぶための composable。
- *
- * ## API を呼ぶ入口の選び方 (上から順に見て、最初に当てはまったものを使う)
- *
- * 1. その用途の composable・関数・専用の部品が既にある → それを使う
- *    (リモートの照会、`Paginator` / `MkPagination` の一覧、既存のアップローダーなど)
- * 2. 失敗を reject で受ける前提の相手に渡す (`useForm` の保存関数など)、
- *    または1回の操作で複数の API を順に呼び、途中で失敗したら後続を止める → `os.apiWithDialog`
- *    (手続き全体に1つの待機表示を付けるなら `os.promiseDialog` と `misskeyApi` を組み合わせる)
- * 3. 画面が1つの API の取得結果・失敗・再取得を状態として持つ → `useApiQuery` (GET でキャッシュを効かせるなら `useApiGetQuery`)
- * 4. 1回のユーザー操作で1つの API を呼ぶ (ボタン、メニュー項目、ドロップ、入力の確定など。
- *    コンポーネントの外の関数から呼ぶものを含む) → `useApiAction` (このファイル)
- * 5. どれにも当てはまらない (初期化や描画の処理が取得と成否をまとめて引き受ける、複数の取得をまとめて1つの表示に反映する、
- *    入力のたびの自動保存、バックグラウンドの処理) → `misskeyApi` / `misskeyApiGet`。失敗時の扱いは呼び元が決めて書く
- *
- * 実行中の見せ方: 画面に示す場所があれば `isPending` を使う (既定)。メニュー項目などで示す場所がなければ `waitingDialog` を付ける。
- *
- * ## `await` の意味
- *
- * - `await os.apiWithDialog(...)` が次の行に進んだら成功している。
- * - `await execute(...)` が次の行に進んでも成功とは限らない。成功 (`success`)・失敗 (`failure`)・実行中で送らなかった (`busy`) のどれかが値で返る。
- *   成功後に処理を続けるなら、戻り値の `status` で分岐するか `onSuccess` を使う。
- * - `execute` の Promise が解決した時点で約束されるのは、API の成否が決まったこと、コールバックが呼ばれたこと (完了は待たない)、
- *   失敗の既定の案内の表示が始まっていること (閉じられるのは待たない) だけ。
- * - `execute` は reject しないので、失敗を reject で受ける前提の相手には渡さない (規則2)。
- *
- * ## どこから作れるか
- *
- * effect scope (コンポーネントの setup など) の中で作ると、scope の破棄後に完了した呼び出しでは `onSuccess` / `onError` を呼ばない
- * (リクエストは中断せず、失敗の既定の案内は出す)。scope の外 (メニューを組み立てる関数など) で作ると破棄の扱いがないだけで、
- * コールバックは常に呼ばれる。その場合、画面の状態に触れるコールバックを書かないのは呼び元の責任。
- * 二重実行の防止が効くのは、同じ `useApiAction` の戻り値を使い回している範囲だけ。
- */
-
 import { computed, getCurrentScope, onScopeDispose, ref } from 'vue';
 import * as os from '@/os.js';
 import { requestApi } from '@/utility/api/request.js';
@@ -50,27 +15,28 @@ import type { ApiFailure, ApiResult } from '@/utility/api/request.js';
 import type { ApiErrorOverrides } from '@/utility/api/guidance.js';
 import type { ApiResponse, JsonEndpoint } from '@/utility/api/types.js';
 
+/** 操作の実行結果。`busy` は同じ操作の実行中につき送信を見送ったことを表す。 */
 export type ApiActionResult<T> =
 	| { status: 'success'; data: T }
 	| { status: 'failure'; failure: ApiFailure }
 	| { status: 'busy' };
 
 export type UseApiActionOptions<E, P, T> = {
-	/** 成功時に呼ぶ。返した Promise は待たない (reject は報告する) */
+	/** 成功時に呼ぶ。同期例外や返した Promise の reject は報告し、完了は待たない。 */
 	onSuccess?: (data: T, params: P) => unknown;
 	/**
-	 * 失敗時 (中断を除く) に、既定の案内より先に呼ぶ。返した Promise は待たない (reject は報告する)。
+	 * 失敗時 (中断を除く) に、既定の案内より先に呼ぶ。同期例外や返した Promise の reject は報告し、完了は待たない。
 	 * `suppressDefault()` を同期的に呼ぶと既定の案内を出さない。
 	 */
 	onError?: (failure: ApiFailure, ctx: { suppressDefault: () => void }) => unknown;
-	/** この操作でだけの案内の上書き (code をキーにする) */
+	/** この操作で使うエラー案内を `code` ごとに上書きする。 */
 	errors?: ApiErrorOverrides;
-	/** 実行中に待機ダイアログを出す。`text` で文言を指定できる */
+	/** 実行中に待機ダイアログを出す。`text` で文言を指定できる。既定では表示しない。 */
 	waitingDialog?: boolean | { text?: string };
 };
 
 export type ApiActionExecuteOptions = {
-	/** `misskeyApi` の第3引数と同じ。`undefined` 以外を渡すとログイン中のトークンの代わりに送る (`null` も送る) */
+	/** `misskeyApi` の第3引数と同じ。`undefined` 以外を渡すとログイン中のトークンに優先する (`null` も送る)。 */
 	token?: string | null;
 };
 
@@ -84,6 +50,15 @@ function invokeCallback(fn: () => unknown): void {
 	}
 }
 
+/**
+ * 1回のユーザー操作から1つの API に POST する処理を作る。
+ * effect scope 内で作ると、破棄後に完了した処理のコールバックは呼ばない。リクエストは続行し、失敗時は既定の案内を出す。
+ * メニューを組み立てる関数など、scope の外でも作成できる。
+ *
+ * @returns `execute` と、そのインスタンスの実行状態。`execute` は API の成否を値で返し、失敗でも reject しない。
+ * 実行中に再度呼ぶと `busy` で解決する。中断は案内を出さず `failure` で返す。
+ * コールバックの完了や案内が閉じるのは待たない。
+ */
 export function useApiAction<E extends JsonEndpoint>(
 	endpoint: E,
 	opts: UseApiActionOptions<E, Misskey.Endpoints[E]['req'], ApiResponse<E, Misskey.Endpoints[E]['req']>> = {},
@@ -94,7 +69,7 @@ export function useApiAction<E extends JsonEndpoint>(
 	const pending = ref(false);
 	let disposed = false;
 
-	// scope の外 (メニューを組み立てる関数など) で作った場合は破棄の扱いがない
+	// 破棄した画面の状態をコールバックが更新しないようにする。操作の成否を得るため、送信は継続する。
 	if (getCurrentScope()) {
 		onScopeDispose(() => {
 			disposed = true;
@@ -112,7 +87,7 @@ export function useApiAction<E extends JsonEndpoint>(
 				else reject(result.failure);
 			};
 		});
-		// 失敗の案内はこの composable が出すので、待機ダイアログ側では何もしない
+		// ダイアログを開けなかった場合も未処理の reject を防ぐ。失敗の案内は execute に任せ、二重に表示しない。
 		p.catch(() => {});
 		try {
 			os.promiseDialog(p, null, () => {}, text);
@@ -144,7 +119,7 @@ export function useApiAction<E extends JsonEndpoint>(
 				.catch((err: unknown): ApiResult<never> => ({ ok: false, failure: { kind: 'other', raw: err } }));
 			settleWaiting?.(result);
 		} finally {
-			// コールバックや案内の完了は待たずに解除する
+			// API の実行中だけを示すため、コールバックや案内を起動する前に解除する。
 			pending.value = false;
 		}
 
@@ -170,7 +145,7 @@ export function useApiAction<E extends JsonEndpoint>(
 					if (acceptsSuppress) suppressed = true;
 				},
 			}));
-			// 既定の案内を止められるのは onError の同期的な実行の間だけ
+			// onError の非同期処理を待たずに表示を決めるため、抑止はここで締め切る。
 			acceptsSuppress = false;
 		}
 

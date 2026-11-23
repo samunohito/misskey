@@ -9,8 +9,11 @@ import { copyToClipboard } from '@/utility/copy-to-clipboard.js';
 import type { ApiGuidance } from '@/utility/api/guidance.js';
 
 /**
- * 案内をエラーのダイアログで出す。ダイアログが閉じられたら解決する。
- * `copyInfo` があれば「エラー情報をコピー」の操作を添え、選ばれたらクリップボードへ写す。
+ * エラーの案内をダイアログで表示する。
+ * `copyInfo` があればコピー操作を添え、選ばれたらクリップボードへの書き込みを開始する。
+ *
+ * @returns ダイアログでの操作が終わると解決する。クリップボードへの書き込み完了は待たない。
+ * ダイアログを開けない場合やコピー処理が同期的に throw した場合は reject する。
  */
 export async function showApiGuidanceDialog(guidance: ApiGuidance): Promise<void> {
 	if (guidance.copyInfo == null) {

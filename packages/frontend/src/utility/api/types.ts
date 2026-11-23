@@ -5,9 +5,7 @@
 
 import type * as Misskey from 'misskey-js';
 
-/**
- * JSON で送るエンドポイント。multipart で送るものは除く。
- */
+/** JSON で送信できるエンドポイント。multipart の `drive/files/create` は対象外。 */
 // TODO(api-error-types): generator の endpointReqTypes から作る (misskey-js の endpointReqTypes は公開されていないため、今は手で除く)
 export type JsonEndpoint = Exclude<keyof Misskey.Endpoints, 'drive/files/create'>;
 
@@ -45,11 +43,10 @@ type CollectCaseResults<Q, Cases, Default> =
 type DistributeParams<P, Cases, Default> = P extends unknown ? CollectCaseResults<P, Cases, Default> : never;
 
 /**
- * エンドポイントの応答の型。
+ * パラメーターの型から、エンドポイントが返しうる応答を求める。
  *
- * misskey-js の `SwitchCaseResponseType` は、当たるかどうか型から決まらない case でも1つに決めてしまい、
- * 実行時に返りうる形より狭くなることがある。こちらは `P` を和の各要素に分配し、返りうる形をすべて含める。
- * `$switch` を持たないエンドポイントは `Endpoints[E]['res']` のまま。
+ * `SwitchCaseResponseType` では任意のキーを含む条件で応答を狭めすぎることがあるため、
+ * `$switch` は `P` のユニオンの要素ごとに判定し、当たりうる条件の応答をすべて含める。
  */
 export type ApiResponse<E extends keyof Misskey.Endpoints, P extends Misskey.Endpoints[E]['req']> =
 	Misskey.Endpoints[E]['res'] extends { $switch: { $cases: infer Cases; $default: infer Default } }
