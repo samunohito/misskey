@@ -4,16 +4,16 @@
  */
 
 import { computed, getCurrentScope, onScopeDispose, ref } from 'vue';
-import * as os from '@/os.js';
-import { requestApi } from '@/utility/api/request.js';
-import { resolveApiGuidance } from '@/utility/api/guidance.js';
-import { showApiGuidanceDialog } from '@/utility/api/guidance-dialog.js';
-import { reportApiCallbackError } from '@/utility/api/report-error.js';
 import type * as Misskey from 'misskey-js';
 import type { Ref } from 'vue';
 import type { ApiFailure, ApiResult } from '@/utility/api/request.js';
 import type { ApiErrorOverrides } from '@/utility/api/guidance.js';
 import type { ApiResponse, JsonEndpoint } from '@/utility/api/types.js';
+import * as os from '@/os.js';
+import { requestApi } from '@/utility/api/request.js';
+import { resolveApiGuidance } from '@/utility/api/guidance.js';
+import { showApiGuidanceDialog } from '@/utility/api/guidance-dialog.js';
+import { reportApiCallbackError } from '@/utility/api/report-error.js';
 
 /** 操作の実行結果。`busy` は同じ操作の実行中につき送信を見送ったことを表す。 */
 export type ApiActionResult<T> =

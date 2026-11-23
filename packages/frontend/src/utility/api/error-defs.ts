@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { i18n } from '@/i18n.js';
 import type { ApiErrorOverrides } from '@/utility/api/guidance.js';
+import { i18n } from '@/i18n.js';
 
 /**
  * エンドポイントとエラーの `code` ごとに案内を定義する表。

@@ -3,11 +3,11 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import type { ApiErrorDefs } from '@/utility/api/error-defs.js';
+import type { ApiErrorBody, ApiFailure } from '@/utility/api/request.js';
 import { i18n } from '@/i18n.js';
 import { apiErrorDefs } from '@/utility/api/error-defs.js';
 import { reportApiCallbackError } from '@/utility/api/report-error.js';
-import type { ApiErrorDefs } from '@/utility/api/error-defs.js';
-import type { ApiErrorBody, ApiFailure } from '@/utility/api/request.js';
 
 export type ApiGuidanceText = { title?: string; text: string };
 

@@ -3,10 +3,10 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import type { ApiGuidance } from '@/utility/api/guidance.js';
 import * as os from '@/os.js';
 import { i18n } from '@/i18n.js';
 import { copyToClipboard } from '@/utility/copy-to-clipboard.js';
-import type { ApiGuidance } from '@/utility/api/guidance.js';
 
 /**
  * エラーの案内をダイアログで表示する。

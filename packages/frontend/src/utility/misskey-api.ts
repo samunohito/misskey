@@ -5,9 +5,9 @@
 
 import * as Misskey from 'misskey-js';
 import { ref } from 'vue';
+import type { ApiResult } from '@/utility/api/request.js';
 import { $i } from '@/i.js';
 import { requestApi } from '@/utility/api/request.js';
-import type { ApiResult } from '@/utility/api/request.js';
 export const pendingApiRequestsCount = ref(0);
 
 /** `requestApi` の結果を従来の Promise に変換し、失敗時は元の値 `raw` で reject する。 */

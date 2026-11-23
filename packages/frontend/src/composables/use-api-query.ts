@@ -4,17 +4,17 @@
  */
 
 import { computed, getCurrentScope, onScopeDispose, ref, watch } from 'vue';
-import { requestApi } from '@/utility/api/request.js';
-import { resolveApiGuidance } from '@/utility/api/guidance.js';
-import { reportApiCallbackError } from '@/utility/api/report-error.js';
-import { deepClone } from '@/utility/clone.js';
-import { deepEqual } from '@/utility/deep-equal.js';
 import type * as Misskey from 'misskey-js';
 import type { Ref } from 'vue';
 import type { ApiFailure, ApiResult } from '@/utility/api/request.js';
 import type { ApiErrorOverrides, ApiGuidance } from '@/utility/api/guidance.js';
 import type { Cloneable } from '@/utility/clone.js';
 import type { ApiResponse, JsonEndpoint } from '@/utility/api/types.js';
+import { deepEqual } from '@/utility/deep-equal.js';
+import { deepClone } from '@/utility/clone.js';
+import { reportApiCallbackError } from '@/utility/api/report-error.js';
+import { resolveApiGuidance } from '@/utility/api/guidance.js';
+import { requestApi } from '@/utility/api/request.js';
 
 export type ApiQueryError = { guidance: ApiGuidance; failure: ApiFailure };
 
