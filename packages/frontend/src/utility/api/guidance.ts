@@ -26,14 +26,19 @@ export type ApiErrorOverrides<_E extends string = string> = Record<string, () =>
 export type ResolveApiGuidanceOptions = {
 	/** 固定の共通案内に該当しない API エラーで、エンドポイント別の定義より優先する。 */
 	overrides?: ApiErrorOverrides;
+	/**
+	 * エラーの `id` (UUID) をキーにした上書き。`overrides` と同じ優先順で、`code` のキーで見つからなかったときに引く。
+	 * `os.apiWithDialog` の第4引数の互換のためだけにあり、新しいコードでは `overrides` を使う。
+	 */
+	idOverrides?: Record<string, () => ApiGuidanceText>;
 	/** API エラーのエンドポイント別の定義。省略時は `apiErrorDefs` を使う。 */
 	defs?: ApiErrorDefs;
 };
 
-function lookup(table: ApiErrorOverrides | undefined, code: string): (() => ApiGuidanceText) | undefined {
-	// code はサーバーから届くため、プロトタイプから継承した名前を案内として呼ばない。
-	if (table == null || !Object.hasOwn(table, code)) return undefined;
-	return table[code];
+function lookup(table: Record<string, () => ApiGuidanceText> | undefined, key: string): (() => ApiGuidanceText) | undefined {
+	// key はサーバーから届くため、プロトタイプから継承した名前を案内として呼ばない。
+	if (table == null || !Object.hasOwn(table, key)) return undefined;
+	return table[key];
 }
 
 function invokeGuidance(fn: (() => ApiGuidanceText) | undefined): ApiGuidanceText | null {
@@ -100,7 +105,8 @@ export function resolveApiGuidance(endpoint: string, failure: ApiFailure, opts?:
 	const fixed = resolveFixedApiErrorGuidance(endpoint, error);
 	if (fixed != null) return fixed;
 
-	const overridden = invokeGuidance(lookup(opts?.overrides, error.code));
+	const overridden = invokeGuidance(lookup(opts?.overrides, error.code))
+		?? invokeGuidance(lookup(opts?.idOverrides, error.id));
 	if (overridden != null) return overridden;
 
 	const defs = opts?.defs ?? apiErrorDefs;

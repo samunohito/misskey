@@ -103,6 +103,39 @@ describe('resolveApiGuidance', () => {
 		expect(guidance).toEqual({ text: 'overridden' });
 	});
 
+	test('idOverrides は id で引き、定義表と TOO_MANY より優先', () => {
+		expect(resolveApiGuidance('notes/create', apiFailure('NO_SUCH_NOTE'), {
+			idOverrides: { 'error-id': () => ({ title: 'i', text: 'by id' }) },
+			defs: { 'notes/create': { NO_SUCH_NOTE: () => ({ title: 'd', text: 'def' }) } },
+		})).toEqual({ title: 'i', text: 'by id' });
+		expect(resolveApiGuidance('antennas/create', apiFailure('TOO_MANY_ANTENNAS'), {
+			idOverrides: { 'error-id': () => ({ text: 'by id' }) },
+		})).toEqual({ text: 'by id' });
+	});
+
+	test('idOverrides は固定の共通の案内を上書きしない', () => {
+		const guidance = resolveApiGuidance('notes/create', apiFailure('INVALID_PARAM'), {
+			idOverrides: { 'error-id': () => ({ text: 'by id' }) },
+		});
+		expect(guidance).toEqual({ title: i18n.ts.invalidParamError, text: i18n.ts.invalidParamErrorDescription });
+	});
+
+	test('code のキーと id のキーの両方に当たれば code のキーを使い、code のキーが throw したら id のキーへ進む', () => {
+		const reported = vi.spyOn(console, 'error').mockImplementation(() => {});
+		const idOverrides = { 'error-id': () => ({ text: 'by id' }) };
+		expect(resolveApiGuidance('notes/create', apiFailure('NO_SUCH_NOTE'), {
+			overrides: { NO_SUCH_NOTE: () => ({ text: 'by code' }) },
+			idOverrides,
+		})).toEqual({ text: 'by code' });
+
+		const err = new Error('code override threw');
+		expect(resolveApiGuidance('notes/create', apiFailure('NO_SUCH_NOTE'), {
+			overrides: { NO_SUCH_NOTE: () => { throw err; } },
+			idOverrides,
+		})).toEqual({ text: 'by id' });
+		expect(reported).toHaveBeenCalledWith(err);
+	});
+
 	test('TOO_MANY で始まる code は youCannotCreateAnymore と「error: id」', () => {
 		expect(resolveApiGuidance('antennas/create', apiFailure('TOO_MANY_ANTENNAS'))).toEqual({
 			title: i18n.ts.youCannotCreateAnymore,

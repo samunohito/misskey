@@ -37,19 +37,36 @@ export function misskeyApi<
 	token?: string | null | undefined,
 	signal?: AbortSignal,
 ): Promise<_ResT> {
+	return unwrap<_ResT>(misskeyApiResult(endpoint, data, token, signal));
+}
+
+/**
+ * `misskeyApi` と同じ前処理 (同期 throw と `data.i` の書き換え) をしたうえで、失敗を種類つきで返す。
+ * 失敗を元の値で reject しつつ案内には分類を使う `os.apiWithDialog` のためにある。
+ *
+ * @returns `misskeyApi` が reject する値は `failure.raw` に入る。
+ * @throws エンドポイント名に `://` が含まれる場合に同期的に throw する。
+ */
+export function misskeyApiResult(
+	endpoint: string,
+	data: object = {},
+	token?: string | null | undefined,
+	signal?: AbortSignal,
+): Promise<ApiResult<unknown>> {
 	// 従来の同期 throw を保つため、検査結果を失敗の値にする requestApi より先に検査する。
 	if (endpoint.includes('://')) throw new Error('invalid endpoint');
 
 	// 呼び元が従来の副作用に依存できるよう、送信用のコピーを作る前に元の data にも i を書く。
-	// 凍結済みのオブジェクトなどで書き込めない場合は、従来の Promise と同じく reject にする。
+	// 凍結済みのオブジェクトなどで書き込めない場合は、従来どおり misskeyApi が reject するよう失敗として返す。
+	const body = data as { i?: string | null };
 	try {
-		if ($i) data.i = $i.token;
-		if (token !== undefined) data.i = token;
+		if ($i) body.i = $i.token;
+		if (token !== undefined) body.i = token;
 	} catch (err) {
-		return Promise.reject(err);
+		return Promise.resolve({ ok: false, failure: { kind: 'other', raw: err } });
 	}
 
-	return unwrap<_ResT>(requestApi(endpoint, data as Record<string, unknown>, { method: 'POST', token, signal }));
+	return requestApi(endpoint, body, { method: 'POST', token, signal });
 }
 
 /**
