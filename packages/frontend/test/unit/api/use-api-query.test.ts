@@ -54,7 +54,7 @@ function ok<T>(data: T): ApiResult<T> {
 }
 
 function fakeNote(v: Record<string, unknown>): Misskey.entities.Note {
-	// initialData などが要求する Note 型に、検査に使う項目だけのオブジェクトを渡す。
+	// 検査に使う項目だけのオブジェクトを Note 型として扱う。
 	return v as unknown as Misskey.entities.Note;
 }
 

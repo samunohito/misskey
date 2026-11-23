@@ -63,9 +63,9 @@ export function openApLookupResult(router: Router, res: Misskey.entities.ApShowR
 
 /**
  * 待機ダイアログ (`fetchingAsApObject`) を出してリモートのオブジェクトを照会し、失敗したら案内を出す。
- * コンポーネントの外から呼ぶためにある。コンポーネントからは `useApLookup` を使う。
  *
- * @returns 成功時は `ap/show` の応答で解決する。失敗時は案内を出したうえで、`misskeyApi` と同じ元の値で reject する。
+ * @param query 照会するリモートオブジェクトの URI。
+ * @returns 成功時は `ap/show` の応答で解決する。失敗時は `misskeyApi` と同じ元の値で reject する。
  */
 export async function apLookup(query: string): Promise<Misskey.entities.ApShowResponse> {
 	return await requestWithGuidanceDialog('ap/show', { uri: query }, {

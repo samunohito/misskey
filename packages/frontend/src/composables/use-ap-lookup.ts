@@ -13,13 +13,12 @@ import { openApLookupResult } from '@/utility/lookup.js';
 
 /**
  * リモートのオブジェクトを `ap/show` で照会し、結果の種類 (User / Note) に応じたページへ遷移する。
- * コンポーネントの setup で作る。遷移には作成時の `useRouter()` を使う。
- * コンポーネントの外からは `apLookup` を使う。
+ * 遷移には作成時に `useRouter()` で取得したルーターを使う。照会中にスコープが破棄されたら遷移しない。
  *
- * `ap/show` はリモートのユーザーやノートを作成しうるので、自動で取り直す `useApiQuery` にはしていない。
- * 照会は時間がかかり画面に実行中を示す場所もないことが多いため、`fetchingAsApObject` の待機ダイアログを出す。
- * 失敗の案内と `execute` の戻り値の意味は `useApiAction` と同じ。遷移は成功時のコールバックで行うため、
- * 照会中にコンポーネントが破棄されたら遷移しない。
+ * `ap/show` はリモートのユーザーやノートを作成しうるため、`execute` を呼んだときだけ照会する。
+ * 照会中は待機ダイアログ (`fetchingAsApObject`) を出し、中断以外の失敗では案内を出す。
+ *
+ * @returns 照会結果を値で返す `execute` と実行状態 `isPending`。照会中に再度 `execute` を呼ぶと `busy` で解決する。
  */
 export function useApLookup(): {
 	execute: (uri: string) => Promise<ApiActionResult<Misskey.entities.ApShowResponse>>;

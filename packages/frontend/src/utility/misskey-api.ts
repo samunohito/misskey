@@ -10,10 +10,10 @@ import { $i } from '@/i.js';
 import { requestApi } from '@/utility/api/request.js';
 export const pendingApiRequestsCount = ref(0);
 
-/** `requestApi` の結果を従来の Promise に変換し、失敗時は元の値 `raw` で reject する。 */
+/** API の実行結果から、成功時は応答で解決し、失敗時は元の値 `raw` で reject する Promise を作る。 */
 async function unwrap<T>(result: Promise<ApiResult<unknown>>): Promise<T> {
 	const r = await result;
-	// requestApi が知らないエンドポイント別の応答型は、この関数の呼び元が指定する。
+	// 通信層では応答本文の型を検査しないため、成功データを型引数 T の応答として扱う。
 	if (r.ok) return r.data as T;
 	throw r.failure.raw;
 }
@@ -41,10 +41,11 @@ export function misskeyApi<
 }
 
 /**
- * `misskeyApi` と同じ前処理 (同期 throw と `data.i` の書き換え) をしたうえで、失敗を種類つきで返す。
- * 失敗を元の値で reject しつつ案内には分類を使う、`os.apiWithDialog` と `apLookup` の共通の本体 (`requestWithGuidanceDialog`) のためにある。
+ * 認証トークンを補って JSON API に POST する。
  *
- * @returns `misskeyApi` が reject する値は `failure.raw` に入る。
+ * @param data 送信する本文。ログイン中かトークンが指定されている場合は、渡されたオブジェクトの `i` も書き換える。
+ * @returns 成功時は応答本文 (HTTP 204 は `undefined`) を `data` に入れて解決する。
+ * 失敗時は種類を `failure.kind` に、元の値を `failure.raw` に入れて解決する。
  * @throws エンドポイント名に `://` が含まれる場合に同期的に throw する。
  */
 export function misskeyApiResult(
@@ -56,7 +57,7 @@ export function misskeyApiResult(
 	// 従来の同期 throw を保つため、検査結果を失敗の値にする requestApi より先に検査する。
 	if (endpoint.includes('://')) throw new Error('invalid endpoint');
 
-	// 呼び元が従来の副作用に依存できるよう、送信用のコピーを作る前に元の data にも i を書く。
+	// 従来の misskeyApi と同じ挙動を保つため、送信用のコピーを作る前に元の data にも i を書く。
 	// 凍結済みのオブジェクトなどで書き込めない場合は、従来どおり misskeyApi が reject するよう失敗として返す。
 	const body = data as { i?: string | null };
 	try {

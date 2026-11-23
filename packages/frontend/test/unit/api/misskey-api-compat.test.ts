@@ -40,7 +40,7 @@ const rejectCases = (call: () => Promise<unknown>) => {
 	});
 
 	test('API エラーの構造を満たさない error もそのまま reject', async () => {
-		// 従来の呼び元には、新しい分類で invalid-response になる場合も元の error を返す。
+		// `invalid-response` に分類される本文でも、元の `error` が reject の理由になる。
 		fetchMock.mockResponseOnce('{"error":{}}', { status: 500 });
 		await expect(call()).rejects.toEqual({});
 	});
@@ -139,7 +139,7 @@ describe('misskeyApi の互換', () => {
 		const data: Record<string, unknown> = { a: 1 };
 		fetchMock.mockResponseOnce('{}');
 		const promise = misskeyApi('meta', data as any);
-		// 従来の呼び元はリクエストの完了を待たずに data.i を参照できる。
+		// `data.i` の書き換えはリクエストの完了を待たずに確認できる。
 		expect(data.i).toBe('TOKEN');
 		await promise;
 		expect(JSON.parse(lastFetchInit().body as string)).toEqual({ a: 1, i: 'TOKEN' });

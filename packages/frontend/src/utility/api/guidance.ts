@@ -15,10 +15,9 @@ export type ApiGuidanceText = { title?: string; text: string };
 export type ApiGuidance = ApiGuidanceText & { copyInfo?: string };
 
 /**
- * エラーの `code` ごとに、その呼び出しだけで使う案内を作る関数。
+ * エラーの `code` をキーに、案内を組み立てる関数を定義する表。
  *
- * 型引数はエンドポイント名。今は使っておらず、どのエンドポイントでも任意の code を受け付ける。
- * composable 側からは既にエンドポイント名を渡しているので、code の絞り込みはこの定義を直すだけで全体に効く。
+ * 型引数はエンドポイント名。エンドポイントにかかわらず任意の `code` を受け付ける。
  */
 // TODO(api-error-types): misskey-js が生成するエラー型から、_E に存在する code だけを受け付ける型にする
 export type ApiErrorOverrides<_E extends string = string> = Record<string, () => ApiGuidanceText>;
@@ -28,7 +27,7 @@ export type ResolveApiGuidanceOptions = {
 	overrides?: ApiErrorOverrides;
 	/**
 	 * エラーの `id` (UUID) をキーにした上書き。`overrides` と同じ優先順で、`code` のキーで見つからなかったときに引く。
-	 * `os.apiWithDialog` の第4引数の互換のためだけにあり、新しいコードでは `overrides` を使う。
+	 * 互換用。新しいコードでは `overrides` を使う。
 	 */
 	idOverrides?: Record<string, () => ApiGuidanceText>;
 	/** API エラーのエンドポイント別の定義。省略時は `apiErrorDefs` を使う。 */

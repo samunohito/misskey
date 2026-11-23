@@ -36,14 +36,14 @@ import { focusParent } from '@/utility/focus.js';
 
 export const openingWindowsCount = ref(0);
 
-/** `os.apiWithDialog` の第4引数。キーはエラーの `code`、または互換用のエラーの `id` (UUID)。 */
+/** エラーの `code`、または互換用の `id` (UUID) をキーにした案内の上書き。 */
 export type ApiWithDialogCustomErrors = Record<string, { title?: string; text: string; }>;
 
 /**
  * 待機ダイアログを出して API を呼び、失敗したら `resolveApiGuidance` で決めた案内を出す。
  *
- * @param customErrors この呼び出しでだけ使う案内。`code` のキーを使い、`id` のキーは既存の呼び出しの互換用。
- * @returns 成功時は応答で解決する。失敗時は案内を出したうえで、`misskeyApi` と同じ元の値で reject する。
+ * @param customErrors この呼び出しでだけ使う案内。`code` で見つからない場合は互換用の `id` も参照する。
+ * @returns 成功時は応答で解決する。失敗時は `misskeyApi` と同じ元の値で reject する。
  * @throws エンドポイント名に `://` が含まれる場合に同期的に throw する。
  */
 export const apiWithDialog = (<E extends keyof Misskey.Endpoints>(

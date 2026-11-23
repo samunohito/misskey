@@ -18,7 +18,7 @@ export type ApiErrorBody = {
 
 /**
  * API 呼び出しの失敗を、案内や中断の判定に使う種類ごとに表す。
- * `raw` は `misskeyApi` / `misskeyApiGet` が従来 reject していた値で、`undefined` の場合もある。
+ * `raw` は従来と同じ reject の理由を保持する。API 応答の `error` や例外が入り、`undefined` の場合もある。
  */
 export type ApiFailure =
 	| { kind: 'api'; error: ApiErrorBody; raw: unknown }
@@ -57,8 +57,7 @@ function buildRequest(endpoint: string, params: Record<string, unknown>, opts: R
 		}];
 	}
 
-	// `://` の検査は従来の misskeyApi に合わせて POST に限り、従来の GET が受け付けた名前を引き続き許す。
-	// misskeyApi 自体は同期 throw を保つため、requestApi の呼び出し前にも検査する。
+	// GET では `://` を含む名前も URL の一部として扱う挙動を保つため、検査は POST に限る。
 	if (endpoint.includes('://')) throw new Error('invalid endpoint');
 
 	// 認証用の i の補完が呼び元の params に及ばないよう、送信用の本文を作る。

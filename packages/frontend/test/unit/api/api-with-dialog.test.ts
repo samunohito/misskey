@@ -202,7 +202,6 @@ describe('os.apiWithDialog (変える)', () => {
 		}]);
 	});
 
-	// page-editor.vue が customErrors で渡していた UUID と案内。定義表に移したあとも同じ表示になることを確かめる。
 	test.each([
 		['pages/create', '4650348e-301c-499a-83c9-6aa988c66bc1'],
 		['pages/update', '2298a392-d4a1-44c5-9ebb-ac1aeaa5a9ab'],

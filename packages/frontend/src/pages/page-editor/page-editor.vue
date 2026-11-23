@@ -123,8 +123,8 @@ const { data: eyeCatchingImage, error: eyeCatchingImageError, refetch: refetchEy
 	enabled: () => eyeCatchingImageId.value != null,
 });
 
-// 操作ごとに作り、実行中のボタンを示す。ある操作の実行中はほかの操作も止める。
-// 実行中もほかの画面へ移れるため、成功後の反映と遷移は onSuccess に書き、移ったあとに引き戻さないようにする。
+// 実行中のボタンに待機状態を表示し、いずれかの操作の実行中は操作ボタンを無効にする。
+// ページを離れた後に表示を更新したり引き戻したりしないよう、成功後の反映と遷移は scope の破棄時に抑止される onSuccess で行う。
 const { execute: createPage, isPending: creating } = useApiAction('pages/create', {
 	onSuccess: (page, params) => {
 		pageId.value = page.id;

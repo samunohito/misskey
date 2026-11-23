@@ -26,10 +26,9 @@ export function showApiFailureGuidance(endpoint: string, failure: ApiFailure, op
 }
 
 /**
- * `os.apiWithDialog` と `apLookup` の共通の本体。待機ダイアログを出して API を呼び、失敗したら案内を出す。
- * 画面のコードからは直接呼ばず、それらの関数か composable を使う。
+ * 待機ダイアログを出して JSON API に POST し、失敗したら案内を出す。
  *
- * @returns 成功時は応答で解決する。失敗時は案内を出したうえで、`misskeyApi` と同じ元の値で reject する。
+ * @returns 成功時は応答で解決する。失敗時は `misskeyApi` と同じ元の値で reject する。ダイアログの終了は待たない。
  * @throws エンドポイント名に `://` が含まれる場合に同期的に throw する。
  */
 export function requestWithGuidanceDialog(

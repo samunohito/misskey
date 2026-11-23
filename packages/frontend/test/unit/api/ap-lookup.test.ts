@@ -11,8 +11,7 @@ import { apLookup, openApLookupResult } from '@/utility/lookup.js';
 import MkDialog from '@/components/MkDialog.vue';
 import MkWaitingDialog from '@/components/MkWaitingDialog.vue';
 
-// os.js は mock せず、popup に積まれたダイアログの props で表示内容を確かめる (api-with-dialog.test.ts と同じ理由)。
-
+// ルーターを差し替え、ダイアログの表示内容は実際に popup に積まれた props で確かめる。
 vi.mock('@/router.js', () => ({ mainRouter: { push: vi.fn(), pushByPath: vi.fn() } }));
 
 function respondApiError(code: string, id = 'error-id') {

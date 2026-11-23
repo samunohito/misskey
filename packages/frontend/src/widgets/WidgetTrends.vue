@@ -59,10 +59,10 @@ const { widgetProps, configure } = useWidgetPropsManager(name,
 );
 
 // 同じ条件での取り直しは前の表示を残すので、定期更新のたびに読み込み中へ戻らない。
-// 表示中の取り直しの失敗は出さず、前の表示を保って次の定期更新で取り直す。案内を出すのは表示できるデータがない初回の失敗だけ。
+// 表示できるデータがあれば、取り直しに失敗してもその表示を保つ。案内を出すのは表示できるデータがない場合だけ。
 const { data: stats, error, refetch } = useApiGetQuery('hashtags/trend');
 
-// 初回の取得は useApiGetQuery が作成時に行う
+// 作成時に始まる取得と重複しないよう、定期更新の開始時には即時取得しない。
 useInterval(refetch, 1000 * 60, {
 	immediate: false,
 	afterMounted: true,

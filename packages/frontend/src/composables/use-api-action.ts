@@ -35,7 +35,7 @@ export type UseApiActionOptions<E extends string, P, T> = {
 };
 
 export type ApiActionExecuteOptions = {
-	/** `misskeyApi` の第3引数と同じ。`undefined` 以外を渡すとログイン中のトークンに優先する (`null` も送る)。 */
+	/** `undefined` 以外を渡すとログイン中のトークンに優先する (`null` も送る)。 */
 	token?: string | null;
 };
 
@@ -50,9 +50,9 @@ function invokeCallback(fn: () => unknown): void {
 }
 
 /**
- * 1回のユーザー操作から1つの API に POST する処理を作る。
+ * 指定した API に POST する操作を作る。
  * effect scope 内で作ると、破棄後に完了した処理のコールバックは呼ばない。リクエストは続行し、失敗時は既定の案内を出す。
- * メニューを組み立てる関数など、scope の外でも作成できる。
+ * scope の外でも作成できる。
  *
  * @returns `execute` と、そのインスタンスの実行状態。`execute` は API の成否を値で返し、失敗でも reject しない。
  * 実行中に再度呼ぶと `busy` で解決する。中断は案内を出さず `failure` で返す。

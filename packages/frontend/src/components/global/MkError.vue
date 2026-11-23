@@ -15,7 +15,6 @@ import MkButton from '@/components/MkButton.vue';
 import { i18n } from '@/i18n.js';
 
 /**
- * 取得系 composable の `error.guidance` をそのまま渡せる形にしている。
  * `title` を省くと既定の見出し (`somethingHappened`) を出し、`text` を省くと本文は出さない。
  */
 const props = defineProps<{

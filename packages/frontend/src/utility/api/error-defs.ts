@@ -13,7 +13,7 @@ import { i18n } from '@/i18n.js';
 // TODO(api-error-types): misskey-js が生成するエラー型から、エンドポイント別に存在する code だけを受け付ける型にする
 export type ApiErrorDefs = Partial<Record<string, ApiErrorOverrides>>;
 
-/** 呼び出し元を問わず使える、エンドポイント別の標準の案内。 */
+/** エンドポイント別の標準の案内。 */
 // TODO(api-error-types): 生成された型に対する `satisfies` で、存在しないエンドポイント名と code を弾く
 export const apiErrorDefs: ApiErrorDefs = {
 	'ap/show': {

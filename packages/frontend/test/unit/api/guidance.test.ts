@@ -170,7 +170,7 @@ describe('resolveApiGuidance', () => {
 			overrides: { NO_SUCH_NOTE: () => { throw overrideErr; } },
 			defs: throwingDefs,
 		})).toEqual({ text: 'error message\nerror-id' });
-		// 前の1件に加え、今回の上書きと定義表の例外もそれぞれ報告される。
+		// 上書きと定義表の両方が失敗すると、報告が2件増える。
 		expect(reported).toHaveBeenCalledTimes(3);
 		expect(reported).toHaveBeenLastCalledWith(defErr);
 
