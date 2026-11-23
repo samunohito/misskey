@@ -222,7 +222,8 @@ function useQuery<P, T>(method: 'POST' | 'GET', endpoint: string, opts: UseApiQu
 			return;
 		}
 
-		// 手動取得でも、条件が変わった画面に前の対象のデータや応答を出さないようにする。
+		// 手動取得でも、条件が変わった画面に前の対象のデータ・エラー・応答を出さないようにする。
+		if (changed) error.value = null;
 		if (dataParams != null && !deepEqual(dataParams.value, snapshot.value)) clearData();
 		if (inflightParams != null && !deepEqual(inflightParams.value, snapshot.value)) cancelInflight();
 	}

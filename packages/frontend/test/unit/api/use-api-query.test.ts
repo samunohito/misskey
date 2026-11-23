@@ -186,6 +186,20 @@ describe('useApiQuery', () => {
 		expect(q.data.value).toBeUndefined();
 	});
 
+	test('手動で params が変わると、前の params の失敗の error を消す', async () => {
+		const id = ref('a');
+		const q = inScope(() => useApiQuery('notes/show', { params: () => ({ noteId: id.value }), manual: true }));
+		const p = q.refetch();
+		calls[0].respond({ ok: false, failure: apiFailure });
+		await p;
+		expect(q.error.value).not.toBeNull();
+
+		id.value = 'b';
+		await flush();
+		expect(q.error.value).toBeNull();
+		expect(calls).toHaveLength(1);
+	});
+
 	test('同じ params の refetch では data を残し、失敗したら data を残して error を立てる', async () => {
 		const q = inScope(() => useApiQuery('notes/show', { params: () => ({ noteId: 'a' }) }));
 		calls[0].respond(ok({ id: 'a', v: 1 }));

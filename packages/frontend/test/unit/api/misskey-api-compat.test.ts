@@ -205,6 +205,15 @@ describe('misskeyApiGet の互換', () => {
 		expect(fetchMock).not.toHaveBeenCalled();
 	});
 
+	test('params の値は1回だけ文字列化する', async () => {
+		let n = 0;
+		const data = { span: 'day', get limit() { return ++n; } };
+		fetchMock.mockResponseOnce('[]');
+		await misskeyApiGet('charts/active-users', data as any);
+		expect(lastFetchUrl()).toBe(`${apiUrl}/charts/active-users?span=day&limit=1`);
+		expect(n).toBe(1);
+	});
+
 	test('GET の送り方 (クエリ文字列、認証情報なし、cache: default)', async () => {
 		iMock.value = { token: 'TOKEN' };
 		const data = { span: 'day' as const, limit: 10 };

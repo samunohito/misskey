@@ -88,7 +88,8 @@ export function misskeyApiGet<
 ): Promise<_ResT> {
 	// 従来の同期 throw を保つため、requestApi が失敗を値にする前に変換を試す。
 	// 実行中カウンタを増やす前に試すことで、変換の失敗でカウンタが増えたままになるのを防ぐ。
-	new URLSearchParams(data as any);
+	const query = new URLSearchParams(data as any);
 
-	return unwrap<_ResT>(requestApi(endpoint, data as Record<string, unknown>, { method: 'GET' }));
+	// 変換済みの文字列を渡し、値の文字列化を1回に保つ (getter などの再評価を避ける)。
+	return unwrap<_ResT>(requestApi(endpoint, Object.fromEntries(query), { method: 'GET' }));
 }
