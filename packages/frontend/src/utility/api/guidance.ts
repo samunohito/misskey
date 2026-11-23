@@ -5,6 +5,7 @@
 
 import { i18n } from '@/i18n.js';
 import { apiErrorDefs } from '@/utility/api/error-defs.js';
+import { reportApiCallbackError } from '@/utility/api/report-error.js';
 import type { ApiErrorDefs } from '@/utility/api/error-defs.js';
 import type { ApiErrorBody, ApiFailure } from '@/utility/api/request.js';
 
@@ -26,6 +27,20 @@ export type ResolveApiGuidanceOptions = {
 function lookup(table: ApiErrorOverrides | undefined, code: string): (() => ApiGuidanceText) | undefined {
 	if (table == null || !Object.hasOwn(table, code)) return undefined;
 	return table[code];
+}
+
+/**
+ * 上書きや定義表の案内を作る。作る関数が throw したら報告して `null` を返し、次の優先順の案内に任せる
+ * (失敗の案内が丸ごと消えないようにするため)
+ */
+function invokeGuidance(fn: (() => ApiGuidanceText) | undefined): ApiGuidanceText | null {
+	if (fn == null) return null;
+	try {
+		return fn();
+	} catch (err) {
+		reportApiCallbackError(err);
+		return null;
+	}
 }
 
 function messageOf(raw: unknown): string {
@@ -64,6 +79,8 @@ function resolveFixedApiErrorGuidance(endpoint: string, error: ApiErrorBody): Ap
  * 3. エラー定義表のエンドポイント別定義 (`defs`)
  * 4. `TOO_MANY` で始まる code の案内
  * 5. 汎用表示 (`message` と `id`)
+ *
+ * 2 と 3 の案内を作る関数が throw したら、`reportApiCallbackError` で報告して次の優先順へ進む。
  */
 export function resolveApiGuidance(endpoint: string, failure: ApiFailure, opts?: ResolveApiGuidanceOptions): ApiGuidance | null {
 	switch (failure.kind) {
@@ -84,12 +101,12 @@ export function resolveApiGuidance(endpoint: string, failure: ApiFailure, opts?:
 	const fixed = resolveFixedApiErrorGuidance(endpoint, error);
 	if (fixed != null) return fixed;
 
-	const override = lookup(opts?.overrides, error.code);
-	if (override != null) return override();
+	const overridden = invokeGuidance(lookup(opts?.overrides, error.code));
+	if (overridden != null) return overridden;
 
 	const defs = opts?.defs ?? apiErrorDefs;
-	const def = lookup(Object.hasOwn(defs, endpoint) ? defs[endpoint] : undefined, error.code);
-	if (def != null) return def();
+	const defined = invokeGuidance(lookup(Object.hasOwn(defs, endpoint) ? defs[endpoint] : undefined, error.code));
+	if (defined != null) return defined;
 
 	if (error.code.startsWith('TOO_MANY')) {
 		return { title: i18n.ts.youCannotCreateAnymore, text: `${i18n.ts.error}: ${error.id}` };

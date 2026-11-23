@@ -20,7 +20,9 @@
  * - 表示中の `data` が、どの `params` で取得した (または初期値として採用した) ものかを常に持つ。
  *   新しい取得の `params` がそれと同じなら `data` を残し、違えば取得開始時に消す。手動でも `params` が変わった時点で消す。
  * - `enabled` が偽の間は取得せず (`refetch()` も送らない)、進行中の取得を中断し、`data` と `error` を消す。
+ * - `params` / `enabled` の評価が throw したら、新しい取得を始めたものとして扱い、`data` を消して「その他」の失敗を `error` にする。
  * - `initialData` は `enabled` が初めて真になった時点で1回だけ採用し、その時点の取得を省く。
+ *   `initialData` が throw したら報告し、値がなかったものとして扱う。
  * - 失敗してもダイアログは出さず、`error` (案内と分類済みの失敗) を返す。中断は `error` にしない。
  * - `refetch()` は reject しない。その取得が終わるか、置き換えられるか、中断された時点で解決する。成否は `data` / `error` で見る。
  * - `data` は書き換えてよい (表示中の対象への更新として扱い、次の取得の成功で上書きされる)。
@@ -30,6 +32,7 @@
 import { computed, getCurrentScope, onScopeDispose, ref, watch } from 'vue';
 import { requestApi } from '@/utility/api/request.js';
 import { resolveApiGuidance } from '@/utility/api/guidance.js';
+import { reportApiCallbackError } from '@/utility/api/report-error.js';
 import { deepClone } from '@/utility/clone.js';
 import { deepEqual } from '@/utility/deep-equal.js';
 import type * as Misskey from 'misskey-js';
@@ -44,9 +47,9 @@ export type ApiQueryError = { guidance: ApiGuidance; failure: ApiFailure };
 export type UseApiQueryOptions<P, T> = {
 	/** 取得条件を返す。返す値 (入れ子を含む) を監視する */
 	params?: () => P;
-	/** 真の間だけ取得する。省略時は常に真 */
+	/** 真の間だけ取得する。省略時は常に真。throw したら「その他」の失敗を `error` にする */
 	enabled?: () => boolean;
-	/** 値を返したら、`enabled` が初めて真になった時点で `data` にし、その時点の取得を省く */
+	/** 値を返したら、`enabled` が初めて真になった時点で `data` にし、その時点の取得を省く。throw したら報告し、値がなかったものとして扱う */
 	initialData?: () => T | undefined;
 	/** 真なら自動では取得せず、`refetch()` でだけ取得する */
 	manual?: boolean;
@@ -61,7 +64,7 @@ export type UseApiQueryReturn<T> = {
 	refetch: () => Promise<void>;
 };
 
-type ParamsResult<P> = { ok: true; value: P } | { ok: false; error: unknown };
+type EvalResult<V> = { ok: true; value: V } | { ok: false; error: unknown };
 
 type JsonLike = Parameters<typeof deepEqual>[0];
 
@@ -89,11 +92,28 @@ function useQuery<P, T>(method: 'POST' | 'GET', endpoint: string, opts: UseApiQu
 	let initialDataChecked = false;
 	let disposed = false;
 
-	function evaluateParams(): ParamsResult<P> {
+	function evaluateParams(): EvalResult<P> {
 		try {
 			return { ok: true, value: (opts.params ? opts.params() : {}) as P };
 		} catch (err) {
 			return { ok: false, error: err };
+		}
+	}
+
+	function evaluateEnabled(): EvalResult<boolean> {
+		try {
+			return { ok: true, value: opts.enabled?.() ?? true };
+		} catch (err) {
+			return { ok: false, error: err };
+		}
+	}
+
+	function evaluateInitialData(): T | undefined {
+		try {
+			return opts.initialData?.();
+		} catch (err) {
+			reportApiCallbackError(err);
+			return undefined;
 		}
 	}
 
@@ -124,8 +144,8 @@ function useQuery<P, T>(method: 'POST' | 'GET', endpoint: string, opts: UseApiQu
 		dataParams = null;
 	}
 
-	/** params の評価が throw した: 新しい取得を始めたものとして扱い、data を消して「その他」の失敗にする */
-	function failParams(err: unknown): void {
+	/** params / enabled の評価が throw した: 新しい取得を始めたものとして扱い、data を消して「その他」の失敗にする */
+	function failEvaluation(err: unknown): void {
 		cancelInflight();
 		clearData();
 		seenParams = null;
@@ -170,10 +190,17 @@ function useQuery<P, T>(method: 'POST' | 'GET', endpoint: string, opts: UseApiQu
 		});
 	}
 
-	function onSourceChange(enabled: boolean, paramsResult: ParamsResult<P>): void {
+	function onSourceChange(enabledResult: EvalResult<boolean>, paramsResult: EvalResult<P>): void {
 		if (disposed) return;
 
-		if (!enabled) {
+		if (!enabledResult.ok) {
+			// 評価できるようになった時点で、真になったものとして取り直す
+			wasEnabled = false;
+			failEvaluation(enabledResult.error);
+			return;
+		}
+
+		if (!enabledResult.value) {
 			cancelInflight();
 			clearData();
 			error.value = null;
@@ -185,7 +212,7 @@ function useQuery<P, T>(method: 'POST' | 'GET', endpoint: string, opts: UseApiQu
 		wasEnabled = true;
 
 		if (!paramsResult.ok) {
-			failParams(paramsResult.error);
+			failEvaluation(paramsResult.error);
 			return;
 		}
 
@@ -195,7 +222,7 @@ function useQuery<P, T>(method: 'POST' | 'GET', endpoint: string, opts: UseApiQu
 
 		if (becameEnabled && !initialDataChecked) {
 			initialDataChecked = true;
-			const initial = opts.initialData?.();
+			const initial = evaluateInitialData();
 			if (initial !== undefined) {
 				data.value = initial;
 				dataParams = snapshot;
@@ -216,7 +243,13 @@ function useQuery<P, T>(method: 'POST' | 'GET', endpoint: string, opts: UseApiQu
 
 	function refetch(): Promise<void> {
 		if (disposed) return Promise.resolve();
-		if (!(opts.enabled?.() ?? true)) return Promise.resolve();
+		const enabledResult = evaluateEnabled();
+		if (!enabledResult.ok) {
+			wasEnabled = false;
+			failEvaluation(enabledResult.error);
+			return Promise.resolve();
+		}
+		if (!enabledResult.value) return Promise.resolve();
 
 		// 監視が条件の変化を拾う前に呼ばれた場合も、ここで真になったものとして扱う (二重の取得と初期値の採用を避ける)
 		wasEnabled = true;
@@ -224,7 +257,7 @@ function useQuery<P, T>(method: 'POST' | 'GET', endpoint: string, opts: UseApiQu
 
 		const paramsResult = evaluateParams();
 		if (!paramsResult.ok) {
-			failParams(paramsResult.error);
+			failEvaluation(paramsResult.error);
 			return Promise.resolve();
 		}
 		return startFetch(paramsResult.value);
@@ -239,8 +272,8 @@ function useQuery<P, T>(method: 'POST' | 'GET', endpoint: string, opts: UseApiQu
 	}
 
 	watch(
-		() => [opts.enabled?.() ?? true, evaluateParams()] as const,
-		([enabled, paramsResult]) => onSourceChange(enabled, paramsResult),
+		() => [evaluateEnabled(), evaluateParams()] as const,
+		([enabledResult, paramsResult]) => onSourceChange(enabledResult, paramsResult),
 		{ deep: true, immediate: true },
 	);
 

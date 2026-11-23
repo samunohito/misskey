@@ -486,6 +486,76 @@ describe('useApiQuery', () => {
 		expect(q.error.value).toBeNull();
 	});
 
+	test('enabled の評価が throw したら、前の取得を無効にして data を消し、kind: other の error を立てる', async () => {
+		const fail = ref(false);
+		const boom = new Error('enabled threw');
+		const q = inScope(() => useApiQuery('notes/show', {
+			params: () => ({ noteId: 'a' }),
+			enabled: () => {
+				if (fail.value) throw boom;
+				return true;
+			},
+		}));
+		calls[0].respond(ok({ id: 'a' }));
+		await flush();
+		expect(q.data.value).toEqual({ id: 'a' });
+
+		void q.refetch();
+		expect(calls).toHaveLength(2);
+
+		fail.value = true;
+		await flush();
+		expect(calls).toHaveLength(2);
+		expect(calls[1].opts.signal?.aborted).toBe(true);
+		expect(q.data.value).toBeUndefined();
+		expect(q.isPending.value).toBe(false);
+		expect(q.error.value?.failure).toEqual({ kind: 'other', raw: boom });
+
+		// refetch でも同じく扱い、同期的に throw も reject もしない
+		let p: Promise<void> | undefined;
+		expect(() => { p = q.refetch(); }).not.toThrow();
+		await expect(p).resolves.toBeUndefined();
+		expect(calls).toHaveLength(2);
+		expect(q.error.value?.failure).toEqual({ kind: 'other', raw: boom });
+
+		// 直れば取り直す
+		fail.value = false;
+		await flush();
+		expect(calls).toHaveLength(3);
+		expect(q.error.value).toBeNull();
+	});
+
+	test('initialData が throw したら報告し、値がなかったものとして取得する', async () => {
+		const reported = vi.spyOn(console, 'error').mockImplementation(() => {});
+		const boom = new Error('initialData threw');
+		const q = inScope(() => useApiQuery('notes/show', {
+			params: () => ({ noteId: 'a' }),
+			initialData: () => { throw boom; },
+		}));
+		expect(reported).toHaveBeenCalledExactlyOnceWith(boom);
+		expect(calls).toHaveLength(1);
+		calls[0].respond(ok({ id: 'a' }));
+		await flush();
+		expect(q.data.value).toEqual({ id: 'a' });
+		expect(q.error.value).toBeNull();
+	});
+
+	test('errors の上書きが throw しても、報告して次の優先順の案内を error にし、refetch() は解決する', async () => {
+		const reported = vi.spyOn(console, 'error').mockImplementation(() => {});
+		const boom = new Error('override threw');
+		const q = inScope(() => useApiQuery('notes/show', {
+			params: () => ({ noteId: 'a' }),
+			manual: true,
+			errors: { NO_SUCH_NOTE: () => { throw boom; } },
+		}));
+		const p = q.refetch();
+		calls[0].respond(ng());
+		await expect(p).resolves.toBeUndefined();
+		expect(reported).toHaveBeenCalledExactlyOnceWith(boom);
+		expect(q.error.value).toEqual({ guidance: { text: 'm\nx' }, failure: apiFailure });
+		expect(q.isPending.value).toBe(false);
+	});
+
 	test('refetch() は reject せず、取得の終了・置き換え・中断で解決する', async () => {
 		const id = ref('a');
 		const enabled = ref(true);

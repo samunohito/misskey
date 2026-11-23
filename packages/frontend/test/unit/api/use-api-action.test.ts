@@ -309,14 +309,14 @@ describe('useApiAction', () => {
 		expect(showApiGuidanceDialogMock).toHaveBeenCalledExactlyOnceWith({ title: 'T', text: 'overridden' });
 	});
 
-	test('errors の上書きが throw しても reject せず報告する', async () => {
+	test('errors の上書きが throw しても reject せず報告し、次の優先順の案内を出す', async () => {
 		requestApiMock.mockResolvedValue(ng());
 		const err = new Error('override threw');
 		const { execute } = useApiAction('users/show', { errors: { NO_SUCH_USER: () => { throw err; } } });
 
 		await expect(execute({ userId: 'u1' })).resolves.toEqual({ status: 'failure', failure: apiFailure });
 		expect(reportApiCallbackErrorMock).toHaveBeenCalledExactlyOnceWith(err);
-		expect(showApiGuidanceDialogMock).not.toHaveBeenCalled();
+		expect(showApiGuidanceDialogMock).toHaveBeenCalledExactlyOnceWith({ text: 'm\nx' });
 	});
 
 	test('waitingDialog を指定しなければ待機ダイアログを出さない', async () => {

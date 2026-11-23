@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { afterEach, describe, expect, test } from 'vitest';
+import { afterEach, describe, expect, test, vi } from 'vitest';
 import locales from 'i18n';
 import { i18n, updateI18n } from '@/i18n.js';
 import { resolveApiGuidance } from '@/utility/api/guidance.js';
@@ -18,6 +18,7 @@ function apiFailure(code: string, extra: Partial<ApiErrorBody> = {}): ApiFailure
 
 afterEach(() => {
 	updateI18n(locales['en-US']);
+	vi.restoreAllMocks();
 });
 
 describe('resolveApiGuidance', () => {
@@ -117,6 +118,34 @@ describe('resolveApiGuidance', () => {
 	test('Object.prototype の名前の code を上書きや定義表と取り違えない', () => {
 		const guidance = resolveApiGuidance('notes/create', apiFailure('constructor'), { overrides: {}, defs: { 'notes/create': {} } });
 		expect(guidance).toEqual({ text: 'error message\nerror-id' });
+	});
+
+	test('上書きや定義表の関数が throw したら報告して次の優先順へ進む', () => {
+		const reported = vi.spyOn(console, 'error').mockImplementation(() => {});
+		const overrideErr = new Error('override threw');
+		const defErr = new Error('def threw');
+		const throwingDefs: ApiErrorDefs = { 'notes/create': { NO_SUCH_NOTE: () => { throw defErr; } } };
+
+		// 上書きが throw → 定義表
+		expect(resolveApiGuidance('notes/create', apiFailure('NO_SUCH_NOTE'), {
+			overrides: { NO_SUCH_NOTE: () => { throw overrideErr; } },
+			defs: { 'notes/create': { NO_SUCH_NOTE: () => ({ title: 'd', text: 'def' }) } },
+		})).toEqual({ title: 'd', text: 'def' });
+		expect(reported).toHaveBeenLastCalledWith(overrideErr);
+
+		// 上書きも定義表も throw → 汎用表示
+		expect(resolveApiGuidance('notes/create', apiFailure('NO_SUCH_NOTE'), {
+			overrides: { NO_SUCH_NOTE: () => { throw overrideErr; } },
+			defs: throwingDefs,
+		})).toEqual({ text: 'error message\nerror-id' });
+		expect(reported).toHaveBeenCalledTimes(3);
+		expect(reported).toHaveBeenLastCalledWith(defErr);
+
+		// 定義表が throw → TOO_MANY の案内
+		expect(resolveApiGuidance('antennas/create', apiFailure('TOO_MANY_ANTENNAS'), {
+			defs: { 'antennas/create': { TOO_MANY_ANTENNAS: () => { throw defErr; } } },
+		})).toEqual({ title: i18n.ts.youCannotCreateAnymore, text: `${i18n.ts.error}: error-id` });
+		expect(reported).toHaveBeenCalledTimes(4);
 	});
 
 	test('既定の定義表に pages/create と pages/update の NAME_ALREADY_EXISTS がある', () => {

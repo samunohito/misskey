@@ -121,6 +121,21 @@ describe('misskeyApi の互換', () => {
 		expect(fetchMock).not.toHaveBeenCalled();
 	});
 
+	test('data に i を書き込めなければ reject (throw しない)', async () => {
+		iMock.value = { token: 'TOKEN' };
+		const base = pendingApiRequestsCount.value;
+
+		for (const data of [Object.freeze({}), null]) {
+			let promise: Promise<unknown> | undefined;
+			expect(() => {
+				promise = misskeyApi('meta', data as any);
+			}).not.toThrow();
+			await expect(promise).rejects.toBeInstanceOf(TypeError);
+		}
+		expect(pendingApiRequestsCount.value).toBe(base);
+		expect(fetchMock).not.toHaveBeenCalled();
+	});
+
 	test('渡した data に i が書き込まれる (現行の挙動)', async () => {
 		iMock.value = { token: 'TOKEN' };
 

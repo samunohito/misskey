@@ -33,8 +33,13 @@ export function misskeyApi<
 
 	// Append a credential
 	// 渡された data に i を書き込むのは従来の挙動 (呼び元が依存している可能性があるので残す)
-	if ($i) data.i = $i.token;
-	if (token !== undefined) data.i = token;
+	// 書き込みの失敗 (data が凍結済み・null など) は、従来どおり同期的に throw せず reject にする
+	try {
+		if ($i) data.i = $i.token;
+		if (token !== undefined) data.i = token;
+	} catch (err) {
+		return Promise.reject(err);
+	}
 
 	return unwrap<_ResT>(requestApi(endpoint, data as Record<string, unknown>, { method: 'POST', token, signal }));
 }
