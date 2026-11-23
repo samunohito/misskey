@@ -5,9 +5,17 @@
 
 import * as Misskey from 'misskey-js';
 import { ref } from 'vue';
-import { apiUrl } from '@@/js/config.js';
 import { $i } from '@/i.js';
+import { requestApi } from '@/utility/api/request.js';
+import type { ApiResult } from '@/utility/api/request.js';
 export const pendingApiRequestsCount = ref(0);
+
+// requestApi の結果を、従来の misskeyApi / misskeyApiGet と同じ値で resolve / reject する形に戻す
+async function unwrap<T>(result: Promise<ApiResult<unknown>>): Promise<T> {
+	const r = await result;
+	if (r.ok) return r.data as T;
+	throw r.failure.raw;
+}
 
 // Implements Misskey.api.ApiClient.request
 export function misskeyApi<
@@ -22,43 +30,13 @@ export function misskeyApi<
 	signal?: AbortSignal,
 ): Promise<_ResT> {
 	if (endpoint.includes('://')) throw new Error('invalid endpoint');
-	pendingApiRequestsCount.value++;
 
-	const onFinally = () => {
-		pendingApiRequestsCount.value--;
-	};
+	// Append a credential
+	// 渡された data に i を書き込むのは従来の挙動 (呼び元が依存している可能性があるので残す)
+	if ($i) data.i = $i.token;
+	if (token !== undefined) data.i = token;
 
-	const promise = new Promise<_ResT>((resolve, reject) => {
-		// Append a credential
-		if ($i) data.i = $i.token;
-		if (token !== undefined) data.i = token;
-
-		// Send request
-		window.fetch(`${apiUrl}/${endpoint}`, {
-			method: 'POST',
-			body: JSON.stringify(data),
-			credentials: 'omit',
-			cache: 'no-cache',
-			headers: {
-				'Content-Type': 'application/json',
-			},
-			signal,
-		}).then(async (res) => {
-			const body = res.status === 204 ? null : await res.json();
-
-			if (res.status === 200) {
-				resolve(body);
-			} else if (res.status === 204) {
-				resolve(undefined as _ResT); // void -> undefined
-			} else {
-				reject(body.error);
-			}
-		}).catch(reject);
-	});
-
-	promise.then(onFinally, onFinally);
-
-	return promise;
+	return unwrap<_ResT>(requestApi(endpoint, data as Record<string, unknown>, { method: 'POST', token, signal }));
 }
 
 // Implements Misskey.api.ApiClient.request
@@ -71,34 +49,8 @@ export function misskeyApiGet<
 	endpoint: E,
 	data: P = {} as any,
 ): Promise<_ResT> {
-	pendingApiRequestsCount.value++;
+	// クエリ文字列にできない params は、従来どおり同期的に throw する
+	new URLSearchParams(data as any);
 
-	const onFinally = () => {
-		pendingApiRequestsCount.value--;
-	};
-
-	const query = new URLSearchParams(data as any);
-
-	const promise = new Promise<_ResT>((resolve, reject) => {
-		// Send request
-		window.fetch(`${apiUrl}/${endpoint}?${query}`, {
-			method: 'GET',
-			credentials: 'omit',
-			cache: 'default',
-		}).then(async (res) => {
-			const body = res.status === 204 ? null : await res.json();
-
-			if (res.status === 200) {
-				resolve(body);
-			} else if (res.status === 204) {
-				resolve(undefined as _ResT); // void -> undefined
-			} else {
-				reject(body.error);
-			}
-		}).catch(reject);
-	});
-
-	promise.then(onFinally, onFinally);
-
-	return promise;
+	return unwrap<_ResT>(requestApi(endpoint, data as Record<string, unknown>, { method: 'GET' }));
 }
