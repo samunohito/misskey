@@ -39,7 +39,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<MkButton primary @click="read(announcement)"><i class="ti ti-check"></i> {{ i18n.ts.gotIt }}</MkButton>
 				</div>
 			</div>
-			<MkError v-else-if="error" @retry="_fetch_()"/>
+			<MkError v-else-if="error" :title="error.guidance.title" :text="error.guidance.text" @retry="refetch()"/>
 			<MkLoading v-else/>
 		</Transition>
 	</div>
@@ -47,7 +47,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, watch } from 'vue';
+import { computed } from 'vue';
 import * as Misskey from 'misskey-js';
 import MkButton from '@/components/MkButton.vue';
 import * as os from '@/os.js';
@@ -57,25 +57,15 @@ import { definePage } from '@/page.js';
 import { $i } from '@/i.js';
 import { prefer } from '@/preferences.js';
 import { updateCurrentAccount } from '@/accounts.js';
+import { useApiQuery } from '@/composables/use-api-query.js';
 
 const props = defineProps<{
 	announcementId: string;
 }>();
 
-const announcement = ref<Misskey.entities.Announcement | null>(null);
-const error = ref<any>(null);
-const path = computed(() => props.announcementId);
-
-function _fetch_() {
-	announcement.value = null;
-	misskeyApi('announcements/show', {
-		announcementId: props.announcementId,
-	}).then(async _announcement => {
-		announcement.value = _announcement;
-	}).catch(err => {
-		error.value = err;
-	});
-}
+const { data: announcement, error, refetch } = useApiQuery('announcements/show', {
+	params: () => ({ announcementId: props.announcementId }),
+});
 
 async function read(target: Misskey.entities.Announcement): Promise<void> {
 	if (target.needConfirmationToRead) {
@@ -95,8 +85,6 @@ async function read(target: Misskey.entities.Announcement): Promise<void> {
 		});
 	}
 }
-
-watch(() => path.value, _fetch_, { immediate: true });
 
 const headerActions = computed(() => []);
 
