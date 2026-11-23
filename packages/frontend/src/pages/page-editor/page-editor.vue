@@ -8,9 +8,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 	<div class="_spacer" style="--MI_SPACER-w: 700px;">
 		<div class="jqqmcavi">
 			<MkButton v-if="pageId && author != null" class="button" inline type="routerLink" :to="`/@${ author.username }/pages/${ currentName }`"><i class="ti ti-external-link"></i> {{ i18n.ts._pages.viewPage }}</MkButton>
-			<MkButton v-if="!readonly" inline primary class="button" @click="save"><i class="ti ti-device-floppy"></i> {{ i18n.ts.save }}</MkButton>
-			<MkButton v-if="pageId" inline class="button" @click="duplicate"><i class="ti ti-copy"></i> {{ i18n.ts.duplicate }}</MkButton>
-			<MkButton v-if="pageId && !readonly" inline class="button" danger @click="del"><i class="ti ti-trash"></i> {{ i18n.ts.delete }}</MkButton>
+			<MkButton v-if="!readonly" inline primary class="button" :wait="saving" :disabled="busy" @click="save"><i class="ti ti-device-floppy"></i> {{ i18n.ts.save }}</MkButton>
+			<MkButton v-if="pageId" inline class="button" :wait="duplicating" :disabled="busy" @click="duplicate"><i class="ti ti-copy"></i> {{ i18n.ts.duplicate }}</MkButton>
+			<MkButton v-if="pageId && !readonly" inline class="button" danger :wait="deleting" :disabled="busy" @click="del"><i class="ti ti-trash"></i> {{ i18n.ts.delete }}</MkButton>
 		</div>
 
 		<div v-if="tab === 'settings'">
@@ -58,7 +58,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { computed, provide, watch, ref } from 'vue';
+import { computed, provide, ref } from 'vue';
 import * as Misskey from 'misskey-js';
 import { url } from '@@/js/config.js';
 import XBlocks from './page-editor.blocks.vue';
@@ -75,6 +75,8 @@ import { definePage } from '@/page.js';
 import { $i } from '@/i.js';
 import { mainRouter } from '@/router.js';
 import { useMkSelect } from '@/composables/use-mkselect.js';
+import { useApiAction } from '@/composables/use-api-action.js';
+import { useApiQuery } from '@/composables/use-api-query.js';
 import { getPageBlockList } from '@/pages/page-editor/common.js';
 
 const props = defineProps<{
@@ -92,7 +94,6 @@ const currentName = ref<string | null>(null);
 const title = ref('');
 const summary = ref<string | null>(null);
 const name = ref(Date.now().toString());
-const eyeCatchingImage = ref<Misskey.entities.DriveFile | null>(null);
 const eyeCatchingImageId = ref<string | null>(null);
 const {
 	model: font,
@@ -110,15 +111,19 @@ const hideTitleWhenPinned = ref(false);
 
 provide('readonly', readonly.value);
 
-watch(eyeCatchingImageId, async () => {
-	if (eyeCatchingImageId.value == null) {
-		eyeCatchingImage.value = null;
-	} else {
-		eyeCatchingImage.value = await misskeyApi('drive/files/show', {
-			fileId: eyeCatchingImageId.value,
-		});
-	}
+const { data: eyeCatchingImage } = useApiQuery('drive/files/show', {
+	// enabled が偽の間は params の結果を使わないため、null を除いてよい
+	params: () => ({ fileId: eyeCatchingImageId.value! }),
+	enabled: () => eyeCatchingImageId.value != null,
 });
+
+// 操作ごとに作り、実行中のボタンを示す。ある操作の実行中はほかの操作も止める。
+const { execute: createPage, isPending: creating } = useApiAction('pages/create');
+const { execute: updatePage, isPending: updating } = useApiAction('pages/update');
+const { execute: duplicatePage, isPending: duplicating } = useApiAction('pages/create');
+const { execute: deletePage, isPending: deleting } = useApiAction('pages/delete');
+const saving = computed(() => creating.value || updating.value);
+const busy = computed(() => saving.value || duplicating.value || deleting.value);
 
 function getSaveOptions(): Misskey.entities.PagesCreateRequest {
 	return {
@@ -139,19 +144,21 @@ async function save() {
 	const options = getSaveOptions();
 
 	if (pageId.value) {
-		const updateOptions: Misskey.entities.PagesUpdateRequest = {
+		const result = await updatePage({
 			pageId: pageId.value,
 			...options,
-		};
+		});
+		if (result.status !== 'success') return;
 
-		await os.apiWithDialog('pages/update', updateOptions);
-
-		currentName.value = name.value.trim();
+		currentName.value = options.name;
+		// 更新は成功しても画面が変わらないため、成功を示す
+		os.success();
 	} else {
-		const created = await os.apiWithDialog('pages/create', options);
+		const result = await createPage(options);
+		if (result.status !== 'success') return;
 
-		pageId.value = created.id;
-		currentName.value = name.value.trim();
+		pageId.value = result.data.id;
+		currentName.value = options.name;
 		mainRouter.replace('/pages/edit/:initPageId', {
 			params: {
 				initPageId: pageId.value,
@@ -170,21 +177,30 @@ async function del() {
 
 	if (canceled) return;
 
-	await os.apiWithDialog('pages/delete', {
+	const result = await deletePage({
 		pageId: pageId.value,
 	});
+	if (result.status !== 'success') return;
 
 	mainRouter.replace('/pages');
 }
 
 async function duplicate() {
-	title.value = title.value + ' - copy';
-	name.value = name.value + '-copy';
+	// 失敗したときに題名と名前が書き換わったまま残らないよう、反映は成功してから行う
+	const copyTitle = title.value + ' - copy';
+	const copyName = name.value + '-copy';
 
-	const created = await os.apiWithDialog('pages/create', getSaveOptions());
+	const result = await duplicatePage({
+		...getSaveOptions(),
+		title: copyTitle.trim(),
+		name: copyName.trim(),
+	});
+	if (result.status !== 'success') return;
 
-	pageId.value = created.id;
-	currentName.value = name.value.trim();
+	title.value = copyTitle;
+	name.value = copyName;
+	pageId.value = result.data.id;
+	currentName.value = copyName.trim();
 
 	mainRouter.push('/pages/edit/:initPageId', {
 		params: {
