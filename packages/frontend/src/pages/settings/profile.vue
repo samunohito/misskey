@@ -254,7 +254,7 @@ function save() {
 		isBot: !!profile.isBot,
 		isCat: !!profile.isCat,
 	}, undefined, {
-		'0b3f9f6a-2f4d-4b1f-9fb4-49d3a2fd7191': {
+		YOUR_NAME_CONTAINS_PROHIBITED_WORDS: {
 			title: i18n.ts.yourNameContainsProhibitedWords,
 			text: i18n.ts.yourNameContainsProhibitedWordsDescription,
 		},
@@ -278,7 +278,7 @@ function changeAvatar(ev: PointerEvent) {
 		const i = await os.apiWithDialog('i/update', {
 			avatarId: driveFile.id,
 		}, undefined, {
-			'71bb5e53-4742-4609-b465-36081e131208': {
+			AVATAR_IS_SENSITIVE: {
 				title: i18n.ts.cannotSelectSensitiveMedia,
 				text: i18n.ts.cannotSelectSensitiveMediaDescription,
 			},
@@ -357,7 +357,7 @@ function changeBanner(ev: PointerEvent) {
 		const i = await os.apiWithDialog('i/update', {
 			bannerId: driveFile.id,
 		}, undefined, {
-			'e148b34c-9f33-4300-93e0-7817008fb366': {
+			BANNER_IS_SENSITIVE: {
 				title: i18n.ts.cannotSelectSensitiveMedia,
 				text: i18n.ts.cannotSelectSensitiveMediaDescription,
 			},

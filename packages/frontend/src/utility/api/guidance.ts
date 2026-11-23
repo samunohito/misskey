@@ -25,11 +25,6 @@ export type ApiErrorOverrides<_E extends string = string> = Record<string, () =>
 export type ResolveApiGuidanceOptions = {
 	/** 固定の共通案内に該当しない API エラーで、エンドポイント別の定義より優先する。 */
 	overrides?: ApiErrorOverrides;
-	/**
-	 * エラーの `id` (UUID) をキーにした上書き。`overrides` と同じ優先順で、`code` のキーで見つからなかったときに引く。
-	 * 互換用。新しいコードでは `overrides` を使う。
-	 */
-	idOverrides?: Record<string, () => ApiGuidanceText>;
 	/** API エラーのエンドポイント別の定義。省略時は `apiErrorDefs` を使う。 */
 	defs?: ApiErrorDefs;
 };
@@ -104,8 +99,7 @@ export function resolveApiGuidance(endpoint: string, failure: ApiFailure, opts?:
 	const fixed = resolveFixedApiErrorGuidance(endpoint, error);
 	if (fixed != null) return fixed;
 
-	const overridden = invokeGuidance(lookup(opts?.overrides, error.code))
-		?? invokeGuidance(lookup(opts?.idOverrides, error.id));
+	const overridden = invokeGuidance(lookup(opts?.overrides, error.code));
 	if (overridden != null) return overridden;
 
 	const defs = opts?.defs ?? apiErrorDefs;

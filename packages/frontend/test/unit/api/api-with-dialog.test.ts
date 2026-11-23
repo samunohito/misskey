@@ -105,7 +105,6 @@ describe('os.apiWithDialog (変えない)', () => {
 		const error = respondApiError('INTERNAL_ERROR', 'internal-id', { info });
 
 		const reason = await callAndFail('notes/create', { text: 'a' }, undefined, {
-			'internal-id': { text: 'by id' },
 			INTERNAL_ERROR: { text: 'by code' },
 		});
 
@@ -134,7 +133,7 @@ describe('os.apiWithDialog (変えない)', () => {
 		['ROLE_PERMISSION_DENIED', 'permissionDeniedError', 'permissionDeniedErrorDescription'],
 	] as const)('%s は共通の案内で、customErrors でも上書きされず、元の値で reject', async (code, titleKey, textKey) => {
 		const error = respondApiError(code, 'common-id');
-		const reason = await callAndFail('notes/create', { text: 'a' }, undefined, { 'common-id': { text: 'by id' } });
+		const reason = await callAndFail('notes/create', { text: 'a' }, undefined, { [code]: { text: 'by code' } });
 		expect(reason).toEqual(error);
 		expect(shownGuidances()).toEqual([{ type: 'error', title: i18n.ts[titleKey], text: i18n.ts[textKey] }]);
 	});
@@ -149,10 +148,10 @@ describe('os.apiWithDialog (変えない)', () => {
 		}]);
 	});
 
-	test('customErrors の id のキーが当たれば、その title / text を出して元の値で reject', async () => {
+	test('customErrors の code のキーが当たれば、その title / text を出して元の値で reject', async () => {
 		const error = respondApiError('NO_SUCH_PAGE', 'no-such-page-id');
 		const reason = await callAndFail('pages/show', { pageId: 'x' }, undefined, {
-			'no-such-page-id': { title: 'custom title', text: 'custom text' },
+			NO_SUCH_PAGE: { title: 'custom title', text: 'custom text' },
 		});
 		expect(reason).toEqual(error);
 		expect(shownGuidances()).toEqual([{ type: 'error', title: 'custom title', text: 'custom text' }]);
@@ -160,7 +159,7 @@ describe('os.apiWithDialog (変えない)', () => {
 
 	test('未定義の API エラーは title なしで「message\\nid」を出して元の値で reject', async () => {
 		const error = respondApiError('NO_SUCH_PAGE', 'no-such-page-id');
-		const reason = await callAndFail('pages/show', { pageId: 'x' }, undefined, { 'other-id': { text: 'unused' } });
+		const reason = await callAndFail('pages/show', { pageId: 'x' }, undefined, { OTHER_CODE: { text: 'unused' } });
 		expect(reason).toEqual(error);
 		expect(shownGuidances()).toEqual([{ type: 'error', title: undefined, text: 'error message\nno-such-page-id' }]);
 	});
@@ -207,7 +206,7 @@ describe('os.apiWithDialog (変える)', () => {
 		['pages/update', '2298a392-d4a1-44c5-9ebb-ac1aeaa5a9ab'],
 	] as const)('%s の NAME_ALREADY_EXISTS は、customErrors がなくても以前の customErrors と同じ案内を出す', async (endpoint, id) => {
 		const legacyCustomErrors = {
-			[id]: {
+			NAME_ALREADY_EXISTS: {
 				title: i18n.ts.somethingHappened,
 				text: i18n.ts._pages.nameAlreadyExists,
 			},
@@ -221,18 +220,18 @@ describe('os.apiWithDialog (変える)', () => {
 		expect(reason).toEqual(error);
 		const [withCustomErrors, withDefs] = shownGuidances();
 		expect(withDefs).toEqual(withCustomErrors);
-		expect(withDefs).toEqual({ type: 'error', ...legacyCustomErrors[id] });
+		expect(withDefs).toEqual({ type: 'error', ...legacyCustomErrors.NAME_ALREADY_EXISTS });
 	});
 
-	test('customErrors の code のキーも上書きとして効く', async () => {
-		respondApiError('NO_SUCH_PAGE');
-		await callAndFail('pages/show', { pageId: 'x' }, undefined, { NO_SUCH_PAGE: { title: 't', text: 'by code' } });
-		expect(shownGuidances()).toEqual([{ type: 'error', title: 't', text: 'by code' }]);
+	test('customErrors の id (UUID) のキーは参照しない', async () => {
+		respondApiError('NO_SUCH_PAGE', 'no-such-page-id');
+		await callAndFail('pages/show', { pageId: 'x' }, undefined, { 'no-such-page-id': { text: 'by id' } });
+		expect(shownGuidances()).toEqual([{ type: 'error', title: undefined, text: 'error message\nno-such-page-id' }]);
 	});
 
 	test('TOO_MANY で始まる code でも、customErrors があればそちらを出す', async () => {
 		respondApiError('TOO_MANY_ANTENNAS', 'too-many-id');
-		await callAndFail('antennas/create', {} as never, undefined, { 'too-many-id': { text: 'by id' } });
-		expect(shownGuidances()).toEqual([{ type: 'error', title: undefined, text: 'by id' }]);
+		await callAndFail('antennas/create', {} as never, undefined, { TOO_MANY_ANTENNAS: { text: 'by code' } });
+		expect(shownGuidances()).toEqual([{ type: 'error', title: undefined, text: 'by code' }]);
 	});
 });

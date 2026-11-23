@@ -49,7 +49,7 @@ export async function lookupUserByEmail() {
 	if (canceled || result == null) return;
 
 	os.apiWithDialog('admin/accounts/find-by-email', { email: result }, undefined, {
-		'cb865949-8af5-4062-a88c-ef55e8786d1d': {
+		USER_NOT_FOUND: {
 			text: i18n.ts.noSuchUser,
 		},
 	}).then(user => {
