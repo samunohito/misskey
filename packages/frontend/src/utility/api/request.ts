@@ -53,7 +53,10 @@ function buildRequest(endpoint: string, params: Record<string, unknown>, opts: R
 		}];
 	}
 
-	// 従来の misskeyApi と同じく、エンドポイント名の検査は POST だけで行う (misskeyApiGet は検査しない)
+	// 互換のため POST と GET で揃えていない: エンドポイント名の `://` 検査は POST だけで行う。
+	// 従来の misskeyApi は検査し、misskeyApiGet は検査していなかった。GET でも検査すると、
+	// misskeyApiGet が今まで通していたエンドポイントを拒むようになる。
+	// なお misskeyApi は従来どおり同期 throw させるため、requestApi を呼ぶ前に自前でも検査している。
 	if (endpoint.includes('://')) throw new Error('invalid endpoint');
 
 	// 呼び元の params は書き換えない
@@ -93,6 +96,9 @@ async function doRequest<T>(endpoint: string, params: Record<string, unknown>, o
 	const fail = (failure: ApiFailure): ApiResult<T> => ({ ok: false, failure });
 	const isAborted = () => opts.signal?.aborted === true;
 
+	// 互換のため、abort を最優先にするのは fetch か res.json() が例外を投げたときだけにしている。
+	// 応答の読み取りまで終わってから signal が abort されても、結果は ok (または api / invalid-response) のまま返す。
+	// 従来の misskeyApi はこの場合 resolve しており、成功の経路でも signal.aborted を見ると reject に変わってしまう。
 	let url: string;
 	let init: RequestInit;
 	try {

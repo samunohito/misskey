@@ -29,10 +29,13 @@ export function misskeyApi<
 	token?: string | null | undefined,
 	signal?: AbortSignal,
 ): Promise<_ResT> {
+	// requestApi も同じ検査をするが、そちらは失敗の値 (kind: 'other') として返す。
+	// 従来の misskeyApi は同期的に throw していたので、互換のためここで先に検査して throw する
 	if (endpoint.includes('://')) throw new Error('invalid endpoint');
 
 	// Append a credential
-	// 渡された data に i を書き込むのは従来の挙動 (呼び元が依存している可能性があるので残す)
+	// 渡された data に i を書き込むのは従来の挙動 (呼び元が依存している可能性があるので残す)。
+	// requestApi は呼び元の params を書き換えず、浅いコピーに同じ規則で i を書くので、送る値は変わらない
 	// 書き込みの失敗 (data が凍結済み・null など) は、従来どおり同期的に throw せず reject にする
 	try {
 		if ($i) data.i = $i.token;
@@ -54,7 +57,9 @@ export function misskeyApiGet<
 	endpoint: E,
 	data: P = {} as any,
 ): Promise<_ResT> {
-	// クエリ文字列にできない params は、従来どおり同期的に throw する
+	// クエリ文字列にできない params は、従来どおり同期的に throw する。
+	// requestApi に任せると失敗の値 (kind: 'other') になって reject に変わるので、互換のためここで先に変換を試す。
+	// 実行中カウンタ (pendingApiRequestsCount) を増やす前に throw するので、従来のようにカウンタが +1 のまま残ることはない
 	new URLSearchParams(data as any);
 
 	return unwrap<_ResT>(requestApi(endpoint, data as Record<string, unknown>, { method: 'GET' }));
