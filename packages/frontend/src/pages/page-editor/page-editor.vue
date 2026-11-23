@@ -42,6 +42,12 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<img :src="eyeCatchingImage.url" :alt="eyeCatchingImage.name" style="max-width: 100%;"/>
 						<MkButton v-if="!readonly" @click="removeEyeCatchingImage()"><i class="ti ti-trash"></i> {{ i18n.ts._pages.eyeCatchingImageRemove }}</MkButton>
 					</div>
+					<div v-else-if="eyeCatchingImageError" class="_gaps_s">
+						<!-- 取得できない画像も外せるよう、削除ボタンを残す -->
+						<MkError :title="eyeCatchingImageError.guidance.title" :text="eyeCatchingImageError.guidance.text" @retry="refetchEyeCatchingImage()"/>
+						<MkButton v-if="!readonly" @click="removeEyeCatchingImage()"><i class="ti ti-trash"></i> {{ i18n.ts._pages.eyeCatchingImageRemove }}</MkButton>
+					</div>
+					<MkLoading v-else-if="eyeCatchingImageId != null"/>
 				</div>
 			</div>
 		</div>
@@ -111,17 +117,52 @@ const hideTitleWhenPinned = ref(false);
 
 provide('readonly', readonly.value);
 
-const { data: eyeCatchingImage } = useApiQuery('drive/files/show', {
+const { data: eyeCatchingImage, error: eyeCatchingImageError, refetch: refetchEyeCatchingImage } = useApiQuery('drive/files/show', {
 	// enabled が偽の間は params の結果を使わないため、null を除いてよい
 	params: () => ({ fileId: eyeCatchingImageId.value! }),
 	enabled: () => eyeCatchingImageId.value != null,
 });
 
 // 操作ごとに作り、実行中のボタンを示す。ある操作の実行中はほかの操作も止める。
-const { execute: createPage, isPending: creating } = useApiAction('pages/create');
-const { execute: updatePage, isPending: updating } = useApiAction('pages/update');
-const { execute: duplicatePage, isPending: duplicating } = useApiAction('pages/create');
-const { execute: deletePage, isPending: deleting } = useApiAction('pages/delete');
+// 実行中もほかの画面へ移れるため、成功後の反映と遷移は onSuccess に書き、移ったあとに引き戻さないようにする。
+const { execute: createPage, isPending: creating } = useApiAction('pages/create', {
+	onSuccess: (page, params) => {
+		pageId.value = page.id;
+		currentName.value = params.name;
+		mainRouter.replace('/pages/edit/:initPageId', {
+			params: {
+				initPageId: page.id,
+			},
+		});
+	},
+});
+const { execute: updatePage, isPending: updating } = useApiAction('pages/update', {
+	onSuccess: (_, params) => {
+		// name を送らなかった更新では、名前は変わっていない
+		if (params.name != null) currentName.value = params.name;
+		// 更新は成功しても画面が変わらないため、成功を示す
+		os.success();
+	},
+});
+// 失敗したときに題名と名前が書き換わったまま残らないよう、反映は成功してから行う
+const { execute: duplicatePage, isPending: duplicating } = useApiAction('pages/create', {
+	onSuccess: (page, params) => {
+		title.value = params.title;
+		name.value = params.name;
+		pageId.value = page.id;
+		currentName.value = params.name;
+		mainRouter.push('/pages/edit/:initPageId', {
+			params: {
+				initPageId: page.id,
+			},
+		});
+	},
+});
+const { execute: deletePage, isPending: deleting } = useApiAction('pages/delete', {
+	onSuccess: () => {
+		mainRouter.replace('/pages');
+	},
+});
 const saving = computed(() => creating.value || updating.value);
 const busy = computed(() => saving.value || duplicating.value || deleting.value);
 
@@ -140,30 +181,16 @@ function getSaveOptions(): Misskey.entities.PagesCreateRequest {
 	};
 }
 
-async function save() {
+function save() {
 	const options = getSaveOptions();
 
 	if (pageId.value) {
-		const result = await updatePage({
+		updatePage({
 			pageId: pageId.value,
 			...options,
 		});
-		if (result.status !== 'success') return;
-
-		currentName.value = options.name;
-		// 更新は成功しても画面が変わらないため、成功を示す
-		os.success();
 	} else {
-		const result = await createPage(options);
-		if (result.status !== 'success') return;
-
-		pageId.value = result.data.id;
-		currentName.value = options.name;
-		mainRouter.replace('/pages/edit/:initPageId', {
-			params: {
-				initPageId: pageId.value,
-			},
-		});
+		createPage(options);
 	}
 }
 
@@ -177,35 +204,16 @@ async function del() {
 
 	if (canceled) return;
 
-	const result = await deletePage({
+	deletePage({
 		pageId: pageId.value,
 	});
-	if (result.status !== 'success') return;
-
-	mainRouter.replace('/pages');
 }
 
-async function duplicate() {
-	// 失敗したときに題名と名前が書き換わったまま残らないよう、反映は成功してから行う
-	const copyTitle = title.value + ' - copy';
-	const copyName = name.value + '-copy';
-
-	const result = await duplicatePage({
+function duplicate() {
+	duplicatePage({
 		...getSaveOptions(),
-		title: copyTitle.trim(),
-		name: copyName.trim(),
-	});
-	if (result.status !== 'success') return;
-
-	title.value = copyTitle;
-	name.value = copyName;
-	pageId.value = result.data.id;
-	currentName.value = copyName.trim();
-
-	mainRouter.push('/pages/edit/:initPageId', {
-		params: {
-			initPageId: pageId.value,
-		},
+		title: (title.value + ' - copy').trim(),
+		name: (name.value + '-copy').trim(),
 	});
 }
 
