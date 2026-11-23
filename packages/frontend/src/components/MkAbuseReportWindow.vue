@@ -22,7 +22,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				</MkTextarea>
 			</div>
 			<div class="">
-				<MkButton primary full :wait="isPending" :disabled="comment.length === 0 || isPending" @click="send">{{ i18n.ts.send }}</MkButton>
+				<MkButton primary full :disabled="comment.length === 0" @click="send">{{ i18n.ts.send }}</MkButton>
 			</div>
 		</div>
 	</div>
@@ -51,10 +51,11 @@ const emit = defineEmits<{
 const uiWindow = useTemplateRef('uiWindow');
 const comment = ref(props.initialComment ?? '');
 
-// 閉じたことの通知は、送信成功でも通常の閉じる操作でも MkWindow の closed の中継に一本化する。ここで別に emit すると二重に通知される。
-const { execute, isPending } = useApiAction('users/report-abuse', {
+const { execute } = useApiAction('users/report-abuse', {
+	waitingDialog: true,
 	onSuccess: () => {
 		uiWindow.value?.close();
+		emit('closed');
 	},
 });
 

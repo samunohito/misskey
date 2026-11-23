@@ -18,9 +18,6 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<MkMiniChart class="chart" :src="stat.chart"/>
 			</div>
 		</TransitionGroup>
-		<div v-else-if="error" class="error">
-			<MkError :title="error.guidance.title" :text="error.guidance.text" @retry="refetch()"/>
-		</div>
 		<MkLoading v-else/>
 	</div>
 </MkContainer>
@@ -59,8 +56,7 @@ const { widgetProps, configure } = useWidgetPropsManager(name,
 );
 
 // 同じ条件での取り直しは前の表示を残すので、定期更新のたびに読み込み中へ戻らない。
-// 表示できるデータがあれば、取り直しに失敗してもその表示を保つ。案内を出すのは表示できるデータがない場合だけ。
-const { data: stats, error, refetch } = useApiGetQuery('hashtags/trend');
+const { data: stats, refetch } = useApiGetQuery('hashtags/trend');
 
 // 作成時に始まる取得と重複しないよう、定期更新の開始時には即時取得しない。
 useInterval(refetch, 1000 * 60, {
@@ -79,12 +75,6 @@ defineExpose<WidgetComponentExpose>({
 .wbrkwala {
 	height: (62px + 1px) + (62px + 1px) + (62px + 1px) + (62px + 1px) + 62px;
 	overflow: hidden;
-
-	// 案内の本文が長いと固定の高さに収まらず、再試行ボタンが隠れるため
-	> .error {
-		height: 100%;
-		overflow: auto;
-	}
 
 	> .tags {
 		.chart-move {

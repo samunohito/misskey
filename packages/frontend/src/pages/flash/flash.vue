@@ -18,8 +18,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 								<MkButton v-tooltip="i18n.ts.reload" class="button" rounded @click="reset"><i class="ti ti-reload"></i></MkButton>
 							</div>
 							<div class="items">
-								<MkButton v-if="flash.isLiked" v-tooltip="i18n.ts.unlike" asLike class="button" rounded primary :disabled="likeBusy" @click="unlike()"><i class="ti ti-heart"></i><span v-if="flash?.likedCount && flash.likedCount > 0" style="margin-left: 6px;">{{ flash.likedCount }}</span></MkButton>
-								<MkButton v-else v-tooltip="i18n.ts.like" asLike class="button" rounded :disabled="likeBusy" @click="like()"><i class="ti ti-heart"></i><span v-if="flash?.likedCount && flash.likedCount > 0" style="margin-left: 6px;">{{ flash.likedCount }}</span></MkButton>
+								<MkButton v-if="flash.isLiked" v-tooltip="i18n.ts.unlike" asLike class="button" rounded primary @click="unlike()"><i class="ti ti-heart"></i><span v-if="flash?.likedCount && flash.likedCount > 0" style="margin-left: 6px;">{{ flash.likedCount }}</span></MkButton>
+								<MkButton v-else v-tooltip="i18n.ts.like" asLike class="button" rounded @click="like()"><i class="ti ti-heart"></i><span v-if="flash?.likedCount && flash.likedCount > 0" style="margin-left: 6px;">{{ flash.likedCount }}</span></MkButton>
 								<MkButton v-tooltip="i18n.ts.copyLink" class="button" rounded @click="copyLink"><i class="ti ti-link ti-fw"></i></MkButton>
 								<MkButton v-tooltip="i18n.ts.share" class="button" rounded @click="share"><i class="ti ti-share ti-fw"></i></MkButton>
 								<MkButton v-if="$i && $i.id !== flash.user.id" class="button" rounded @mousedown="showMenu"><i class="ti ti-dots ti-fw"></i></MkButton>
@@ -61,7 +61,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { computed, nextTick, onDeactivated, onUnmounted, ref, shallowRef } from 'vue';
+import { computed, nextTick, onDeactivated, onUnmounted, ref, shallowRef, defineAsyncComponent } from 'vue';
 import { utils } from '@syuilo/aiscript';
 import { compareVersions } from 'compare-versions';
 import { url } from '@@/js/config.js';
@@ -93,22 +93,20 @@ const { data: flash, error, refetch } = useApiQuery('flash/show', {
 	params: () => ({ flashId: props.id }),
 });
 
-// 応答を待つ間に別の Play へ移っていたら、移った先の表示を直さない。
-// 同じ Play を取り直した結果に既に反映されていることもあるので、数は状態が変わるときだけ動かす。
-function applyLiked(flashId: string, liked: boolean): void {
-	if (flash.value == null || flash.value.id !== flashId) return;
-	if (flash.value.isLiked === liked) return;
-	flash.value.isLiked = liked;
-	flash.value.likedCount += liked ? 1 : -1;
-}
-
-const { execute: likeFlash, isPending: liking } = useApiAction('flash/like', {
-	onSuccess: (_, params) => applyLiked(params.flashId, true),
+const { execute: likeFlash } = useApiAction('flash/like', {
+	waitingDialog: true,
+	onSuccess: () => {
+		flash.value!.isLiked = true;
+		flash.value!.likedCount++;
+	},
 });
-const { execute: unlikeFlash, isPending: unliking } = useApiAction('flash/unlike', {
-	onSuccess: (_, params) => applyLiked(params.flashId, false),
+const { execute: unlikeFlash } = useApiAction('flash/unlike', {
+	waitingDialog: true,
+	onSuccess: () => {
+		flash.value!.isLiked = false;
+		flash.value!.likedCount--;
+	},
 });
-const likeBusy = computed(() => liking.value || unliking.value);
 
 function share(ev: PointerEvent) {
 	if (!flash.value) return;
@@ -159,18 +157,17 @@ function shareWithNote() {
 
 async function like() {
 	if (!flash.value) return;
-	// ログインや確認のダイアログの間に表示が切り替わっても、押したときの Play を対象にする
-	const flashId = flash.value.id;
 
 	const isLoggedIn = await pleaseLogin();
 	if (!isLoggedIn) return;
 
-	likeFlash({ flashId });
+	likeFlash({
+		flashId: flash.value.id,
+	});
 }
 
 async function unlike() {
 	if (!flash.value) return;
-	const flashId = flash.value.id;
 
 	const isLoggedIn = await pleaseLogin();
 	if (!isLoggedIn) return;
@@ -180,7 +177,9 @@ async function unlike() {
 		text: i18n.ts.unlikeConfirm,
 	});
 	if (confirm.canceled) return;
-	unlikeFlash({ flashId });
+	unlikeFlash({
+		flashId: flash.value.id,
+	});
 }
 
 const started = ref(false);

@@ -8,9 +8,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 	<div class="_spacer" style="--MI_SPACER-w: 700px;">
 		<div class="jqqmcavi">
 			<MkButton v-if="pageId && author != null" class="button" inline type="routerLink" :to="`/@${ author.username }/pages/${ currentName }`"><i class="ti ti-external-link"></i> {{ i18n.ts._pages.viewPage }}</MkButton>
-			<MkButton v-if="!readonly" inline primary class="button" :wait="saving" :disabled="busy" @click="save"><i class="ti ti-device-floppy"></i> {{ i18n.ts.save }}</MkButton>
-			<MkButton v-if="pageId" inline class="button" :wait="duplicating" :disabled="busy" @click="duplicate"><i class="ti ti-copy"></i> {{ i18n.ts.duplicate }}</MkButton>
-			<MkButton v-if="pageId && !readonly" inline class="button" danger :wait="deleting" :disabled="busy" @click="del"><i class="ti ti-trash"></i> {{ i18n.ts.delete }}</MkButton>
+			<MkButton v-if="!readonly" inline primary class="button" @click="save"><i class="ti ti-device-floppy"></i> {{ i18n.ts.save }}</MkButton>
+			<MkButton v-if="pageId" inline class="button" @click="duplicate"><i class="ti ti-copy"></i> {{ i18n.ts.duplicate }}</MkButton>
+			<MkButton v-if="pageId && !readonly" inline class="button" danger @click="del"><i class="ti ti-trash"></i> {{ i18n.ts.delete }}</MkButton>
 		</div>
 
 		<div v-if="tab === 'settings'">
@@ -42,12 +42,6 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<img :src="eyeCatchingImage.url" :alt="eyeCatchingImage.name" style="max-width: 100%;"/>
 						<MkButton v-if="!readonly" @click="removeEyeCatchingImage()"><i class="ti ti-trash"></i> {{ i18n.ts._pages.eyeCatchingImageRemove }}</MkButton>
 					</div>
-					<div v-else-if="eyeCatchingImageError" class="_gaps_s">
-						<!-- 取得できない画像も外せるよう、削除ボタンを残す -->
-						<MkError :title="eyeCatchingImageError.guidance.title" :text="eyeCatchingImageError.guidance.text" @retry="refetchEyeCatchingImage()"/>
-						<MkButton v-if="!readonly" @click="removeEyeCatchingImage()"><i class="ti ti-trash"></i> {{ i18n.ts._pages.eyeCatchingImageRemove }}</MkButton>
-					</div>
-					<MkLoading v-else-if="eyeCatchingImageId != null"/>
 				</div>
 			</div>
 		</div>
@@ -117,15 +111,15 @@ const hideTitleWhenPinned = ref(false);
 
 provide('readonly', readonly.value);
 
-const { data: eyeCatchingImage, error: eyeCatchingImageError, refetch: refetchEyeCatchingImage } = useApiQuery('drive/files/show', {
+const { data: eyeCatchingImage } = useApiQuery('drive/files/show', {
 	// enabled が偽の間は params の結果を使わないため、null を除いてよい
 	params: () => ({ fileId: eyeCatchingImageId.value! }),
 	enabled: () => eyeCatchingImageId.value != null,
 });
 
-// 実行中のボタンに待機状態を表示し、いずれかの操作の実行中は操作ボタンを無効にする。
 // ページを離れた後に表示を更新したり引き戻したりしないよう、成功後の反映と遷移は scope の破棄時に抑止される onSuccess で行う。
-const { execute: createPage, isPending: creating } = useApiAction('pages/create', {
+const { execute: createPage } = useApiAction('pages/create', {
+	waitingDialog: true,
 	onSuccess: (page, params) => {
 		pageId.value = page.id;
 		currentName.value = params.name;
@@ -136,17 +130,16 @@ const { execute: createPage, isPending: creating } = useApiAction('pages/create'
 		});
 	},
 });
-const { execute: updatePage, isPending: updating } = useApiAction('pages/update', {
+const { execute: updatePage } = useApiAction('pages/update', {
+	waitingDialog: true,
 	onSuccess: (_, params) => {
 		// name を送らなかった更新では、名前は変わっていない
 		if (params.name != null) currentName.value = params.name;
 	},
 });
-// 失敗したときに題名と名前が書き換わったまま残らないよう、反映は成功してから行う
-const { execute: duplicatePage, isPending: duplicating } = useApiAction('pages/create', {
+const { execute: duplicatePage } = useApiAction('pages/create', {
+	waitingDialog: true,
 	onSuccess: (page, params) => {
-		title.value = params.title;
-		name.value = params.name;
 		pageId.value = page.id;
 		currentName.value = params.name;
 		mainRouter.push('/pages/edit/:initPageId', {
@@ -156,13 +149,12 @@ const { execute: duplicatePage, isPending: duplicating } = useApiAction('pages/c
 		});
 	},
 });
-const { execute: deletePage, isPending: deleting } = useApiAction('pages/delete', {
+const { execute: deletePage } = useApiAction('pages/delete', {
+	waitingDialog: true,
 	onSuccess: () => {
 		mainRouter.replace('/pages');
 	},
 });
-const saving = computed(() => creating.value || updating.value);
-const busy = computed(() => saving.value || duplicating.value || deleting.value);
 
 function getSaveOptions(): Misskey.entities.PagesCreateRequest {
 	return {
@@ -179,16 +171,14 @@ function getSaveOptions(): Misskey.entities.PagesCreateRequest {
 	};
 }
 
-async function save() {
+function save() {
 	const options = getSaveOptions();
 
 	if (pageId.value) {
-		const result = await updatePage({
+		updatePage({
 			pageId: pageId.value,
 			...options,
 		});
-		// 更新は成功しても画面が変わらないため成功を示す。保存は画面を離れても完了するので、通知は破棄後も出す (onSuccess は破棄後に呼ばれない)
-		if (result.status === 'success') os.success();
 	} else {
 		createPage(options);
 	}
@@ -210,11 +200,10 @@ async function del() {
 }
 
 function duplicate() {
-	duplicatePage({
-		...getSaveOptions(),
-		title: (title.value + ' - copy').trim(),
-		name: (name.value + '-copy').trim(),
-	});
+	title.value = title.value + ' - copy';
+	name.value = name.value + '-copy';
+
+	duplicatePage(getSaveOptions());
 }
 
 async function add() {
