@@ -56,11 +56,11 @@ const { widgetProps, configure } = useWidgetPropsManager(name,
 );
 
 // 同じ条件での取り直しは前の表示を残すので、定期更新のたびに読み込み中へ戻らない。
-const { data: stats, refetch } = useApiGetQuery('hashtags/trend');
+// 取得の時機は、表示中かどうかと keep-alive の再開を見ている定期更新に任せる。
+const { data: stats, refetch } = useApiGetQuery('hashtags/trend', { manual: true });
 
-// 作成時に始まる取得と重複しないよう、定期更新の開始時には即時取得しない。
 useInterval(refetch, 1000 * 60, {
-	immediate: false,
+	immediate: true,
 	afterMounted: true,
 });
 
