@@ -59,9 +59,16 @@ const { widgetProps, configure } = useWidgetPropsManager(name,
 // 取得の時機は、表示中かどうかと keep-alive の再開を見ている定期更新に任せる。
 const { data: stats, isPending, refetch } = useApiGetQuery('hashtags/trend', { manual: true });
 
-// refetch() は進行中の取得を中断して取り直すので、応答が遅いときに毎回打ち切られないよう、取得中の回は飛ばす。
+// refetch() は進行中の取得を中断して取り直す。遅い応答を打ち切らないよう取得中の回は1回だけ飛ばし、
+// 止まったままの取得は次の回で取り直す。
+let skippedWhilePending = false;
 useInterval(() => {
-	if (!isPending.value) void refetch();
+	if (isPending.value && !skippedWhilePending) {
+		skippedWhilePending = true;
+		return;
+	}
+	skippedWhilePending = false;
+	void refetch();
 }, 1000 * 60, {
 	immediate: true,
 	afterMounted: true,
