@@ -148,8 +148,6 @@ function useQuery<P, T>(method: 'POST' | 'GET', endpoint: string, opts: UseApiQu
 	}
 
 	function startFetch(paramsSnapshot: JsonLike): Promise<void> {
-		// 条件の評価中に scope が破棄されることがあるため、送信の直前にも確かめる。
-		if (disposed) return Promise.resolve();
 		cancelInflight();
 		const myGeneration = generation;
 		const snapshot = { value: paramsSnapshot };
@@ -169,8 +167,8 @@ function useQuery<P, T>(method: 'POST' | 'GET', endpoint: string, opts: UseApiQu
 		// pending の変化を同期で監視する処理が破棄や取り直しを起こすと、この取得は既に置き換えられている。
 		if (myGeneration !== generation) return settled;
 
-		// 送信する値を比較に使う複製から独立させ、認証情報の補完を取得条件に混ぜない。
-		requestApi<T>(endpoint, snapshotOf(paramsSnapshot) as Record<string, unknown>, { method, signal: ac.signal })
+		// requestApi は渡した値を書き換えないので、比較に使う複製をそのまま送る。
+		requestApi<T>(endpoint, paramsSnapshot as Record<string, unknown>, { method, signal: ac.signal })
 			// requestApi は reject しない約束だが、万一の reject も失敗として扱う
 			.catch((err: unknown): ApiResult<never> => ({ ok: false, failure: { kind: 'other', raw: err } }))
 			.then((result) => {
@@ -245,6 +243,8 @@ function useQuery<P, T>(method: 'POST' | 'GET', endpoint: string, opts: UseApiQu
 	function refetch(): Promise<void> {
 		if (disposed) return Promise.resolve();
 		const enabledResult = evaluateEnabled();
+		// 呼び元の関数の評価中に scope が破棄されることがあるため、評価のたびに確かめる。
+		if (disposed) return Promise.resolve();
 		if (!enabledResult.ok) {
 			wasEnabled = false;
 			failEvaluation(enabledResult.error);
@@ -257,6 +257,7 @@ function useQuery<P, T>(method: 'POST' | 'GET', endpoint: string, opts: UseApiQu
 		initialDataChecked = true;
 
 		const paramsResult = evaluateParams();
+		if (disposed) return Promise.resolve();
 		if (!paramsResult.ok) {
 			failEvaluation(paramsResult.error);
 			return Promise.resolve();
