@@ -53,7 +53,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<MkA v-if="$i && $i.id === flash.userId" :to="`/play/${flash.id}/edit`" style="color: var(--MI_THEME-accent);">{{ i18n.ts._play.editThisPage }}</MkA>
 				<MkAd :preferForms="['horizontal', 'horizontal-big']"/>
 			</div>
-			<MkError v-else-if="error" @retry="fetchFlash()"/>
+			<MkError v-else-if="error" :title="error.guidance.title" :text="error.guidance.text" @retry="refetch()"/>
 			<MkLoading v-else/>
 		</Transition>
 	</div>
@@ -61,8 +61,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { computed, nextTick, onDeactivated, onUnmounted, ref, watch, shallowRef, defineAsyncComponent } from 'vue';
-import * as Misskey from 'misskey-js';
+import { computed, nextTick, onDeactivated, onUnmounted, ref, shallowRef, defineAsyncComponent } from 'vue';
 import { utils } from '@syuilo/aiscript';
 import { compareVersions } from 'compare-versions';
 import { url } from '@@/js/config.js';
@@ -71,7 +70,7 @@ import type { MenuItem } from '@/types/menu.js';
 import type { Interpreter } from '@syuilo/aiscript';
 import MkButton from '@/components/MkButton.vue';
 import * as os from '@/os.js';
-import { misskeyApi } from '@/utility/misskey-api.js';
+import { useApiQuery } from '@/composables/use-api-query.js';
 import { i18n } from '@/i18n.js';
 import { definePage } from '@/page.js';
 import MkAsUi from '@/components/MkAsUi.vue';
@@ -89,19 +88,9 @@ const props = defineProps<{
 	id: string;
 }>();
 
-const flash = ref<Misskey.entities.Flash | null>(null);
-const error = ref<any>(null);
-
-function fetchFlash() {
-	flash.value = null;
-	misskeyApi('flash/show', {
-		flashId: props.id,
-	}).then(_flash => {
-		flash.value = _flash;
-	}).catch(err => {
-		error.value = err;
-	});
-}
+const { data: flash, error, refetch } = useApiQuery('flash/show', {
+	params: () => ({ flashId: props.id }),
+});
 
 function share(ev: PointerEvent) {
 	if (!flash.value) return;
@@ -182,8 +171,6 @@ async function unlike() {
 		flash.value!.likedCount--;
 	});
 }
-
-watch(() => props.id, fetchFlash, { immediate: true });
 
 const started = ref(false);
 const aiscript = shallowRef<Interpreter | null>(null);
