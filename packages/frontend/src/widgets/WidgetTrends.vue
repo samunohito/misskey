@@ -64,8 +64,8 @@ const POLLING_INTERVAL = 1000 * 60;
 // refetch() は進行中の取得を中断して取り直す。遅い応答は2周期まで待ち、それより長く止まっている取得は取り直す。
 let fetchStartedAt = 0;
 useInterval(() => {
-	if (isPending.value && Date.now() - fetchStartedAt < POLLING_INTERVAL * 2) return;
-	fetchStartedAt = Date.now();
+	if (isPending.value && performance.now() - fetchStartedAt < POLLING_INTERVAL * 2) return;
+	fetchStartedAt = performance.now();
 	void refetch();
 }, POLLING_INTERVAL, {
 	immediate: true,
