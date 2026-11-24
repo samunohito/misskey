@@ -3,11 +3,12 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { beforeEach, describe, expect, test, vi } from 'vitest';
+import { beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
 import { effectScope } from 'vue';
 import { i18n } from '@/i18n.js';
 import { useApLookup } from '@/composables/use-ap-lookup.js';
 import type { ApiFailure, ApiResult } from '@/utility/api/request.js';
+import { loadApiErrorDefs } from '@/utility/api/guidance.js';
 
 const requestApiMock = vi.hoisted(() => vi.fn());
 vi.mock('@/utility/api/request.js', () => ({ requestApi: requestApiMock }));
@@ -26,6 +27,11 @@ async function flush() {
 }
 
 const noteResponse = { type: 'Note', object: { id: 'n1' } };
+
+beforeAll(async () => {
+	// 定義表は遅延読み込みなので、案内の表示が読み込みの完了待ちで遅れないよう先に読み込んでおく。
+	await loadApiErrorDefs();
+});
 
 beforeEach(() => {
 	requestApiMock.mockReset();

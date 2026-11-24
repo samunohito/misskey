@@ -13,16 +13,16 @@ import { reportApiCallbackError } from '@/utility/api/report-error.js';
 
 /**
  * 失敗に対する案内を `resolveApiGuidance` で決めてダイアログで出す。案内が無い失敗では何もしない。
- * 案内の解決や表示の失敗は報告し、throw しない。ダイアログが閉じるのは待たない。
+ * 定義表の読み込みを待つことがあるため、表示は非同期に始まる。案内の解決や表示の失敗は報告し、throw しない。
+ * 案内の解決やダイアログが閉じるのは待たない。
  */
 export function showApiFailureGuidance(endpoint: string, failure: ApiFailure, opts?: ResolveApiGuidanceOptions): void {
-	try {
-		const guidance = resolveApiGuidance(endpoint, failure, opts);
-		if (guidance == null) return;
-		showApiGuidanceDialog(guidance).catch(reportApiCallbackError);
-	} catch (err) {
-		reportApiCallbackError(err);
-	}
+	resolveApiGuidance(endpoint, failure, opts)
+		.then(guidance => {
+			if (guidance == null) return;
+			return showApiGuidanceDialog(guidance);
+		})
+		.catch(reportApiCallbackError);
 }
 
 /**

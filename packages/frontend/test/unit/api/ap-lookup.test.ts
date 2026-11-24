@@ -3,13 +3,14 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { beforeEach, describe, expect, test, vi } from 'vitest';
+import { beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
 import type { Router } from '@/router.js';
 import { i18n } from '@/i18n.js';
 import { popups } from '@/os.js';
 import { apLookup, openApLookupResult } from '@/utility/lookup.js';
 import MkDialog from '@/components/MkDialog.vue';
 import MkWaitingDialog from '@/components/MkWaitingDialog.vue';
+import { loadApiErrorDefs } from '@/utility/api/guidance.js';
 
 // ルーターを差し替え、ダイアログの表示内容は実際に popup に積まれた props で確かめる。
 vi.mock('@/router.js', () => ({ mainRouter: { push: vi.fn(), pushByPath: vi.fn() } }));
@@ -39,6 +40,11 @@ function shownGuidances() {
 		.map(p => p.props as { type?: string; title?: string; text?: string })
 		.map(({ type, title, text }) => ({ type, title, text }));
 }
+
+beforeAll(async () => {
+	// 定義表は遅延読み込みなので、案内の表示が読み込みの完了待ちで遅れないよう先に読み込んでおく。
+	await loadApiErrorDefs();
+});
 
 beforeEach(() => {
 	fetchMock.resetMocks();

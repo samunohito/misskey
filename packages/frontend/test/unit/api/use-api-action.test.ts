@@ -3,10 +3,11 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
+import { beforeAll, afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { effectScope } from 'vue';
 import { useApiAction } from '@/composables/use-api-action.js';
 import type { ApiFailure, ApiResult } from '@/utility/api/request.js';
+import { loadApiErrorDefs } from '@/utility/api/guidance.js';
 
 const requestApiMock = vi.hoisted(() => vi.fn());
 vi.mock('@/utility/api/request.js', () => ({ requestApi: requestApiMock }));
@@ -54,6 +55,11 @@ function ng(failure: ApiFailure = apiFailure): ApiResult<never> {
 	return { ok: false, failure };
 }
 
+beforeAll(async () => {
+	// 定義表は遅延読み込みなので、案内の表示が読み込みの完了待ちで遅れないよう先に読み込んでおく。
+	await loadApiErrorDefs();
+});
+
 beforeEach(() => {
 	requestApiMock.mockReset();
 	showApiGuidanceDialogMock.mockReset().mockResolvedValue(undefined);
@@ -93,6 +99,8 @@ describe('useApiAction', () => {
 		const { execute } = scope.run(() => useApiAction('users/show', { onError }))!;
 
 		const result = await execute({ userId: 'u1' });
+		// 案内は定義表を引くことがあるため非同期に出る。
+		await flush();
 
 		expect(result).toEqual({ status: 'failure', failure: apiFailure });
 		expect(onError).toHaveBeenCalledOnce();
@@ -186,6 +194,8 @@ describe('useApiAction', () => {
 		const { execute, isPending } = useApiAction('users/show');
 
 		const result = await execute({ userId: 'u1' });
+		expect(isPending.value).toBe(false);
+		await flush();
 
 		expect(result.status).toBe('failure');
 		expect(showApiGuidanceDialogMock).toHaveBeenCalledOnce();
@@ -258,6 +268,7 @@ describe('useApiAction', () => {
 		const p2 = execute({ userId: 'u2' });
 		d2.resolve(ng());
 		expect(await p2).toEqual({ status: 'failure', failure: apiFailure });
+		await flush();
 
 		expect(onSuccess).not.toHaveBeenCalled();
 		expect(onError).not.toHaveBeenCalled();

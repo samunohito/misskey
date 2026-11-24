@@ -23,38 +23,38 @@ afterEach(() => {
 });
 
 describe('resolveApiGuidance', () => {
-	test('aborted は null', () => {
-		expect(resolveApiGuidance('notes/create', { kind: 'aborted', raw: new DOMException('x', 'AbortError') })).toBeNull();
+	test('aborted は null', async () => {
+		expect(await resolveApiGuidance('notes/create', { kind: 'aborted', raw: new DOMException('x', 'AbortError') })).toBeNull();
 	});
 
-	test('network は somethingHappened / serverIsDead', () => {
-		expect(resolveApiGuidance('notes/create', { kind: 'network', raw: new TypeError('Failed to fetch') })).toEqual({
+	test('network は somethingHappened / serverIsDead', async () => {
+		expect(await resolveApiGuidance('notes/create', { kind: 'network', raw: new TypeError('Failed to fetch') })).toEqual({
 			title: i18n.ts.somethingHappened,
 			text: i18n.ts.serverIsDead,
 		});
 	});
 
-	test('invalid-response は gotInvalidResponseError / gotInvalidResponseErrorDescription', () => {
-		expect(resolveApiGuidance('notes/create', { kind: 'invalid-response', raw: undefined })).toEqual({
+	test('invalid-response は gotInvalidResponseError / gotInvalidResponseErrorDescription', async () => {
+		expect(await resolveApiGuidance('notes/create', { kind: 'invalid-response', raw: undefined })).toEqual({
 			title: i18n.ts.gotInvalidResponseError,
 			text: i18n.ts.gotInvalidResponseErrorDescription,
 		});
 	});
 
-	test('other は somethingHappened と、raw に message があればそれ', () => {
-		expect(resolveApiGuidance('notes/create', { kind: 'other', raw: new Error('invalid endpoint') })).toEqual({
+	test('other は somethingHappened と、raw に message があればそれ', async () => {
+		expect(await resolveApiGuidance('notes/create', { kind: 'other', raw: new Error('invalid endpoint') })).toEqual({
 			title: i18n.ts.somethingHappened,
 			text: 'invalid endpoint',
 		});
-		expect(resolveApiGuidance('notes/create', { kind: 'other', raw: 42 })).toEqual({
+		expect(await resolveApiGuidance('notes/create', { kind: 'other', raw: 42 })).toEqual({
 			title: i18n.ts.somethingHappened,
 			text: '',
 		});
 	});
 
-	test('INTERNAL_ERROR は internalServerError / internalServerErrorDescription と copyInfo (Endpoint と info を含む)', () => {
+	test('INTERNAL_ERROR は internalServerError / internalServerErrorDescription と copyInfo (Endpoint と info を含む)', async () => {
 		const info = { e: { message: 'boom', code: 'X' } };
-		const guidance = resolveApiGuidance('notes/create', apiFailure('INTERNAL_ERROR', { info }), {
+		const guidance = await resolveApiGuidance('notes/create', apiFailure('INTERNAL_ERROR', { info }), {
 			overrides: { INTERNAL_ERROR: () => ({ text: 'overridden' }) },
 		});
 		expect(guidance?.title).toBe(i18n.ts.internalServerError);
@@ -67,73 +67,73 @@ describe('resolveApiGuidance', () => {
 		['RATE_LIMIT_EXCEEDED', 'cannotPerformTemporary', 'cannotPerformTemporaryDescription'],
 		['INVALID_PARAM', 'invalidParamError', 'invalidParamErrorDescription'],
 		['ROLE_PERMISSION_DENIED', 'permissionDeniedError', 'permissionDeniedErrorDescription'],
-	] as const)('%s は固定の共通の案内で、overrides より優先', (code, titleKey, textKey) => {
-		const guidance = resolveApiGuidance('notes/create', apiFailure(code), {
+	] as const)('%s は固定の共通の案内で、overrides より優先', async (code, titleKey, textKey) => {
+		const guidance = await resolveApiGuidance('notes/create', apiFailure(code), {
 			overrides: { [code]: () => ({ title: 'o', text: 'overridden' }) },
 			defs: { 'notes/create': { [code]: () => ({ title: 'd', text: 'def' }) } },
 		});
 		expect(guidance).toEqual({ title: i18n.ts[titleKey], text: i18n.ts[textKey] });
 	});
 
-	test('overrides は定義表より優先', () => {
-		const guidance = resolveApiGuidance('notes/create', apiFailure('NO_SUCH_NOTE'), {
+	test('overrides は定義表より優先', async () => {
+		const guidance = await resolveApiGuidance('notes/create', apiFailure('NO_SUCH_NOTE'), {
 			overrides: { NO_SUCH_NOTE: () => ({ title: 'o', text: 'overridden' }) },
 			defs: { 'notes/create': { NO_SUCH_NOTE: () => ({ title: 'd', text: 'def' }) } },
 		});
 		expect(guidance).toEqual({ title: 'o', text: 'overridden' });
 	});
 
-	test('定義表はエンドポイント別に引く', () => {
+	test('定義表はエンドポイント別に引く', async () => {
 		const defs: ApiErrorDefs = { 'notes/create': { NO_SUCH_NOTE: () => ({ title: 'd', text: 'def' }) } };
-		expect(resolveApiGuidance('notes/create', apiFailure('NO_SUCH_NOTE'), { defs })).toEqual({ title: 'd', text: 'def' });
-		expect(resolveApiGuidance('notes/delete', apiFailure('NO_SUCH_NOTE'), { defs })).toEqual({ text: 'error message\nerror-id' });
+		expect(await resolveApiGuidance('notes/create', apiFailure('NO_SUCH_NOTE'), { defs })).toEqual({ title: 'd', text: 'def' });
+		expect(await resolveApiGuidance('notes/delete', apiFailure('NO_SUCH_NOTE'), { defs })).toEqual({ text: 'error message\nerror-id' });
 	});
 
-	test('定義表は TOO_MANY より優先', () => {
-		const guidance = resolveApiGuidance('antennas/create', apiFailure('TOO_MANY_ANTENNAS'), {
+	test('定義表は TOO_MANY より優先', async () => {
+		const guidance = await resolveApiGuidance('antennas/create', apiFailure('TOO_MANY_ANTENNAS'), {
 			defs: { 'antennas/create': { TOO_MANY_ANTENNAS: () => ({ title: 'd', text: 'def' }) } },
 		});
 		expect(guidance).toEqual({ title: 'd', text: 'def' });
 	});
 
-	test('overrides は TOO_MANY より優先', () => {
-		const guidance = resolveApiGuidance('antennas/create', apiFailure('TOO_MANY_ANTENNAS'), {
+	test('overrides は TOO_MANY より優先', async () => {
+		const guidance = await resolveApiGuidance('antennas/create', apiFailure('TOO_MANY_ANTENNAS'), {
 			overrides: { TOO_MANY_ANTENNAS: () => ({ text: 'overridden' }) },
 		});
 		expect(guidance).toEqual({ text: 'overridden' });
 	});
 
-	test('TOO_MANY で始まる code は youCannotCreateAnymore と「error: id」', () => {
-		expect(resolveApiGuidance('antennas/create', apiFailure('TOO_MANY_ANTENNAS'))).toEqual({
+	test('TOO_MANY で始まる code は youCannotCreateAnymore と「error: id」', async () => {
+		expect(await resolveApiGuidance('antennas/create', apiFailure('TOO_MANY_ANTENNAS'))).toEqual({
 			title: i18n.ts.youCannotCreateAnymore,
 			text: `${i18n.ts.error}: error-id`,
 		});
 	});
 
-	test('どれにも当たらなければ title なしで「message\\nid」', () => {
-		const guidance = resolveApiGuidance('notes/create', apiFailure('NO_SUCH_NOTE'));
+	test('どれにも当たらなければ title なしで「message\\nid」', async () => {
+		const guidance = await resolveApiGuidance('notes/create', apiFailure('NO_SUCH_NOTE'));
 		expect(guidance).toEqual({ text: 'error message\nerror-id' });
 		expect(guidance).not.toHaveProperty('title');
 	});
 
-	test('Object.prototype の名前の code を上書きや定義表と取り違えない', () => {
-		const guidance = resolveApiGuidance('notes/create', apiFailure('constructor'), { overrides: {}, defs: { 'notes/create': {} } });
+	test('Object.prototype の名前の code を上書きや定義表と取り違えない', async () => {
+		const guidance = await resolveApiGuidance('notes/create', apiFailure('constructor'), { overrides: {}, defs: { 'notes/create': {} } });
 		expect(guidance).toEqual({ text: 'error message\nerror-id' });
 	});
 
-	test('上書きや定義表の関数が throw したら報告して次の優先順へ進む', () => {
+	test('上書きや定義表の関数が throw したら報告して次の優先順へ進む', async () => {
 		const reported = vi.spyOn(console, 'error').mockImplementation(() => {});
 		const overrideErr = new Error('override threw');
 		const defErr = new Error('def threw');
 		const throwingDefs: ApiErrorDefs = { 'notes/create': { NO_SUCH_NOTE: () => { throw defErr; } } };
 
-		expect(resolveApiGuidance('notes/create', apiFailure('NO_SUCH_NOTE'), {
+		expect(await resolveApiGuidance('notes/create', apiFailure('NO_SUCH_NOTE'), {
 			overrides: { NO_SUCH_NOTE: () => { throw overrideErr; } },
 			defs: { 'notes/create': { NO_SUCH_NOTE: () => ({ title: 'd', text: 'def' }) } },
 		})).toEqual({ title: 'd', text: 'def' });
 		expect(reported).toHaveBeenLastCalledWith(overrideErr);
 
-		expect(resolveApiGuidance('notes/create', apiFailure('NO_SUCH_NOTE'), {
+		expect(await resolveApiGuidance('notes/create', apiFailure('NO_SUCH_NOTE'), {
 			overrides: { NO_SUCH_NOTE: () => { throw overrideErr; } },
 			defs: throwingDefs,
 		})).toEqual({ text: 'error message\nerror-id' });
@@ -141,27 +141,27 @@ describe('resolveApiGuidance', () => {
 		expect(reported).toHaveBeenCalledTimes(3);
 		expect(reported).toHaveBeenLastCalledWith(defErr);
 
-		expect(resolveApiGuidance('antennas/create', apiFailure('TOO_MANY_ANTENNAS'), {
+		expect(await resolveApiGuidance('antennas/create', apiFailure('TOO_MANY_ANTENNAS'), {
 			defs: { 'antennas/create': { TOO_MANY_ANTENNAS: () => { throw defErr; } } },
 		})).toEqual({ title: i18n.ts.youCannotCreateAnymore, text: `${i18n.ts.error}: error-id` });
 		expect(reported).toHaveBeenCalledTimes(4);
 	});
 
-	test('既定の定義表に pages/create と pages/update の NAME_ALREADY_EXISTS がある', () => {
+	test('既定の定義表に pages/create と pages/update の NAME_ALREADY_EXISTS がある', async () => {
 		for (const endpoint of ['pages/create', 'pages/update']) {
-			expect(resolveApiGuidance(endpoint, apiFailure('NAME_ALREADY_EXISTS'))).toEqual({
+			expect(await resolveApiGuidance(endpoint, apiFailure('NAME_ALREADY_EXISTS'))).toEqual({
 				title: i18n.ts.somethingHappened,
 				text: i18n.ts._pages.nameAlreadyExists,
 			});
 		}
 	});
 
-	test('定義表の値は呼ばれた時点の i18n を引く (関数)', () => {
+	test('定義表の値は呼ばれた時点の i18n を引く (関数)', async () => {
 		const def = apiErrorDefs['pages/create']?.NAME_ALREADY_EXISTS;
 		expect(def).toBeTypeOf('function');
 		const en = locales['en-US'];
 		updateI18n({ ...en, somethingHappened: 'changed title', _pages: { ...en._pages, nameAlreadyExists: 'changed text' } });
-		expect(resolveApiGuidance('pages/create', apiFailure('NAME_ALREADY_EXISTS'))).toEqual({
+		expect(await resolveApiGuidance('pages/create', apiFailure('NAME_ALREADY_EXISTS'))).toEqual({
 			title: 'changed title',
 			text: 'changed text',
 		});

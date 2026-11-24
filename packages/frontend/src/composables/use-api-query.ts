@@ -13,7 +13,7 @@ import type { ApiResponse, JsonEndpoint } from '@/utility/api/types.js';
 import { deepEqual } from '@/utility/deep-equal.js';
 import { deepClone } from '@/utility/clone.js';
 import { reportApiCallbackError } from '@/utility/api/report-error.js';
-import { resolveApiGuidance } from '@/utility/api/guidance.js';
+import { resolveApiGuidanceSync } from '@/utility/api/guidance.js';
 import { requestApi } from '@/utility/api/request.js';
 
 export type ApiQueryError = { guidance: ApiGuidance; failure: ApiFailure };
@@ -104,7 +104,7 @@ function useQuery<P, T>(method: 'POST' | 'GET', endpoint: string, opts: UseApiQu
 	}
 
 	function toQueryError(failure: ApiFailure): ApiQueryError | null {
-		const guidance = resolveApiGuidance(endpoint, failure, { overrides: opts.errors });
+		const guidance = resolveApiGuidanceSync(endpoint, failure, { overrides: opts.errors });
 		return guidance == null ? null : { guidance, failure };
 	}
 

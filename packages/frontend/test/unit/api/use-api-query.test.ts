@@ -16,8 +16,8 @@ vi.mock('@/utility/api/request.js', () => ({ requestApi: requestApiMock }));
 const resolveApiGuidanceSpy = vi.hoisted(() => ({ fn: null as null | ReturnType<typeof vi.fn> }));
 vi.mock('@/utility/api/guidance.js', async (importOriginal) => {
 	const actual = await importOriginal<typeof import('@/utility/api/guidance.js')>();
-	resolveApiGuidanceSpy.fn = vi.fn(actual.resolveApiGuidance);
-	return { ...actual, resolveApiGuidance: resolveApiGuidanceSpy.fn };
+	resolveApiGuidanceSpy.fn = vi.fn(actual.resolveApiGuidanceSync);
+	return { ...actual, resolveApiGuidanceSync: resolveApiGuidanceSpy.fn };
 });
 
 type Deferred<T> = { promise: Promise<T>; resolve: (v: T) => void };

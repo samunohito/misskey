@@ -3,11 +3,12 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { beforeEach, describe, expect, test, vi } from 'vitest';
+import { beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
 import { i18n } from '@/i18n.js';
 import { apiWithDialog, popups } from '@/os.js';
 import MkDialog from '@/components/MkDialog.vue';
 import MkWaitingDialog from '@/components/MkWaitingDialog.vue';
+import { loadApiErrorDefs } from '@/utility/api/guidance.js';
 
 // @/os.js を部分的に mock すると、os.ts と guidance-dialog.ts の循環 import で本物の os.alert が使われてしまう。
 // そのため os.js は mock せず、popup に積まれたダイアログの props で表示内容を確かめる。
@@ -58,6 +59,11 @@ function lastWaitingDialog() {
 	// popups は reactive なので、props の ref は読み出し時に値へ展開される。
 	return p.props as { success: boolean; showing: boolean };
 }
+
+beforeAll(async () => {
+	// 定義表は遅延読み込みなので、案内の表示が読み込みの完了待ちで遅れないよう先に読み込んでおく。
+	await loadApiErrorDefs();
+});
 
 beforeEach(() => {
 	fetchMock.resetMocks();
