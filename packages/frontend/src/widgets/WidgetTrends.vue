@@ -57,9 +57,12 @@ const { widgetProps, configure } = useWidgetPropsManager(name,
 
 // 同じ条件での取り直しは前の表示を残すので、定期更新のたびに読み込み中へ戻らない。
 // 取得の時機は、表示中かどうかと keep-alive の再開を見ている定期更新に任せる。
-const { data: stats, refetch } = useApiGetQuery('hashtags/trend', { manual: true });
+const { data: stats, isPending, refetch } = useApiGetQuery('hashtags/trend', { manual: true });
 
-useInterval(refetch, 1000 * 60, {
+// refetch() は進行中の取得を中断して取り直すので、応答が遅いときに毎回打ち切られないよう、取得中の回は飛ばす。
+useInterval(() => {
+	if (!isPending.value) void refetch();
+}, 1000 * 60, {
 	immediate: true,
 	afterMounted: true,
 });
