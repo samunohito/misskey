@@ -29,15 +29,30 @@ function resolveFixedApiErrorGuidance(endpoint: string, error: ApiErrorBody): Ap
 		case 'INVALID_PARAM':
 			return { title: i18n.ts.invalidParamError, text: i18n.ts.invalidParamErrorDescription };
 		case 'ROLE_PERMISSION_DENIED':
+		case 'ACCESS_DENIED':
+		case 'PERMISSION_DENIED':
 			return { title: i18n.ts.permissionDeniedError, text: i18n.ts.permissionDeniedErrorDescription };
+		case 'CREDENTIAL_REQUIRED':
+			return { text: i18n.ts.signinRequired };
+		case 'CONTENT_RESTRICTED_BY_USER':
+			return { text: i18n.ts.thisContentsAreMarkedAsSigninRequiredByAuthor };
+		case 'CONTENT_RESTRICTED_BY_SERVER':
+			return { text: i18n.ts.signinOrContinueOnRemote };
 		default:
-			return null;
+			break;
 	}
+
+	// 対象が存在しない (削除済み・非公開を含む) ことを表す code は、エンドポイントごとに名前が違っても同じ扱いにする。
+	if (error.code.startsWith('NO_SUCH_')) {
+		return { title: i18n.ts.notFound, text: i18n.ts.notFoundResourceDescription };
+	}
+
+	return null;
 }
 
 /**
  * API 呼び出しの失敗から、表示に使う案内を同期的に組み立てる。
- * API エラーでは、固定の共通案内、`TOO_MANY` 系、汎用表示の順に探す。
+ * API エラーでは、固定の共通案内 (存在しない・権限がない・ログインが必要を含む)、`TOO_MANY` 系、汎用表示の順に探す。
  *
  * @returns 表示用の案内。中断は画面に出す必要がないため `null` を返す。
  * @throws `INTERNAL_ERROR` のコピー用情報を JSON に変換できない場合。

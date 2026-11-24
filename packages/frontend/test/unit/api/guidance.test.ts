@@ -60,6 +60,28 @@ describe('resolveApiGuidance', () => {
 		expect(resolveApiGuidance('notes/show', apiFailure(code))).toEqual({ title: i18n.ts[titleKey], text: i18n.ts[textKey] });
 	});
 
+	test('NO_SUCH で始まる code は notFound / notFoundResourceDescription', () => {
+		expect(resolveApiGuidance('notes/show', apiFailure('NO_SUCH_NOTE'))).toEqual({
+			title: i18n.ts.notFound,
+			text: i18n.ts.notFoundResourceDescription,
+		});
+	});
+
+	test.each(['ACCESS_DENIED', 'PERMISSION_DENIED'])('%s は permissionDeniedError / permissionDeniedErrorDescription', (code) => {
+		expect(resolveApiGuidance('drive/files/show', apiFailure(code))).toEqual({
+			title: i18n.ts.permissionDeniedError,
+			text: i18n.ts.permissionDeniedErrorDescription,
+		});
+	});
+
+	test.each([
+		['CREDENTIAL_REQUIRED', 'signinRequired'],
+		['CONTENT_RESTRICTED_BY_USER', 'thisContentsAreMarkedAsSigninRequiredByAuthor'],
+		['CONTENT_RESTRICTED_BY_SERVER', 'signinOrContinueOnRemote'],
+	] as const)('%s はログインが必要なことを案内する', (code, textKey) => {
+		expect(resolveApiGuidance('notes/show', apiFailure(code))).toEqual({ text: i18n.ts[textKey] });
+	});
+
 	test('TOO_MANY で始まる code は youCannotCreateAnymore と「error: id」', () => {
 		expect(resolveApiGuidance('antennas/create', apiFailure('TOO_MANY_ANTENNAS'))).toEqual({
 			title: i18n.ts.youCannotCreateAnymore,
@@ -68,7 +90,7 @@ describe('resolveApiGuidance', () => {
 	});
 
 	test('どれにも当たらなければ title なしで「message\\nid」', () => {
-		const guidance = resolveApiGuidance('notes/show', apiFailure('NO_SUCH_NOTE'));
+		const guidance = resolveApiGuidance('notes/show', apiFailure('SOME_ERROR'));
 		expect(guidance).toEqual({ text: 'error message\nerror-id' });
 		expect(guidance).not.toHaveProperty('title');
 	});

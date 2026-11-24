@@ -6,6 +6,7 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { effectScope, reactive, ref } from 'vue';
 import { useApiGetQuery, useApiQuery } from '@/composables/use-api-query.js';
+import { i18n } from '@/i18n.js';
 import type * as Misskey from 'misskey-js';
 import type { EffectScope } from 'vue';
 import type { ApiFailure, ApiResult, RequestApiOptions } from '@/utility/api/request.js';
@@ -224,7 +225,7 @@ describe('useApiQuery', () => {
 		calls[0].respond(ng());
 		await flush();
 
-		expect(q.error.value).toEqual({ guidance: { text: 'm\nx' }, failure: apiFailure });
+		expect(q.error.value).toEqual({ guidance: { title: i18n.ts.notFound, text: i18n.ts.notFoundResourceDescription }, failure: apiFailure });
 		expect(resolveApiGuidanceSpy.fn).toHaveBeenCalledWith('notes/show', apiFailure);
 		expect(q.isPending.value).toBe(false);
 
