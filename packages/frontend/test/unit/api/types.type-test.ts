@@ -53,6 +53,10 @@ function _composables() {
 	useApiQuery('notes/show');
 	// @ts-expect-error 必須の項目があるエンドポイントでは params を省けない
 	useApiQuery('notes/show', { manual: true });
+	// エンドポイントが union なら、どれか1つでも必須の項目があれば params を省けない
+	const ep = 'meta' as 'meta' | 'notes/show';
+	// @ts-expect-error 必須の項目があるエンドポイントを含む
+	useApiQuery(ep);
 	// 必須の項目がないエンドポイントでは params を省ける
 	useApiQuery('meta');
 	useApiQuery('meta', { manual: true });

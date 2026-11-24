@@ -148,6 +148,8 @@ function useQuery<P, T>(method: 'POST' | 'GET', endpoint: string, opts: UseApiQu
 	}
 
 	function startFetch(paramsSnapshot: JsonLike): Promise<void> {
+		// 条件の評価中に scope が破棄されることがあるため、送信の直前にも確かめる。
+		if (disposed) return Promise.resolve();
 		cancelInflight();
 		const myGeneration = generation;
 		const snapshot = { value: paramsSnapshot };
@@ -284,10 +286,15 @@ function useQuery<P, T>(method: 'POST' | 'GET', endpoint: string, opts: UseApiQu
 	};
 }
 
-/** 必須の項目があるエンドポイントでは、オプションと `params` を省けない。 */
-type QueryOptionsArgs<E extends JsonEndpoint, P, T> = Record<string, never> extends Misskey.Endpoints[E]['req']
-	? [opts?: UseApiQueryOptions<P, T>]
-	: [opts: UseApiQueryOptions<P, T> & { params: () => P }];
+/** エンドポイントごとに、空の条件で呼べるかを判定する。union は分配して1つずつ判定する。 */
+type AcceptsEmptyRequest<E extends JsonEndpoint> = E extends JsonEndpoint
+	? (Record<string, never> extends Misskey.Endpoints[E]['req'] ? true : false)
+	: never;
+
+/** 必須の項目があるエンドポイント (union ならそのいずれか) では、オプションと `params` を省けない。 */
+type QueryOptionsArgs<E extends JsonEndpoint, P, T> = false extends AcceptsEmptyRequest<E>
+	? [opts: UseApiQueryOptions<P, T> & { params: () => P }]
+	: [opts?: UseApiQueryOptions<P, T>];
 
 /**
  * POST で取得したデータと失敗を画面の状態として管理する。

@@ -638,6 +638,27 @@ describe('useApiQuery の失敗時の後始末', () => {
 		expect(calls).toHaveLength(0);
 	});
 
+	test('refetch() 中の params の評価で scope を破棄されたら、送信せずに解決する', async () => {
+		let stopOnRead = false;
+		const holder: { scope?: EffectScope } = {};
+		const q = inScope(() => useApiQuery('notes/show', {
+			params: () => ({
+				get noteId() {
+					if (stopOnRead) holder.scope?.stop();
+					return 'a';
+				},
+			}),
+			manual: true,
+		}));
+		holder.scope = q.scope;
+		await flush();
+
+		stopOnRead = true;
+		await q.refetch();
+		expect(calls).toHaveLength(0);
+		expect(q.isPending.value).toBe(false);
+	});
+
 	test('params の getter は1回の取得につき1回だけ評価する', async () => {
 		let n = 0;
 		const q = inScope(() => useApiQuery('notes/show', {
