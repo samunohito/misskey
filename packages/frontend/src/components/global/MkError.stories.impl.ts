@@ -44,3 +44,11 @@ export const Default = {
 		layout: 'centered',
 	},
 } satisfies StoryObj<typeof MkError>;
+export const WithGuidance = {
+	...Default,
+	args: {
+		...Default.args,
+		title: 'Title',
+		text: 'Text\n00000000-0000-0000-0000-000000000000',
+	},
+} satisfies StoryObj<typeof MkError>;
