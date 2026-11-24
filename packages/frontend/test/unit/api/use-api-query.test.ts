@@ -4,7 +4,7 @@
  */
 
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
-import { effectScope, reactive, ref } from 'vue';
+import { effectScope, reactive, ref, watch } from 'vue';
 import { useApiGetQuery, useApiQuery } from '@/composables/use-api-query.js';
 import { i18n } from '@/i18n.js';
 import type * as Misskey from 'misskey-js';
@@ -610,6 +610,56 @@ describe('useApiQuery', () => {
 		expect(params).toEqual({ noteId: 'a' });
 		calls[0].respond(ok({ id: 'a' }));
 		await flush();
+	});
+});
+
+describe('useApiQuery の失敗時の後始末', () => {
+	test('isPending の同期の監視で scope を破棄されても、refetch() は解決し、送信もしない', async () => {
+		const q = inScope(() => useApiQuery('notes/show', { params: () => ({ noteId: 'a' }), manual: true }));
+		watch(q.isPending, (v) => {
+			if (v) q.scope.stop();
+		}, { flush: 'sync' });
+
+		await q.refetch();
+		expect(calls).toHaveLength(0);
+		expect(q.isPending.value).toBe(false);
+	});
+
+	test('params の値の複製に失敗しても refetch() は throw せず、error に other を入れて送信しない', async () => {
+		const q = inScope(() => useApiQuery('notes/show', {
+			params: () => ({ get noteId(): string { throw new Error('boom'); } }),
+			manual: true,
+		}));
+		await flush();
+		expect(q.error.value?.failure.kind).toBe('other');
+
+		await expect(q.refetch()).resolves.toBeUndefined();
+		expect(q.error.value?.failure.kind).toBe('other');
+		expect(calls).toHaveLength(0);
+	});
+
+	test('params の getter は1回の取得につき1回だけ評価する', async () => {
+		let n = 0;
+		const q = inScope(() => useApiQuery('notes/show', {
+			params: () => ({ get noteId() { return `id${++n}`; } }),
+			manual: true,
+		}));
+		await flush();
+		const before = n;
+		void q.refetch();
+		expect(n - before).toBe(1);
+		expect(calls[0].params).toEqual({ noteId: `id${n}` });
+	});
+
+	test('案内の組み立てが throw しても報告し、その他の案内で error を出して refetch() を解決する', async () => {
+		const q = inScope(() => useApiQuery('notes/show', { params: () => ({ noteId: 'a' }), manual: true }));
+		const p = q.refetch();
+		resolveApiGuidanceSpy.fn!.mockImplementationOnce(() => { throw new Error('guidance boom'); });
+		calls[0].respond(ng());
+		await p;
+		expect(q.isPending.value).toBe(false);
+		expect(q.error.value?.failure).toEqual(apiFailure);
+		expect(q.error.value?.guidance.text).toBe('guidance boom');
 	});
 });
 

@@ -51,6 +51,9 @@ export type UseApiQueryReturn<T> = {
 
 type EvalResult<V> = { ok: true; value: V } | { ok: false; error: unknown };
 
+/** 取得条件は評価した時点の複製だけを持ち、比較・送信・監視に使う。複製の失敗も評価の失敗として扱う。 */
+type ParamsEvalResult = { ok: true; snapshot: JsonLike } | { ok: false; error: unknown };
+
 type JsonLike = Parameters<typeof deepEqual>[0];
 
 function snapshotOf(params: unknown): JsonLike {
@@ -76,9 +79,9 @@ function useQuery<P, T>(method: 'POST' | 'GET', endpoint: string, opts: UseApiQu
 	let initialDataChecked = false;
 	let disposed = false;
 
-	function evaluateParams(): EvalResult<P> {
+	function evaluateParams(): ParamsEvalResult {
 		try {
-			return { ok: true, value: (opts.params ? opts.params() : {}) as P };
+			return { ok: true, snapshot: snapshotOf(opts.params ? opts.params() : {}) };
 		} catch (err) {
 			return { ok: false, error: err };
 		}
@@ -102,7 +105,14 @@ function useQuery<P, T>(method: 'POST' | 'GET', endpoint: string, opts: UseApiQu
 	}
 
 	function toQueryError(failure: ApiFailure): ApiQueryError | null {
-		const guidance = resolveApiGuidance(endpoint, failure);
+		let guidance: ApiGuidance | null;
+		try {
+			guidance = resolveApiGuidance(endpoint, failure);
+		} catch (err) {
+			// 案内を作れなくても失敗は画面に残す。
+			reportApiCallbackError(err);
+			guidance = resolveApiGuidance(endpoint, { kind: 'other', raw: err });
+		}
 		return guidance == null ? null : { guidance, failure };
 	}
 
@@ -137,10 +147,10 @@ function useQuery<P, T>(method: 'POST' | 'GET', endpoint: string, opts: UseApiQu
 		error.value = toQueryError({ kind: 'other', raw: err });
 	}
 
-	function startFetch(params: P): Promise<void> {
+	function startFetch(paramsSnapshot: JsonLike): Promise<void> {
 		cancelInflight();
 		const myGeneration = generation;
-		const snapshot = { value: snapshotOf(params) };
+		const snapshot = { value: paramsSnapshot };
 		seenParams = snapshot;
 
 		error.value = null;
@@ -149,32 +159,36 @@ function useQuery<P, T>(method: 'POST' | 'GET', endpoint: string, opts: UseApiQu
 		const ac = new AbortController();
 		controller = ac;
 		inflightParams = snapshot;
-		pending.value = true;
 
-		return new Promise<void>((resolve) => {
-			settleInflight = resolve;
-			// 送信する値を呼び元や比較に使う複製から独立させ、認証情報の補完を取得条件に混ぜない。
-			requestApi<T>(endpoint, snapshotOf(params) as Record<string, unknown>, { method, signal: ac.signal })
-				// requestApi は reject しない約束だが、万一の reject も失敗として扱う
-				.catch((err: unknown): ApiResult<never> => ({ ok: false, failure: { kind: 'other', raw: err } }))
-				.then((result) => {
-					if (myGeneration !== generation) return;
-					controller = null;
-					settleInflight = null;
-					inflightParams = null;
-					pending.value = false;
-					if (result.ok) {
-						data.value = result.data;
-						dataParams = snapshot;
-					} else {
-						error.value = toQueryError(result.failure);
-					}
-					resolve();
-				});
-		});
+		let resolve!: () => void;
+		const settled = new Promise<void>((r) => { resolve = r; });
+		settleInflight = resolve;
+		pending.value = true;
+		// pending の変化を同期で監視する処理が破棄や取り直しを起こすと、この取得は既に置き換えられている。
+		if (myGeneration !== generation) return settled;
+
+		// 送信する値を比較に使う複製から独立させ、認証情報の補完を取得条件に混ぜない。
+		requestApi<T>(endpoint, snapshotOf(paramsSnapshot) as Record<string, unknown>, { method, signal: ac.signal })
+			// requestApi は reject しない約束だが、万一の reject も失敗として扱う
+			.catch((err: unknown): ApiResult<never> => ({ ok: false, failure: { kind: 'other', raw: err } }))
+			.then((result) => {
+				if (myGeneration !== generation) return;
+				controller = null;
+				settleInflight = null;
+				inflightParams = null;
+				pending.value = false;
+				if (result.ok) {
+					data.value = result.data;
+					dataParams = snapshot;
+				} else {
+					error.value = toQueryError(result.failure);
+				}
+				resolve();
+			});
+		return settled;
 	}
 
-	function onSourceChange(enabledResult: EvalResult<boolean>, paramsResult: EvalResult<P>): void {
+	function onSourceChange(enabledResult: EvalResult<boolean>, paramsResult: ParamsEvalResult): void {
 		if (disposed) return;
 
 		if (!enabledResult.ok) {
@@ -200,7 +214,7 @@ function useQuery<P, T>(method: 'POST' | 'GET', endpoint: string, opts: UseApiQu
 			return;
 		}
 
-		const snapshot = { value: snapshotOf(paramsResult.value) };
+		const snapshot = { value: paramsResult.snapshot };
 		const changed = seenParams == null || !deepEqual(seenParams.value, snapshot.value);
 		seenParams = snapshot;
 
@@ -216,7 +230,7 @@ function useQuery<P, T>(method: 'POST' | 'GET', endpoint: string, opts: UseApiQu
 		}
 
 		if (!opts.manual) {
-			if (becameEnabled || changed) void startFetch(paramsResult.value);
+			if (becameEnabled || changed) void startFetch(paramsResult.snapshot);
 			return;
 		}
 
@@ -245,14 +259,14 @@ function useQuery<P, T>(method: 'POST' | 'GET', endpoint: string, opts: UseApiQu
 			failEvaluation(paramsResult.error);
 			return Promise.resolve();
 		}
-		return startFetch(paramsResult.value);
+		return startFetch(paramsResult.snapshot);
 	}
 
 	if (getCurrentScope()) {
 		onScopeDispose(() => {
 			// 破棄前に渡した refetch() からの送信も止める。
 			disposed = true;
-			abortInflight();
+			cancelInflight();
 		}, true);
 	}
 
@@ -270,6 +284,11 @@ function useQuery<P, T>(method: 'POST' | 'GET', endpoint: string, opts: UseApiQu
 	};
 }
 
+/** 必須の項目があるエンドポイントでは、オプションと `params` を省けない。 */
+type QueryOptionsArgs<E extends JsonEndpoint, P, T> = Record<string, never> extends Misskey.Endpoints[E]['req']
+	? [opts?: UseApiQueryOptions<P, T>]
+	: [opts: UseApiQueryOptions<P, T> & { params: () => P }];
+
 /**
  * POST で取得したデータと失敗を画面の状態として管理する。
  * 既定では有効になったときと取得条件が変わったときに取得する。失敗はダイアログを出さず `error` に入る。
@@ -277,7 +296,7 @@ function useQuery<P, T>(method: 'POST' | 'GET', endpoint: string, opts: UseApiQu
  */
 export function useApiQuery<E extends JsonEndpoint, P extends Misskey.Endpoints[E]['req']>(
 	endpoint: E,
-	opts: UseApiQueryOptions<P, ApiResponse<E, P>> = {},
+	...[opts = {}]: QueryOptionsArgs<E, P, ApiResponse<E, P>>
 ): UseApiQueryReturn<ApiResponse<E, P>> {
 	return useQuery('POST', endpoint, opts);
 }
@@ -286,7 +305,7 @@ export function useApiQuery<E extends JsonEndpoint, P extends Misskey.Endpoints[
 // TODO(api-error-types): GET 可能な24件に絞る
 export function useApiGetQuery<E extends JsonEndpoint, P extends Misskey.Endpoints[E]['req']>(
 	endpoint: E,
-	opts: UseApiQueryOptions<P, ApiResponse<E, P>> = {},
+	...[opts = {}]: QueryOptionsArgs<E, P, ApiResponse<E, P>>
 ): UseApiQueryReturn<ApiResponse<E, P>> {
 	return useQuery('GET', endpoint, opts);
 }

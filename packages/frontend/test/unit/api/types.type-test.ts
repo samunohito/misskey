@@ -43,9 +43,17 @@ function _composables() {
 	const q = useApiQuery('users/show', { params: () => ({ userIds: ['a'] }) });
 	expectTypeOf(q.data.value).toEqualTypeOf<UserDetailed[] | undefined>();
 
-	const g = useApiGetQuery('users/show', { params: () => ({ userId: 'a' }) });
-	expectTypeOf(g.data.value).toEqualTypeOf<UserDetailed | undefined>();
+	const g = useApiGetQuery('hashtags/trend');
+	expectTypeOf(g.data.value).toEqualTypeOf<Misskey.entities.HashtagsTrendResponse | undefined>();
 
 	// @ts-expect-error multipart は受け付けない
 	useApiQuery('drive/files/create');
+
+	// @ts-expect-error 必須の項目があるエンドポイントでは params を省けない
+	useApiQuery('notes/show');
+	// @ts-expect-error 必須の項目があるエンドポイントでは params を省けない
+	useApiQuery('notes/show', { manual: true });
+	// 必須の項目がないエンドポイントでは params を省ける
+	useApiQuery('meta');
+	useApiQuery('meta', { manual: true });
 }
