@@ -6,13 +6,13 @@ SPDX-License-Identifier: AGPL-3.0-only
 <template>
 <PageWithHeader :actions="headerActions" :tabs="headerTabs">
 	<div v-if="error != null" class="_spacer" style="--MI_SPACER-w: 1200px;">
-		<MkResult type="error"/>
+		<MkResult type="error" :text="error.guidance.text"/>
 	</div>
 	<div v-else-if="list" class="_spacer" style="--MI_SPACER-w: 700px;">
 		<div v-if="list" class="members _margin">
 			<div :class="$style.member_text">{{ i18n.ts.members }}</div>
 			<div class="_gaps_s">
-				<div v-for="user in users" :key="user.id" :class="$style.userItem">
+				<div v-for="user in users ?? []" :key="user.id" :class="$style.userItem">
 					<MkA :class="$style.userItemBody" :to="`${userPage(user)}`">
 						<MkUserCardMini :user="user"/>
 					</MkA>
@@ -27,10 +27,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { watch, computed, ref } from 'vue';
-import * as Misskey from 'misskey-js';
+import { computed } from 'vue';
 import * as os from '@/os.js';
-import { misskeyApi } from '@/utility/misskey-api.js';
+import { useApiQuery } from '@/composables/use-api-query.js';
 import { userPage } from '@@/js/user.js';
 import { i18n } from '@/i18n.js';
 import MkUserCardMini from '@/components/MkUserCardMini.vue';
@@ -41,26 +40,15 @@ const props = defineProps<{
 	listId: string;
 }>();
 
-const list = ref<Misskey.entities.UsersListsShowResponse | null>(null);
-const error = ref<unknown | null>(null);
-const users = ref<Misskey.entities.UserDetailed[]>([]);
+const { data: list, error } = useApiQuery('users/lists/show', {
+	params: () => ({ listId: props.listId, forPublic: true }),
+});
 
-function fetchList(): void {
-	misskeyApi('users/lists/show', {
-		listId: props.listId,
-		forPublic: true,
-	}).then(_list => {
-		list.value = _list;
-		if (_list.userIds == null || _list.userIds.length === 0) return;
-		misskeyApi('users/show', {
-			userIds: _list.userIds,
-		}).then(_users => {
-			users.value = _users;
-		});
-	}).catch(err => {
-		error.value = err;
-	});
-}
+// メンバーの取得は、リストを取得できてからにする
+const { data: users } = useApiQuery('users/show', {
+	params: () => ({ userIds: list.value?.userIds ?? [] }),
+	enabled: () => list.value?.userIds != null && list.value.userIds.length > 0,
+});
 
 function like() {
 	if (list.value == null) return;
@@ -92,8 +80,6 @@ async function create() {
 	if (canceled || name == null) return;
 	await os.apiWithDialog('users/lists/create-from-public', { name: name, listId: list.value.id });
 }
-
-watch(() => props.listId, fetchList, { immediate: true });
 
 const headerActions = computed(() => []);
 
