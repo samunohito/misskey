@@ -6,7 +6,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 <template>
 <PageWithHeader v-model:tab="tab" :tabs="headerTabs" :actions="headerActions" :swipable="true">
 	<div v-if="user">
-		<XHome v-if="tab === 'home'" :user="user" :refreshUser="refreshUser" @showMoreFiles="() => { tab = 'files'; }"/>
+		<XHome v-if="tab === 'home'" :user="user" :refreshUser="refetch" @showMoreFiles="() => { tab = 'files'; }"/>
 		<XNotes v-else-if="tab === 'notes'" :user="user"/>
 		<XFiles v-else-if="tab === 'files'" :user="user"/>
 		<XActivity v-else-if="tab === 'activity'" :user="user"/>
@@ -19,17 +19,17 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<XGallery v-else-if="tab === 'gallery'" :user="user"/>
 		<XRaw v-else-if="tab === 'raw'" :user="user"/>
 	</div>
-	<MkError v-else-if="error" @retry="fetchUser()"/>
+	<MkError v-else-if="error" :title="error.guidance.title" :text="error.guidance.text" @retry="refetch()"/>
 	<MkLoading v-else/>
 </PageWithHeader>
 </template>
 
 <script lang="ts" setup>
-import { defineAsyncComponent, computed, watch, ref } from 'vue';
+import { defineAsyncComponent, computed, ref } from 'vue';
 import * as Misskey from 'misskey-js';
 import { acct as getAcct } from '@@/js/user.js';
-import { misskeyApi } from '@/utility/misskey-api.js';
 import { definePage } from '@/page.js';
+import { useApiQuery } from '@/composables/use-api-query.js';
 import { i18n } from '@/i18n.js';
 import { $i } from '@/i.js';
 import { serverContext, assertServerContext } from '@/server-context.js';
@@ -59,42 +59,16 @@ const props = withDefaults(defineProps<{
 
 const tab = ref(props.page);
 
-const user = ref<null | Misskey.entities.UserDetailed>(CTX_USER);
-const error = ref<any>(null);
-
-// 初回読込時専用（使える場合はサーバーコンテキストから取得する）
-function fetchUser(): void {
-	if (props.acct == null) return;
-
-	const { username, host } = Misskey.acct.parse(props.acct);
-
-	if (CTX_USER && CTX_USER.username === username && CTX_USER.host === host) {
-		user.value = CTX_USER;
-		return;
-	}
-
-	user.value = null;
-	misskeyApi('users/show', {
-		username,
-		host,
-	}).then(u => {
-		user.value = u;
-	}).catch(err => {
-		error.value = err;
-	});
-}
-
-watch(() => props.acct, fetchUser, {
-	immediate: true,
+const { data: user, error, refetch } = useApiQuery('users/show', {
+	params: () => Misskey.acct.parse(props.acct),
+	enabled: () => props.acct != null,
+	// 表示中のユーザーがサーバーコンテキストと同じなら、それを使って初回の取得を省く
+	initialData: () => {
+		if (CTX_USER == null) return undefined;
+		const { username, host } = Misskey.acct.parse(props.acct);
+		return CTX_USER.username === username && CTX_USER.host === host ? CTX_USER : undefined;
+	},
 });
-
-// 再読込時専用（強制fetch）
-async function refreshUser(): Promise<void> {
-	if (props.acct == null) return;
-
-	const { username, host } = Misskey.acct.parse(props.acct);
-	user.value = await misskeyApi('users/show', { username, host });
-}
 
 const headerActions = computed(() => []);
 

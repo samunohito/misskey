@@ -9,8 +9,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	<template #header>{{ i18n.ts._widgets.trends }}</template>
 
 	<div class="wbrkwala">
-		<MkLoading v-if="fetching"/>
-		<TransitionGroup v-else tag="div" :name="prefer.s.animation ? 'chart' : ''" class="tags">
+		<TransitionGroup v-if="stats" tag="div" :name="prefer.s.animation ? 'chart' : ''" class="tags">
 			<div v-for="stat in stats" :key="stat.tag">
 				<div class="tag">
 					<MkA class="a" :to="`/tags/${ encodeURIComponent(stat.tag) }`" :title="stat.tag">#{{ stat.tag }}</MkA>
@@ -19,20 +18,19 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<MkMiniChart class="chart" :src="stat.chart"/>
 			</div>
 		</TransitionGroup>
+		<MkLoading v-else/>
 	</div>
 </MkContainer>
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue';
-import * as Misskey from 'misskey-js';
 import { useInterval } from '@@/js/use-interval.js';
 import { useWidgetPropsManager } from './widget.js';
 import type { WidgetComponentEmits, WidgetComponentExpose, WidgetComponentProps } from './widget.js';
 import type { FormWithDefault, GetFormResultType } from '@/utility/form.js';
 import MkContainer from '@/components/MkContainer.vue';
 import MkMiniChart from '@/components/MkMiniChart.vue';
-import { misskeyApiGet } from '@/utility/misskey-api.js';
+import { useApiGetQuery } from '@/composables/use-api-query.js';
 import { i18n } from '@/i18n.js';
 import { prefer } from '@/preferences.js';
 
@@ -57,17 +55,19 @@ const { widgetProps, configure } = useWidgetPropsManager(name,
 	emit,
 );
 
-const stats = ref<Misskey.entities.HashtagsTrendResponse>([]);
-const fetching = ref(true);
+// 同じ条件での取り直しは前の表示を残すので、定期更新のたびに読み込み中へ戻らない。
+// 取得の時機は、表示中かどうかと keep-alive の再開を見ている定期更新に任せる。
+const { data: stats, isPending, refetch } = useApiGetQuery('hashtags/trend', { manual: true });
 
-const fetch = () => {
-	misskeyApiGet('hashtags/trend').then(res => {
-		stats.value = res;
-		fetching.value = false;
-	});
-};
+const POLLING_INTERVAL = 1000 * 60;
 
-useInterval(fetch, 1000 * 60, {
+// refetch() は進行中の取得を中断して取り直す。遅い応答は2周期まで待ち、それより長く止まっている取得は取り直す。
+let fetchStartedAt = 0;
+useInterval(() => {
+	if (isPending.value && performance.now() - fetchStartedAt < POLLING_INTERVAL * 2) return;
+	fetchStartedAt = performance.now();
+	void refetch();
+}, POLLING_INTERVAL, {
 	immediate: true,
 	afterMounted: true,
 });

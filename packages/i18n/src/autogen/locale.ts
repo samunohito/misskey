@@ -1941,6 +1941,10 @@ export interface Locale extends ILocale {
      */
     "notFoundDescription": string;
     /**
+     * 対象が見つかりませんでした。削除されたか、閲覧できない可能性があります。
+     */
+    "notFoundResourceDescription": string;
+    /**
      * 既定アップロード先
      */
     "uploadFolder": string;

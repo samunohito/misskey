@@ -58,7 +58,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { computed, provide, watch, ref } from 'vue';
+import { computed, provide, ref } from 'vue';
 import * as Misskey from 'misskey-js';
 import { url } from '@@/js/config.js';
 import XBlocks from './page-editor.blocks.vue';
@@ -75,6 +75,7 @@ import { definePage } from '@/page.js';
 import { $i } from '@/i.js';
 import { mainRouter } from '@/router.js';
 import { useMkSelect } from '@/composables/use-mkselect.js';
+import { useApiQuery } from '@/composables/use-api-query.js';
 import { getPageBlockList } from '@/pages/page-editor/common.js';
 
 const props = defineProps<{
@@ -92,7 +93,6 @@ const currentName = ref<string | null>(null);
 const title = ref('');
 const summary = ref<string | null>(null);
 const name = ref(Date.now().toString());
-const eyeCatchingImage = ref<Misskey.entities.DriveFile | null>(null);
 const eyeCatchingImageId = ref<string | null>(null);
 const {
 	model: font,
@@ -110,14 +110,10 @@ const hideTitleWhenPinned = ref(false);
 
 provide('readonly', readonly.value);
 
-watch(eyeCatchingImageId, async () => {
-	if (eyeCatchingImageId.value == null) {
-		eyeCatchingImage.value = null;
-	} else {
-		eyeCatchingImage.value = await misskeyApi('drive/files/show', {
-			fileId: eyeCatchingImageId.value,
-		});
-	}
+const { data: eyeCatchingImage } = useApiQuery('drive/files/show', {
+	// enabled が偽の間は params の結果を使わないため、null を除いてよい
+	params: () => ({ fileId: eyeCatchingImageId.value! }),
+	enabled: () => eyeCatchingImageId.value != null,
 });
 
 function getSaveOptions(): Misskey.entities.PagesCreateRequest {
