@@ -249,18 +249,19 @@ export class FileInfoService {
 					.output(join(outDir, '%d.png'))
 					.outputOptions(['-vsync', '0']); // 可変フレームレートにすることで穴埋めをさせない
 				// 判定対象フレームを選定して正規化済みバッファとして集め、外部サービスへまとめて送る。
+				// フレーム数に制限を掛けるため、0, 1, 2, 3, 5, 8, 13, ... 番目（フィボナッチ数列の位置）のフレームだけを使う
 				const frameBuffers: Buffer[] = [];
 				let frameIndex = 0;
 				let targetIndex = 0;
-				let nextIndex = 1;
+				let [nextTarget, nextNextTarget] = [1, 2];
 				for await (const path of this.asyncIterateFrames(outDir, command)) {
 					try {
 						const index = frameIndex++;
 						if (index !== targetIndex) {
 							continue;
 						}
-						targetIndex = nextIndex;
-						nextIndex += index; // fibonacci sequence によってフレーム数制限を掛ける
+						targetIndex = nextTarget;
+						[nextTarget, nextNextTarget] = [nextNextTarget, nextTarget + nextNextTarget];
 						frameBuffers.push(await fs.promises.readFile(path));
 					} finally {
 						fs.promises.unlink(path);
