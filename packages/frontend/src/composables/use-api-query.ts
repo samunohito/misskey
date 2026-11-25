@@ -148,13 +148,20 @@ function useQuery<P, T>(method: 'POST' | 'GET', endpoint: string, opts: UseApiQu
 	}
 
 	function startFetch(paramsSnapshot: JsonLike): Promise<void> {
-		cancelInflight();
+		// 取り直しでは isPending を一時的にも偽にしない。
+		abortInflight();
 		const myGeneration = generation;
+		// ref への代入は同期の監視をその場で呼ぶ。そこで破棄や取り直しが起きたら、この取得は置き換えられている。
+		const replaced = () => myGeneration !== generation;
 		const snapshot = { value: paramsSnapshot };
 		seenParams = snapshot;
 
 		error.value = null;
+		if (replaced()) return Promise.resolve();
 		if (dataParams == null || !deepEqual(dataParams.value, snapshot.value)) clearData();
+		if (replaced()) return Promise.resolve();
+		pending.value = true;
+		if (replaced()) return Promise.resolve();
 
 		const ac = new AbortController();
 		controller = ac;
@@ -163,26 +170,25 @@ function useQuery<P, T>(method: 'POST' | 'GET', endpoint: string, opts: UseApiQu
 		let resolve!: () => void;
 		const settled = new Promise<void>((r) => { resolve = r; });
 		settleInflight = resolve;
-		pending.value = true;
-		// pending の変化を同期で監視する処理が破棄や取り直しを起こすと、この取得は既に置き換えられている。
-		if (myGeneration !== generation) return settled;
 
 		// requestApi は渡した値を書き換えないので、比較に使う複製をそのまま送る。
 		requestApi<T>(endpoint, paramsSnapshot as Record<string, unknown>, { method, signal: ac.signal })
 			// requestApi は reject しない約束だが、万一の reject も失敗として扱う
 			.catch((err: unknown): ApiResult<never> => ({ ok: false, failure: { kind: 'other', raw: err } }))
 			.then((result) => {
-				if (myGeneration !== generation) return;
+				if (replaced()) return;
 				controller = null;
 				settleInflight = null;
 				inflightParams = null;
-				pending.value = false;
+				// isPending が偽になった時点で、結果を読めるようにしておく。
 				if (result.ok) {
-					data.value = result.data;
 					dataParams = snapshot;
+					data.value = result.data;
 				} else {
 					error.value = toQueryError(result.failure);
 				}
+				// 結果の同期の監視が取り直した場合は、新しい取得の isPending を倒さない。
+				if (!replaced()) pending.value = false;
 				resolve();
 			});
 		return settled;

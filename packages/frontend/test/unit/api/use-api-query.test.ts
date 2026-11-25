@@ -625,6 +625,75 @@ describe('useApiQuery の失敗時の後始末', () => {
 		expect(q.isPending.value).toBe(false);
 	});
 
+	test('取得中の refetch() では、isPending を一時的にも偽にしない', async () => {
+		const q = inScope(() => useApiQuery('notes/show', { params: () => ({ noteId: 'a' }), manual: true }));
+		await flush();
+		void q.refetch();
+		const seen: boolean[] = [];
+		watch(q.isPending, (v) => { seen.push(v); }, { flush: 'sync' });
+
+		void q.refetch();
+		expect(seen).toEqual([]);
+		expect(calls).toHaveLength(2);
+		expect(calls[0].opts.signal?.aborted).toBe(true);
+	});
+
+	test('error を消した時点の同期の監視で scope を破棄されたら、送信せずに解決し、isPending を偽のままにする', async () => {
+		const q = inScope(() => useApiQuery('notes/show', { params: () => ({ noteId: 'a' }), manual: true }));
+		await flush();
+		void q.refetch();
+		calls[0].respond({ ok: false, failure: apiFailure });
+		await flush();
+		watch(q.error, (v) => {
+			if (v == null) q.scope.stop();
+		}, { flush: 'sync' });
+
+		await q.refetch();
+		expect(calls).toHaveLength(1);
+		expect(q.isPending.value).toBe(false);
+	});
+
+	test('error を消した時点の同期の監視で refetch() されたら、後の取得だけを進行中として残す', async () => {
+		const q = inScope(() => useApiQuery('notes/show', { params: () => ({ noteId: 'a' }), manual: true }));
+		await flush();
+		void q.refetch();
+		calls[0].respond({ ok: false, failure: apiFailure });
+		await flush();
+		let inner: Promise<void> | null = null;
+		watch(q.error, (v) => {
+			if (v == null && inner == null) inner = q.refetch();
+		}, { flush: 'sync' });
+
+		await q.refetch();
+		expect(calls).toHaveLength(2);
+		expect(calls[1].opts.signal?.aborted).toBe(false);
+		expect(q.isPending.value).toBe(true);
+
+		calls[1].respond(ok({ id: 'a' }));
+		await inner;
+		expect(q.data.value).toEqual({ id: 'a' });
+		expect(q.isPending.value).toBe(false);
+	});
+
+	test('完了時の isPending の同期の監視で refetch() されたら、古い応答の失敗で error を立てない', async () => {
+		const q = inScope(() => useApiQuery('notes/show', { params: () => ({ noteId: 'a' }), manual: true }));
+		await flush();
+		void q.refetch();
+		let refetched = false;
+		watch(q.isPending, (v) => {
+			if (!v && !refetched) {
+				refetched = true;
+				void q.refetch();
+			}
+		}, { flush: 'sync' });
+
+		calls[0].respond({ ok: false, failure: apiFailure });
+		await flush();
+		expect(calls).toHaveLength(2);
+		expect(q.isPending.value).toBe(true);
+		expect(q.error.value).toBeNull();
+	});
+
 	test('params の値の複製に失敗しても refetch() は throw せず、error に other を入れて送信しない', async () => {
 		const q = inScope(() => useApiQuery('notes/show', {
 			params: () => ({ get noteId(): string { throw new Error('boom'); } }),
