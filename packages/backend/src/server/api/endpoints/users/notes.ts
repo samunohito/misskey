@@ -14,6 +14,7 @@ import { IdService } from '@/core/IdService.js';
 import { QueryService } from '@/core/QueryService.js';
 import { MiLocalUser } from '@/models/User.js';
 import { FanoutTimelineEndpointService } from '@/core/FanoutTimelineEndpointService.js';
+import type { FanoutTimelineSource } from '@/core/FanoutTimelineEndpointService.js';
 import { FanoutTimelineName } from '@/core/FanoutTimelineService.js';
 import { ApiError } from '@/server/api/error.js';
 import { ChannelMutingService } from '@/core/ChannelMutingService.js';
@@ -114,10 +115,17 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				return await this.noteEntityService.packMany(timeline, me);
 			}
 
-			const redisTimelines: FanoutTimelineName[] = [ps.withFiles ? `userTimelineWithFiles:${ps.userId}` : `userTimeline:${ps.userId}`];
+			const timelineNames: FanoutTimelineName[] = [ps.withFiles ? `userTimelineWithFiles:${ps.userId}` : `userTimeline:${ps.userId}`];
 
-			if (ps.withReplies) redisTimelines.push(`userTimelineWithReplies:${ps.userId}`);
-			if (ps.withChannelNotes) redisTimelines.push(`userTimelineWithChannel:${ps.userId}`);
+			if (ps.withReplies) timelineNames.push(`userTimelineWithReplies:${ps.userId}`);
+			if (ps.withChannelNotes) timelineNames.push(`userTimelineWithChannel:${ps.userId}`);
+
+			// withReplies: false のとき、DB フォールバックは他人への返信を除外しない (#12065) ので、
+			// 各キーの内容 (他人への返信を含まない) を再現できない。境界に含めると水位より古い範囲で
+			// 他人への返信が出てしまうため、境界に含めない (= 水位を使わない従来どおりの合成)
+			const redisTimelines: FanoutTimelineSource[] = ps.withReplies
+				? timelineNames
+				: timelineNames.map(name => ({ name, boundary: false }));
 
 			const isFollowing = me && Object.hasOwn(await this.cacheService.userFollowingsCache.fetch(me.id), ps.userId);
 

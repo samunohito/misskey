@@ -97,6 +97,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					limit: ps.limit,
 					withFiles: ps.withFiles,
 					withReplies: ps.withReplies,
+					withRenotes: ps.withRenotes,
 				}, me);
 
 				process.nextTick(() => {
@@ -118,7 +119,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				redisTimelines:
 					ps.withFiles ? ['localTimelineWithFiles']
 					: ps.withReplies ? ['localTimeline', 'localTimelineWithReplies']
-					: me ? ['localTimeline', `localTimelineWithReplyTo:${me.id}`]
+					// DB フォールバックは他人への返信を除外するので、localTimelineWithReplyTo の内容を再現できない。境界に含めない
+					: me ? ['localTimeline', { name: `localTimelineWithReplyTo:${me.id}`, boundary: false }]
 					: ['localTimeline'],
 				alwaysIncludeMyNotes: true,
 				excludePureRenotes: !ps.withRenotes,
@@ -128,6 +130,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					limit,
 					withFiles: ps.withFiles,
 					withReplies: ps.withReplies,
+					withRenotes: ps.withRenotes,
 				}, me),
 			});
 
@@ -147,6 +150,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		limit: number,
 		withFiles: boolean,
 		withReplies: boolean,
+		withRenotes: boolean,
 	}, me: MiLocalUser | null) {
 		const query = this.queryService.makePaginationQuery(this.notesRepository.createQueryBuilder('note'),
 			ps.sinceId, ps.untilId)
@@ -186,6 +190,17 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 							.where('note.replyId IS NOT NULL')
 							.andWhere('note.replyUserId = note.userId');
 					}));
+			}));
+		}
+
+		if (ps.withRenotes === false) {
+			query.andWhere(new Brackets(qb => {
+				qb.orWhere('note.renoteId IS NULL');
+				qb.orWhere(new Brackets(qb => {
+					qb.orWhere('note.text IS NOT NULL');
+					qb.orWhere('note.fileIds != \'{}\'');
+					qb.orWhere('0 < (SELECT COUNT(*) FROM poll WHERE poll."noteId" = note.id)');
+				}));
 			}));
 		}
 

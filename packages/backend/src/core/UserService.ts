@@ -10,6 +10,8 @@ import { DI } from '@/di-symbols.js';
 import { bindThis } from '@/decorators.js';
 import { SystemWebhookService } from '@/core/SystemWebhookService.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
+import { FanoutTimelineService } from '@/core/FanoutTimelineService.js';
+import { IdService } from '@/core/IdService.js';
 
 @Injectable()
 export class UserService {
@@ -20,6 +22,8 @@ export class UserService {
 		private followingsRepository: FollowingsRepository,
 		private systemWebhookService: SystemWebhookService,
 		private userEntityService: UserEntityService,
+		private fanoutTimelineService: FanoutTimelineService,
+		private idService: IdService,
 	) {
 	}
 
@@ -41,11 +45,18 @@ export class UserService {
 				this.usersRepository.update(user.id, {
 					isHibernated: false,
 				});
-				this.followingsRepository.update({
+				await this.followingsRepository.update({
 					followerId: user.id,
 				}, {
 					isFollowerHibernated: false,
 				});
+				// 休眠中は HTL へのファンアウトが止まっていたので、復帰時点より古い範囲は DB と合わせて返すよう水位を引き上げる。
+				// 水位の ID は上の UPDATE のコミット後に採る。先に採ると、コミット前に投稿されたノートは HTL に push されないのに
+				// 水位より新しくなり、Redis 区間に入って DB からも返らない。
+				// 呼び出し元は待たないので、Redis のエラーで unhandled rejection にならないよう握りつぶす
+				const now = this.idService.gen();
+				this.fanoutTimelineService.raiseWatermark(`homeTimeline:${user.id}`, now).catch(() => {});
+				this.fanoutTimelineService.raiseWatermark(`homeTimelineWithFiles:${user.id}`, now).catch(() => {});
 			}
 		} else {
 			this.usersRepository.update(user.id, {
