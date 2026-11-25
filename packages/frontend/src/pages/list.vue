@@ -74,11 +74,13 @@ function unlike() {
 
 async function create() {
 	if (list.value == null) return;
+	// 入力中に別のリストへ移っても、操作を始めたリストを取り込む
+	const listId = list.value.id;
 	const { canceled, result: name } = await os.inputText({
 		title: i18n.ts.enterListName,
 	});
 	if (canceled || name == null) return;
-	await os.apiWithDialog('users/lists/create-from-public', { name: name, listId: list.value.id });
+	await os.apiWithDialog('users/lists/create-from-public', { name: name, listId });
 }
 
 const headerActions = computed(() => []);
