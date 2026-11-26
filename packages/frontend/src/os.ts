@@ -19,7 +19,7 @@ import type { MkDialogReturnType } from '@/components/MkDialog.vue';
 import type { OverloadToUnion } from '@/types/overload-to-union.js';
 import type MkRoleSelectDialog_TypeReferenceOnly from '@/components/MkRoleSelectDialog.vue';
 import type MkEmojiPickerDialog_TypeReferenceOnly from '@/components/MkEmojiPickerDialog.vue';
-import { misskeyApi } from '@/utility/misskey-api.js';
+import { requestWithGuidanceDialog } from '@/utility/api/failure-guidance.js';
 import { prefer } from '@/preferences.js';
 import { i18n } from '@/i18n.js';
 import MkPostFormDialog from '@/components/MkPostFormDialog.vue';
@@ -29,7 +29,6 @@ import MkToast from '@/components/MkToast.vue';
 import MkDialog from '@/components/MkDialog.vue';
 import MkPopupMenu from '@/components/MkPopupMenu.vue';
 import MkContextMenu from '@/components/MkContextMenu.vue';
-import { copyToClipboard } from '@/utility/copy-to-clipboard.js';
 import { pleaseLogin } from '@/utility/please-login.js';
 import { showMovedDialog } from '@/utility/show-moved-dialog.js';
 import { getHTMLElementOrNull } from '@/utility/get-dom-node-or-null.js';
@@ -37,65 +36,29 @@ import { focusParent } from '@/utility/focus.js';
 
 export const openingWindowsCount = ref(0);
 
+/** エラーの `code` をキーにした案内の上書き。 */
 export type ApiWithDialogCustomErrors = Record<string, { title?: string; text: string; }>;
+
+/**
+ * 待機ダイアログを出して API を呼び、失敗したら `resolveApiGuidance` で決めた案内を出す。
+ *
+ * @param customErrors この呼び出しでだけ使う案内。エラーの `code` をキーにする。
+ * @returns 成功時は応答で解決する。失敗時は `misskeyApi` と同じ元の値で reject する。
+ * @throws エンドポイント名に `://` が含まれる場合に同期的に throw する。
+ */
 export const apiWithDialog = (<E extends keyof Misskey.Endpoints>(
 	endpoint: E,
 	data: Misskey.Endpoints[E]['req'],
 	token?: string | null | undefined,
 	customErrors?: ApiWithDialogCustomErrors,
 ) => {
-	const promise = misskeyApi(endpoint, data, token);
-	promiseDialog(promise, null, async (err) => {
-		let title: string | undefined;
-		let text = err.message + '\n' + err.id;
-		if (err.code === 'INTERNAL_ERROR') {
-			title = i18n.ts.internalServerError;
-			text = i18n.ts.internalServerErrorDescription;
-			const date = new Date().toISOString();
-			const { result } = await actions({
-				type: 'error',
-				title,
-				text,
-				actions: [{
-					value: 'ok',
-					text: i18n.ts.gotIt,
-					primary: true,
-				}, {
-					value: 'copy',
-					text: i18n.ts.copyErrorInfo,
-				}],
-			});
-			if (result === 'copy') {
-				copyToClipboard(`Endpoint: ${endpoint}\nInfo: ${JSON.stringify(err.info)}\nDate: ${date}`);
-			}
-			return;
-		} else if (err.code === 'RATE_LIMIT_EXCEEDED') {
-			title = i18n.ts.cannotPerformTemporary;
-			text = i18n.ts.cannotPerformTemporaryDescription;
-		} else if (err.code === 'INVALID_PARAM') {
-			title = i18n.ts.invalidParamError;
-			text = i18n.ts.invalidParamErrorDescription;
-		} else if (err.code === 'ROLE_PERMISSION_DENIED') {
-			title = i18n.ts.permissionDeniedError;
-			text = i18n.ts.permissionDeniedErrorDescription;
-		} else if (err.code.startsWith('TOO_MANY')) {
-			title = i18n.ts.youCannotCreateAnymore;
-			text = `${i18n.ts.error}: ${err.id}`;
-		} else if (err.message.startsWith('Unexpected token')) {
-			title = i18n.ts.gotInvalidResponseError;
-			text = i18n.ts.gotInvalidResponseErrorDescription;
-		} else if (customErrors && customErrors[err.id] != null) {
-			title = customErrors[err.id].title;
-			text = customErrors[err.id].text;
-		}
-		alert({
-			type: 'error',
-			title,
-			text,
-		});
-	});
-
-	return promise;
+	const overrides = customErrors == null ? undefined : Object.fromEntries(
+		Object.entries(customErrors).map(([key, guidance]) => [key, () => guidance]),
+	);
+	return requestWithGuidanceDialog(endpoint, data, {
+		token,
+		guidance: { overrides },
+	}) as Promise<Misskey.api.SwitchCaseResponseType<E, Misskey.Endpoints[E]['req']>>;
 });
 
 export function promiseDialog<T extends Promise<any>>(

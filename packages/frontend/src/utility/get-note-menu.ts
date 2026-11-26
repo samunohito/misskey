@@ -13,6 +13,7 @@ import { i18n } from '@/i18n.js';
 import { instance } from '@/instance.js';
 import * as os from '@/os.js';
 import { misskeyApi } from '@/utility/misskey-api.js';
+import { useApiAction } from '@/composables/use-api-action.js';
 import { copyToClipboard } from '@/utility/copy-to-clipboard.js';
 import { store } from '@/store.js';
 import { miLocalStorage } from '@/local-storage.js';
@@ -233,9 +234,9 @@ export function getNoteMenu(props: {
 
 	function toggleFavorite(favorite: boolean): void {
 		claimAchievement('noteFavorited1');
-		os.apiWithDialog(favorite ? 'notes/favorites/create' : 'notes/favorites/delete', {
-			noteId: appearNote.id,
-		});
+		// 画面の状態に触れない単発の操作なので、押すたびに作って捨てる。メニューには実行中を示す場所がないため待機ダイアログを出す。
+		const { execute } = useApiAction(favorite ? 'notes/favorites/create' : 'notes/favorites/delete', { waitingDialog: true });
+		execute({ noteId: appearNote.id });
 	}
 
 	function toggleThreadMute(mute: boolean): void {
@@ -252,7 +253,7 @@ export function getNoteMenu(props: {
 		os.apiWithDialog(pin ? 'i/pin' : 'i/unpin', {
 			noteId: appearNote.id,
 		}, undefined, {
-			'72dab508-c64d-498f-8740-a8eec1ba385a': {
+			PIN_LIMIT_EXCEEDED: {
 				text: i18n.ts.pinLimitExceeded,
 			},
 		});

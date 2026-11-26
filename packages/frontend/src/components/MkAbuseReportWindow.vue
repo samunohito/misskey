@@ -37,6 +37,7 @@ import MkTextarea from '@/components/MkTextarea.vue';
 import MkButton from '@/components/MkButton.vue';
 import * as os from '@/os.js';
 import { i18n } from '@/i18n.js';
+import { useApiAction } from '@/composables/use-api-action.js';
 
 const props = defineProps<{
 	user: Misskey.entities.UserLite;
@@ -50,18 +51,26 @@ const emit = defineEmits<{
 const uiWindow = useTemplateRef('uiWindow');
 const comment = ref(props.initialComment ?? '');
 
-function send() {
-	os.apiWithDialog('users/report-abuse', {
+const { execute } = useApiAction('users/report-abuse', {
+	waitingDialog: true,
+	onSuccess: () => {
+		uiWindow.value?.close();
+		emit('closed');
+	},
+});
+
+async function send() {
+	const result = await execute({
 		userId: props.user.id,
 		comment: comment.value,
-	}, undefined).then(res => {
+	});
+	// 送信中にウィンドウを閉じても通報は届くので、成功の通知は画面の破棄後も出す (onSuccess は破棄後に呼ばれない)
+	if (result.status === 'success') {
 		os.alert({
 			type: 'success',
 			text: i18n.ts.abuseReported,
 		});
-		uiWindow.value?.close();
-		emit('closed');
-	});
+	}
 }
 </script>
 

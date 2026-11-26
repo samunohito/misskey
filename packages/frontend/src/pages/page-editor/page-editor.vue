@@ -58,7 +58,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { computed, provide, watch, ref } from 'vue';
+import { computed, provide, ref } from 'vue';
 import * as Misskey from 'misskey-js';
 import { url } from '@@/js/config.js';
 import XBlocks from './page-editor.blocks.vue';
@@ -75,6 +75,8 @@ import { definePage } from '@/page.js';
 import { $i } from '@/i.js';
 import { mainRouter } from '@/router.js';
 import { useMkSelect } from '@/composables/use-mkselect.js';
+import { useApiAction } from '@/composables/use-api-action.js';
+import { useApiQuery } from '@/composables/use-api-query.js';
 import { getPageBlockList } from '@/pages/page-editor/common.js';
 
 const props = defineProps<{
@@ -92,7 +94,6 @@ const currentName = ref<string | null>(null);
 const title = ref('');
 const summary = ref<string | null>(null);
 const name = ref(Date.now().toString());
-const eyeCatchingImage = ref<Misskey.entities.DriveFile | null>(null);
 const eyeCatchingImageId = ref<string | null>(null);
 const {
 	model: font,
@@ -110,14 +111,49 @@ const hideTitleWhenPinned = ref(false);
 
 provide('readonly', readonly.value);
 
-watch(eyeCatchingImageId, async () => {
-	if (eyeCatchingImageId.value == null) {
-		eyeCatchingImage.value = null;
-	} else {
-		eyeCatchingImage.value = await misskeyApi('drive/files/show', {
-			fileId: eyeCatchingImageId.value,
+const { data: eyeCatchingImage } = useApiQuery('drive/files/show', {
+	// enabled が偽の間は params の結果を使わないため、null を除いてよい
+	params: () => ({ fileId: eyeCatchingImageId.value! }),
+	enabled: () => eyeCatchingImageId.value != null,
+});
+
+// ページを離れた後に表示を更新したり引き戻したりしないよう、成功後の反映と遷移は scope の破棄時に抑止される onSuccess で行う。
+const { execute: createPage } = useApiAction('pages/create', {
+	waitingDialog: true,
+	onSuccess: (page, params) => {
+		pageId.value = page.id;
+		currentName.value = params.name;
+		mainRouter.replace('/pages/edit/:initPageId', {
+			params: {
+				initPageId: page.id,
+			},
 		});
-	}
+	},
+});
+const { execute: updatePage } = useApiAction('pages/update', {
+	waitingDialog: true,
+	onSuccess: (_, params) => {
+		// name を送らなかった更新では、名前は変わっていない
+		if (params.name != null) currentName.value = params.name;
+	},
+});
+const { execute: duplicatePage } = useApiAction('pages/create', {
+	waitingDialog: true,
+	onSuccess: (page, params) => {
+		pageId.value = page.id;
+		currentName.value = params.name;
+		mainRouter.push('/pages/edit/:initPageId', {
+			params: {
+				initPageId: page.id,
+			},
+		});
+	},
+});
+const { execute: deletePage } = useApiAction('pages/delete', {
+	waitingDialog: true,
+	onSuccess: () => {
+		mainRouter.replace('/pages');
+	},
 });
 
 function getSaveOptions(): Misskey.entities.PagesCreateRequest {
@@ -135,38 +171,16 @@ function getSaveOptions(): Misskey.entities.PagesCreateRequest {
 	};
 }
 
-async function save() {
+function save() {
 	const options = getSaveOptions();
 
 	if (pageId.value) {
-		const updateOptions: Misskey.entities.PagesUpdateRequest = {
+		updatePage({
 			pageId: pageId.value,
 			...options,
-		};
-
-		await os.apiWithDialog('pages/update', updateOptions, undefined, {
-			'2298a392-d4a1-44c5-9ebb-ac1aeaa5a9ab': {
-				title: i18n.ts.somethingHappened,
-				text: i18n.ts._pages.nameAlreadyExists,
-			},
 		});
-
-		currentName.value = name.value.trim();
 	} else {
-		const created = await os.apiWithDialog('pages/create', options, undefined, {
-			'4650348e-301c-499a-83c9-6aa988c66bc1': {
-				title: i18n.ts.somethingHappened,
-				text: i18n.ts._pages.nameAlreadyExists,
-			},
-		});
-
-		pageId.value = created.id;
-		currentName.value = name.value.trim();
-		mainRouter.replace('/pages/edit/:initPageId', {
-			params: {
-				initPageId: pageId.value,
-			},
-		});
+		createPage(options);
 	}
 }
 
@@ -180,32 +194,16 @@ async function del() {
 
 	if (canceled) return;
 
-	await os.apiWithDialog('pages/delete', {
+	deletePage({
 		pageId: pageId.value,
 	});
-
-	mainRouter.replace('/pages');
 }
 
-async function duplicate() {
+function duplicate() {
 	title.value = title.value + ' - copy';
 	name.value = name.value + '-copy';
 
-	const created = await os.apiWithDialog('pages/create', getSaveOptions(), undefined, {
-		'4650348e-301c-499a-83c9-6aa988c66bc1': {
-			title: i18n.ts.somethingHappened,
-			text: i18n.ts._pages.nameAlreadyExists,
-		},
-	});
-
-	pageId.value = created.id;
-	currentName.value = name.value.trim();
-
-	mainRouter.push('/pages/edit/:initPageId', {
-		params: {
-			initPageId: pageId.value,
-		},
-	});
+	duplicatePage(getSaveOptions());
 }
 
 async function add() {

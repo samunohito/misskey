@@ -99,7 +99,7 @@ const initialAutoArchiveAt = props.announcement?.autoArchiveAt ? formatDateTimeS
 const autoArchiveAt = ref(initialAutoArchiveAt);
 
 const createAnnouncementErrors: ApiWithDialogCustomErrors = {
-	'2a892bd5-487d-46a2-a5fe-3d85ad51defe': {
+	INVALID_AUTO_ARCHIVE_AT: {
 		title: i18n.ts._announcement.autoArchiveAt,
 		text: i18n.ts._announcement.autoArchiveAtMustBeInFuture,
 	},
