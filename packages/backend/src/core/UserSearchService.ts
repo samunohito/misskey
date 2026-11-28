@@ -81,7 +81,10 @@ export class UserSearchService {
 		},
 		me?: MiUser | null,
 	): Promise<Packed<'User'>[]> {
-		const queries = me ? this.buildSearchUserQueries(me, params) : this.buildSearchUserNoLoginQueries(params);
+		const normalizedHost = params.host?.toLowerCase();
+		const host = normalizedHost === this.config.hostname ? '.' : normalizedHost;
+		const searchParams = { ...params, host };
+		const queries = me ? this.buildSearchUserQueries(me, searchParams) : this.buildSearchUserNoLoginQueries(searchParams);
 
 		let resultSet = new Set<MiUser['id']>();
 		const limit = opts?.limit ?? 10;
@@ -100,7 +103,7 @@ export class UserSearchService {
 		}
 
 		const resultIds = [...resultSet].slice(0, limit);
-		if (opts?.includeExactLocalMatch && limit > 0 && params.username && (!params.host || params.host === '.' || params.host === this.config.hostname)) {
+		if (opts?.includeExactLocalMatch && limit > 0 && params.username && (!host || host === '.')) {
 			const exactMatch = await this.usersRepository.findOne({
 				select: { id: true },
 				where: {
@@ -216,11 +219,11 @@ export class UserSearchService {
 		}
 
 		if (params.host) {
-			if (params.host === this.config.hostname || params.host === '.') {
+			if (params.host === '.') {
 				userQuery.andWhere('user.host IS NULL');
 			} else {
 				userQuery.andWhere('user.host LIKE :host', {
-					host: sqlLikeEscape(params.host.toLowerCase()) + '%',
+					host: sqlLikeEscape(params.host) + '%',
 				});
 			}
 		}

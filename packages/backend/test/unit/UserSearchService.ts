@@ -263,14 +263,17 @@ describe('UserSearchService', () => {
 			expect(result).toEqual([alysha, alyson, alyssa].map(x => x.id));
 		});
 
-		test('自サーバーのホスト名を指定すると、更新日時がない完全一致も上限内に収まる', async () => {
+		test.each([
+			{ label: '小文字', formatHost: (host: string) => host },
+			{ label: '大文字小文字混在', formatHost: (host: string) => host.replace(/[a-z]/, char => char.toUpperCase()) },
+		])('自サーバーのホスト名（$label）を指定すると、更新日時がない完全一致も上限内に収まる', async ({ formatHost }) => {
 			const hostname = app.get<Config>(DI.config).hostname;
 			const bobbix = await createUser({ username: 'Bobbix', usernameLower: 'bobbix' });
 			await createFollowings(root, [bobbi]);
 			await setActive([bobbix]);
 
 			const result = await service.searchByUsernameAndHost(
-				{ username: 'BOB', host: hostname },
+				{ username: 'BOB', host: formatHost(hostname) },
 				{ limit: 2, includeExactLocalMatch: true },
 				root,
 			);
