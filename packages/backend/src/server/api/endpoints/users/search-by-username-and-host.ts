@@ -50,6 +50,11 @@ export const paramDef = {
 			properties: {
 				limit: { type: 'integer', minimum: 1, maximum: 100, default: 10 },
 				detail: { type: 'boolean', default: true },
+				includeExactLocalMatch: {
+					type: 'boolean',
+					default: false,
+					description: 'Include an exact local username match when the host is omitted or refers to the local server, even if the user is outside the usual suggestions.',
+				},
 			},
 		},
 	],
@@ -67,6 +72,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			}, {
 				limit: ps.limit,
 				detail: ps.detail,
+				includeExactLocalMatch: ps.includeExactLocalMatch,
 			}, me);
 		});
 	}

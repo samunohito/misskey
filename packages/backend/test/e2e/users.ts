@@ -780,6 +780,15 @@ describe('ユーザー', () => {
 		const expected = await Promise.all(user().map(u => show(u.id, alice)));
 		assert.deepStrictEqual(response, expected);
 	});
+	test('をID&ホスト指定で検索でき、完全一致を有効にするとローカルでノートなしのユーザーも返る', async () => {
+		const response = await successfulApiCall({
+			endpoint: 'users/search-by-username-and-host',
+			parameters: { username: 'userNoNote', host: '.', detail: false, includeExactLocalMatch: true },
+			user: alice,
+		});
+
+		assert.deepStrictEqual(response.map(u => u.id), [userNoNote.id]);
+	});
 	test.each([
 		{ label: '「見つけやすくする」がOFFのユーザーが含まれる', user: () => userNotExplorable },
 		{ label: 'ミュートユーザーが含まれる', user: () => userMutedByAlice },
