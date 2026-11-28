@@ -12,6 +12,7 @@ import { IdService } from '@/core/IdService.js';
 import { GlobalModule } from '@/GlobalModule.js';
 import { DI } from '@/di-symbols.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
+import type { Config } from '@/config.js';
 
 describe('UserSearchService', () => {
 	let app: TestingModule;
@@ -260,6 +261,55 @@ describe('UserSearchService', () => {
 			);
 
 			expect(result).toEqual([alysha, alyson, alyssa].map(x => x.id));
+		});
+
+		test('自サーバーのホスト名を指定すると、更新日時がない完全一致も上限内に収まる', async () => {
+			const hostname = app.get<Config>(DI.config).hostname;
+			const bobbix = await createUser({ username: 'Bobbix', usernameLower: 'bobbix' });
+			await createFollowings(root, [bobbi]);
+			await setActive([bobbix]);
+
+			const result = await service.searchByUsernameAndHost(
+				{ username: 'BOB', host: hostname },
+				{ limit: 2, includeExactLocalMatch: true },
+				root,
+			);
+
+			expect(result).toEqual([bobbi.id, bob.id]);
+		});
+
+		test.each([
+			{ username: 'bo', host: '.' },
+			{ username: 'bob', host: 'example.com' },
+		])('完全一致の追加条件を満たさないユーザは出ない ($username@$host)', async (params) => {
+			const result = await service.searchByUsernameAndHost(params, { includeExactLocalMatch: true }, root);
+
+			expect(result).toEqual([]);
+		});
+
+		test('完全一致でもサスペンド済みユーザは出ない', async () => {
+			await setSuspended([bob]);
+
+			const result = await service.searchByUsernameAndHost(
+				{ username: 'bob', host: '.' },
+				{ includeExactLocalMatch: true },
+				root,
+			);
+
+			expect(result).toEqual([]);
+		});
+
+		test('通常の候補に含まれる完全一致は重複せず元の順位を保つ', async () => {
+			await createFollowings(root, [bobbi]);
+			await setActive([bob, bobbi]);
+
+			const result = await service.searchByUsernameAndHost(
+				{ username: 'bob' },
+				{ includeExactLocalMatch: true },
+				root,
+			);
+
+			expect(result).toEqual([bobbi.id, bob.id]);
 		});
 	});
 });

@@ -63,7 +63,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 <script lang="ts" setup>
 import { onMounted, ref, computed, useTemplateRef } from 'vue';
 import * as Misskey from 'misskey-js';
-import { host as currentHost, hostname } from '@@/js/config.js';
+import { hostname } from '@@/js/config.js';
 import MkInput from '@/components/MkInput.vue';
 import FormSplit from '@/components/form/split.vue';
 import MkModalWindow from '@/components/MkModalWindow.vue';
@@ -106,6 +106,7 @@ function search() {
 		host: computedLocalOnly.value ? '.' : host.value,
 		limit: 10,
 		detail: false,
+		includeExactLocalMatch: props.includeSelf || username.value.toLowerCase() !== $i?.username.toLowerCase(),
 	}).then(_users => {
 		users.value = _users.filter((u) => {
 			if (props.includeSelf) {

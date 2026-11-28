@@ -4,7 +4,7 @@
  */
 
 import { Inject, Injectable } from '@nestjs/common';
-import { Brackets, SelectQueryBuilder } from 'typeorm';
+import { Brackets, IsNull, SelectQueryBuilder } from 'typeorm';
 import { DI } from '@/di-symbols.js';
 import { type FollowingsRepository, MiUser, type MutingsRepository, type UserProfilesRepository, type UsersRepository } from '@/models/_.js';
 import { bindThis } from '@/decorators.js';
@@ -57,6 +57,7 @@ export class UserSearchService {
 	 * - ユーザ名の検索は大文字小文字を区別しない.
 	 * - ホスト名の検索は大文字小文字を区別しない.
 	 * - 検索結果は最大で {@link opts.limit} 件までとなる.
+	 * - includeExactLocalMatch が有効な場合、ローカルの完全一致が通常の候補に含まれていなければ、検索結果の枠を1件確保する.
 	 *
 	 * ※一定期間とは {@link params.activeThreshold} で指定された日時から現在までの期間を指す.
 	 *
@@ -76,6 +77,7 @@ export class UserSearchService {
 		opts?: {
 			limit?: number,
 			detail?: boolean,
+			includeExactLocalMatch?: boolean,
 		},
 		me?: MiUser | null,
 	): Promise<Packed<'User'>[]> {
@@ -97,8 +99,24 @@ export class UserSearchService {
 			}
 		}
 
+		const resultIds = [...resultSet].slice(0, limit);
+		if (opts?.includeExactLocalMatch && limit > 0 && params.username && (!params.host || params.host === '.' || params.host === this.config.hostname)) {
+			const exactMatch = await this.usersRepository.findOne({
+				select: { id: true },
+				where: {
+					usernameLower: params.username.toLowerCase(),
+					host: IsNull(),
+					isSuspended: false,
+				},
+			});
+			if (exactMatch && !resultSet.has(exactMatch.id)) {
+				if (resultIds.length === limit) resultIds.pop();
+				resultIds.push(exactMatch.id);
+			}
+		}
+
 		return this.userEntityService.packMany<'UserLite' | 'UserDetailed'>(
-			[...resultSet].slice(0, limit),
+			resultIds,
 			me,
 			{ schema: opts?.detail ? 'UserDetailed' : 'UserLite' },
 		);

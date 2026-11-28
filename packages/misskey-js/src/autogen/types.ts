@@ -36924,6 +36924,11 @@ export interface operations {
                     limit?: number;
                     /** @default true */
                     detail?: boolean;
+                    /**
+                     * @description Include an exact local username match when the host is omitted or refers to the local server, even if the user is outside the usual suggestions.
+                     * @default false
+                     */
+                    includeExactLocalMatch?: boolean;
                 };
             };
         };
